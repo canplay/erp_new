@@ -1,67 +1,106 @@
-# MyAI — 全栈微服务管理平台
+# MyAI · 全栈微服务管理平台
 
-基于 Rust + Vue 3 + Quasar 的全栈微服务平台，采用 Service → gRPC → Gateway → HTTP 的微服务架构，已部署至 K8s（Rancher 管理）。
+> 基于 Rust + Vue 3 + Quasar 的全栈微服务管理平台，采用 Service → gRPC → Gateway → HTTP 的架构，已部署至 K8s（Rancher 管理）。
 
-## 项目结构
+## 项目简介
+
+MyAI 是一套面向多业务场景的全栈微服务管理平台，采用 Rust gRPC 微服务架构，提供用户认证、权限管理、审计日志、即时通讯、内容管理、工作流、支付、AI 服务等核心能力。
+
+## 目录结构
 
 ```
-MyAI/
-├── Backend/                        # 后端（21 个 gRPC 微服务 + API Gateway）
+myai/
+├── Backend/                        # 后端（22 个 gRPC 微服务 + API Gateway）
 │   ├── services/                   # 各微服务源码
-│   ├── protos/                     # gRPC Proto 定义（20 个 .proto 文件）
-│   ├── crates/                     # 共享 Crate（common/auth-core/grpc-proto 等）
+│   │   ├── api-gateway/            # HTTP 网关（统一 REST + WS 入口）
+│   │   ├── auth-service/           # 认证服务
+│   │   ├── user-service/           # 用户服务
+│   │   ├── tenant-service/         # 多租户服务
+│   │   ├── audit-service/          # 审计日志
+│   │   ├── file-service/           # 文件服务
+│   │   ├── cms-service/            # 内容管理
+│   │   ├── messaging-service/      # 即时通讯
+│   │   ├── workflow-service/       # 工作流
+│   │   ├── pay-service/            # 支付服务
+│   │   ├── feedback-service/       # 反馈服务
+│   │   ├── api-key-service/        # API Key 管理
+│   │   ├── social-ops-service:     # 社交运营
+│   │   ├── ctp-service/            # CTP 服务
+│   │   ├── ebike-service/          # 电单车
+│   │   ├── hik-service/            # 海康接入
+│   │   ├── lpr-service/            # 车牌识别
+│   │   ├── tow-service/            # 拖车
+│   │   ├── browser-service:        # 浏览器服务
+│   │   ├── clean-service/          # 清洁服务
+│   │   ├── xlt-service/            # XLT 服务
+│   │   └── ...
+│   ├── crates/                     # 共享 Crate（9 个）
+│   │   ├── auth-core/              # 认证核心
+│   │   ├── cache-core/             # 缓存核心
+│   │   ├── circuit-breaker-core/   # 熔断核心
+│   │   ├── common/                 # 公共库
+│   │   ├── crypto-core/            # 加密核心
+│   │   ├── grpc-core/              # gRPC 核心
+│   │   ├── grpc-proto/             # gRPC Proto 生成
+│   │   └── log-core/               # 日志核心
+│   ├── protos/                     # gRPC Proto 定义（20+ .proto）
 │   ├── sql/
-│   │   ├── schema.sql              # 数据库 schema（幂等，83+ 表）
-│   │   └── migrations/             # sqlx 迁移（含网关 gw_ 表）
-│   ├── compile.Dockerfile          # 容器内编译（产 ELF，SQLX_OFFLINE）
-│   ├── base.Dockerfile             # 运行基础镜像
-│   └── Dockerfile.local            # 服务运行镜像模板
+│   │   └── schema.sql              # 数据库 schema（83+ 表）
+│   ├── Cargo.toml                  # 工作区配置
+│   └── Dockerfile.*                # 多阶段构建
 │
-├── Frontend/
-│   ├── admin/                      # 管理后台（Vue3 + Quasar，生产主前端）
+├── Frontend/                       # 前端（pnpm + Turborepo）
+│   ├── admin/                      # 管理后台（Vue3 + Quasar）
 │   ├── ops/                        # 运营面板
 │   ├── social/                     # 社交端
-│   ├── nginx.conf                  # /api + /ws 反代（envsubst 模板）
-│   └── Dockerfile.local-admin      # 前端镜像（本地产物 → nginx）
+│   ├── packages/
+│   │   └── shared/                 # 共享包
+│   ├── package.json                # 工作区配置
+│   └── Dockerfile.*                # 前端镜像
 │
-├── helm/
-│   └── myai/                       # Helm Chart（部署到 myai-prod 命名空间）
+├── Scripts/                        # 构建/部署脚本
+│   ├── build/                      # 构建脚本
+│   ├── deploy/                     # 部署脚本
+│   │   ├── backend/                # 后端部署
+│   │   ├── frontend/               # 前端部署
+│   │   └── helm-deploy-auto-tags.sh
+│   ├── helm/myai/                  # Helm Chart
+│   ├── lib/                        # 共享函数库
+│   └── verify-deployment.sh        # 部署验证
 │
-├── deploy/
-│   ├── scripts/                    # 构建/推送/部署/密钥/验证脚本（7 个）
-│   └── docs/                       # 部署运维文档
+├── tools/                          # 开发辅助工具
+│   ├── gen_demo_pages.py           # 演示页面生成
+│   └── gen_report_docx.py          # 报告文档生成
 │
-├── docs/                           # 技术文档（见下方索引）
-├── tools/                          # 开发辅助脚本（路由分析/代码修复）
-└── .env.example                    # 统一环境配置模板
+├── Docs/                           # 文档
+│   ├── build-deploy-guide.md       # 构建部署全流程
+│   ├── ebike-api-guide.md          # 电单车 API
+│   ├── backend-rust-reference.md   # 后端架构参考
+│   └── ...
+│
+├── .env.example                    # 环境变量模板
+└── LICENSE                         # MIT 许可证
 ```
 
-## 架构
+## 技术栈
 
-```
-┌──────────────────────────────────────────────────┐
-│  Backend Services (21, 纯 gRPC)                   │
-│  api-gateway user auth file cms audit message      │
-│  feedback tenant api-key workflow social-ops       │
-│  browser clean ctp ebike hik lpr pay tow xlt       │
-└──────────────────────┬── gRPC ──────────────────┘
-                       │
-┌──────────────────────▼──────────────────────────┐
-│  api-gateway (HTTP 唯一入口，统一 REST + WS)       │
-└──────────────────────┬── HTTP ──────────────────┘
-                       │
-            ┌──────────┴──────────┬──────────┐
-            ▼                     ▼          ▼
-         admin (前端)           ops        social
-       HTTPS :8901            (预留)      (预留)
-```
+| 层 | 技术 |
+|---|---|
+| 后端框架 | Rust (Actix Web) + gRPC (Tonic) |
+| 前端框架 | Vue 3.5 + Quasar 2 + Pinia + Vite |
+| 数据库 | PostgreSQL |
+| 缓存 / 任务 | Redis / Hangfire |
+| 认证 | JWT Bearer + ASP.NET Identity |
+| 容器化 | Docker / Podman / Kubernetes |
+| 部署 | Helm / docker-compose |
+| 工程化 | pnpm workspaces + Turborepo |
 
-## 快速开始（本地开发）
+## 快速开始
 
 ### 前置条件
 
-- Rust 1.85+（后端）
-- Node.js 20+ / pnpm 9+（前端）
+- Rust 1.85+
+- Node.js 20+ / pnpm 9+
 - Docker/Podman（PostgreSQL + Redis）
 
 ### 本地启动
@@ -70,7 +109,7 @@ MyAI/
 # 1. 配置环境变量
 cp .env.example .env
 
-# 2. 初始化数据库（幂等，可重复执行）
+# 2. 初始化数据库
 psql -h <host> -U postgres -d myai -f Backend/sql/schema.sql
 
 # 3. 启动后端（按需启动服务）
@@ -86,41 +125,31 @@ npx quasar dev    # http://localhost:9000
 
 ## 生产部署（K8s）
 
-生产环境已通过 Helm 部署至 Rancher 集群（命名空间 `myai-prod`），完整流程见：
+```bash
+# 构建
+bash Scripts/build.sh backend
+bash Scripts/build.sh admin
 
-> 📖 **[docs/build-deploy-guide.md](docs/build-deploy-guide.md)** — 编译 → 镜像构建 → 推送 Harbor → Helm 部署 → 验证 + 故障排查
+# 推送 Harbor
+bash Scripts/push.sh <组件>
 
-## 文档索引
+# Helm 部署
+KUBECONFIG=rancher.kubeconfig bash Scripts/deploy.sh myai
 
-| 文档 | 说明 |
-|------|------|
-| [docs/build-deploy-guide.md](docs/build-deploy-guide.md) | **编译→构建→推送→部署全流程** |
-| [docs/ebike-api-guide.md](docs/ebike-api-guide.md) | **共享单车数据接入 API** |
-| [docs/ebike-frontend-ready.md](docs/ebike-frontend-ready.md) | ebike 前端改造记录 |
-| [docs/backend-rust-reference.md](docs/backend-rust-reference.md) | 后端架构参考 |
-| [docs/frontend-admin-guide.md](docs/frontend-admin-guide.md) | 前端开发指南 |
-| [docs/README.md](docs/README.md) | 完整文档索引 |
+# 验证
+bash Scripts/verify-deployment.sh myai
+```
 
 ## 环境
 
 | 项 | 值 |
-|----|-----|
+|---|---|
 | 生产环境 | `https://admin.100.100.100.100.example.com:8901`（仅 HTTPS） |
 | 集群命名空间 | `myai-prod` |
-| 镜像仓库 | `harbor.100.100.100.101.example.com:8003/erp` |
-| 镜像 tag 格式 | `YYYYMMDDHHMM`（纯数字 12 位，如 `202608070337`） |
-| 数据库 | 复用 `pg-cluster-postgresql`（KubeBlocks），库名 `myai` |
-| Redis | 复用 `redis-replication`（KubeBlocks） |
-
-## 里程碑
-
-| 阶段 | 完成项 |
-|------|--------|
-| 架构统一 | 21 service 全部纯 gRPC，业务 HTTP 由网关承担 |
-| 部署自动化 | Helm Chart + 构建/推送/部署/验证脚本（sh 版） |
-| 安全加固 | Ingress 仅 HTTPS + 密钥外置 + gRPC 鉴权 + myai_app 最小权限 |
-| 网关持久化 | 7 个 Repository 内存态迁 DB（gw_ 表 + sqlx 迁移） |
-| 前端完善 | 细粒度 RBAC 权限码 + i18n 生效 + 死代码清理 |
+| 镜像仓库 | `harbor.100.100.100.101.example.com:8003/myai` |
+| 镜像 tag 格式 | `YYYYMMDDHHMM`（纯数字 12 位） |
+| 数据库 | `myai` (PostgreSQL) |
+| Redis | `redis-replication` |
 
 ## 许可证
 

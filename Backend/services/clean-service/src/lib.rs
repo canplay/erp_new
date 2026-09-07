@@ -1,0 +1,29 @@
+use common::service_bootstrap::GrpcServiceBuilder;
+use grpc_proto::clean::clean_service_server::CleanServiceServer;
+use std::net::SocketAddr;
+
+pub mod error;
+pub mod handlers;
+pub mod models;
+pub mod repository;
+pub mod services;
+
+// 导出应用状态
+pub use handlers::AppState;
+
+// 导出 gRPC 服务实现
+pub use services::grpc_impl::CleanGrpcService;
+
+
+impl GrpcServiceBuilder for CleanGrpcService {
+    fn build_grpc_server(&self, grpc_addr: &str) -> Result<tokio::task::JoinHandle<()>, Box<dyn std::error::Error + Send + Sync>> {
+        let state = self.state.clone();
+        let addr: SocketAddr = grpc_addr.parse().expect("invalid grpc addr");
+        Ok(tokio::spawn(async move {
+            let server = CleanServiceServer::new(CleanGrpcService::new(state));
+            if let Err(e) = tonic::transport::Server::builder().add_service(server).serve(addr).await {
+                tracing::error!("gRPC server error: {}", e);
+            }
+        }))
+    }
+}

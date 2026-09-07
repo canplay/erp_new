@@ -1,0 +1,24 @@
+apiVersion: v2
+name: myai
+description: MyAI Backend Rust 微服务 Helm Chart
+type: application
+version: 0.1.0
+appVersion: "20260730.1"
+keywords:
+  - myai
+  - backend
+  - rust
+  - microservices
+maintainers:
+  - name: canplay
+    email: canplay@example.com
+home: https://github.com/canplay/MyAI
+icon: https://raw.githubusercontent.com/canplay/MyAI/main/docs/logo.png
+dependencies:
+  # 可选：如果需要依赖其他 Chart
+  # - name: postgresql
+  #   version: 15.x.x
+  #   repository: https://charts.bitnami.com/bitnami
+  # - name: redis
+  #   version: 18.x.x
+  #   repository: https://charts.bitnami.com/bitnami

@@ -1,0 +1,20 @@
+/** i18n module: theme */
+export default {
+    title: '主题设置',
+    mode: '显示模式',
+    colors: '主题颜色',
+    preview: '预览',
+    light: '浅色模式',
+    dark: '深色模式',
+    auto: '跟随系统',
+    blue: '蓝色',
+    purple: '紫色',
+    green: '绿色',
+    orange: '橙色',
+    red: '红色',
+    teal: '青色',
+    previewText: '输入文字预览',
+    toggle: '开关',
+    checkbox: '复选框',
+    resetSuccess: '主题已重置',
+  }

@@ -1,0 +1,21 @@
+/** i18n module: taskSchedule */
+export default {
+    title: 'Task Schedule',
+    add: 'Add Task',
+    edit: 'Edit Task',
+    name: 'Task Name',
+    key: 'Task Key',
+    type: 'Task Type',
+    cron: 'Cron Expression',
+    endpoint: 'Endpoint',
+    description: 'Description',
+    status: 'Status',
+    lastRun: 'Last Run',
+    created_at: 'Created At',
+    executionLog: 'Execution Log',
+    execute: 'Execute',
+    executing: 'Executing...',
+    executeSuccess: 'Execution successful',
+    deleteConfirm: 'Are you sure to delete task "{name}"?',
+    cronHint: 'Cron format: sec min hour day month week (e.g., 0 0 * * * ? = hourly)',
+  }

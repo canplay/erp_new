@@ -1,0 +1,23 @@
+/** i18n module: system */
+export default {
+    title: '系统设置',
+    basicSettings: '基础设置',
+    siteName: '网站名称',
+    siteNamePlaceholder: '请输入网站名称',
+    siteDescription: '网站描述',
+    siteDescriptionPlaceholder: '请输入网站描述',
+    contactSettings: '联系方式',
+    contactEmail: '联系邮箱',
+    contactEmailPlaceholder: '请输入联系邮箱',
+    contactPhone: '联系电话',
+    contactPhonePlaceholder: '请输入联系电话',
+    saveSettings: '保存设置',
+    settingsSaved: '设置保存成功',
+    securitySettings: '安全设置',
+    operationLogSettings: '操作日志设置',
+    systemInfo: '系统信息',
+    systemVersion: '系统版本',
+    frontendFramework: '前端框架',
+    backendFramework: '后端框架',
+    systemTime: '系统时间',
+  }

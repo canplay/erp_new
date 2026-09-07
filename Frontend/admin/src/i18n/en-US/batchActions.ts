@@ -1,0 +1,20 @@
+/** i18n module: batchActions */
+export default {
+    selected: '{count} selected',
+    enable: 'Enable',
+    disable: 'Disable',
+    delete: 'Delete',
+    export: 'Export',
+    clearSelection: 'Clear Selection',
+    enableConfirm: 'Are you sure to enable {count} items?',
+    disableConfirm: 'Are you sure to disable {count} items?',
+    deleteConfirm: 'Are you sure to delete {count} items? This action cannot be undone.',
+    enableSuccess: 'Successfully enabled {count} items',
+    disableSuccess: 'Successfully disabled {count} items',
+    deleteSuccess: 'Successfully deleted {count} items',
+    exportSuccess: 'Successfully exported {count} items',
+    batchAddSuccess: 'Successfully added {count} items',
+    importSuccess: 'Successfully imported {count} items',
+    enabledSuccess: 'Successfully enabled {count} types',
+    disabledSuccess: 'Successfully disabled {count} types',
+};

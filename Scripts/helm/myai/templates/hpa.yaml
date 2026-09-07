@@ -1,0 +1,37 @@
+{{/*
+=============================================================================
+HPA 模板 - 为多副本服务生成水平自动扩缩 (审计修复 D2)
+=============================================================================
+仅对 replicaCount > 1 的服务生成 HPA: min = 配置副本数, max = min + 2
+CPU 目标 70% (标准阈值)。单副本服务不生成(保持简单)。
+=============================================================================
+*/}}
+{{- range $serviceName, $serviceConfig := .Values.services }}
+{{- $replicas := include "myai.replicaCount" (dict "Values" $.Values "serviceName" $serviceName) | int }}
+{{- if and $serviceConfig.enabled (gt $replicas 1) }}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "myai.fullname" (dict "Values" $.Values "serviceName" $serviceName "componentName" $serviceConfig.name "Chart" $.Chart "Release" $.Release) }}-hpa
+  labels:
+    {{- include "myai.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: {{ $serviceName }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    # 审计修复 (2026-08-04): 目标名必须与 deployment.yaml 的 myai.fullname 一致(小写 componentName),
+    # 原 fullchartname + 驼峰 serviceName 指向不存在的 Deployment, HPA 完全失效
+    name: {{ include "myai.fullname" (dict "Values" $.Values "serviceName" $serviceName "componentName" $serviceConfig.name "Chart" $.Chart "Release" $.Release) }}
+  minReplicas: {{ $replicas }}
+  maxReplicas: {{ add $replicas 2 }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+{{- end }}
+{{- end }}

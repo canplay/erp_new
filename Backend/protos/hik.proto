@@ -1,0 +1,60 @@
+// hik.proto — 海康停车服务 (Hikvision Parking Service)
+// 提供海康API执行、优惠券发放和 Signo 开闸功能
+
+syntax = "proto3";
+
+package hik;
+
+service HikService {
+    // 执行海康API调用
+    rpc Exec(HikRequest) returns (GenericResponse);
+    // 发送优惠券
+    rpc Coupon(CouponRequest) returns (GenericResponse);
+    // Signo开闸
+    rpc SignoOpen(SignoRequest) returns (SignoResponse);
+}
+
+message HikRequest {
+    string method = 1;
+    optional int64 phone = 2;
+    optional string driver_id = 3;
+    optional string plate_no = 4;
+    optional string plate_color = 5;
+    optional int32 page_no = 6;
+    optional int32 page_size = 7;
+    optional string park_name = 8;
+    optional string park_code = 9;
+    optional string request_type = 10;
+    optional string unique_id = 11;
+    optional string is_use_coupon = 12;
+    optional string appeal_type = 13;
+    optional string appeal_remark = 14;
+    optional string appeal_in_time = 15;
+    optional string appeal_out_time = 16;
+    optional string appeal_source = 17;
+    optional string arrears_ids = 18;
+}
+
+message CouponRequest {
+    string phone = 1;
+    int32 amount = 2;
+    int64 start = 3;
+    string end = 4;
+    string type = 5;
+}
+
+message SignoRequest {
+    string place = 1;
+    string name = 2;
+}
+
+message SignoResponse {
+    string message = 1;
+    int32 status = 2;
+}
+
+message GenericResponse {
+    int32 code = 1;
+    string message = 2;
+    string data = 3;
+}

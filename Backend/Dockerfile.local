@@ -1,0 +1,30 @@
+# =============================================================================
+# MyAI Backend - 本地二进制运行镜像 (基于预构建 base, apt 层共享)
+# 直接 COPY 本地 cargo build --release 产物(Windows .exe 经 tar --transform 去后缀)
+# 用法: tar cf - --transform 's/\.exe$//' Dockerfile.local target/release/<svc>.exe | \
+#       podman build --build-arg SERVICE_NAME=<svc> --build-arg HTTP_PORT=<port> -f Dockerfile.local -
+# =============================================================================
+FROM localhost/myai-base:20260810.test
+
+ARG SERVICE_NAME=api-gateway
+ARG HTTP_PORT=8090
+ARG BUILD_TAG=latest
+
+LABEL maintainer="canplay <canplay@example.com>"
+LABEL description="MyAI Backend Service (local binary build)"
+LABEL build_tag="${BUILD_TAG}"
+
+WORKDIR /app
+
+# 从 tar context 复制二进制
+COPY --chown=app:app target/release/${SERVICE_NAME} /app/service
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:${HTTP_PORT}/health || exit 1
+
+EXPOSE ${HTTP_PORT}
+
+USER app
+
+# 直接前台运行，确保 SIGTERM 正确传递
+CMD ["/app/service"]

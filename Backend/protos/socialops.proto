@@ -1,0 +1,347 @@
+syntax = "proto3";
+
+package socialops;
+
+// ===== 社交账号 =====
+service AccountService {
+  rpc ListAccounts (ListAccountsReq) returns (ListAccountsResp);
+  rpc GetAccount (GetAccountReq) returns (Account);
+  rpc AddAccount (AddAccountReq) returns (Account);
+  rpc UpdateAccount (UpdateAccountReq) returns (Account);
+  rpc DeleteAccount (DeleteAccountReq) returns (DeleteResp);
+}
+
+message Account {
+  string id = 1;
+  string user_id = 2;
+  string platform = 3;
+  string account_name = 4;
+  string account_id = 5;
+  string avatar_url = 6;
+  bool is_active = 7;
+  string config_json = 8;
+  string created_at = 9;
+}
+
+message ListAccountsReq { string user_id = 1; }
+message ListAccountsResp { repeated Account accounts = 1; }
+message GetAccountReq { string id = 1; }
+message AddAccountReq {
+  string user_id = 1;
+  string platform = 2;
+  string account_name = 3;
+  string credentials_json = 4;
+  string config_json = 5;
+}
+message UpdateAccountReq {
+  string id = 1;
+  string account_name = 2;
+  string config_json = 3;
+  bool is_active = 4;
+}
+message DeleteAccountReq { string id = 1; }
+message DeleteResp { bool success = 1; }
+
+// ===== 抓取源 =====
+service CrawlService {
+  rpc ListSources (ListSourcesReq) returns (ListSourcesResp);
+  rpc CreateSource (CreateSourceReq) returns (CrawlSource);
+  rpc UpdateSource (UpdateSourceReq) returns (CrawlSource);
+  rpc DeleteSource (DeleteSourceReq) returns (DeleteResp);
+  rpc TriggerCrawl (TriggerCrawlReq) returns (CrawlTask);
+  rpc ListCrawlTasks (ListCrawlTasksReq) returns (ListCrawlTasksResp);
+}
+
+message CrawlSource {
+  string id = 1;
+  string user_id = 2;
+  string platform = 3;
+  string source_name = 4;
+  string source_config = 5;
+  bool is_active = 6;
+  int32 crawl_interval = 7;
+  string last_crawled_at = 8;
+}
+
+message ListSourcesReq { string user_id = 1; }
+message ListSourcesResp { repeated CrawlSource sources = 1; }
+message CreateSourceReq {
+  string user_id = 1;
+  string platform = 2;
+  string source_name = 3;
+  string source_config = 4;
+  int32 crawl_interval = 5;
+}
+message UpdateSourceReq {
+  string id = 1;
+  string source_name = 2;
+  string source_config = 3;
+  bool is_active = 4;
+  int32 crawl_interval = 5;
+}
+message DeleteSourceReq { string id = 1; }
+message TriggerCrawlReq { string source_id = 1; }
+message CrawlTask {
+  string id = 1;
+  string source_id = 2;
+  string status = 3;
+  int32 items_found = 4;
+  int32 items_new = 5;
+  string error_message = 6;
+}
+message ListCrawlTasksReq { string source_id = 1; }
+message ListCrawlTasksResp { repeated CrawlTask tasks = 1; }
+
+// ===== 内容管理 =====
+service ContentService {
+  rpc ListContents (ListContentsReq) returns (ListContentsResp);
+  rpc GetContent (GetContentReq) returns (ContentItem);
+  rpc CreateContent (CreateContentReq) returns (ContentItem);
+  rpc UpdateContent (UpdateContentReq) returns (ContentItem);
+  rpc DeleteContent (DeleteContentReq) returns (DeleteResp);
+}
+
+message ContentItem {
+  string id = 1;
+  string source_type = 2;
+  string content_type = 3;
+  string title = 4;
+  string summary = 5;
+  string body = 6;
+  string source_url = 7;
+  string source_hash = 8;
+  string author_name = 9;
+  string status = 10;
+  string created_at = 11;
+}
+
+message ListContentsReq {
+  string user_id = 1;
+  string status = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+}
+message ListContentsResp { repeated ContentItem items = 1; int32 total = 2; }
+message GetContentReq { string id = 1; }
+message CreateContentReq {
+  string title = 1;
+  string body = 2;
+  string content_type = 3;
+  string source_url = 4;
+  string tags = 5;
+}
+message UpdateContentReq {
+  string id = 1;
+  string title = 2;
+  string body = 3;
+  string status = 4;
+}
+message DeleteContentReq { string id = 1; }
+
+// ===== 洗文 =====
+service RewriteService {
+  rpc CreateTask (CreateRewriteTaskReq) returns (RewriteTask);
+  rpc ListTasks (ListRewriteTasksReq) returns (ListRewriteTasksResp);
+  rpc GetTask (GetRewriteTaskReq) returns (RewriteTask);
+  rpc GetVersions (GetVersionsReq) returns (GetVersionsResp);
+  rpc UpdateVersion (UpdateVersionReq) returns (RewriteVersion);
+}
+
+message RewriteTask {
+  string id = 1;
+  string content_id = 2;
+  string llm_provider_id = 3;
+  string status = 4;
+  int32 target_count = 5;
+  string rewrite_prompt = 6;
+}
+
+message CreateRewriteTaskReq {
+  string content_id = 1;
+  string llm_provider_id = 2;
+  int32 target_count = 3;
+  string rewrite_prompt = 4;
+}
+message ListRewriteTasksReq { int32 page = 1; int32 page_size = 2; }
+message ListRewriteTasksResp { repeated RewriteTask tasks = 1; }
+message GetRewriteTaskReq { string id = 1; }
+message GetVersionsReq { string task_id = 1; }
+message GetVersionsResp { repeated RewriteVersion versions = 1; }
+message RewriteVersion {
+  string id = 1;
+  string task_id = 2;
+  int32 version_seq = 3;
+  string rewritten_title = 4;
+  string rewritten_body = 5;
+  double similarity_score = 6;
+  string status = 7;
+}
+message UpdateVersionReq {
+  string id = 1;
+  string rewritten_title = 2;
+  string rewritten_body = 3;
+  string status = 4;
+}
+
+// ===== LLM 提供商 =====
+service LLMProviderService {
+  rpc ListProviders (ListProvidersReq) returns (ListProvidersResp);
+  rpc AddProvider (AddProviderReq) returns (LLMProvider);
+  rpc UpdateProvider (UpdateProviderReq) returns (LLMProvider);
+  rpc DeleteProvider (DeleteProviderReq) returns (DeleteResp);
+  rpc TestProvider (TestProviderReq) returns (TestProviderResp);
+}
+
+message LLMProvider {
+  string id = 1;
+  string provider_name = 2;
+  string api_endpoint = 3;
+  string model_name = 4;
+  bool is_active = 5;
+}
+message ListProvidersReq { string user_id = 1; }
+message ListProvidersResp { repeated LLMProvider providers = 1; }
+message AddProviderReq {
+  string user_id = 1;
+  string provider_name = 2;
+  string api_endpoint = 3;
+  string api_key = 4;
+  string model_name = 5;
+  string default_params = 6;
+}
+message UpdateProviderReq {
+  string id = 1;
+  string provider_name = 2;
+  string api_endpoint = 3;
+  string api_key = 4;
+  string model_name = 5;
+  bool is_active = 6;
+}
+message DeleteProviderReq { string id = 1; }
+message TestProviderReq {
+  string api_endpoint = 1;
+  string api_key = 2;
+  string model_name = 3;
+}
+message TestProviderResp {
+  bool success = 1;
+  string message = 2;
+}
+
+// ===== 发布 =====
+service PublishService {
+  rpc Publish (PublishReq) returns (PublishTaskResp);
+  rpc ListTasks (ListPublishTasksReq) returns (ListPublishTasksResp);
+  rpc CreateSchedule (CreateScheduleReq) returns (PublishSchedule);
+  rpc ListSchedules (ListSchedulesReq) returns (ListSchedulesResp);
+  rpc UpdateSchedule (UpdateScheduleReq) returns (PublishSchedule);
+  rpc DeleteSchedule (DeleteScheduleReq) returns (DeleteResp);
+}
+
+message PublishReq {
+  string content_id = 1;
+  string account_id = 2;
+  string version_id = 3;
+}
+message PublishTaskResp {
+  string id = 1;
+  string status = 2;
+  string platform_post_id = 3;
+  string post_url = 4;
+}
+message ListPublishTasksReq { int32 page = 1; int32 page_size = 2; }
+message ListPublishTasksResp { repeated PublishTaskResp tasks = 1; }
+message PublishSchedule {
+  string id = 1;
+  string content_id = 2;
+  string account_id = 3;
+  string version_id = 4;
+  string cron_expression = 5;
+  string scheduled_at = 6;
+  bool is_recurring = 7;
+  string status = 8;
+}
+message CreateScheduleReq {
+  string content_id = 1;
+  string account_id = 2;
+  string version_id = 3;
+  string cron_expression = 4;
+  string scheduled_at = 5;
+  bool is_recurring = 6;
+}
+message ListSchedulesReq { int32 page = 1; int32 page_size = 2; }
+message ListSchedulesResp { repeated PublishSchedule schedules = 1; }
+message UpdateScheduleReq {
+  string id = 1;
+  string cron_expression = 2;
+  string scheduled_at = 3;
+  bool is_recurring = 4;
+  string status = 5;
+}
+message DeleteScheduleReq { string id = 1; }
+
+// ===== 统计 =====
+service StatsService {
+  rpc GetAccountStats (GetAccountStatsReq) returns (AccountStats);
+  rpc GetContentStats (GetContentStatsReq) returns (ContentStats);
+  rpc GetOverview (GetOverviewReq) returns (StatsOverview);
+}
+
+message GetAccountStatsReq { string account_id = 1; string start_date = 2; string end_date = 3; }
+message AccountStats {
+  repeated DailyStats daily_stats = 1;
+  int32 total_followers = 2;
+  int32 total_posts = 3;
+  int32 total_likes = 4;
+  int32 total_comments = 5;
+}
+message DailyStats {
+  string date = 1;
+  int32 followers_count = 2;
+  int32 new_posts = 3;
+  int32 likes = 4;
+  int32 comments = 5;
+  int32 views = 6;
+}
+message GetContentStatsReq { string content_id = 1; }
+message ContentStats {
+  string content_id = 1;
+  int32 total_views = 2;
+  int32 total_likes = 3;
+  int32 total_comments = 4;
+  int32 total_shares = 5;
+}
+message GetOverviewReq {}
+message StatsOverview {
+  int32 total_accounts = 1;
+  int32 total_contents = 2;
+  int32 total_published = 3;
+  int32 total_followers = 4;
+}
+
+// ===== AI 分析 =====
+service InsightService {
+  rpc Generate (GenerateInsightReq) returns (StatInsight);
+  rpc List (ListInsightsReq) returns (ListInsightsResp);
+  rpc GetLatest (GetLatestInsightReq) returns (StatInsight);
+}
+
+message GenerateInsightReq {
+  string account_id = 1;
+  string insight_type = 2;
+  string period_start = 3;
+  string period_end = 4;
+}
+message StatInsight {
+  string id = 1;
+  string account_id = 2;
+  string insight_type = 3;
+  string title = 4;
+  string summary = 5;
+  string analysis_body = 6;
+  string suggestions = 7;
+  string created_at = 8;
+}
+message ListInsightsReq { string account_id = 1; }
+message ListInsightsResp { repeated StatInsight insights = 1; }
+message GetLatestInsightReq { string account_id = 1; }

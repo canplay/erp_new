@@ -1,0 +1,145 @@
+{{/*
+=============================================================================
+微服务 Deployment 模板
+=============================================================================
+*/}}
+{{- range $serviceName, $serviceConfig := .Values.services }}
+{{- if $serviceConfig.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "myai.fullname" (dict "Values" $.Values "serviceName" $serviceName "componentName" $serviceConfig.name "Chart" $.Chart "Release" $.Release) }}
+  labels:
+    {{- include "myai.labels" (dict "Values" $.Values "serviceName" $serviceName "Chart" $.Chart "Release" $.Release) | nindent 4 }}
+spec:
+  replicas: {{ include "myai.replicaCount" (dict "Values" $.Values "serviceName" $serviceName) }}
+  {{- $hasPersistence := and $serviceConfig.persistence $serviceConfig.persistence.enabled }}
+  {{- if $hasPersistence }}
+  # 使用 RWO 持久卷的服务必须用 Recreate: 先删旧 Pod 再建新 Pod,
+  # 避免滚动更新时新旧 Pod 同时抢占同一块卷 (Multi-Attach)
+  strategy:
+    type: Recreate
+  {{- else if $serviceConfig.updateStrategy }}
+  {{- toYaml $serviceConfig.updateStrategy | nindent 4 }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "myai.selectorLabels" (dict "Values" $.Values "serviceName" $serviceName "Chart" $.Chart "Release" $.Release) | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "myai.selectorLabels" (dict "Values" $.Values "serviceName" $serviceName "Chart" $.Chart "Release" $.Release) | nindent 8 }}
+    spec:
+      {{- if $.Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml $.Values.global.imagePullSecrets | nindent 8 }}
+      {{- end }}
+      {{- if and $.Values.serviceAccount.create $.Values.serviceAccount.name }}
+      serviceAccountName: {{ $.Values.serviceAccount.name }}
+      {{- end }}
+      {{- $podSecCtx := $.Values.podSecurityContext | default dict }}
+      {{- if $serviceConfig.podSecurityContext }}
+      {{- $podSecCtx = $serviceConfig.podSecurityContext }}
+      {{- end }}
+      {{- with $podSecCtx }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ $serviceConfig.name }}
+          image: "{{ include "myai.image" (dict "Values" $.Values "serviceConfig" $serviceConfig) }}"
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          {{- $secCtx := $.Values.securityContext | default dict }}
+          {{- if $serviceConfig.securityContext }}
+          {{- $secCtx = $serviceConfig.securityContext }}
+          {{- end }}
+          {{- with $secCtx }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          ports:
+            {{- if and ($serviceConfig.ports.grpc) (gt ($serviceConfig.ports.grpc | int) 0) }}
+            - name: grpc
+              containerPort: {{ $serviceConfig.ports.grpc }}
+              protocol: TCP
+            {{- end }}
+            {{- if and ($serviceConfig.ports.http) (gt ($serviceConfig.ports.http | int) 0) }}
+            - name: http
+              containerPort: {{ $serviceConfig.ports.http }}
+              protocol: TCP
+            {{- end }}
+          {{- if and ($serviceConfig.ports.http) (gt ($serviceConfig.ports.http | int) 0) }}
+          {{- $svcHealthEnabled := true }}
+          {{- if and $serviceConfig.healthCheck (hasKey $serviceConfig.healthCheck "enabled") }}
+          {{- $svcHealthEnabled = $serviceConfig.healthCheck.enabled }}
+          {{- end }}
+          {{- if $svcHealthEnabled }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: {{ $serviceConfig.ports.http }}
+            initialDelaySeconds: {{ $.Values.healthCheck.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ $.Values.healthCheck.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ $.Values.healthCheck.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ $.Values.healthCheck.livenessProbe.failureThreshold }}
+            successThreshold: {{ $.Values.healthCheck.livenessProbe.successThreshold }}
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: {{ $serviceConfig.ports.http }}
+            initialDelaySeconds: {{ $.Values.healthCheck.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ $.Values.healthCheck.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ $.Values.healthCheck.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ $.Values.healthCheck.readinessProbe.failureThreshold }}
+            successThreshold: {{ $.Values.healthCheck.readinessProbe.successThreshold }}
+          {{- end }}
+          {{- end }}
+          env:
+            # 服务名称
+            - name: SERVICE_NAME
+              value: {{ $serviceConfig.name | quote }}
+            # gRPC 绑定所有接口（允许跨 Pod 访问）
+            - name: PUBLIC_GRPC
+              value: "true"
+            # 服务特定环境变量
+            {{- include "myai.envVars" (dict "env" $serviceConfig.env) | nindent 12 }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "myai.fullchartname" $ }}-config
+            - secretRef:
+                name: {{ include "myai.fullchartname" $ }}-secret
+          {{- $resources := include "myai.resources" (dict "Values" $.Values "serviceName" $serviceName) }}
+          resources:
+            {{- $resources | nindent 12 }}
+          volumeMounts:
+            {{- if $hasPersistence }}
+            - name: data-storage
+              mountPath: /data
+            {{- end }}
+            {{- with $serviceConfig.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+      volumes:
+        {{- if $hasPersistence }}
+        - name: data-storage
+          persistentVolumeClaim:
+            claimName: {{ include "myai.fullname" (dict "Values" $.Values "serviceName" $serviceName "componentName" $serviceConfig.name "Chart" $.Chart "Release" $.Release) }}-data
+        {{- end }}
+        {{- with $serviceConfig.volumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with $.Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $.Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $.Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}
+{{- end }}

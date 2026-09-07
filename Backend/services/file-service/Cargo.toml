@@ -1,0 +1,37 @@
+[package]
+name = "file-service"
+version.workspace = true
+edition.workspace = true
+description = "文件服务 - 提供文件上传、下载和管理功能"
+
+[[bin]]
+name = "file-service"
+path = "src/main.rs"
+
+[dependencies]
+tracing.workspace = true
+tokio.workspace = true
+common.workspace = true
+sqlx.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+log.workspace = true
+
+axum.workspace = true
+thiserror.workspace = true
+chrono.workspace = true
+uuid.workspace = true
+mime.workspace = true
+async-trait.workspace = true
+multer.workspace = true
+urlencoding.workspace = true
+futures-util.workspace = true
+bytes.workspace = true
+
+# gRPC
+tonic.workspace = true
+grpc-proto.workspace = true
+
+[dev-dependencies]
+tokio-test = "0.4"
+

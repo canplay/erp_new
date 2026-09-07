@@ -1,0 +1,208 @@
+// feedback.proto -- 用户反馈服务
+// 提供用户反馈的提交、查询、回复和统计功能
+// 用于收集用户意见、Bug 报告和功能建议
+
+syntax = "proto3";
+
+package feedback;
+
+// 反馈服务
+// 管理用户反馈的全生命周期，支持分类、优先级处理、回复和统计
+service FeedbackService {
+    // 反馈管理
+    rpc ListFeedbacks(ListFeedbacksRequest) returns (ListFeedbacksResponse);      // 分页查询反馈列表
+    rpc GetFeedback(GetFeedbackRequest) returns (GetFeedbackResponse);            // 获取反馈详情
+    rpc CreateFeedback(CreateFeedbackRequest) returns (CreateFeedbackResponse);   // 提交新反馈
+    rpc UpdateFeedback(UpdateFeedbackRequest) returns (UpdateFeedbackResponse);   // 更新反馈状态/优先级
+    rpc DeleteFeedback(DeleteFeedbackRequest) returns (DeleteFeedbackResponse);   // 删除反馈
+
+    // 回复管理
+    rpc AddReply(AddReplyRequest) returns (AddReplyResponse);                     // 添加回复
+    rpc ListReplies(ListRepliesRequest) returns (ListRepliesResponse);            // 查询反馈的回复列表
+
+    // 统计
+    rpc GetStats(GetStatsRequest) returns (GetStatsResponse);                    // 获取反馈统计数据
+}
+
+// 反馈类型
+// 定义用户反馈的类别
+enum FeedbackType {
+    BUG = 0;                  // Bug 反馈
+    FEATURE = 1;              // 功能建议
+    QUESTION = 2;             // 问题咨询
+    COMPLAINT = 3;            // 投诉
+    OTHER = 4;                // 其他
+}
+
+// 反馈状态
+// 定义反馈处理流程中的各个阶段
+enum FeedbackStatus {
+    OPEN = 0;                 // 待处理
+    IN_PROGRESS = 1;          // 处理中
+    RESOLVED = 2;             // 已解决
+    CLOSED = 3;               // 已关闭
+}
+
+// 优先级
+// 定义反馈处理的紧急程度
+enum FeedbackPriority {
+    LOW = 0;                  // 低优先级
+    MEDIUM = 1;               // 中优先级
+    HIGH = 2;                 // 高优先级
+    URGENT = 3;               // 紧急
+}
+
+// ============== 反馈相关 ==============
+
+// 反馈信息
+message Feedback {
+    int64 id = 1;                             // 反馈 ID
+    int64 user_id = 2;                        // 提交用户 ID
+    string username = 3;                      // 提交用户名
+    FeedbackType type = 4;                    // 反馈类型
+    FeedbackStatus status = 5;                // 反馈状态
+    FeedbackPriority priority = 6;            // 优先级
+    string title = 7;                         // 反馈标题
+    string content = 8;                       // 反馈内容
+    repeated string attachments = 9;          // 附件 URL 列表
+    string device_info = 10;                  // 设备信息
+    string app_version = 11;                  // App 版本号
+    map<string, string> extra = 12;           // 扩展数据
+    int64 assigned_to = 13;                   // 处理人用户 ID
+    int64 resolved_at = 14;                   // 解决时间
+    int64 created_at = 15;                    // 创建时间
+    int64 updated_at = 16;                    // 更新时间
+}
+
+// 分页查询反馈请求
+message ListFeedbacksRequest {
+    int32 page = 1;                           // 页码
+    int32 page_size = 2;                      // 每页数量
+    int64 user_id = 3;                        // 按用户筛选
+    FeedbackType type = 4;                    // 按类型筛选
+    FeedbackStatus status = 5;                // 按状态筛选
+    FeedbackPriority priority = 6;            // 按优先级筛选
+    string keyword = 7;                       // 关键词搜索
+}
+
+// 分页查询反馈响应
+message ListFeedbacksResponse {
+    repeated Feedback feedbacks = 1;          // 反馈列表
+    int64 total = 2;                          // 反馈总数
+}
+
+// 获取反馈详情请求
+message GetFeedbackRequest {
+    int64 id = 1;                             // 反馈 ID
+}
+
+// 获取反馈详情响应
+message GetFeedbackResponse {
+    Feedback feedback = 1;                    // 反馈详情
+}
+
+// 提交反馈请求
+message CreateFeedbackRequest {
+    int64 user_id = 1;                        // 用户 ID
+    string username = 2;                      // 用户名
+    FeedbackType type = 3;                    // 反馈类型
+    string title = 4;                         // 标题
+    string content = 5;                       // 内容
+    repeated string attachments = 6;          // 附件
+    string device_info = 7;                   // 设备信息
+    string app_version = 8;                   // App 版本
+    map<string, string> extra = 9;            // 扩展数据
+}
+
+// 提交反馈响应
+message CreateFeedbackResponse {
+    int64 id = 1;                             // 新反馈 ID
+    string title = 2;                         // 反馈标题
+}
+
+// 更新反馈请求
+message UpdateFeedbackRequest {
+    int64 id = 1;                             // 反馈 ID
+    FeedbackStatus status = 2;                // 新状态
+    FeedbackPriority priority = 3;            // 新优先级
+    int64 assigned_to = 4;                    // 分配处理人
+    string reply_content = 5;                 // 同时添加回复内容
+}
+
+// 更新反馈响应
+message UpdateFeedbackResponse {
+    int64 id = 1;                             // 反馈 ID
+    FeedbackStatus status = 2;                // 更新后的状态
+}
+
+// 删除反馈请求
+message DeleteFeedbackRequest {
+    int64 id = 1;                             // 要删除的反馈 ID
+}
+
+// 删除反馈响应
+message DeleteFeedbackResponse {
+    bool success = 1;                         // 是否删除成功
+}
+
+// ============== 回复相关 ==============
+
+// 回复信息
+message Reply {
+    int64 id = 1;                             // 回复 ID
+    int64 feedback_id = 2;                    // 关联的反馈 ID
+    int64 user_id = 3;                        // 回复用户 ID
+    string username = 4;                      // 回复用户名
+    string content = 5;                       // 回复内容
+    bool is_admin = 6;                        // 是否管理员回复
+    int64 created_at = 7;                     // 回复时间
+}
+
+// 添加回复请求
+message AddReplyRequest {
+    int64 feedback_id = 1;                    // 反馈 ID
+    int64 user_id = 2;                        // 回复用户 ID
+    string username = 3;                      // 回复用户名
+    string content = 4;                       // 回复内容
+    bool is_admin = 5;                        // 是否以管理员身份回复
+}
+
+// 添加回复响应
+message AddReplyResponse {
+    int64 id = 1;                             // 新回复 ID
+    bool success = 2;                         // 是否成功
+}
+
+// 查询回复列表请求
+message ListRepliesRequest {
+    int64 feedback_id = 1;                    // 反馈 ID
+}
+
+// 查询回复列表响应
+message ListRepliesResponse {
+    repeated Reply replies = 1;               // 回复列表
+}
+
+// ============== 统计相关 ==============
+
+// 反馈统计数据
+message FeedbackStats {
+    int64 total_count = 1;                    // 总反馈数
+    int64 open_count = 2;                     // 待处理数
+    int64 in_progress_count = 3;              // 处理中数
+    int64 resolved_count = 4;                 // 已解决数
+    int64 closed_count = 5;                   // 已关闭数
+    map<int32, int64> by_type = 6;            // 按类型统计
+    map<int32, int64> by_priority = 7;        // 按优先级统计
+}
+
+// 获取统计请求
+message GetStatsRequest {
+    int64 period_start = 1;                   // 统计起始时间
+    int64 period_end = 2;                     // 统计结束时间
+}
+
+// 获取统计响应
+message GetStatsResponse {
+    FeedbackStats stats = 1;                  // 统计数据
+}

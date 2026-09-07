@@ -1,0 +1,44 @@
+[package]
+name = "messaging-service"
+version.workspace = true
+edition.workspace = true
+description = "消息服务 - 合并消息和通知功能"
+
+[lib]
+name = "messaging_service"
+path = "src/lib.rs"
+
+[[bin]]
+name = "messaging-service"
+path = "src/main.rs"
+
+[dependencies]
+# 核心框架
+tracing.workspace = true
+tokio.workspace = true
+futures-util = "0.3"
+axum.workspace = true
+
+# 序列化
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+anyhow.workspace = true
+chrono.workspace = true
+
+# 数据库
+sqlx = { workspace = true, features = ["json"] }
+
+# 日志
+log.workspace = true
+
+# gRPC
+tonic.workspace = true
+
+# 公共库
+common.workspace = true
+auth-core.workspace = true
+grpc-proto.workspace = true
+
+[build-dependencies]
+tonic-build.workspace = true

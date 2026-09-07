@@ -1,0 +1,60 @@
+[package]
+name = "hik-service"
+version.workspace = true
+edition.workspace = true
+
+[lib]
+name = "hik_service"
+path = "src/lib.rs"
+
+[features]
+default = ["redis"]
+redis = ["dep:redis"]
+
+[dependencies]
+tracing = "0.1"
+# 公共依赖
+common = { workspace = true }
+grpc-proto = { workspace = true }
+
+# 异步运行时
+tokio = { workspace = true }
+
+# Web框架
+axum = { workspace = true }
+
+# gRPC
+tonic = { workspace = true }
+
+# 数据库
+sqlx = { workspace = true }
+
+# HTTP客户端
+reqwest = { workspace = true, features = ["form"] }
+
+# 序列化
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+# 日志
+log = { workspace = true }
+
+# 错误处理
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+
+# 日期时间
+chrono = { workspace = true }
+
+# Redis (optional)
+redis = { workspace = true, optional = true }
+
+# MD5
+md5 = "0.8"
+
+# URL编码
+urlencoding = "2"
+
+[[bin]]
+name = "hik-service"
+path = "src/main.rs"

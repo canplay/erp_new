@@ -1,0 +1,40 @@
+# 日志核心库
+[package]
+name = "log-core"
+version.workspace = true
+edition.workspace = true
+[lib]
+name = "log_core"
+path = "src/lib.rs"
+
+description = "统一日志库 - 提供结构化日志、日志格式化和日志级别控制"
+
+[features]
+default = []
+telemetry = ["opentelemetry", "tracing-opentelemetry"]
+
+[dependencies]
+# 日志
+tracing.workspace = true
+tracing-subscriber = { version = "0.3", features = ["json", "env-filter"] }
+tracing-log.workspace = true
+tracing-appender.workspace = true
+log.workspace = true
+log4rs = { version = "1.4", features = ["rolling_file_appender", "file_appender"] }
+
+# 序列化
+serde.workspace = true
+serde_json.workspace = true
+
+# 异步运行时
+tokio.workspace = true
+
+# 时间
+chrono.workspace = true
+
+# 错误处理
+anyhow.workspace = true
+
+# OpenTelemetry (optional, for trace_id in logs)
+opentelemetry = { workspace = true, optional = true }
+tracing-opentelemetry = { workspace = true, optional = true }

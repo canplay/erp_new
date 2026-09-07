@@ -1,0 +1,23 @@
+/** i18n module: shortcuts */
+export default {
+    title: 'Keyboard Shortcuts',
+    general: 'General',
+    table: 'Table',
+    navigation: 'Navigation',
+    showHelp: 'Show Help',
+    globalSearch: 'Global Search',
+    new: 'New',
+    close: 'Close/Cancel',
+    save: 'Save',
+    undo: 'Undo',
+    navigateRows: 'Navigate Rows Up/Down',
+    editRow: 'Edit Selected Row',
+    deleteRow: 'Delete Selected Row',
+    selectRow: 'Select/Deselect Row',
+    selectAll: 'Select All',
+    goHome: 'Go to Home',
+    goProfile: 'Go to Personal Center',
+    goSettings: 'Go to System Settings',
+    prevTab: 'Previous Tab',
+    nextTab: 'Next Tab',
+  }

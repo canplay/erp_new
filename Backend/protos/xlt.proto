@@ -1,0 +1,120 @@
+// xlt.proto — 迅路停停车服务 (XunLuTing Parking Service)
+// 提供车辆进出管理、计费、设备管理和MQTT回调等功能
+
+syntax = "proto3";
+
+package xlt;
+
+service XltService {
+    // 车辆入场
+    rpc VehicleEntry(VehicleEvent) returns (GenericResponse);
+    // 车辆出场
+    rpc VehicleExit(VehicleEvent) returns (GenericResponse);
+    // 查询在场车辆
+    rpc GetParkingVehicle(GetParkingVehicleRequest) returns (ParkingVehicle);
+    // 计算停车费用
+    rpc CalcBilling(BillingRequest) returns (BillingResult);
+    // 车辆进出记录列表
+    rpc ListRecords(VehicleQueryRequest) returns (RecordListResponse);
+    // MQTT消息回调
+    rpc MqttCallback(MqttCallbackRequest) returns (GenericResponse);
+    // 获取设备列表
+    rpc ListDevices(Empty) returns (DeviceInfoList);
+    // 发送开闸命令
+    rpc OpenBarrier(BarrierCommand) returns (GenericResponse);
+    // 发送关闸命令
+    rpc CloseBarrier(BarrierCommand) returns (GenericResponse);
+}
+
+message VehicleEvent {
+    string plate_no = 1;
+    string plate_color = 2;
+    string park_code = 3;
+    string lane_code = 4;
+    string event_time = 5;
+    string vehicle_type = 6;
+    string image_url = 7;
+    int64 amount = 8;
+    string pay_type = 9;
+}
+
+message GetParkingVehicleRequest {
+    string park_code = 1;
+    string plate_no = 2;
+}
+
+message ParkingVehicle {
+    string plate_no = 1;
+    string plate_color = 2;
+    string park_code = 3;
+    string entry_time = 4;
+    string lane_code = 5;
+    string vehicle_type = 6;
+    int64 duration_minutes = 7;
+    int64 amount = 8;
+}
+
+message BillingRequest {
+    string plate_no = 1;
+    string park_code = 2;
+    string entry_time = 3;
+    string exit_time = 4;
+}
+
+message BillingResult {
+    string plate_no = 1;
+    string park_code = 2;
+    string entry_time = 3;
+    string exit_time = 4;
+    int64 duration_minutes = 5;
+    int64 total_amount = 6;
+    string rule = 7;
+}
+
+message VehicleQueryRequest {
+    optional string plate_no = 1;
+    optional string park_code = 2;
+    optional string status = 3;
+    int32 page = 4;
+    int32 page_size = 5;
+}
+
+message RecordListResponse {
+    repeated string records_json = 1;
+    int64 total = 2;
+    int32 page = 3;
+    int32 page_size = 4;
+}
+
+message MqttCallbackRequest {
+    string topic = 1;
+    string payload = 2;
+}
+
+message BarrierCommand {
+    string sn = 1;
+    string request_id = 2;
+}
+
+message Empty {
+}
+
+message DeviceInfo {
+    string sn = 1;
+    string name = 2;
+    string version = 3;
+    string status = 4;
+    string last_heartbeat = 5;
+    string dev_info = 6;
+    string park_code = 7;
+}
+
+message DeviceInfoList {
+    repeated DeviceInfo devices = 1;
+}
+
+message GenericResponse {
+    int32 code = 1;
+    string message = 2;
+    string data = 3;
+}

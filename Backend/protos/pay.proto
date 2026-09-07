@@ -1,0 +1,162 @@
+// pay.proto — 支付服务 (Payment Service)
+// 提供基础支付、建行(CCB)支付和银联(UMS)支付功能
+
+syntax = "proto3";
+
+package pay;
+
+service PayService {
+    // ========== 基础支付接口 ==========
+    // 查询支付订单数量
+    rpc Count(PayQuery) returns (CountResponse);
+    // 查询支付订单列表
+    rpc List(PayQuery) returns (OrderListResponse);
+    // 查询最近已支付订单
+    rpc Latest(LatestRequest) returns (PayOrderResponse);
+    // 创建支付订单
+    rpc CreateOrder(PayCreateParams) returns (PayOrderResponse);
+
+    // ========== CCB 建行支付接口 ==========
+    // CCB查询支付订单
+    rpc CcbQuery(CcbQueryParams) returns (CcbQueryResponse);
+    // CCB创建支付订单
+    rpc CcbCreate(CcbOrderParams) returns (CcbOrderResponse);
+    // CCB验证支付结果
+    rpc CcbVerify(CcbVerifyRequest) returns (BoolResponse);
+    // CCB退款
+    rpc CcbRefund(CcbRefundRequest) returns (BoolResponse);
+
+    // ========== UMS 银联支付接口 ==========
+    // UMS查询支付订单
+    rpc UmsQuery(UmsQueryParams) returns (JsonValueResponse);
+    // UMS创建支付订单
+    rpc UmsCreate(UmsOrderParams) returns (JsonValueResponse);
+    // UMS关闭支付订单
+    rpc UmsClose(UmsCloseParams) returns (JsonValueResponse);
+    // UMS退款
+    rpc UmsRefund(UmsRefundParams) returns (JsonValueResponse);
+    // UMS获取订单信息
+    rpc UmsInfo(UmsInfoRequest) returns (JsonValueResponse);
+}
+
+// ========== 基础支付接口 ==========
+
+message PayQuery {
+    optional string status = 1;
+    optional string pay_type = 2;
+    optional string remark = 3;
+    optional string sort_by = 4;
+    optional bool descending = 5;
+    optional int64 max_page = 6;
+    optional int64 cur_page = 7;
+}
+
+message CountResponse {
+    int64 count = 1;
+    string message = 2;
+}
+
+message LatestRequest {
+    string user_id = 1;
+}
+
+message PayOrder {
+    string id = 1;
+    string order = 2;
+    string status = 3;
+    string pay_type = 4;
+    string order_pay_json = 5;
+    int32 amount = 6;
+    string remark = 7;
+    string create_service = 8;
+    string create_params_json = 9;
+    string create_date = 10;
+    string update_date = 11;
+}
+
+message PayOrderResponse {
+    PayOrder order = 1;
+    string message = 2;
+}
+
+message OrderListResponse {
+    repeated PayOrder orders = 1;
+    string message = 2;
+}
+
+message PayCreateParams {
+    string order = 1;
+    optional string status = 2;
+    optional string pay_type = 3;
+    optional string order_pay_json = 4;
+    optional int32 amount = 5;
+    optional string remark = 6;
+    optional string create_params_json = 7;
+    optional string create_date = 8;
+}
+
+// ========== CCB 建行支付接口 ==========
+
+message CcbQueryParams {
+    string order_id = 1;
+}
+
+message CcbQueryResponse {
+    string data_json = 1;
+}
+
+message CcbOrderParams {
+    string order_id = 1;
+    int32 amount = 2;
+    string subject = 3;
+}
+
+message CcbOrderResponse {
+    string data_json = 1;
+}
+
+message CcbVerifyRequest {
+    string order_id = 1;
+}
+
+message CcbRefundRequest {
+    string order_id = 1;
+    double amount = 2;
+}
+
+message BoolResponse {
+    bool success = 1;
+    string message = 2;
+}
+
+// ========== UMS 银联支付接口 ==========
+
+message UmsQueryParams {
+    string order_id = 1;
+}
+
+message UmsOrderParams {
+    string order_id = 1;
+    int32 amount = 2;
+    string subject = 3;
+    string description = 4;
+}
+
+message UmsCloseParams {
+    string order_id = 1;
+}
+
+message UmsRefundParams {
+    string order_id = 1;
+    double amount = 2;
+    string reason = 3;
+}
+
+message UmsInfoRequest {
+    string order = 1;
+}
+
+message JsonValueResponse {
+    string data_json = 1;
+    string message = 2;
+}

@@ -1,0 +1,23 @@
+/** i18n module: system */
+export default {
+    title: 'System Settings',
+    basicSettings: 'Basic Settings',
+    siteName: 'Site Name',
+    siteNamePlaceholder: 'Enter site name',
+    siteDescription: 'Site Description',
+    siteDescriptionPlaceholder: 'Enter site description',
+    contactSettings: 'Contact Settings',
+    contactEmail: 'Contact Email',
+    contactEmailPlaceholder: 'Enter contact email',
+    contactPhone: 'Contact Phone',
+    contactPhonePlaceholder: 'Enter contact phone',
+    saveSettings: 'Save Settings',
+    settingsSaved: 'Settings saved successfully',
+    securitySettings: 'Security Settings',
+    operationLogSettings: 'Operation Log Settings',
+    systemInfo: 'System Info',
+    systemVersion: 'System Version',
+    frontendFramework: 'Frontend Framework',
+    backendFramework: 'Backend Framework',
+    systemTime: 'System Time',
+  }

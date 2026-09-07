@@ -1,0 +1,74 @@
+# IDE
+.vs/
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+
+# Test Results
+TestResults/
+*.trx
+coverage/
+*.coverage
+*.coveragexml
+
+# Logs
+logs/
+*.log
+
+# Environment files (keep .env.example as template)
+.env
+.env.local
+.env.*.local
+
+# OS generated
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Rust 构建产物
+target/
+
+# 临时文件
+*.tmp
+*.bak
+
+# 数据库
+*.db
+*.sqlite
+
+# Docker
+.docker/
+
+# 前端构建输出
+Frontend/admin/dist/
+
+# 临时目录
+.temp/
+.tmp/
+
+# ESLint 输出残留
+eslint-output.json
+eslint-output*.json
+
+/EXECUTION_PLAN.md
+
+# Node 依赖
+node_modules/
+
+# QA 输出
+dogfood-output/
+*.log
+.worktrees/
+/Backend/.sqlx

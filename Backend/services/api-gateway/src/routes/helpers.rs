@@ -1,0 +1,42 @@
+//! 共享辅助函数 — api-gateway 路由模块通用工具
+//!
+//! 所有 `*_routes.rs` 应优先使用此模块的函数，
+//! 避免在各路由文件中重复定义。
+
+use axum::Json;
+use serde_json::{json, Value};
+
+/// 成功响应（带 data）
+pub fn json_success<T: Into<Value>>(data: T) -> Json<Value> {
+    Json(json!({"success": true, "code": 200, "data": data.into()}))
+}
+
+/// 成功响应（无 data）
+pub fn json_ok() -> Json<Value> {
+    Json(json!({"success": true, "code": 200}))
+}
+
+/// 错误响应（无 Display）
+pub fn json_error(msg: &str) -> Json<Value> {
+    Json(json!({"success": false, "code": 500, "message": msg}))
+}
+
+/// 错误响应（带 error Display）— 双参数版本，接受任意 Display 类型
+pub fn json_error_fmt(msg: &str, e: &impl std::fmt::Display) -> Json<Value> {
+    Json(json!({"success": false, "code": 500, "message": format!("{}: {}", msg, e)}))
+}
+
+/// Stub: 空列表
+pub async fn stub_list() -> Json<Value> {
+    Json(json!({"success": true, "code": 200, "data": {"list": [], "total": 0}}))
+}
+
+/// Stub: 空成功
+pub async fn stub_ok() -> Json<Value> {
+    Json(json!({"success": true, "code": 200}))
+}
+
+/// Stub: 空 JSON
+pub async fn stub_json() -> Json<Value> {
+    Json(json!({"success": true, "code": 200, "data": null}))
+}

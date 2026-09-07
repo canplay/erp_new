@@ -1,0 +1,49 @@
+[package]
+name = "cms-service"
+version.workspace = true
+edition.workspace = true
+description = "CMS 服务 - 内容管理和用户反馈"
+
+[lib]
+name = "cms_service"
+path = "src/lib.rs"
+
+[[bin]]
+name = "cms-service"
+path = "src/main.rs"
+
+[dependencies]
+tracing = "0.1"
+# 核心框架
+tokio.workspace = true
+axum.workspace = true
+
+# 序列化
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+anyhow.workspace = true
+chrono.workspace = true
+
+# 数据库
+sqlx.workspace = true
+
+# 日志
+log.workspace = true
+
+# HTTP 客户端
+reqwest.workspace = true
+
+# gRPC
+tonic.workspace = true
+prost.workspace = true
+
+# 公共库
+common.workspace = true
+auth-core.workspace = true
+grpc-proto.workspace = true
+
+[build-dependencies]
+tonic-build.workspace = true
+prost-build.workspace = true
+

@@ -1,0 +1,53 @@
+# =============================================================================
+# MyAI - audit-service Log Configuration
+# Unified JSON format with timestamp, level, service name, and trace_id
+# =============================================================================
+
+refresh_rate: 30 seconds
+
+appenders:
+  # Console output (development)
+  stdout:
+    kind: console
+    encoder:
+      pattern: "{d(%Y-%m-%dT%H:%M:%S%.3fZ)} [{l}] audit-service {t} - {m}{n}"
+
+  # JSON file output (production) - rolling by size
+  json_file:
+    kind: rolling_file
+    path: "logs/audit-service/app.json"
+    encoder:
+      kind: json
+    policy:
+      kind: compound
+      trigger:
+        kind: size
+        limit: 100mb
+      roller:
+        kind: fixed_window
+        base: 1
+        count: 10
+        pattern: "logs/audit-service/app.{}.json"
+
+root:
+  level: info
+  appenders:
+    - stdout
+
+loggers:
+  # Framework level limits
+  tower:
+    level: warn
+  tonic:
+    level: warn
+  hyper:
+    level: warn
+  sqlx:
+    level: warn
+
+  # Application logger
+  audit-service:
+    level: debug
+    appenders:
+      - stdout
+      - json_file

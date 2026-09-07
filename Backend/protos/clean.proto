@@ -1,0 +1,194 @@
+// clean.proto -- 清运（环卫）服务 gRPC 接口定义
+// 提供发票、订单、正式账单、网络支付的数据查询与统计功能
+// 用于环卫清运业务系统的数据管理与报表查询
+
+syntax = "proto3";
+
+package grpc_proto.clean;
+
+// 清运服务
+// 提供环卫清运业务中发票、订单、账单和支付记录的分页查询与统计
+service CleanService {
+    // 发票相关
+    rpc GetInvoiceCount(InvoiceQueryRequest) returns (CountResponse);    // 获取发票总数
+    rpc GetInvoiceList(InvoiceQueryRequest) returns (InvoiceListResponse);  // 分页查询发票列表
+
+    // 订单相关
+    rpc GetOrderCount(OrderQueryRequest) returns (CountResponse);        // 获取订单总数
+    rpc GetOrderList(OrderQueryRequest) returns (OrderListResponse);     // 分页查询订单列表
+
+    // 正式账单相关
+    rpc GetFormalBillCount(FormalBillQueryRequest) returns (CountResponse);  // 获取正式账单总数
+    rpc GetFormalBillList(FormalBillQueryRequest) returns (FormalBillListResponse);  // 分页查询正式账单
+
+    // 网络支付相关
+    rpc GetPaymentWebCount(PaymentWebQueryRequest) returns (CountResponse);  // 获取网络支付记录总数
+    rpc GetPaymentWebList(PaymentWebQueryRequest) returns (PaymentWebListResponse);  // 分页查询网络支付记录
+
+    // 统计相关
+    rpc GetStatistics(StatisticsRequest) returns (StatisticsResponse);   // 获取汇总统计数据
+}
+
+// ============ 查询请求 ============
+
+// 发票查询请求
+// 支持按发票号、征收项目、征收名称、收款单位、指纹等多种条件筛选
+message InvoiceQueryRequest {
+    optional string id = 1;                  // 发票 ID
+    optional string no = 2;                  // 发票号
+    optional int32 imposing_no = 3;          // 征收项目编号
+    optional string imposing_name = 4;       // 征收项目名称
+    optional string collection_name = 5;     // 收款单位名称
+    optional string fingerprint = 6;         // 发票指纹
+    optional string create_date = 7;         // 创建日期
+    optional string zone = 8;                // 区域
+    optional string sort_by = 9;             // 排序字段
+    optional bool descending = 10;           // 是否降序
+    optional int32 cur_page = 11;            // 当前页码
+    optional int32 max_page = 12;            // 每页最大条数
+}
+
+// 订单查询请求
+message OrderQueryRequest {
+    optional string id = 1;                  // 订单 ID
+    optional string serial_number = 2;       // 流水号
+    optional string numbering = 3;           // 编号
+    optional string cashier = 4;             // 收款员
+    optional string payment_time = 5;        // 支付时间
+    optional string sort_by = 6;             // 排序字段
+    optional bool descending = 7;            // 是否降序
+    optional int32 cur_page = 8;             // 当前页码
+    optional int32 max_page = 9;             // 每页最大条数
+}
+
+// 正式账单查询请求
+message FormalBillQueryRequest {
+    optional string create_date_start = 1;   // 创建日期起始
+    optional string create_date_end = 2;     // 创建日期截止
+    optional string numbering = 3;           // 编号
+    optional string fzr = 4;                 // 负责人
+    optional string status = 5;              // 状态
+    optional string sort_by = 6;             // 排序字段
+    optional bool descending = 7;            // 是否降序
+    optional int32 cur_page = 8;             // 当前页码
+    optional int32 max_page = 9;             // 每页最大条数
+}
+
+// 网络支付查询请求
+message PaymentWebQueryRequest {
+    optional string create_date_start = 1;   // 创建日期起始
+    optional string create_date_end = 2;     // 创建日期截止
+    optional string payment_date_start = 3;  // 支付日期起始
+    optional string payment_date_end = 4;    // 支付日期截止
+    optional string numbering = 5;           // 编号
+    optional string type = 6;                // 支付类型
+    optional string status = 7;              // 状态
+    optional string sort_by = 8;             // 排序字段
+    optional bool descending = 9;            // 是否降序
+    optional int32 cur_page = 10;            // 当前页码
+    optional int32 max_page = 11;            // 每页最大条数
+}
+
+// 统计查询请求
+message StatisticsRequest {
+    string statistics_type = 1;              // 统计类型
+    optional FormalBillQueryRequest formal_bill_query = 2;   // 正式账单查询条件
+    optional PaymentWebQueryRequest payment_web_query = 3;   // 网络支付查询条件
+}
+
+// ============ 响应消息 ============
+
+// 计数响应（通用）
+message CountResponse {
+    int64 count = 1;                         // 记录总数
+}
+
+// 发票信息
+message Invoice {
+    string id = 1;                           // 发票 ID
+    string no = 2;                           // 发票号码
+    int32 imposing_no = 3;                   // 征收项目编号
+    string imposing_name = 4;                // 征收项目名称
+    string fingerprint = 5;                  // 发票指纹
+    string zone = 6;                         // 区域
+    string payer = 7;                        // 付款人
+    double sum = 8;                          // 金额
+    string sum_capital = 9;                  // 金额大写
+    string remark = 10;                      // 备注
+    string review = 11;                      // 审核人
+    string operator = 12;                    // 操作人
+    string collection_name = 13;             // 收款单位
+    bool print = 14;                         // 是否已打印
+    string project = 15;                     // 项目名称
+    bool invalid = 16;                       // 是否已作废
+    string create_user = 17;                 // 创建人
+    string update_user = 18;                 // 更新人
+    string create_date = 19;                 // 创建日期
+    string update_date = 20;                 // 更新日期
+}
+
+// 发票列表响应
+message InvoiceListResponse {
+    repeated Invoice invoices = 1;           // 发票列表
+    int64 total = 2;                         // 总记录数
+}
+
+// 订单信息
+message Order {
+    string id = 1;                           // 订单 ID
+    string serial_number = 2;                // 流水号
+    string numbering = 3;                    // 编号
+    string cashier = 4;                      // 收款员
+    double payment_amount = 5;               // 支付金额
+    string payment_time = 6;                 // 支付时间
+    string status = 7;                       // 状态
+    string source = 8;                       // 来源
+    string type = 9;                         // 类型
+}
+
+// 订单列表响应
+message OrderListResponse {
+    repeated Order orders = 1;               // 订单列表
+    int64 total = 2;                         // 总记录数
+}
+
+// 正式账单信息
+message FormalBill {
+    string id = 1;                           // 账单 ID
+    string numbering = 2;                    // 编号
+    double money = 3;                        // 金额
+    string fzr = 4;                          // 负责人
+    string fzr_id = 5;                       // 负责人 ID
+    string status = 6;                       // 状态
+    string create_date = 7;                  // 创建日期
+}
+
+// 正式账单列表响应
+message FormalBillListResponse {
+    repeated FormalBill bills = 1;           // 账单列表
+    int64 total = 2;                         // 总记录数
+}
+
+// 网络支付信息
+message PaymentWeb {
+    string id = 1;                           // 支付记录 ID
+    string numbering = 2;                    // 编号
+    string type = 3;                         // 支付类型
+    double payment_amount = 4;               // 支付金额
+    string payment_time = 5;                 // 支付时间
+    string status = 6;                       // 状态
+    string create_date = 7;                  // 创建日期
+}
+
+// 网络支付列表响应
+message PaymentWebListResponse {
+    repeated PaymentWeb payments = 1;         // 支付记录列表
+    int64 total = 2;                          // 总记录数
+}
+
+// 统计响应
+message StatisticsResponse {
+    int64 total = 1;                          // 总记录数
+    int64 paid = 2;                           // 已支付数
+    int64 unpaid = 3;                         // 未支付数
+}

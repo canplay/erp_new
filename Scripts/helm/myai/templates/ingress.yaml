@@ -1,0 +1,90 @@
+{{/*
+=============================================================================
+Ingress 模板 - 支持 example.com 域名 + 端口路由
+=============================================================================
+example.com 域名格式: X-X-X-X.example.com (解析为 X.X.X.X)
+端口访问格式: service.X-X-X-X.example.com:N
+
+本模板同时支持两种 ingress controller 模式:
+1. nginx-ingress: 通过 annotation rewrite-target 处理路径路由
+2. traefik-ingress: 通过 entrypoints 配置多端口监听
+=============================================================================
+*/}}
+{{- if .Values.ingress.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "myai.fullchartname" . }}-ingress
+  labels:
+    {{- include "myai.labels" . | nindent 4 }}
+  annotations:
+    {{- with .Values.ingress.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{/* example.com 端口路由的 nginx annotation */}}
+    {{- if eq .Values.ingress.className "nginx" }}
+    nginx.ingress.kubernetes.io/ssl-redirect: "{{ default "true" (index .Values.ingress.annotations "ssl-redirect" | default "true") }}"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-http-version: "1.1"
+    {{- end }}
+spec:
+  {{- if .Values.ingress.className }}
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- end }}
+
+  {{/* TLS 配置 */}}
+  {{- if or .Values.ingress.tls (eq .Values.ingress.className "traefik") }}
+  tls:
+    {{- range .Values.ingress.tls }}
+    - hosts:
+        {{- range .hosts }}
+        - {{ . | quote }}
+        {{- end }}
+      secretName: {{ .secretName }}
+    {{- end }}
+    {{/* 默认 TLS（example.com wildcard） */}}
+    {{- if not .Values.ingress.tls }}
+    - hosts:
+        - "*.{{ default "100.100.100.100.example.com" .Values.ingress.baseDomain }}"
+      secretName: {{ default "tls" .Values.ingress.tlsSecretName }}
+    {{- end }}
+  {{- end }}
+
+  rules:
+    {{- range .Values.ingress.hosts }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path }}
+            pathType: {{ .pathType }}
+            backend:
+              service:
+                name: {{ .service | default "api-gateway" }}
+                port:
+                  number: {{ .port | default 8090 }}
+          {{- end }}
+    {{- end }}
+
+    {{/* example.com 端口路由规则 - 为每个服务生成独立子域名入口 */}}
+    {{/* example.com 格式: serviceName.X-X-X-X.example.com (X-X-X-X 是IP的连字符格式，example.com后缀保持原样) */}}
+    {{/* 注意: K8s 要求 host 和 service name 必须是小写 DNS 标签 */}}
+    {{- if .Values.ingress.sslipPorts }}
+    {{- $baseDomain := default "100.100.100.100.example.com" $.Values.ingress.baseDomain }}
+    {{- range $serviceName, $portConfig := .Values.ingress.sslipPorts }}
+    {{- $svcLower := $serviceName | lower }}
+    - host: {{ $svcLower }}.{{ $baseDomain }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ $svcLower }}
+                port:
+                  number: {{ $portConfig.port }}
+    {{- end }}
+    {{- end }}
+{{- end }}

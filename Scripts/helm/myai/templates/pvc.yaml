@@ -1,0 +1,69 @@
+{{/*
+=============================================================================
+持久化存储 PVC 模板
+=============================================================================
+*/}}
+
+{{- if .Values.infrastructure.postgres.enabled }}
+---
+# PostgreSQL PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.infrastructure.postgres.containerName }}-pvc
+  labels:
+    app: postgres
+    {{- include "myai.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.infrastructure.postgres.persistence.size }}
+  {{- if .Values.infrastructure.postgres.persistence.storageClass }}
+  storageClassName: {{ .Values.infrastructure.postgres.persistence.storageClass }}
+  {{- end }}
+{{- end }}
+
+{{- if .Values.infrastructure.redis.enabled }}
+---
+# Redis PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.infrastructure.redis.containerName }}-pvc
+  labels:
+    app: redis
+    {{- include "myai.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.infrastructure.redis.persistence.size }}
+  {{- if .Values.infrastructure.redis.persistence.storageClass }}
+  storageClassName: {{ .Values.infrastructure.redis.persistence.storageClass }}
+  {{- end }}
+{{- end }}
+
+{{- range $serviceName, $serviceConfig := .Values.services }}
+{{- if and $serviceConfig.enabled $serviceConfig.persistence $serviceConfig.persistence.enabled }}
+---
+# {{ $serviceName }} PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "myai.fullname" (dict "Values" $.Values "serviceName" $serviceName "componentName" $serviceConfig.name "Chart" $.Chart "Release" $.Release) }}-data
+  labels:
+    {{- include "myai.labels" (dict "Values" $.Values "serviceName" $serviceName "Chart" $.Chart "Release" $.Release) | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ $serviceConfig.persistence.size }}
+  {{- if $serviceConfig.persistence.storageClass }}
+  storageClassName: {{ $serviceConfig.persistence.storageClass }}
+  {{- end }}
+{{- end }}
+{{- end }}

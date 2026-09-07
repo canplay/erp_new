@@ -1,0 +1,31 @@
+/** i18n module: login */
+export default {
+    title: 'Admin Dashboard',
+    subtitle: 'Please login to your account',
+    username: 'Username / Phone / Email',
+    password: 'Password',
+    remember_me: 'Remember me',
+    forgotPassword: 'Forgot password?',
+    loginButton: 'Login',
+    loggingIn: 'Logging in...',
+    loginSuccess: 'Login successful! Redirecting...',
+    loginFailed: 'Login failed, please check username and password',
+    loginAttemptsLeft: 'Incorrect password, {count} attempts left',
+    loginAttemptsExhausted:
+      'Too many failed attempts, please try again later or contact administrator',
+    noAccount: "Don't have an account?",
+    contactAdmin: 'Contact administrator to register',
+    register: 'Register',
+    registerButton: 'Register',
+    registering: 'Registering...',
+    backToLogin: 'Back to Login',
+    passwordMinLength: 'Password must be at least 8 characters',
+    registerDemoHint: 'Registration is for demo, please contact administrator to create account',
+    forgotPasswordTitle: 'Forgot Password',
+    forgotPasswordMessage: 'Please contact system administrator to reset password',
+    forgotPasswordConfirm: 'Got it',
+    validation: {
+      usernameRequired: 'Please enter username',
+      passwordRequired: 'Please enter password',
+    },
+  }

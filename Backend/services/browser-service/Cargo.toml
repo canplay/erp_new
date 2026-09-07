@@ -1,0 +1,45 @@
+[package]
+name = "browser-service"
+version.workspace = true
+edition.workspace = true
+description = "浏览器自动化管理微服务 — 提供 Headless 浏览器池、页面操作、Cookie 持久化能力供其他服务共享使用"
+
+[[bin]]
+name = "browser-service"
+path = "src/main.rs"
+
+[features]
+default = []
+telemetry = []
+
+[dependencies]
+common = { path = "../../crates/common" }
+grpc-proto = { path = "../../crates/grpc-proto" }
+
+axum.workspace = true
+tokio.workspace = true
+tonic.workspace = true
+prost.workspace = true
+tower.workspace = true
+tower-http.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tracing.workspace = true
+anyhow.workspace = true
+thiserror.workspace = true
+log.workspace = true
+async-trait.workspace = true
+chrono.workspace = true
+uuid.workspace = true
+futures-util.workspace = true
+parking_lot.workspace = true
+
+drission = { version = "0.3", features = ["cdp"] }
+urlencoding = "2"
+sha2.workspace = true
+hex.workspace = true
+
+[build-dependencies]
+tonic-build.workspace = true
+tonic-prost-build.workspace = true
+prost-build.workspace = true

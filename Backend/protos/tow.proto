@@ -1,0 +1,72 @@
+// tow.proto — 拖车服务 (Tow Service)
+// 提供车辆档案管理和配置字典查询
+
+syntax = "proto3";
+
+package tow;
+
+service TowService {
+    // 查询车辆列表
+    rpc ListTowCars(ListTowCarsRequest) returns (ListTowCarsResponse);
+    // 获取车辆详情
+    rpc GetTowCar(GetTowCarRequest) returns (TowCarInfo);
+    // 获取字典列表
+    rpc ListDictItems(ListDictItemsRequest) returns (ListDictItemsResponse);
+}
+
+message TowCarInfo {
+    int64 id = 1;
+    string license = 2;
+    string car_type = 3;
+    string car_color = 4;
+    string engine = 5;
+    string dc_type = 6;
+    string dc_causes = 7;
+    string dc_date = 8;
+    string dc_address = 9;
+    string dc_key = 10;
+    string dc_party_name = 11;
+    string dc_party_cardid = 12;
+    string dc_party_tel = 13;
+    string p_name = 14;
+    string driver = 15;
+    string operator = 16;
+    string remark = 17;
+    string create_date = 18;
+    string update_date = 19;
+    bool delete = 20;
+}
+
+message ListTowCarsRequest {
+    string keyword = 1;
+    string car_type = 2;
+    string status = 3;
+    int32 page = 4;
+    int32 page_size = 5;
+}
+
+message ListTowCarsResponse {
+    repeated TowCarInfo cars = 1;
+    int64 total = 2;
+    int32 page = 3;
+    int32 page_size = 4;
+}
+
+message GetTowCarRequest {
+    int64 id = 1;
+}
+
+message DictItem {
+    int64 id = 1;
+    string name = 2;
+    string value = 3;
+    int32 sort_order = 4;
+}
+
+message ListDictItemsRequest {
+    string dict_type = 1;
+}
+
+message ListDictItemsResponse {
+    repeated DictItem items = 1;
+}

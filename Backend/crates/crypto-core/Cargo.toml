@@ -1,0 +1,32 @@
+[package]
+name = "crypto-core"
+version.workspace = true
+edition.workspace = true
+[lib]
+name = "crypto_core"
+path = "src/lib.rs"
+
+description = "核心加密功能 - 提供加密/解密、签名等工具"
+
+[dependencies]
+tracing = "0.1"
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+hex.workspace = true
+rand.workspace = true
+sm3.workspace = true
+sm4.workspace = true
+generic-array.workspace = true
+
+# SM2 国密算法 (P256 曲线实现)
+sm2 = "0.14.0-rc.9"
+p256 = "0.14.0-rc.9"
+elliptic-curve = "0.14.0-rc.32"
+ecdsa = "0.17.0-rc.18"
+k256 = "0.14.0-rc.9"
+sha2 = "0.11"
+
+[dev-dependencies]
+tokio-test = "0.4"

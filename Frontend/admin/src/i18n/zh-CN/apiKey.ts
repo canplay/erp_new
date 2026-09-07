@@ -1,0 +1,22 @@
+/** i18n module: apiKey */
+export default {
+    title: 'API密钥',
+    create: '创建密钥',
+    edit: '编辑密钥',
+    name: '密钥名称',
+    key: '密钥',
+    description: '描述',
+    permissions: '权限范围',
+    rateLimit: '请求限制',
+    usage: '使用量',
+    lastUsedAt: '最后使用',
+    expires_at: '过期时间',
+    ipWhitelist: 'IP白名单',
+    status: '状态',
+    saveKeyNotice: '请保存您的密钥',
+    newKey: '您的新密钥',
+    keyWarning: '此密钥只会显示一次，请立即保存。如已丢失，请删除后重新创建。',
+    copied: '已复制到剪贴板',
+    securityHint: '建议设置IP白名单限制访问来源，定期更换密钥以保障安全。',
+    deleteConfirm: '确定要删除密钥 "{name}" 吗？',
+  }

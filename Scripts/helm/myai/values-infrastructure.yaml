@@ -1,0 +1,69 @@
+# =============================================================================
+# MyAI Helm Chart — 基础设施配置
+# =============================================================================
+# 包含: infrastructure (PostgreSQL, Redis), healthCheck
+# =============================================================================
+
+# =============================================================================
+# 健康检查配置
+# =============================================================================
+healthCheck:
+  enabled: true
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 3
+    successThreshold: 1
+  readinessProbe:
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+    successThreshold: 1
+
+# =============================================================================
+# 基础设施配置
+# =============================================================================
+infrastructure:
+  # PostgreSQL
+  postgres:
+    enabled: true
+    image: postgres:18-alpine
+    containerName: myai-postgres
+    ports:
+      - 5432
+    env:
+      POSTGRES_DB: myai
+      POSTGRES_USER: myai
+    persistence:
+      enabled: true
+      size: 20Gi
+      storageClass: ""
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+
+  # Redis
+  redis:
+    enabled: true
+    image: redis:7-alpine
+    containerName: myai-redis
+    ports:
+      - 6379
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    persistence:
+      enabled: true
+      size: 5Gi
+      storageClass: ""
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi

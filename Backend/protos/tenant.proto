@@ -1,0 +1,226 @@
+// tenant.proto -- 多租户服务
+// 提供租户管理、租户用户管理、租户配置和使用量统计功能
+// 用于 SaaS 平台的多租户隔离与管理
+
+syntax = "proto3";
+
+package tenant;
+
+// 租户服务
+// 管理租户全生命周期、租户成员、个性化配置和资源使用统计
+service TenantService {
+    // 租户管理
+    rpc ListTenants(ListTenantsRequest) returns (ListTenantsResponse);             // 分页查询租户列表
+    rpc GetTenant(GetTenantRequest) returns (GetTenantResponse);                   // 获取租户详情
+    rpc CreateTenant(CreateTenantRequest) returns (CreateTenantResponse);           // 创建新租户
+    rpc UpdateTenant(UpdateTenantRequest) returns (UpdateTenantResponse);           // 更新租户信息
+    rpc DeleteTenant(DeleteTenantRequest) returns (DeleteTenantResponse);           // 删除租户
+
+    // 租户用户
+    rpc ListTenantUsers(ListTenantUsersRequest) returns (ListTenantUsersResponse);  // 查询租户成员列表
+    rpc AddTenantUser(AddTenantUserRequest) returns (AddTenantUserResponse);        // 添加租户成员
+    rpc RemoveTenantUser(RemoveTenantUserRequest) returns (RemoveTenantUserResponse); // 移除租户成员
+
+    // 租户配置
+    rpc GetTenantConfig(GetTenantConfigRequest) returns (GetTenantConfigResponse);  // 获取租户配置
+    rpc UpdateTenantConfig(UpdateTenantConfigRequest) returns (UpdateTenantConfigResponse); // 更新租户配置
+
+    // 使用量统计
+    rpc GetUsageStats(GetUsageStatsRequest) returns (GetUsageStatsResponse);        // 获取租户使用量统计
+}
+
+// ============== 租户相关 ==============
+
+// 租户信息
+message Tenant {
+    int64 id = 1;                            // 租户 ID
+    string name = 2;                         // 租户名称
+    string code = 3;                         // 租户代码（唯一标识）
+    string logo = 4;                         // 租户 Logo URL
+    string description = 5;                  // 租户描述
+    TenantStatus status = 6;                 // 租户状态
+    string plan = 7;                         // 套餐类型：free, basic, pro, enterprise
+    int64 max_users = 8;                     // 最大用户数限制
+    int64 current_users = 9;                 // 当前用户数
+    int64 expires_at = 10;                   // 过期时间
+    map<string, string> config = 11;         // 自定义配置项
+    int64 created_at = 12;                   // 创建时间
+    int64 updated_at = 13;                   // 更新时间
+}
+
+// 租户状态
+enum TenantStatus {
+    ACTIVE = 0;                              // 正常
+    SUSPENDED = 1;                           // 已暂停
+    EXPIRED = 2;                             // 已过期
+    PENDING = 3;                             // 待审核
+}
+
+// 分页查询租户请求
+message ListTenantsRequest {
+    int32 page = 1;                          // 页码
+    int32 page_size = 2;                     // 每页数量
+    string keyword = 3;                      // 关键词搜索（名称/代码）
+    TenantStatus status = 4;                 // 按状态筛选
+    string plan = 5;                         // 按套餐筛选
+}
+
+// 分页查询租户响应
+message ListTenantsResponse {
+    repeated Tenant tenants = 1;             // 租户列表
+    int64 total = 2;                         // 租户总数
+}
+
+// 获取租户详情请求
+message GetTenantRequest {
+    int64 id = 1;                            // 租户 ID
+    string code = 2;                         // 租户代码（也可通过代码查询）
+}
+
+// 获取租户详情响应
+message GetTenantResponse {
+    Tenant tenant = 1;                       // 租户详情
+}
+
+// 创建租户请求
+message CreateTenantRequest {
+    string name = 1;                         // 租户名称
+    string code = 2;                         // 租户代码
+    string logo = 3;                         // Logo URL
+    string description = 4;                  // 描述
+    string plan = 5;                         // 套餐类型
+    int64 max_users = 6;                     // 最大用户数
+    map<string, string> config = 7;          // 初始配置
+}
+
+// 创建租户响应
+message CreateTenantResponse {
+    int64 id = 1;                            // 新租户 ID
+    string code = 2;                         // 租户代码
+}
+
+// 更新租户请求
+message UpdateTenantRequest {
+    int64 id = 1;                            // 租户 ID
+    string name = 2;                         // 新名称
+    string logo = 3;                         // 新 Logo
+    string description = 4;                  // 新描述
+    TenantStatus status = 5;                 // 新状态
+    string plan = 6;                         // 新套餐
+    int64 max_users = 7;                     // 新用户上限
+    int64 expires_at = 8;                    // 新过期时间
+}
+
+// 更新租户响应
+message UpdateTenantResponse {
+    int64 id = 1;                            // 租户 ID
+    string name = 2;                         // 租户名称
+}
+
+// 删除租户请求
+message DeleteTenantRequest {
+    int64 id = 1;                            // 要删除的租户 ID
+    bool force = 2;                          // 是否强制删除
+}
+
+// 删除租户响应
+message DeleteTenantResponse {
+    bool success = 1;                        // 是否删除成功
+}
+
+// ============== 租户用户 ==============
+
+// 租户成员信息
+message TenantUser {
+    int64 id = 1;                            // 关联记录 ID
+    int64 tenant_id = 2;                     // 租户 ID
+    int64 user_id = 3;                       // 用户 ID
+    string username = 4;                     // 用户名
+    string role = 5;                         // 角色：owner, admin, member
+    bool is_active = 6;                      // 是否活跃
+    int64 joined_at = 7;                     // 加入时间
+}
+
+// 查询租户成员请求
+message ListTenantUsersRequest {
+    int64 tenant_id = 1;                     // 租户 ID
+    int32 page = 2;                          // 页码
+    int32 page_size = 3;                     // 每页数量
+}
+
+// 查询租户成员响应
+message ListTenantUsersResponse {
+    repeated TenantUser users = 1;           // 成员列表
+    int64 total = 2;                         // 成员总数
+}
+
+// 添加租户成员请求
+message AddTenantUserRequest {
+    int64 tenant_id = 1;                     // 租户 ID
+    int64 user_id = 2;                       // 用户 ID
+    string role = 3;                         // 角色
+}
+
+// 添加租户成员响应
+message AddTenantUserResponse {
+    int64 id = 1;                            // 关联记录 ID
+    bool success = 2;                        // 是否成功
+}
+
+// 移除租户成员请求
+message RemoveTenantUserRequest {
+    int64 tenant_id = 1;                     // 租户 ID
+    int64 user_id = 2;                       // 用户 ID
+}
+
+// 移除租户成员响应
+message RemoveTenantUserResponse {
+    bool success = 1;                        // 是否成功
+}
+
+// ============== 租户配置 ==============
+
+// 获取租户配置请求
+message GetTenantConfigRequest {
+    int64 tenant_id = 1;                     // 租户 ID
+}
+
+// 获取租户配置响应
+message GetTenantConfigResponse {
+    map<string, string> config = 1;          // 配置键值对
+}
+
+// 更新租户配置请求
+message UpdateTenantConfigRequest {
+    int64 tenant_id = 1;                     // 租户 ID
+    map<string, string> config = 2;          // 要更新的配置
+}
+
+// 更新租户配置响应
+message UpdateTenantConfigResponse {
+    bool success = 1;                        // 是否成功
+}
+
+// ============== 使用量统计 ==============
+
+// 租户使用量统计
+message UsageStats {
+    int64 tenant_id = 1;                     // 租户 ID
+    int64 users_count = 2;                   // 用户数
+    int64 storage_used = 3;                  // 已用存储（字节）
+    int64 api_calls = 4;                     // API 调用次数
+    int64 period_start = 5;                  // 统计周期起始
+    int64 period_end = 6;                    // 统计周期结束
+}
+
+// 获取使用量统计请求
+message GetUsageStatsRequest {
+    int64 tenant_id = 1;                     // 租户 ID
+    int64 period_start = 2;                  // 统计起始时间
+    int64 period_end = 3;                    // 统计结束时间
+}
+
+// 获取使用量统计响应
+message GetUsageStatsResponse {
+    UsageStats stats = 1;                    // 统计数据
+}

@@ -1,0 +1,129 @@
+{{/*
+=============================================================================
+基础设施服务模板（PostgreSQL 和 Redis）
+=============================================================================
+*/}}
+
+{{- if .Values.infrastructure.postgres.enabled }}
+---
+# PostgreSQL Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.infrastructure.postgres.containerName }}
+  labels:
+    app: postgres
+    {{- include "myai.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: {{ .Values.infrastructure.postgres.image }}
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: {{ .Values.infrastructure.postgres.env.POSTGRES_DB | quote }}
+            - name: POSTGRES_USER
+              value: {{ .Values.infrastructure.postgres.env.POSTGRES_USER | quote }}
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "myai.fullchartname" . }}-secret
+                  key: POSTGRES_PASSWORD
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: /var/lib/postgresql/data
+          resources:
+            {{- toYaml .Values.infrastructure.postgres.resources | nindent 12 }}
+      volumes:
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: {{ .Values.infrastructure.postgres.containerName }}-pvc
+
+---
+# PostgreSQL Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  labels:
+    app: postgres
+    {{- include "myai.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    app: postgres
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432
+      protocol: TCP
+{{- end }}
+
+{{- if .Values.infrastructure.redis.enabled }}
+---
+# Redis Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.infrastructure.redis.containerName }}
+  labels:
+    app: redis
+    {{- include "myai.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+        - name: redis
+          image: {{ .Values.infrastructure.redis.image }}
+          command:
+            - sh
+            - -c
+            - {{ .Values.infrastructure.redis.command | quote }}
+          ports:
+            - containerPort: 6379
+          volumeMounts:
+            - name: redis-storage
+              mountPath: /data
+          resources:
+            {{- toYaml .Values.infrastructure.redis.resources | nindent 12 }}
+      volumes:
+        - name: redis-storage
+          persistentVolumeClaim:
+            claimName: {{ .Values.infrastructure.redis.containerName }}-pvc
+
+---
+# Redis Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  labels:
+    app: redis
+    {{- include "myai.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    app: redis
+  ports:
+    - name: redis
+      port: 6379
+      targetPort: 6379
+      protocol: TCP
+{{- end }}

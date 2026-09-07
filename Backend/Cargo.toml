@@ -1,0 +1,160 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/common",
+    "crates/auth-core",
+    "crates/crypto-core",
+    "crates/cache-core",
+    "crates/grpc-core",
+    "crates/log-core",
+    "crates/circuit-breaker-core",
+    "crates/grpc-proto",
+    "services/api-gateway",
+    "services/auth-service",
+    "services/user-service",
+    "services/cms-service",
+    "services/messaging-service",
+    "services/file-service",
+    "services/tenant-service",
+    "services/workflow-service",
+    "services/feedback-service",
+    "services/audit-service",
+    "services/api-key-service",
+    "services/tow-service",
+    "services/clean-service",
+    "services/hik-service",
+    "services/pay-service",
+    "services/ctp-service",
+    "services/lpr-service",
+    "services/xlt-service",
+    "services/ebike-service",
+    "services/social-ops-service",
+    "services/browser-service",
+]
+
+[workspace.package]
+version = "0.2.0"
+edition = "2024"
+authors = ["canplay"]
+
+[workspace.dependencies]
+# 公共依赖
+common = { path = "crates/common" }
+grpc-proto = { path = "crates/grpc-proto" }
+cache-core = { path = "crates/cache-core" }
+grpc-core = { path = "crates/grpc-core" }
+log-core = { path = "crates/log-core" }
+circuit-breaker-core = { path = "crates/circuit-breaker-core" }
+auth-core = { path = "crates/auth-core" }
+crypto-core = { path = "crates/crypto-core" }
+
+# 异步运行时
+tokio = { version = "1.52", features = ["rt-multi-thread", "macros", "net", "sync", "time", "signal", "rt", "fs", "io-util"] }
+
+# Web框架
+axum = { version = "0.8", features = ["ws", "macros", "multipart"] }
+tower = { version = "0.5", features = ["util"] }
+tower-http = { version = "0.6", features = ["cors", "trace", "fs", "limit"] }
+
+# gRPC - 使用 tonic 0.14 兼容版本
+tonic = "0.14"
+prost = "0.14"
+prost-build = "0.14"
+tonic-build = "0.14"
+tonic-prost-build = "0.14"
+tonic-prost = "0.14"
+tonic-health = "0.14"
+
+# 数据库
+sqlx = { version = "0.8", features = ["runtime-tokio", "postgres", "chrono", "uuid", "derive"] }
+
+# dotenv
+dotenvy = "0.15"
+
+# 认证
+jsonwebtoken = "10"
+bcrypt = "0.19"
+argon2 = "0.5"
+
+# HTTP客户端
+reqwest = { version = "0.13", features = ["json", "multipart", "form"] }
+
+
+# 序列化
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_yaml = "0.9"
+hex = "0.4"
+
+# 配置
+config = "0.15"
+
+# Tracing
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json", "chrono"] }
+tracing-appender = "0.2"
+
+# 日志
+log = "0.4"
+tracing-log = "0.2"
+
+# OpenTelemetry (optional, enable via "telemetry" feature)
+# NOTE: 从 0.32 开始 opentelemetry-proto 已升级到 tonic 0.14 / prost 0.14，
+#       不再导致 tonic/prost/axum/reqwest 版本分裂
+opentelemetry = { version = "0.32", features = ["trace", "metrics", "logs"] }
+opentelemetry_sdk = { version = "0.32", features = ["trace", "rt-tokio"] }
+opentelemetry-otlp = { version = "0.32", features = ["trace", "grpc-tonic"] }
+tracing-opentelemetry = { version = "0.33" }
+
+# 并发
+parking_lot = "0.12"
+
+# Redis
+redis = { version = "1.2", features = ["tokio-comp", "connection-manager"] }
+
+# 缓存
+lru = "0.18"
+dashmap = "6"
+
+# 通用工具
+thiserror = "2"
+anyhow = "1"
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1.23", features = ["serde", "v4"] }
+async-trait = "0.1"
+
+# 调度器
+cron = "0.16"
+tokio-cron-scheduler = "0.15"
+
+# WebSocket
+futures-util = "0.3"
+bytes = "1"
+
+# 随机数
+rand = { version = "0.10", features = ["std"] }
+
+# 文件监控（配置热重载）
+notify = { version = "8", features = ["macos_kqueue", "windows_readdir", "linux_inotify"] }
+
+# 哈希
+sha2 = "0.11"
+
+# 其他
+csv = "1.4"
+multer = "3"
+urlencoding = "2"
+mime = "0.3"
+
+# 国密算法
+sm3 = "0.5"
+sm4 = "0.6"
+generic-array = "1.4"
+
+# ============ 生产构建优化 ============
+[profile.release]
+lto = true
+codegen-units = 1
+opt-level = 3
+strip = true
+panic = "abort"

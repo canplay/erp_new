@@ -1,0 +1,22 @@
+/** i18n module: profile */
+export default {
+    title: '个人中心',
+    basicInfo: '基本信息',
+    changePassword: '修改密码',
+    old_password: '原密码',
+    new_password: '新密码',
+    confirmPassword: '确认新密码',
+    passwordMismatch: '两次输入的密码不一致',
+    passwordChanged: '密码修改成功',
+    profileSaved: '保存成功',
+    saveChanges: '保存修改',
+    changeAvatar: '更换头像',
+    avatarUploadDemo: '头像上传功能演示中',
+    role: '角色',
+    registered: '注册',
+    lastLogin: '最后登录',
+    username: '用户名',
+    email: '邮箱',
+    phone: '手机号',
+    updatePassword: '修改密码',
+  }

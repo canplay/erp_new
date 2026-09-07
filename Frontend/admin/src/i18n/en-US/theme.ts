@@ -1,0 +1,20 @@
+/** i18n module: theme */
+export default {
+    title: 'Theme Settings',
+    mode: 'Display Mode',
+    colors: 'Theme Colors',
+    preview: 'Preview',
+    light: 'Light Mode',
+    dark: 'Dark Mode',
+    auto: 'Follow System',
+    blue: 'Blue',
+    purple: 'Purple',
+    green: 'Green',
+    orange: 'Orange',
+    red: 'Red',
+    teal: 'Teal',
+    previewText: 'Preview text',
+    toggle: 'Toggle',
+    checkbox: 'Checkbox',
+    resetSuccess: 'Theme reset',
+  }

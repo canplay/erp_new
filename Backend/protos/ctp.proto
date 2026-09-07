@@ -1,0 +1,85 @@
+// ctp.proto — CTP 智能泊位服务
+// 提供设备数据上报、锁控制、设备状态查询和列表检索
+
+syntax = "proto3";
+
+package ctp;
+
+service CtpService {
+    // 健康检查
+    rpc Ping(PingRequest) returns (PingResponse);
+    // 接收设备上报数据并转发至CTP平台
+    rpc ReceiveDeviceData(DeviceDataUpload) returns (CtpResponse);
+    // 发送锁控制命令（开锁/关锁/同步）
+    rpc ControlLock(LockControlRequest) returns (CommandResult);
+    // 查询单个设备状态
+    rpc GetDevice(GetDeviceRequest) returns (LockDevice);
+    // 分页获取设备列表
+    rpc ListDevices(DeviceQueryRequest) returns (DeviceListResponse);
+}
+
+message PingRequest {
+}
+
+message PingResponse {
+    string message = 1;
+}
+
+message DeviceDataUpload {
+    string device_no = 1;
+    int32 data_type = 2;
+    optional string voltage = 3;
+    optional string status_one = 4;
+    optional string status_two = 5;
+    optional string data_time = 6;
+}
+
+message CtpResponse {
+    int32 error_code = 1;
+    string error_msg = 2;
+}
+
+message LockControlRequest {
+    string factory_id = 1;
+    string device_no = 2;
+    string cmd_type = 3;
+    optional string data = 4;
+}
+
+message CommandResult {
+    bool success = 1;
+    string message = 2;
+    string device_no = 3;
+    string action = 4;
+}
+
+message GetDeviceRequest {
+    string device_no = 1;
+}
+
+message LockDevice {
+    string id = 1;
+    string device_no = 2;
+    string factory_id = 3;
+    string status = 4;
+    optional int32 battery = 5;
+    optional int32 signal = 6;
+    optional string voltage = 7;
+    string park_code = 8;
+    string created_at = 9;
+    string updated_at = 10;
+}
+
+message DeviceQueryRequest {
+    optional string park_code = 1;
+    optional string status = 2;
+    int32 page = 3;
+    int32 page_size = 4;
+}
+
+message DeviceListResponse {
+    repeated LockDevice devices = 1;
+    int64 total = 2;
+    int32 page = 3;
+    int32 page_size = 4;
+}

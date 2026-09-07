@@ -1,0 +1,77 @@
+/** i18n module: permission */
+export default {
+    title: 'Permission Management',
+    dataPermission: 'Data Permission',
+    fieldPermission: 'Field Permission',
+    inheritPermission: 'Inherit Permission',
+    functionPermission: 'Function Permission',
+    batchAssign: 'Batch Assign',
+    sensitive: 'Sensitive Permission',
+    sensitiveConfirm: 'Sensitive Permission Confirm',
+    sensitiveWarning: 'This operation requires additional confirmation',
+    scopeAll: 'All Data',
+    scopeDepartment: 'Department',
+    scopeDepartmentAndChildren: 'Department & Children',
+    scopeSelf: 'Self Only',
+    scopeCustom: 'Custom',
+    // Validity
+    permanent: 'Permanent',
+    valid_from: 'Valid From',
+    valid_until: 'Valid Until',
+    validUntilHint: 'End time must be after start time',
+    reminder_days: 'Reminder Days',
+    reminderHint: 'Remind before permission expires',
+    remainingDays: '{days} days remaining',
+    // Sensitive
+    sensitiveSelectedHint: '{count} sensitive permissions selected, please be careful.',
+    sensitivePermissionConfirm: 'This operation requires additional confirmation',
+    // Department data permission
+    departmentDataPermission: 'Department Data Permission',
+    selectDepartments: 'Select Departments',
+    departmentTree: 'Department Tree',
+    includeChildDepartments: 'Include Child Departments',
+    // Field permission
+    entity_type: 'Entity Type',
+    selectFields: 'Select Fields',
+    canView: 'Can View',
+    canEdit: 'Can Edit',
+    fieldMask: 'Field Mask',
+    maskRules: 'Mask Rules',
+    // Inherit permission
+    inherit_from: 'Inherit From',
+    selectInheritRoles: 'Select Inherit Roles',
+    inheritChain: 'Inherit Chain',
+    effective_permissions: 'Effective Permissions',
+    // Search
+    matched: 'matched',
+    noResults: 'No matching results found',
+  // Auto-added missing keys
+
+    fineGrainedPermission: 'Fine-Grained Permission',
+    matrix: 'Permission Matrix',
+    rowPermission: 'Row Permission',
+    simulator: 'Permission Simulator',
+    // 审计修复 M21: 补齐缺失键
+    role: 'Role',
+    // Data filter builder
+    dataFilterDesc: 'Configure data filter rules to control the data range accessible by roles',
+    logicAnd: 'AND',
+    logicOr: 'OR',
+    noFilterConditions: 'No filter conditions',
+    sqlPreview: 'SQL Preview:',
+    fieldDepartmentId: 'Department ID',
+    fieldDepartmentName: 'Department Name',
+    fieldCreatorId: 'Creator ID',
+    fieldCreatorName: 'Creator Name',
+    placeholderSearchKeyword: 'Enter search keyword',
+    placeholderStartValue: 'Start value',
+    placeholderValue: 'Enter value',
+    permissionAllData: 'Access all data',
+    permissionIsNull: 'is null',
+    permissionIsNotNull: 'is not null',
+    nestedGroupDeveloping: 'Nested condition group feature in development',
+    filterSaveSuccess: 'Filter conditions saved successfully',
+    // Table column labels (used by table definitions)
+    changeTime: 'Change Time',
+    ruleName: 'Rule Name',
+  }

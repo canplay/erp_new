@@ -1,0 +1,205 @@
+// file.proto -- 文件存储服务
+// 提供文件上传（含分片）、下载、管理以及目录组织功能
+// 用于统一管理用户文件和存储资源
+
+syntax = "proto3";
+
+package file;
+
+// 文件服务
+// 支持文件的上传（普通/分片）、查询、删除、下载 URL 生成和目录管理
+service FileService {
+    // 文件上传
+    rpc Upload(UploadRequest) returns (UploadResponse);                    // 普通文件上传，返回预签名 URL
+    rpc UploadChunk(UploadChunkRequest) returns (UploadChunkResponse);     // 分片上传文件块
+    rpc CompleteUpload(CompleteUploadRequest) returns (CompleteUploadResponse);  // 完成分片上传
+
+    // 文件管理
+    rpc ListFiles(ListFilesRequest) returns (ListFilesResponse);           // 分页查询文件列表
+    rpc GetFile(GetFileRequest) returns (GetFileResponse);                 // 获取文件详情
+    rpc DeleteFile(DeleteFileRequest) returns (DeleteFileResponse);        // 删除文件（支持批量）
+
+    // 文件下载
+    rpc GetDownloadUrl(GetDownloadUrlRequest) returns (GetDownloadUrlResponse);  // 获取文件下载预签名 URL
+
+    // 目录管理
+    rpc ListFolders(ListFoldersRequest) returns (ListFoldersResponse);     // 查询目录列表
+    rpc CreateFolder(CreateFolderRequest) returns (CreateFolderResponse);  // 创建新目录
+    rpc DeleteFolder(DeleteFolderRequest) returns (DeleteFolderResponse);  // 删除目录（支持递归）
+}
+
+// 文件类型
+// 定义上传文件的媒体类型分类
+enum FileType {
+    IMAGE = 0;                // 图片
+    VIDEO = 1;                // 视频
+    AUDIO = 2;                // 音频
+    DOCUMENT = 3;             // 文档
+    ARCHIVE = 4;              // 压缩包
+    OTHER = 5;                // 其他
+}
+
+// ============== 文件上传 ==============
+
+// 文件上传请求（普通上传）
+message UploadRequest {
+    string filename = 1;                     // 文件名
+    int64 size = 2;                          // 文件大小（字节）
+    string mime_type = 3;                    // MIME 类型
+    FileType file_type = 4;                  // 文件类型分类
+    string folder_id = 5;                    // 目标目录 ID
+    int64 user_id = 6;                       // 上传用户 ID
+}
+
+// 文件上传响应
+message UploadResponse {
+    string file_id = 1;                      // 文件 ID
+    string upload_url = 2;                   // 预签名上传 URL
+    string upload_method = 3;                // 上传方式（POST / PUT）
+}
+
+// 分片上传请求
+message UploadChunkRequest {
+    string file_id = 1;                      // 文件 ID
+    int32 chunk_index = 2;                   // 分片序号
+    bytes data = 3;                          // 分片二进制数据
+}
+
+// 分片上传响应
+message UploadChunkResponse {
+    bool success = 1;                        // 当前分片是否上传成功
+    int32 uploaded_chunks = 2;               // 已上传分片数
+    int32 total_chunks = 3;                  // 总分片数
+}
+
+// 完成分片上传请求
+message CompleteUploadRequest {
+    string file_id = 1;                      // 文件 ID
+}
+
+// 完成分片上传响应
+message CompleteUploadResponse {
+    FileInfo file = 1;                       // 合并后的文件信息
+}
+
+// ============== 文件管理 ==============
+
+// 文件信息
+message FileInfo {
+    string id = 1;                           // 文件 ID
+    string filename = 2;                     // 存储文件名
+    string original_filename = 3;            // 原始文件名
+    string url = 4;                          // 文件访问 URL
+    FileType file_type = 5;                  // 文件类型
+    string mime_type = 6;                    // MIME 类型
+    int64 size = 7;                          // 文件大小（字节）
+    string folder_id = 8;                    // 所属目录 ID
+    int64 user_id = 9;                       // 上传用户 ID
+    string etag = 10;                        // 文件 ETag
+    int64 created_at = 11;                   // 创建时间
+    int64 updated_at = 12;                   // 更新时间
+}
+
+// 分页查询文件请求
+message ListFilesRequest {
+    string folder_id = 1;                    // 目录 ID
+    int64 user_id = 2;                       // 按用户筛选
+    FileType file_type = 3;                  // 按文件类型筛选
+    string keyword = 4;                      // 关键词搜索
+    int32 page = 5;                          // 页码
+    int32 page_size = 6;                     // 每页数量
+}
+
+// 分页查询文件响应
+message ListFilesResponse {
+    repeated FileInfo files = 1;             // 文件列表
+    int64 total = 2;                         // 文件总数
+    int64 total_size = 3;                    // 文件总大小
+}
+
+// 获取文件详情请求
+message GetFileRequest {
+    string id = 1;                           // 文件 ID
+    int64 user_id = 2;                       // 用户 ID（权限验证）
+}
+
+// 获取文件详情响应
+message GetFileResponse {
+    FileInfo file = 1;                       // 文件详情
+}
+
+// 删除文件请求
+message DeleteFileRequest {
+    string id = 1;                           // 文件 ID
+    repeated string ids = 2;                 // 批量删除的文件 ID 列表
+}
+
+// 删除文件响应
+message DeleteFileResponse {
+    int32 count = 1;                         // 实际删除的文件数
+}
+
+// ============== 文件下载 ==============
+
+// 获取下载 URL 请求
+message GetDownloadUrlRequest {
+    string file_id = 1;                      // 文件 ID
+    int64 user_id = 2;                       // 用户 ID
+    int32 expires_in = 3;                    // URL 有效期（秒）
+}
+
+// 获取下载 URL 响应
+message GetDownloadUrlResponse {
+    string url = 1;                          // 预签名下载 URL
+    int64 expires_at = 2;                    // URL 过期时间戳
+}
+
+// ============== 目录管理 ==============
+
+// 目录信息
+message Folder {
+    string id = 1;                           // 目录 ID
+    string name = 2;                         // 目录名称
+    string parent_id = 3;                    // 父目录 ID
+    int64 user_id = 4;                       // 所属用户 ID
+    string path = 5;                         // 完整路径
+    repeated Folder children = 6;            // 子目录列表
+    int64 file_count = 7;                    // 包含文件数
+    int64 created_at = 8;                    // 创建时间
+    int64 updated_at = 9;                    // 更新时间
+}
+
+// 查询目录列表请求
+message ListFoldersRequest {
+    string parent_id = 1;                    // 父目录 ID
+    int64 user_id = 2;                       // 用户 ID
+}
+
+// 查询目录列表响应
+message ListFoldersResponse {
+    repeated Folder folders = 1;             // 目录列表
+}
+
+// 创建目录请求
+message CreateFolderRequest {
+    string name = 1;                         // 目录名称
+    string parent_id = 2;                    // 父目录 ID
+    int64 user_id = 3;                       // 用户 ID
+}
+
+// 创建目录响应
+message CreateFolderResponse {
+    Folder folder = 1;                       // 新建的目录信息
+}
+
+// 删除目录请求
+message DeleteFolderRequest {
+    string id = 1;                           // 目录 ID
+    bool recursive = 2;                      // 是否递归删除子目录和文件
+}
+
+// 删除目录响应
+message DeleteFolderResponse {
+    int32 deleted_files = 1;                 // 删除的文件数
+    int32 deleted_folders = 2;               // 删除的目录数
+}

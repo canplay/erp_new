@@ -1,0 +1,77 @@
+// auth.proto -- 认证授权服务
+// 提供用户登录、注册、令牌验证和令牌刷新功能
+// 用于系统身份认证和会话管理
+
+syntax = "proto3";
+
+package auth;
+
+// 认证服务
+// 处理用户身份认证、注册和令牌生命周期管理
+service AuthService {
+    // 用户登录，验证用户名密码并返回 JWT 令牌
+    rpc Login(LoginRequest) returns (LoginResponse);
+    // 用户注册，创建新账号并返回令牌
+    rpc Register(RegisterRequest) returns (RegisterResponse);
+    // 验证令牌有效性，返回令牌对应的用户信息
+    rpc ValidateToken(TokenRequest) returns (TokenResponse);
+    // 使用 Refresh Token 刷新访问令牌
+    rpc RefreshToken(RefreshRequest) returns (RefreshResponse);
+}
+
+// 登录请求
+message LoginRequest {
+    string username = 1;           // 用户名
+    string password = 2;           // 密码
+}
+
+// 登录响应
+message LoginResponse {
+    string token = 1;              // 访问令牌（JWT）
+    int64 user_id = 2;             // 用户 ID
+    string username = 3;           // 用户名
+    string role = 4;               // 用户角色
+    bool must_change_password = 5; // 首次登录需修改密码
+}
+
+// 注册请求
+message RegisterRequest {
+    string username = 1;           // 用户名
+    string password = 2;           // 密码
+    string email = 3;              // 电子邮箱
+    string phone = 4;              // 手机号
+    string nickname = 5;           // 昵称
+}
+
+// 注册响应
+message RegisterResponse {
+    string token = 1;              // 访问令牌（JWT）
+    int64 user_id = 2;             // 用户 ID
+    string username = 3;           // 用户名
+}
+
+// Token 验证请求
+message TokenRequest {
+    string token = 1;              // 待验证的 JWT 令牌
+}
+
+// Token 验证响应
+message TokenResponse {
+    bool valid = 1;                // 令牌是否有效
+    int64 user_id = 2;             // 用户 ID
+    string username = 3;           // 用户名
+    string role = 4;               // 用户角色
+}
+
+// 刷新令牌请求
+message RefreshRequest {
+    string refresh_token = 1;      // Refresh Token
+}
+
+// 刷新令牌响应
+message RefreshResponse {
+    string token = 1;              // 新的访问令牌
+    int64 user_id = 2;             // 用户 ID
+    string username = 3;           // 用户名
+    string role = 4;               // 用户角色
+}

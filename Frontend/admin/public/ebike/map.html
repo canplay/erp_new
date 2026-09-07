@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>电单车实时监管 · 演示系统</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    html, body { margin: 0; padding: 0; height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    #map { width: 100%; height: 100%; }
+    #info { position: absolute; top: 12px; left: 12px; background: rgba(255,255,255,0.95); padding: 10px 14px; border-radius: 6px; font-size: 13px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); z-index: 100; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <div id="info">🚲 电单车实时监管 · 演示系统</div>
+  <script src="https://webapi.amap.com/maps?v=2.0&key=YOUR_AMAP_KEY"></script>
+  <script src="./libs/mapvgl.min.js"></script>
+  <script>
+    // 演示数据：示例城市电单车位置
+    var demoCars = [
+        { code: 'MYK-0001', lng: 104.0001, lat: 23.0001, status: 1, speed: 18.5, provider: '哈啰' },
+        { code: 'MYK-0002', lng: 104.0002, lat: 23.0002, status: 1, speed: 22.3, provider: '青桔' },
+        { code: 'MYK-0003', lng: 104.0003, lat: 23.0003, status: 2, speed: 0, provider: '美团', alert: '离线' },
+        { code: 'MYK-0004', lng: 104.0004, lat: 23.0004, status: 0, speed: 0, provider: '哈啰' },
+        { code: 'MYK-0005', lng: 104.0005, lat: 23.0005, status: 1, speed: 24.8, provider: '青桔', alert: '超速' },
+        { code: 'MYK-0006', lng: 104.0006, lat: 23.0006, status: 0, speed: 0, provider: '美团' },
+        { code: 'MYK-0007', lng: 104.0007, lat: 23.0007, status: 1, speed: 12.4, provider: '哈啰' },
+        { code: 'MYK-0008', lng: 104.0008, lat: 23.0008, status: 2, speed: 0, provider: '青桔', alert: '失联' },
+        { code: 'MYK-0009', lng: 104.0009, lat: 23.0009, status: 1, speed: 16.9, provider: '美团' },
+        { code: 'MYK-0010', lng: 104.0010, lat: 23.0010, status: 1, speed: 20.1, provider: '哈啰', alert: '超速' },
+        { code: 'MYK-0011', lng: 104.0011, lat: 23.0011, status: 0, speed: 0, provider: '青桔' },
+        { code: 'MYK-0012', lng: 104.0012, lat: 23.0012, status: 1, speed: 9.8, provider: '美团' },
+    ];
+
+    // WGS84 → GCJ02 简化偏移（演示用，非精确转换）
+    function wgs2gcj(lng, lat) {
+      var dlat = -100.0 + 2.0 * lat + 3.0 * lng + 0.2 * lat * lat + 0.1 * lng * lat + 0.2 * Math.sqrt(Math.abs(lat));
+      var dlng = 300.0 + lng + 2.0 * lat + 0.1 * lng * lng + 0.1 * lng * lat + 0.1 * Math.sqrt(Math.abs(lng));
+      return [lng + dlng * 1e-7, lat + dlat * 1e-7];
+    }
+
+    var map = new AMap.Map('map', {
+      center: [104.0000, 23.0000],
+      zoom: 14,
+      mapStyle: 'amap://styles/whitesmoke',
+    });
+
+    var vgl = mapvgl.getMapvGL(map);
+
+    demoCars.forEach(function (c) {
+      var gcj = wgs2gcj(c.lng, c.lat);
+      var marker = new AMap.Marker({
+        map: map,
+        position: gcj,
+        icon: new AMap.Icon({
+          size: new AMap.Size(24, 24),
+          image: c.alert ? 'https://webapi.amap.com/theme/v1.3/markers/n/mark_r.png'
+            : c.status === 1 ? 'https://webapi.amap.com/theme/v1.3/markers/n/mark_g.png'
+              : 'https://webapi.amap.com/theme/v1.3/markers/n/mark_b.png',
+          imageSize: new AMap.Size(24, 24),
+        }),
+        extData: c,
+      });
+      marker.on('click', function () {
+        var win = new AMap.InfoWindow({
+          content: '<div style="font-size:12px">'
+            + '<b>' + c.code + '</b>（' + c.provider + '）'
+            + '<br>速度：' + c.speed + ' km/h'
+            + (c.alert ? '<br>⚠️ ' + c.alert : '')
+            + '</div>',
+        });
+        win.open(map, gcj);
+      });
+    });
+
+    // 轨迹线（演示：MYK-0001 最近行驶轨迹）
+    var track = [
+        [104.0012, 23.0061], [104.0023, 23.0058], [104.0036, 23.0054],
+        [104.0047, 23.0051], [104.0056, 23.0047], [104.0061, 23.0062],
+      ].map(function (p) { return wgs2gcj(p[0], p[1]); });
+      new AMap.Polyline({
+        map: map,
+        path: track,
+        strokeColor: '#3B82F6',
+        strokeWeight: 4,
+        strokeOpacity: 0.8,
+      });
+
+      // 电子围栏（演示：示例城市中心 500m）
+      AMap.plugin('AMap.Circle', function () {
+        new AMap.Circle({
+          map: map, center: [104.0000, 23.0000], radius: 500,
+          strokeColor: '#22b14c', strokeWeight: 2, strokeOpacity: 0.6,
+          fillColor: '#22b14c', fillOpacity: 0.08,
+        });
+      });
+    </script>
+  </body>
+</html>

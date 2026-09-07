@@ -1,0 +1,66 @@
+{
+  "name": "myai-admin",
+  "version": "0.1.0",
+  "description": "MyAI 管理后台 - 统一运维平台",
+  "productName": "MyAI Admin",
+  "author": "CaNplay <canplay@vip.qq.com>",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "lint": "prettier --write \"**/*.{js,ts,vue,css,scss,html,md,json}\" --ignore-path .gitignore && eslint --fix -c ./eslint.config.js \"./src*/**/*.{ts,js,cjs,mjs,vue}\"",
+    "lint:check": "prettier \"**/*.{js,ts,vue,css,scss,html,md,json}\" --ignore-path .gitignore && eslint -c ./eslint.config.js \"./src*/**/*.{ts,js,cjs,mjs,vue}\"",
+    "dev": "quasar dev",
+    "build": "quasar build",
+    "typecheck": "vue-tsc --noEmit",
+    "postinstall": "quasar prepare --silent"
+  },
+  "dependencies": {
+    "@alova/adapter-axios": "^2.0.18",
+    "@myai/shared": "file:../packages/shared",
+    "@quasar/extras": "^2.0.1",
+    "@types/leaflet": "^1.9.22",
+    "alova": "^3.5.1",
+    "axios": "^1.18.1",
+    "dompurify": "^3.4.11",
+    "echarts": "^6.1.0",
+    "exceljs": "^4.4.0",
+    "gcoord": "^1.0.7",
+    "leaflet": "^1.9.4",
+    "pinia": "^4.0.2",
+    "quasar": "^2.21.4",
+    "socket.io-client": "^4.8.3",
+    "vue": "^3.5.39",
+    "vue-echarts": "^8.0.1",
+    "vue-i18n": "^11.4.6",
+    "vue-router": "^5.1.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@intlify/unplugin-vue-i18n": "^11.2.4",
+    "@quasar/app-vite": "^3.0.1",
+    "@types/node": "^26.1.1",
+    "@vue/eslint-config-prettier": "^10.2.0",
+    "@vue/eslint-config-typescript": "^14.9.0",
+    "autoprefixer": "^10.5.3",
+    "eslint": "^10.7.0",
+    "eslint-plugin-vue": "^10.9.2",
+    "globals": "^17.7.0",
+    "prettier": "^3.9.5",
+    "typescript": "^6.0.3",
+    "vite-plugin-checker": "^0.14.4",
+    "vue-eslint-parser": "^10.4.1",
+    "vue-tsc": "^3.3.7"
+  },
+  "keywords": [
+    "quasar",
+    "quasar-app",
+    "quasar-cli",
+    "quasar-app-vite",
+    "vite",
+    "vue",
+    "vuejs"
+  ],
+  "engines": {
+    "node": ">= 26 || ^24 || ^22.12"
+  }
+}

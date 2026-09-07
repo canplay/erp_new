@@ -1,0 +1,624 @@
+# =============================================================================
+# MyAI Helm Chart — 主配置文件
+# =============================================================================
+# 通过 include 方式组合子文件
+# =============================================================================
+
+# 全局配置
+global:
+  imageRegistry: "harbor.100.100.100.101.example.com:8003/erp"
+  imagePullSecrets:
+    - name: harbor-secret
+  envPrefix: ""
+  timezone: Asia/Shanghai
+
+# 镜像配置
+image:
+  repository: myai-backend
+  tag: "test1"
+  pullPolicy: Always
+
+# 副本数配置
+replicaCount:
+  apiGateway: 2
+  authService: 2
+  userService: 2
+  cmsService: 2
+  messageService: 1
+  fileService: 1
+  tenantService: 1
+  workflowService: 1
+  feedbackService: 1
+  auditService: 1
+  apiKeyService: 1
+  hikService: 1
+  payService: 2
+  cleanService: 1
+  towService: 1
+  ctpService: 1
+  xltService: 1
+  ebikeService: 1
+  admin: 1
+
+# 资源限制配置
+resources:
+  apiGateway:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  authService:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  userService:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  default:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  admin:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+# 健康检查配置
+healthCheck:
+  enabled: true
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 3
+    successThreshold: 1
+  readinessProbe:
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+    successThreshold: 1
+
+# 服务配置
+services:
+  apiGateway:
+    enabled: true
+    name: api-gateway
+    containerName: myai-api-gateway
+    imageName: myai-api-gateway
+    ports:
+      grpc: 9090
+      http: 8090
+    service:
+      type: ClusterIP
+      ports:
+        - name: http
+          port: 8090
+          targetPort: 8090
+          protocol: TCP
+    healthCheck:
+      enabled: true
+    env:
+      SERVICE_PORT: 8090
+      GRPC_PORT: 9090
+      AUTH_SERVICE_GRPC_URL: auth-service:9091
+      USER_SERVICE_GRPC_URL: user-service:9090
+      CMS_SERVICE_GRPC_URL: cms-service:9082
+      MESSAGE_SERVICE_GRPC_URL: messaging-service:9083
+      FILE_SERVICE_GRPC_URL: file-service:9092
+      TENANT_SERVICE_GRPC_URL: tenant-service:9095
+      WORKFLOW_SERVICE_GRPC_URL: workflow-service:9088
+      AUDIT_SERVICE_GRPC_URL: audit-service:9010
+      API_KEY_SERVICE_GRPC_URL: api-key-service:9014
+      FEEDBACK_SERVICE_GRPC_URL: feedback-service:9085
+      HIK_SERVICE_GRPC_URL: hik-service:9096
+      PAY_SERVICE_GRPC_URL: pay-service:9097
+      CLEAN_SERVICE_GRPC_URL: clean-service:9087
+      TOW_SERVICE_GRPC_URL: tow-service:9086
+      SOCIAL_OPS_SERVICE_GRPC_URL: social-ops-service:9110
+      BROWSER_SERVICE_GRPC_URL: browser-service:9120
+      CTP_SERVICE_GRPC_URL: ctp-service:9098
+      XLT_SERVICE_GRPC_URL: xlt-service:9099
+      EBIKE_SERVICE_GRPC_URL: ebike-service:9100
+      LPR_SERVICE_GRPC_URL: lpr-service:9101
+      RATE_LIMIT_MAX: 100
+      RATE_LIMIT_WINDOW: 60
+      RATE_LIMIT_BURST: 20
+      CIRCUIT_BREAKER_FAILURE_THRESHOLD: 5
+      CIRCUIT_BREAKER_TIMEOUT_SECS: 60
+      CIRCUIT_BREAKER_HALF_OPEN_REQUESTS: 3
+      CORS_ALLOWED_ORIGINS: "https://admin.100.100.100.100.example.com,https://api.100.100.100.100.example.com"
+      CORS_ALLOWED_METHODS: "GET,POST,PUT,DELETE,PATCH,OPTIONS"
+      CORS_ALLOWED_HEADERS: "Content-Type,Authorization,X-Requested-With"
+      CORS_MAX_AGE: 3600
+
+  authService:
+    enabled: true
+    name: auth-service
+    containerName: myai-auth-service
+    imageName: myai-auth-service
+    ports:
+      grpc: 9091
+      http: 8081
+    service:
+      type: ClusterIP
+    env:
+      SERVICE_PORT: 8081
+      GRPC_PORT: 9091
+      JWT_ISSUER: myai
+      JWT_AUDIENCE: myai-users
+      JWT_ACCESS_EXPIRY: 900
+      JWT_REFRESH_EXPIRY: 604800
+      SESSION_MAX_LOGINS: 5
+      SESSION_TIMEOUT_SECS: 1800
+      DEVICE_LIMIT: 3
+      PASSWORD_MIN_LENGTH: 8
+      LOGIN_MAX_ATTEMPTS: 5
+      LOGIN_LOCKOUT_SECS: 1800
+
+  userService:
+    enabled: true
+    name: user-service
+    containerName: myai-user-service
+    imageName: myai-user-service
+    ports:
+      grpc: 9090
+      http: 8080
+    service:
+      type: ClusterIP
+    env:
+      SERVICE_PORT: 8080
+      GRPC_PORT: 9090
+
+  admin:
+    enabled: true
+    name: myai-admin
+    containerName: myai-admin
+    imageName: myai-admin
+    tag: "test1"
+    ports:
+      http: 80
+      grpc: 0
+    service:
+      type: ClusterIP
+      ports:
+        - name: http
+          port: 80
+          targetPort: 80
+          protocol: TCP
+    env:
+      SERVICE_PORT: "80"
+      VITE_API_BASE_URL: "https://api.100.100.100.100.example.com/api"
+    healthCheck:
+      enabled: true
+    securityContext:
+      readOnlyRootFilesystem: false
+      runAsNonRoot: false
+      runAsUser: 0
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - ALL
+        add:
+          - CHOWN
+          - NET_BIND_SERVICE
+          - SETUID
+          - SETGID
+    podSecurityContext:
+      runAsNonRoot: false
+      runAsUser: 0
+      fsGroup: 0
+
+  cmsService:
+    enabled: true
+    name: cms-service
+    containerName: myai-cms-service
+    imageName: myai-cms-service
+    ports:
+      grpc: 9082
+      http: 8082
+    service:
+      type: ClusterIP
+    healthCheck:
+      enabled: true
+    env:
+      SERVICE_PORT: 8082
+      GRPC_PORT: 9082
+
+  messageService:
+    enabled: true
+    name: messaging-service
+    containerName: myai-messaging-service
+    imageName: myai-messaging-service
+    ports:
+      grpc: 9083
+      http: 8083
+    service:
+      type: ClusterIP
+    healthCheck:
+      enabled: true
+    env:
+      SERVICE_PORT: 8083
+      GRPC_PORT: 9083
+
+  fileService:
+    enabled: true
+    name: file-service
+    containerName: myai-file-service
+    imageName: myai-file-service
+    ports:
+      grpc: 9092
+      http: 8086
+    persistence:
+      enabled: true
+      size: 10Gi
+      storageClass: ""
+    service:
+      type: ClusterIP
+    healthCheck:
+      enabled: true
+    securityContext:
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: false
+      runAsNonRoot: true
+      runAsUser: 1001
+      capabilities:
+        drop:
+          - ALL
+    env:
+      SERVICE_PORT: 8086
+      UPLOAD_BASE_PATH: /data/uploads
+      GRPC_PORT: 9092
+
+  tenantService:
+    enabled: true
+    name: tenant-service
+    containerName: myai-tenant-service
+    imageName: myai-tenant-service
+    ports:
+      grpc: 9095
+      http: 8087
+    service:
+      type: ClusterIP
+    healthCheck:
+      enabled: true
+    env:
+      SERVICE_PORT: 8087
+      GRPC_PORT: 9095
+
+  workflowService:
+    enabled: true
+    name: workflow-service
+    containerName: myai-workflow-service
+    imageName: myai-workflow-service
+    ports:
+      grpc: 9088
+      http: 8088
+    service:
+      type: ClusterIP
+    healthCheck:
+      enabled: true
+    env:
+      SERVICE_PORT: 8088
+      GRPC_PORT: 9088
+
+  feedbackService:
+    enabled: true
+    name: feedback-service
+    containerName: myai-feedback-service
+    imageName: myai-feedback-service
+    ports:
+      grpc: 9085
+      http: 8085
+    service:
+      type: ClusterIP
+    healthCheck:
+      enabled: true
+    env:
+      SERVICE_PORT: 8085
+      GRPC_PORT: 9085
+
+  auditService:
+    enabled: true
+    name: audit-service
+    containerName: myai-audit-service
+    imageName: myai-audit-service
+    ports:
+      grpc: 9010
+      http: 8089
+    service:
+      type: ClusterIP
+    healthCheck:
+      enabled: true
+    env:
+      SERVICE_PORT: 8089
+      GRPC_PORT: 9010
+
+  apiKeyService:
+    enabled: true
+    name: api-key-service
+    containerName: myai-api-key-service
+    imageName: myai-api-key-service
+    ports:
+      grpc: 9014
+      http: 8091
+    service:
+      type: ClusterIP
+    healthCheck:
+      enabled: true
+    env:
+      SERVICE_PORT: 8091
+      GRPC_PORT: 9014
+
+  hikService:
+    enabled: true
+    name: hik-service
+    containerName: myai-hik-service
+    imageName: myai-hik-service
+    ports:
+      grpc: 9096
+      http: 8092
+    service:
+      type: ClusterIP
+    healthCheck:
+      enabled: true
+    env:
+      SERVICE_PORT: 8092
+      GRPC_PORT: 9096
+
+  payService:
+    enabled: true
+    name: pay-service
+    containerName: myai-pay-service
+    imageName: myai-pay-service
+    ports:
+      grpc: 9097
+      http: 8093
+    service:
+      type: ClusterIP
+    healthCheck:
+      enabled: true
+    env:
+      SERVICE_PORT: 8093
+      GRPC_PORT: 9097
+
+  cleanService:
+    enabled: true
+    name: clean-service
+    containerName: myai-clean-service
+    imageName: myai-clean-service
+    ports:
+      grpc: 9087
+      http: 8095
+    service:
+      type: ClusterIP
+    healthCheck:
+      enabled: true
+    env:
+      SERVICE_PORT: 8095
+      GRPC_PORT: 9087
+
+  towService:
+    enabled: true
+    name: tow-service
+    containerName: myai-tow-service
+    imageName: myai-tow-service
+    ports:
+      grpc: 9086
+      http: 8094
+    service:
+      type: ClusterIP
+    healthCheck:
+      enabled: true
+    env:
+      SERVICE_PORT: 8094
+      GRPC_PORT: 9086
+
+  ctpService:
+    enabled: true
+    name: ctp-service
+    containerName: myai-ctp-service
+    imageName: myai-ctp-service
+    ports:
+      grpc: 9098
+      http: 8096
+    service:
+      type: ClusterIP
+    healthCheck:
+      enabled: true
+    env:
+      SERVICE_PORT: 8096
+      GRPC_PORT: 9098
+
+  xltService:
+    enabled: true
+    name: xlt-service
+    containerName: myai-xlt-service
+    imageName: myai-xlt-service
+    ports:
+      grpc: 9099
+      http: 8097
+    service:
+      type: ClusterIP
+    healthCheck:
+      enabled: true
+    env:
+      SERVICE_PORT: 8097
+      GRPC_PORT: 9099
+
+  ebikeService:
+    enabled: true
+    name: ebike-service
+    containerName: myai-ebike-service
+    imageName: myai-ebike-service
+    ports:
+      grpc: 9100
+      http: 8098
+    service:
+      type: ClusterIP
+    healthCheck:
+      enabled: true
+    env:
+      SERVICE_PORT: 8098
+      GRPC_PORT: 9100
+
+# Ingress 配置
+ingress:
+  enabled: false
+  className: nginx
+  baseDomain: "100.100.100.100.example.com"
+  tlsSecretName: tls
+  annotations: {}
+  hosts:
+    - host: myai-backend.local
+      paths:
+        - path: /
+          pathType: Prefix
+          service: api-gateway
+          port: 8090
+  tls: []
+  sslipPorts: {}
+
+# ConfigMap 配置
+configMap:
+  logging:
+    RUST_LOG: info
+    LOG_FORMAT: json
+    LOG_MAX_SIZE: "100"
+    LOG_MAX_FILES: "7"
+  otel:
+    OTEL_ENABLED: "false"
+    OTEL_SERVICE_NAME: myai-backend
+    OTEL_EXPORTER_OTLP_ENDPOINT: ""
+  databasePool:
+    maxConnections: "3"
+    minConnections: "1"
+    connectTimeout: "30"
+    idleTimeout: "300"
+    maxLifetime: "1800"
+
+# Secret 配置
+secret:
+  database:
+    POSTGRES_PASSWORD: ""
+    DATABASE_URL: ""
+  redis:
+    REDIS_URL: ""
+  jwt:
+    JWT_SECRET: ""
+    JWT_ISSUER: myai
+    JWT_AUDIENCE: myai-users
+    JWT_ACCESS_EXPIRY: "900"
+    GRPC_AUTH_TOKEN: ""
+  s3:
+    S3_ACCESS_KEY: ""
+    S3_SECRET_KEY: ""
+  oss:
+    OSS_ACCESS_KEY_ID: ""
+    OSS_ACCESS_KEY_SECRET: ""
+  hik:
+    HIK_URL: ""
+    HIK_CLIENT_ID: ""
+    HIK_CLIENT_SECRET: ""
+    HIK_APP_KEY: ""
+    HIK_APP_SECRET: ""
+  pay:
+    CCB_MERCHANT_ID: ""
+    CCB_MERCHANT_NAME: ""
+    CCB_TERMINAL_ID: ""
+    CCB_KEY: ""
+    CCB_CERT: ""
+    CCB_GATEWAY_URL: ""
+    UMS_MERCHANT_ID: ""
+    UMS_TERMINAL_ID: ""
+    UMS_KEY: ""
+    UMS_GATEWAY_URL: ""
+    PAY_NOTIFY_URL: ""
+
+# 基础设施配置
+infrastructure:
+  postgres:
+    enabled: true
+    image: postgres:18-alpine
+    containerName: myai-postgres
+    ports:
+      - 5432
+    env:
+      POSTGRES_DB: myai
+      POSTGRES_USER: myai
+    persistence:
+      enabled: true
+      size: 20Gi
+      storageClass: ""
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+  redis:
+    enabled: true
+    image: redis:7-alpine
+    containerName: myai-redis
+    ports:
+      - 6379
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    persistence:
+      enabled: true
+      size: 5Gi
+      storageClass: ""
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+
+
+# Service Account
+serviceAccount:
+  create: true
+  name: myai-service-account
+  annotations: {}
+
+# Pod Security Context
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1001
+  fsGroup: 1000
+
+# Container Security Context
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1001
+  capabilities:
+    drop:
+      - ALL
+
+# NodeSelector and Tolerations
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# OpenTelemetry 配置
+otel:
+  exporterOtlpEndpoint: ""

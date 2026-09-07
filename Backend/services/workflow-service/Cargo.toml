@@ -1,0 +1,55 @@
+[package]
+name = "workflow-service"
+version.workspace = true
+edition.workspace = true
+description = "工作流服务 - 合并工作流、报表和调度功能"
+
+[lib]
+name = "workflow_service"
+path = "src/lib.rs"
+
+[[bin]]
+name = "workflow-service"
+path = "src/main.rs"
+
+[dependencies]
+# 核心框架
+tracing.workspace = true
+tokio.workspace = true
+futures-util = "0.3"
+axum.workspace = true
+
+# 序列化
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+anyhow.workspace = true
+chrono.workspace = true
+
+# 数据库
+sqlx.workspace = true
+
+# 日志
+log.workspace = true
+
+# 公共库
+common.workspace = true
+auth-core.workspace = true
+grpc-proto.workspace = true
+
+# 调度器
+cron.workspace = true
+tokio-cron-scheduler.workspace = true
+
+# UUID
+uuid.workspace = true
+
+# gRPC
+tonic.workspace = true
+
+# HTTP 客户端
+reqwest.workspace = true
+
+[build-dependencies]
+tonic-build.workspace = true
+

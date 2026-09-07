@@ -1,0 +1,116 @@
+// lpr.proto — 车牌识别服务 (License Plate Recognition)
+// 提供车牌识别相机推送结果处理 + 通行记录查询
+
+syntax = "proto3";
+
+package lpr;
+
+// 车牌识别服务
+service LprService {
+    // 车牌识别回调 — 接收 Vz 等车牌识别相机推送的识别结果
+    rpc LprCallback(LprCallbackRequest) returns (LprCallbackResponse);
+    // 查询通行记录列表
+    rpc ListPassRecords(ListPassRecordsRequest) returns (ListPassRecordsResponse);
+    // 获取通行记录详情
+    rpc GetPassRecord(GetPassRecordRequest) returns (PassRecordInfo);
+    // 获取通行统计
+    rpc GetPassStats(GetPassStatsRequest) returns (PassStatsResponse);
+    // 查询车辆授权信息
+    rpc GetVehicleAuth(GetVehicleAuthRequest) returns (VehicleAuthInfo);
+}
+
+// ============== 车牌识别回调 ==============
+
+message LprCallbackRequest {
+    string plate_no = 1;
+    string plate_color = 2;
+    string plate_type = 3;
+    string vehicle_type = 4;
+    string pass_time = 5;
+    string image_url = 6;
+    string device_id = 7;
+    string park_code = 8;
+    string direction = 9;
+    double confidence = 10;
+    string device_name = 11;
+    string lane_code = 12;
+}
+
+message LprCallbackResponse {
+    bool success = 1;
+    string message = 2;
+    int32 code = 3;
+}
+
+// ============== 通行记录查询 ==============
+
+message PassRecordInfo {
+    int64 id = 1;
+    string plate_no = 2;
+    string plate_color = 3;
+    string plate_type = 4;
+    string vehicle_type = 5;
+    string device_id = 6;
+    string device_name = 7;
+    string park_code = 8;
+    string lane_code = 9;
+    string direction = 10;
+    string pass_time = 11;
+    string image_url = 12;
+    double confidence = 13;
+    string status = 14;
+    string related_order_id = 15;
+    string remark = 16;
+    string created_at = 17;
+    string updated_at = 18;
+}
+
+message ListPassRecordsRequest {
+    string plate_no = 1;
+    string park_code = 2;
+    string direction = 3;
+    string status = 4;
+    string device_id = 5;
+    string start_time = 6;
+    string end_time = 7;
+    int32 page = 8;
+    int32 page_size = 9;
+}
+
+message ListPassRecordsResponse {
+    repeated PassRecordInfo records = 1;
+    int64 total = 2;
+    int32 page = 3;
+    int32 page_size = 4;
+}
+
+message GetPassRecordRequest {
+    int64 id = 1;
+}
+
+message GetPassStatsRequest {
+    string park_code = 1;
+    string start_date = 2;
+    string end_date = 3;
+}
+
+message PassStatsResponse {
+    int64 total_pass = 1;
+    int64 total_entry = 2;
+    int64 total_exit = 3;
+    int64 high_confidence = 4;
+    string park_code = 5;
+}
+
+message GetVehicleAuthRequest {
+    string plate_no = 1;
+    string park_code = 2;
+}
+
+message VehicleAuthInfo {
+    bool is_authorized = 1;
+    string auth_type = 2;
+    string driver_name = 3;
+    string driver_phone = 4;
+    string valid_until = 5;
+}

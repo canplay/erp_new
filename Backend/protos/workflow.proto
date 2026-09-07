@@ -1,0 +1,269 @@
+// workflow.proto -- 工作流服务
+// 提供工作流定义、实例运行和任务处理功能
+// 用于业务流程的建模、执行与监控
+
+syntax = "proto3";
+
+package workflow;
+
+// 工作流服务
+// 管理工作流定义的生命周期，执行工作流实例，处理人工任务和自动节点
+service WorkflowService {
+    // 工作流定义
+    rpc ListWorkflows(ListWorkflowsRequest) returns (ListWorkflowsResponse);             // 分页查询工作流定义
+    rpc GetWorkflow(GetWorkflowRequest) returns (GetWorkflowResponse);                   // 获取工作流定义详情
+    rpc CreateWorkflow(CreateWorkflowRequest) returns (CreateWorkflowResponse);          // 创建工作流定义
+    rpc UpdateWorkflow(UpdateWorkflowRequest) returns (UpdateWorkflowResponse);          // 更新工作流定义
+    rpc DeleteWorkflow(DeleteWorkflowRequest) returns (DeleteWorkflowResponse);          // 删除工作流定义
+
+    // 工作流实例
+    rpc StartWorkflow(StartWorkflowRequest) returns (StartWorkflowResponse);             // 启动工作流实例
+    rpc GetInstance(GetInstanceRequest) returns (GetInstanceResponse);                   // 获取实例详情
+    rpc ListInstances(ListInstancesRequest) returns (ListInstancesResponse);             // 分页查询实例列表
+
+    // 任务操作
+    rpc ListTasks(ListTasksRequest) returns (ListTasksResponse);                         // 分页查询任务列表
+    rpc CompleteTask(CompleteTaskRequest) returns (CompleteTaskResponse);                // 完成任务（审批/拒绝）
+    rpc CancelInstance(CancelInstanceRequest) returns (CancelInstanceResponse);          // 取消工作流实例
+}
+
+// 节点类型
+// 定义工作流图中各节点的类型
+enum NodeType {
+    NODE_START = 0;                  // 开始节点
+    NODE_END = 1;                    // 结束节点
+    NODE_TASK = 2;                   // 人工任务节点
+    NODE_SERVICE = 3;                // 服务（自动）节点
+    NODE_GATEWAY = 4;                // 网关（条件分支/合并）
+    NODE_SUBPROCESS = 5;             // 子流程节点
+}
+
+// 流程状态
+// 定义工作流定义的生命周期状态
+enum WorkflowStatus {
+    WORKFLOW_DRAFT = 0;              // 草稿
+    WORKFLOW_ACTIVE = 1;             // 已发布（活跃）
+    WORKFLOW_SUSPENDED = 2;          // 已暂停
+    WORKFLOW_ARCHIVED = 3;           // 已归档
+}
+
+// 实例状态
+// 定义工作流实例的运行状态
+enum InstanceStatus {
+    INSTANCE_RUNNING = 0;            // 运行中
+    INSTANCE_COMPLETED = 1;          // 已完成
+    INSTANCE_CANCELLED = 2;          // 已取消
+    INSTANCE_FAILED = 3;             // 失败
+}
+
+// 任务状态
+// 定义工作流任务的处理状态
+enum TaskStatus {
+    TASK_PENDING = 0;                // 待处理
+    TASK_COMPLETED = 1;              // 已完成
+    TASK_REJECTED = 2;               // 已拒绝
+    TASK_SKIPPED = 3;                // 已跳过
+}
+
+// ============== 工作流定义 ==============
+
+// 工作流节点
+// 工作流图中的单个节点，包含位置、配置和输出连接
+message WorkflowNode {
+    string id = 1;                           // 节点唯一 ID
+    string name = 2;                         // 节点名称
+    NodeType node_type = 3;                  // 节点类型
+    int32 position_x = 4;                    // 画布 X 坐标
+    int32 position_y = 5;                    // 画布 Y 坐标
+    map<string, string> config = 6;          // 节点配置参数
+    repeated string outputs = 7;             // 输出连接的目标节点 ID 列表
+}
+
+// 工作流定义
+// 完整的工作流模板，包含节点拓扑和全局变量
+message WorkflowDefinition {
+    int64 id = 1;                            // 工作流 ID
+    string name = 2;                         // 工作流名称
+    string description = 3;                  // 工作流描述
+    WorkflowStatus status = 4;               // 状态
+    string version = 5;                      // 版本号
+    repeated WorkflowNode nodes = 6;         // 节点列表
+    map<string, string> variables = 7;       // 全局变量
+    int64 created_at = 8;                    // 创建时间
+    int64 updated_at = 9;                    // 更新时间
+}
+
+// 分页查询工作流定义请求
+message ListWorkflowsRequest {
+    int32 page = 1;                          // 页码
+    int32 page_size = 2;                     // 每页数量
+    string keyword = 3;                      // 关键词搜索
+    WorkflowStatus status = 4;               // 按状态筛选
+}
+
+// 分页查询工作流定义响应
+message ListWorkflowsResponse {
+    repeated WorkflowDefinition workflows = 1;  // 工作流列表
+    int64 total = 2;                             // 总数
+}
+
+// 获取工作流定义详情请求
+message GetWorkflowRequest {
+    int64 id = 1;                            // 工作流 ID
+}
+
+// 获取工作流定义详情响应
+message GetWorkflowResponse {
+    WorkflowDefinition workflow = 1;         // 工作流详情
+}
+
+// 创建工作流定义请求
+message CreateWorkflowRequest {
+    string name = 1;                         // 工作流名称
+    string description = 2;                  // 描述
+    repeated WorkflowNode nodes = 3;         // 节点拓扑
+    map<string, string> variables = 4;       // 全局变量
+}
+
+// 创建工作流定义响应
+message CreateWorkflowResponse {
+    int64 id = 1;                            // 新工作流 ID
+    string name = 2;                         // 工作流名称
+}
+
+// 更新工作流定义请求
+message UpdateWorkflowRequest {
+    int64 id = 1;                            // 工作流 ID
+    string name = 2;                         // 新名称
+    string description = 3;                  // 新描述
+    repeated WorkflowNode nodes = 4;         // 新节点拓扑
+    map<string, string> variables = 5;       // 新全局变量
+    WorkflowStatus status = 6;               // 新状态
+}
+
+// 更新工作流定义响应
+message UpdateWorkflowResponse {
+    int64 id = 1;                            // 工作流 ID
+    string name = 2;                         // 工作流名称
+}
+
+// 删除工作流定义请求
+message DeleteWorkflowRequest {
+    int64 id = 1;                            // 要删除的工作流 ID
+}
+
+// 删除工作流定义响应
+message DeleteWorkflowResponse {
+    bool success = 1;                        // 是否删除成功
+}
+
+// ============== 工作流实例 ==============
+
+// 工作流实例
+// 工作流定义的一次运行实例，记录运行状态和上下文
+message WorkflowInstance {
+    int64 id = 1;                            // 实例 ID
+    int64 workflow_id = 2;                   // 关联的工作流定义 ID
+    string workflow_name = 3;                // 工作流名称
+    string business_key = 4;                 // 业务关联键
+    InstanceStatus status = 5;               // 实例状态
+    map<string, string> variables = 6;       // 运行时变量
+    string current_node = 7;                 // 当前所在节点 ID
+    int64 started_by = 8;                    // 启动者用户 ID
+    int64 started_at = 9;                    // 启动时间
+    int64 finished_at = 10;                  // 完成时间
+}
+
+// 启动工作流实例请求
+message StartWorkflowRequest {
+    int64 workflow_id = 1;                   // 工作流定义 ID
+    string business_key = 2;                 // 业务关联键
+    map<string, string> variables = 3;       // 初始变量
+}
+
+// 启动工作流实例响应
+message StartWorkflowResponse {
+    int64 instance_id = 1;                   // 新实例 ID
+    string workflow_name = 2;                // 工作流名称
+}
+
+// 获取实例详情请求
+message GetInstanceRequest {
+    int64 id = 1;                            // 实例 ID
+}
+
+// 获取实例详情响应
+message GetInstanceResponse {
+    WorkflowInstance instance = 1;           // 实例详情
+}
+
+// 分页查询实例列表请求
+message ListInstancesRequest {
+    int64 workflow_id = 1;                   // 按工作流定义筛选
+    int32 page = 2;                          // 页码
+    int32 page_size = 3;                     // 每页数量
+    InstanceStatus status = 4;               // 按状态筛选
+    string business_key = 5;                 // 按业务键搜索
+}
+
+// 分页查询实例列表响应
+message ListInstancesResponse {
+    repeated WorkflowInstance instances = 1; // 实例列表
+    int64 total = 2;                         // 实例总数
+}
+
+// ============== 任务 ==============
+
+// 工作流任务
+// 工作流中的人工任务，包含办理人、状态和表单数据
+message WorkflowTask {
+    int64 id = 1;                            // 任务 ID
+    int64 instance_id = 2;                   // 所属实例 ID
+    string node_id = 3;                      // 对应节点 ID
+    string name = 4;                         // 任务名称
+    string assignee = 5;                     // 办理人用户 ID
+    TaskStatus status = 6;                   // 任务状态
+    string form_data = 7;                    // 表单数据（JSON）
+    int64 created_at = 8;                    // 创建时间
+    int64 completed_at = 9;                  // 完成时间
+}
+
+// 分页查询任务请求
+message ListTasksRequest {
+    int64 instance_id = 1;                   // 按实例筛选
+    string assignee = 2;                     // 按办理人筛选（用户 ID）
+    TaskStatus status = 3;                   // 按状态筛选
+    int32 page = 4;                          // 页码
+    int32 page_size = 5;                     // 每页数量
+}
+
+// 分页查询任务响应
+message ListTasksResponse {
+    repeated WorkflowTask tasks = 1;         // 任务列表
+    int64 total = 2;                         // 任务总数
+}
+
+// 完成任务请求
+message CompleteTaskRequest {
+    int64 task_id = 1;                       // 任务 ID
+    string action = 2;                       // 操作：approve（同意）/ reject（拒绝）
+    map<string, string> variables = 3;       // 输出变量
+    string comment = 4;                      // 审批意见
+}
+
+// 完成任务响应
+message CompleteTaskResponse {
+    bool success = 1;                        // 是否成功
+    string next_node = 2;                    // 下一个节点 ID
+}
+
+// 取消实例请求
+message CancelInstanceRequest {
+    int64 instance_id = 1;                   // 实例 ID
+    string reason = 2;                       // 取消原因
+}
+
+// 取消实例响应
+message CancelInstanceResponse {
+    bool success = 1;                        // 是否成功
+}

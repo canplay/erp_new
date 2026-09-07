@@ -1,0 +1,22 @@
+{{/*
+=============================================================================
+PodDisruptionBudget 模板
+确保关键服务在节点维护/滚动更新时至少有可用副本
+=============================================================================
+*/}}
+{{- range $serviceName, $serviceConfig := .Values.services }}
+{{- if and $serviceConfig.enabled (gt (include "myai.replicaCount" (dict "Values" $.Values "serviceName" $serviceName) | int) 1) }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "myai.fullname" (dict "Values" $.Values "serviceName" $serviceName "componentName" $serviceConfig.name "Chart" $.Chart "Release" $.Release) }}-pdb
+  labels:
+    {{- include "myai.labels" (dict "Values" $.Values "serviceName" $serviceName "Chart" $.Chart "Release" $.Release) | nindent 4 }}
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      {{- include "myai.selectorLabels" (dict "Values" $.Values "serviceName" $serviceName "Chart" $.Chart "Release" $.Release) | nindent 6 }}
+{{- end }}
+{{- end }}

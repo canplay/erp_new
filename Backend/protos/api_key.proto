@@ -1,0 +1,171 @@
+// api_key.proto -- API Key 管理服务
+// 提供 API 密钥的创建、查询、更新、删除、验证、轮换以及使用统计功能
+// 用于系统间认证和第三方开发者授权访问
+
+syntax = "proto3";
+
+package api_key;
+
+// API Key 服务
+// 管理 API 访问密钥的全生命周期，支持权限控制、IP 白名单和频率限制
+service ApiKeyService {
+    // 创建 API Key，返回密钥 ID 和 Secret（仅在创建时可见）
+    rpc CreateApiKey(CreateApiKeyRequest) returns (CreateApiKeyResponse);
+    // 分页查询 API Key 列表，可按用户、租户、状态过滤
+    rpc ListApiKeys(ListApiKeysRequest) returns (ListApiKeysResponse);
+    // 获取单个 API Key 的详细信息
+    rpc GetApiKey(GetApiKeyRequest) returns (GetApiKeyResponse);
+    // 更新 API Key 的权限、IP 白名单、频率限制等属性
+    rpc UpdateApiKey(UpdateApiKeyRequest) returns (UpdateApiKeyResponse);
+    // 删除指定 API Key
+    rpc DeleteApiKey(DeleteApiKeyRequest) returns (DeleteApiKeyResponse);
+    // 验证 API Key 的有效性、权限和 IP 白名单
+    rpc ValidateApiKey(ValidateApiKeyRequest) returns (ValidateApiKeyResponse);
+    // 获取 API Key 的使用统计，包括请求量、成功率、延迟等
+    rpc GetKeyUsage(GetKeyUsageRequest) returns (GetKeyUsageResponse);
+    // 轮换 API Key 的 Secret，保持 Key ID 不变但更新密钥
+    rpc RotateApiKey(RotateApiKeyRequest) returns (RotateApiKeyResponse);
+}
+
+// API Key 信息
+// 表示一个完整的 API 密钥记录，包含元数据、权限和用量跟踪
+message ApiKeyInfo {
+    int64 id = 1;                 // 记录唯一标识
+    string name = 2;              // 密钥名称，用于辨识用途
+    string key_id = 3;            // Key ID（用于识别），公开标识符
+    string key_hint = 4;          // Key 提示（最后4位），帮助用户识别密钥
+    int32 permission_level = 5;   // 权限级别，数值越大权限越高
+    repeated string allowed_ips = 6;  // IP 白名单，空表示不限制
+    int64 rate_limit = 7;         // 每秒请求数限制
+    int64 tenant_id = 8;          // 所属租户 ID
+    int64 user_id = 9;            // 创建者用户 ID
+    string status = 10;           // 状态：active / inactive / revoked
+    int64 created_at = 11;        // 创建时间（Unix 时间戳）
+    int64 expires_at = 12;        // 过期时间（Unix 时间戳），0 表示永不过期
+    int64 last_used_at = 13;      // 最后使用时间（Unix 时间戳）
+}
+
+// 创建 API Key 请求
+message CreateApiKeyRequest {
+    string name = 1;               // 密钥名称
+    string description = 2;        // 密钥描述
+    int32 permission_level = 3;    // 权限级别
+    repeated string allowed_ips = 4;  // IP 白名单
+    int64 rate_limit = 5;          // 速率限制
+    int64 expires_at = 6;          // 过期时间
+    int64 tenant_id = 7;           // 租户 ID
+    int64 user_id = 8;             // 用户 ID
+}
+
+// 创建 API Key 响应
+message CreateApiKeyResponse {
+    int64 id = 1;                  // 记录 ID
+    string key_id = 2;             // 公开 Key ID
+    string secret_key = 3;         // 密钥内容（仅在创建时返回）
+    string name = 4;               // 密钥名称
+}
+
+// 列出 API Keys 请求
+message ListApiKeysRequest {
+    int32 page = 1;                // 页码
+    int32 page_size = 2;           // 每页数量
+    int64 user_id = 3;             // 按用户筛选
+    int64 tenant_id = 4;           // 按租户筛选
+    string status = 5;             // 按状态筛选
+}
+
+// 列出 API Keys 响应
+message ListApiKeysResponse {
+    repeated ApiKeyInfo keys = 1;  // 密钥列表
+    int64 total = 2;               // 总数
+}
+
+// 获取 API Key 请求
+message GetApiKeyRequest {
+    int64 id = 1;                  // 密钥记录 ID
+}
+
+// 获取 API Key 响应
+message GetApiKeyResponse {
+    ApiKeyInfo key = 1;            // 密钥详细信息
+}
+
+// 更新 API Key 请求
+message UpdateApiKeyRequest {
+    int64 id = 1;                  // 要更新的密钥 ID
+    string name = 2;               // 新名称
+    string description = 3;        // 新描述
+    int32 permission_level = 4;    // 新权限级别
+    repeated string allowed_ips = 5;  // 新 IP 白名单
+    int64 rate_limit = 6;          // 新速率限制
+    int64 expires_at = 7;          // 新过期时间
+    string status = 8;             // 新状态
+}
+
+// 更新 API Key 响应
+message UpdateApiKeyResponse {
+    bool success = 1;              // 是否更新成功
+}
+
+// 删除 API Key 请求
+message DeleteApiKeyRequest {
+    int64 id = 1;                  // 要删除的密钥 ID
+}
+
+// 删除 API Key 响应
+message DeleteApiKeyResponse {
+    bool success = 1;              // 是否删除成功
+}
+
+// 验证 API Key 请求
+message ValidateApiKeyRequest {
+    string key_id = 1;             // 待验证的 Key ID
+    string secret_key = 2;         // 待验证的密钥内容
+    string ip_address = 3;         // 请求来源 IP（用于白名单检查）
+}
+
+// 验证 API Key 响应
+message ValidateApiKeyResponse {
+    bool valid = 1;                // 是否有效
+    int64 user_id = 2;             // 关联用户 ID
+    int64 tenant_id = 3;           // 关联租户 ID
+    int32 permission_level = 4;    // 权限级别
+    string message = 5;            // 验证失败时的原因描述
+}
+
+// 获取 Key 使用统计请求
+message GetKeyUsageRequest {
+    int64 key_id = 1;              // 密钥 ID
+    string start_date = 2;         // 统计开始日期
+    string end_date = 3;           // 统计结束日期
+}
+
+// 获取 Key 使用统计响应
+message GetKeyUsageResponse {
+    int64 total_requests = 1;      // 总请求数
+    int64 successful_requests = 2; // 成功请求数
+    int64 failed_requests = 3;     // 失败请求数
+    int64 total_latency_ms = 4;    // 总延迟（毫秒）
+    repeated DailyUsage daily_usages = 5;  // 每日用量明细
+}
+
+// 每日使用统计
+// 记录某一天 API Key 的请求量和性能指标
+message DailyUsage {
+    string date = 1;               // 日期
+    int64 requests = 2;            // 当日请求数
+    int64 errors = 3;              // 当日错误数
+    int64 avg_latency_ms = 4;      // 当日平均延迟（毫秒）
+}
+
+// 轮换 API Key 请求
+message RotateApiKeyRequest {
+    int64 id = 1;                  // 要轮换的密钥 ID
+}
+
+// 轮换 API Key 响应
+message RotateApiKeyResponse {
+    int64 id = 1;                  // 密钥记录 ID
+    string key_id = 2;             // Key ID（保持不变）
+    string new_secret_key = 3;     // 新的密钥内容
+}

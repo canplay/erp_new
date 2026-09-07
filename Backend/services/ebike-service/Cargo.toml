@@ -1,0 +1,39 @@
+[package]
+name = "ebike-service"
+version = "0.1.0"
+edition = "2024"
+description = "电动自行车管理系统 - 车辆、仓储、订单、地理围栏"
+
+[lib]
+name = "ebike_service"
+path = "src/lib.rs"
+
+[[bin]]
+name = "ebike-service"
+path = "src/main.rs"
+
+[dependencies]
+common = { workspace = true }
+grpc-proto = { workspace = true }
+auth-core = { workspace = true }
+
+tokio = { workspace = true }
+
+axum = { workspace = true }
+
+tonic = { workspace = true }
+tonic-health = { workspace = true }
+
+sqlx = { workspace = true, features = ["runtime-tokio", "postgres", "chrono", "json", "bigdecimal"] }
+
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+tracing = { workspace = true }
+
+chrono = { workspace = true, features = ["serde"] }
+uuid = { workspace = true, features = ["v4"] }
+
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+log = { workspace = true }

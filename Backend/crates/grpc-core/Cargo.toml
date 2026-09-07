@@ -1,0 +1,55 @@
+[package]
+name = "grpc-core"
+version.workspace = true
+edition.workspace = true
+[lib]
+name = "grpc_core"
+path = "src/lib.rs"
+
+description = "gRPC 核心库 - 提供 gRPC 客户端工厂、连接池和服务发现"
+
+[features]
+default = ["telemetry"]
+telemetry = ["dep:opentelemetry", "dep:tracing-opentelemetry"]
+
+[dependencies]
+# 异步运行时
+tokio.workspace = true
+
+# gRPC
+tonic.workspace = true
+prost.workspace = true
+
+# 序列化
+serde.workspace = true
+serde_json.workspace = true
+serde_yaml.workspace = true
+
+# 日志
+log.workspace = true
+
+# 错误处理
+thiserror.workspace = true
+anyhow.workspace = true
+
+# 并发
+parking_lot.workspace = true
+
+# 时间
+chrono.workspace = true
+
+# 其他
+async-trait.workspace = true
+
+# 用于 tracing 模块（通过 telemetry feature 启用）
+tower.workspace = true
+tracing.workspace = true
+# http::Request / http::Response / http::HeaderMap 用于 gRPC 拦截器
+http = "1"
+
+# OpenTelemetry (optional)
+opentelemetry = { workspace = true, optional = true }
+tracing-opentelemetry = { workspace = true, optional = true }
+
+[dev-dependencies]
+tokio-test = "0.4"

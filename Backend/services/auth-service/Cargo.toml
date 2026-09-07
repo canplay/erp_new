@@ -1,0 +1,39 @@
+[package]
+name = "auth-service"
+version.workspace = true
+edition.workspace = true
+description = "认证服务 - 提供用户认证和授权"
+
+[[bin]]
+name = "auth-service"
+path = "src/main.rs"
+
+[dependencies]
+tracing = "0.1"
+tokio.workspace = true
+futures-util = "0.3"
+common.workspace = true
+auth-core.workspace = true
+grpc-proto.workspace = true
+sqlx.workspace = true
+tonic.workspace = true
+prost.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+log.workspace = true
+
+thiserror.workspace = true
+axum.workspace = true
+parking_lot.workspace = true
+
+# HTTP 客户端
+reqwest.workspace = true
+
+# URL 编码
+urlencoding.workspace = true
+
+# UUID
+uuid.workspace = true
+
+[build-dependencies]
+prost-build.workspace = true

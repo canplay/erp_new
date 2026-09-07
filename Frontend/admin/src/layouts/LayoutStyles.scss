@@ -1,0 +1,277 @@
+/* ============ 现代顶栏样式 ============ */
+.main-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* 菜单按钮 */
+.menu-btn {
+  transition: all 0.2s ease;
+}
+
+.menu-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Logo */
+.logo-avatar {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: white;
+  backdrop-filter: blur(10px);
+}
+
+/* 用户菜单 */
+.user-menu {
+  border-radius: 8px;
+  padding: 4px 12px;
+  transition: all 0.2s ease;
+}
+
+.user-menu:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* 搜索框 */
+.search-input {
+  width: 200px;
+  max-width: 30vw;
+}
+
+.search-input :deep(.q-field__control) {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+}
+
+.search-input :deep(.q-field__control:hover) {
+  background: rgba(255, 255, 255, 0.25) !important;
+}
+
+.search-input :deep(.q-field__native) {
+  color: white !important;
+}
+
+.search-input :deep(.q-field__native::placeholder) {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.search-input :deep(.q-field__prepend) {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* 抽屉头部 */
+.drawer-header {
+  border-bottom: 1px solid #e0e0e0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 24px 16px;
+}
+
+.drawer-header .text-subtitle1 {
+  color: white !important;
+}
+
+.drawer-header .text-caption {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.drawer-header .q-avatar {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* 路由切换动画 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* ============ 移动端底部导航 ============ */
+.mobile-nav {
+  height: auto !important;
+  padding: 8px 0;
+  padding-bottom: calc(8px + env(safe-area-inset-bottom));
+  border-top: 1px solid #e0e0e0;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+  background: white !important;
+}
+
+.mobile-nav-items {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.mobile-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 12px;
+  min-width: 64px;
+  position: relative;
+}
+
+.mobile-nav-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 3px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 0 0 4px 4px;
+  transition: width 0.25s ease;
+}
+
+.mobile-nav-item.active::before {
+  width: 32px;
+}
+
+.mobile-nav-item:active {
+  transform: scale(0.95);
+  background: rgba(102, 126, 234, 0.1);
+}
+
+.mobile-nav-item.active {
+  color: #667eea !important;
+}
+
+.mobile-nav-item.active .q-icon {
+  color: #667eea;
+}
+
+.nav-label {
+  font-size: 11px;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+/* ============ 暗色主题适配 ============ */
+
+/* 暗色主题顶栏 */
+.body--dark .main-header {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) !important;
+}
+
+/* 暗色主题侧边栏 */
+.body--dark .q-drawer {
+  background: #1a1a2e !important;
+  border-right: 1px solid #2d2d2d;
+}
+
+.body--dark .drawer-header {
+  border-bottom: none;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+}
+
+.body--dark .drawer-header .q-avatar {
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+/* 暗色主题搜索框 */
+.body--dark .search-input :deep(.q-field__control) {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.body--dark .search-input :deep(.q-field__native) {
+  color: white !important;
+}
+
+/* 暗色主题页脚 */
+.body--dark .q-footer {
+  background: #1a1a2e !important;
+  border-top: 1px solid #2d2d2d;
+}
+
+/* 暗色主题移动端导航 */
+.body--dark .mobile-nav {
+  background: #1a1a2e !important;
+  border-top-color: #2d2d2d;
+}
+
+.body--dark .mobile-nav-item:not(.active) {
+  color: #b0b0b0 !important;
+}
+
+/* 暗色主题文字 */
+.body--dark .q-breadcrumbs__el {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.body--dark .q-breadcrumbs__el--active {
+  color: #ffffff;
+}
+
+/* 暗色主题菜单项 */
+.body--dark .q-item {
+  color: #b0b0b0;
+  border-radius: 8px;
+  margin: 2px 8px;
+}
+
+.body--dark .q-item:hover {
+  background: rgba(102, 126, 234, 0.1);
+}
+
+.body--dark .q-item--active {
+  color: #667eea;
+  background: rgba(102, 126, 234, 0.15);
+}
+
+/* 暗色主题分隔线 */
+.body--dark .q-separator {
+  color: #2d2d2d;
+}
+
+/* 暗色主题菜单标签 */
+.body--dark .q-list__header {
+  color: #757575;
+}
+
+/* 暗色主题遮罩层 */
+.drawer-overlay {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+/* 用户菜单 */
+.user-menu :deep(.q-btn__content) {
+  flex-direction: row;
+}
+
+/* 工具栏按钮悬浮效果 */
+.q-toolbar .q-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* 搜索框快捷键提示 */
+.search-shortcut {
+  background: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.8);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-family: inherit;
+}
+
+.search-input:hover .search-shortcut {
+  background: rgba(255, 255, 255, 0.3);
+  color: white;
+}
+
+/* 暗色主题快捷键 */
+.body--dark .search-shortcut {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.body--dark .search-input:hover .search-shortcut {
+  background: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.8);
+}

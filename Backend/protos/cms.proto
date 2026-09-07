@@ -1,0 +1,248 @@
+// cms.proto -- 内容管理服务
+// 提供文章、分类、标签的 CRUD 管理功能
+// 用于 CMS 系统的内容发布与管理
+
+syntax = "proto3";
+
+package cms;
+
+// CMS 内容管理服务
+// 管理文章内容、分类结构和标签体系，支持文章的多状态流转
+service CmsService {
+    // 文章管理
+    rpc ListArticles(ListArticlesRequest) returns (ListArticlesResponse);       // 分页查询文章列表
+    rpc GetArticle(GetArticleRequest) returns (GetArticleResponse);             // 获取文章详情
+    rpc CreateArticle(CreateArticleRequest) returns (CreateArticleResponse);    // 创建新文章
+    rpc UpdateArticle(UpdateArticleRequest) returns (UpdateArticleResponse);    // 更新文章内容
+    rpc DeleteArticle(DeleteArticleRequest) returns (DeleteArticleResponse);    // 删除文章
+
+    // 分类管理
+    rpc ListCategories(ListCategoriesRequest) returns (ListCategoriesResponse); // 查询分类列表（树形）
+    rpc GetCategory(GetCategoryRequest) returns (GetCategoryResponse);          // 获取分类详情
+    rpc CreateCategory(CreateCategoryRequest) returns (CreateCategoryResponse); // 创建新分类
+    rpc UpdateCategory(UpdateCategoryRequest) returns (UpdateCategoryResponse); // 更新分类信息
+    rpc DeleteCategory(DeleteCategoryRequest) returns (DeleteCategoryResponse); // 删除分类
+
+    // 标签管理
+    rpc ListTags(ListTagsRequest) returns (ListTagsResponse);                   // 分页查询标签列表
+    rpc CreateTag(CreateTagRequest) returns (CreateTagResponse);                // 创建新标签
+    rpc DeleteTag(DeleteTagRequest) returns (DeleteTagResponse);                // 删除标签
+}
+
+// ============== 文章相关 ==============
+
+// 分页查询文章请求
+message ListArticlesRequest {
+    int32 page = 1;                          // 页码
+    int32 page_size = 2;                     // 每页数量
+    int64 category_id = 3;                   // 按分类筛选
+    string keyword = 4;                      // 关键词搜索（标题/内容）
+    string status = 5;                       // 状态筛选：draft, published, archived
+}
+
+// 分页查询文章响应
+message ListArticlesResponse {
+    repeated Article articles = 1;           // 文章列表
+    int64 total = 2;                         // 文章总数
+}
+
+// 文章信息
+message Article {
+    int64 id = 1;                            // 文章 ID
+    string title = 2;                        // 文章标题
+    string content = 3;                      // 文章正文内容
+    string summary = 4;                      // 文章摘要
+    string cover_image = 5;                  // 封面图片 URL
+    int64 category_id = 6;                   // 所属分类 ID
+    string category_name = 7;                // 所属分类名称
+    repeated string tags = 8;                // 标签列表
+    string author = 9;                       // 作者
+    string status = 10;                      // 状态：draft, published, archived
+    int64 view_count = 11;                   // 浏览次数
+    int64 created_at = 12;                   // 创建时间
+    int64 updated_at = 13;                   // 更新时间
+    int64 published_at = 14;                 // 发布时间
+}
+
+// 获取文章详情请求
+message GetArticleRequest {
+    int64 id = 1;                            // 文章 ID
+}
+
+// 获取文章详情响应
+message GetArticleResponse {
+    Article article = 1;                     // 文章详情
+}
+
+// 创建文章请求
+message CreateArticleRequest {
+    string title = 1;                        // 文章标题
+    string content = 2;                      // 文章内容
+    string summary = 3;                      // 文章摘要
+    string cover_image = 4;                  // 封面图 URL
+    int64 category_id = 5;                   // 分类 ID
+    repeated string tags = 6;                // 标签列表
+    string author = 7;                       // 作者
+    string status = 8;                       // 初始状态
+}
+
+// 创建文章响应
+message CreateArticleResponse {
+    int64 id = 1;                            // 新文章 ID
+    string title = 2;                        // 文章标题
+}
+
+// 更新文章请求
+message UpdateArticleRequest {
+    int64 id = 1;                            // 文章 ID
+    string title = 2;                        // 新标题
+    string content = 3;                      // 新内容
+    string summary = 4;                      // 新摘要
+    string cover_image = 5;                  // 新封面图
+    int64 category_id = 6;                   // 新分类
+    repeated string tags = 7;                // 新标签
+    string status = 8;                       // 新状态
+}
+
+// 更新文章响应
+message UpdateArticleResponse {
+    int64 id = 1;                            // 文章 ID
+    string title = 2;                        // 文章标题
+}
+
+// 删除文章请求
+message DeleteArticleRequest {
+    int64 id = 1;                            // 要删除的文章 ID
+}
+
+// 删除文章响应
+message DeleteArticleResponse {
+    bool success = 1;                        // 是否删除成功
+}
+
+// ============== 分类相关 ==============
+
+// 查询分类列表请求
+message ListCategoriesRequest {
+    int64 parent_id = 1;                     // 父分类 ID（0 表示顶级分类）
+    bool include_children = 2;               // 是否包含子分类
+}
+
+// 查询分类列表响应
+message ListCategoriesResponse {
+    repeated Category categories = 1;        // 分类列表（树形结构）
+}
+
+// 分类信息
+message Category {
+    int64 id = 1;                            // 分类 ID
+    string name = 2;                         // 分类名称
+    string slug = 3;                         // URL 友好别名
+    string description = 4;                  // 分类描述
+    int64 parent_id = 5;                     // 父分类 ID
+    int32 sort_order = 6;                    // 排序序号
+    string icon = 7;                         // 图标
+    repeated Category children = 8;          // 子分类列表
+    int64 article_count = 9;                 // 包含的文章数
+    int64 created_at = 10;                   // 创建时间
+    int64 updated_at = 11;                   // 更新时间
+}
+
+// 获取分类详情请求
+message GetCategoryRequest {
+    int64 id = 1;                            // 分类 ID
+}
+
+// 获取分类详情响应
+message GetCategoryResponse {
+    Category category = 1;                   // 分类详情
+}
+
+// 创建分类请求
+message CreateCategoryRequest {
+    string name = 1;                         // 分类名称
+    string slug = 2;                         // 别名
+    string description = 3;                  // 描述
+    int64 parent_id = 4;                     // 父分类 ID
+    int32 sort_order = 5;                    // 排序
+    string icon = 6;                         // 图标
+}
+
+// 创建分类响应
+message CreateCategoryResponse {
+    int64 id = 1;                            // 新分类 ID
+    string name = 2;                         // 分类名称
+}
+
+// 更新分类请求
+message UpdateCategoryRequest {
+    int64 id = 1;                            // 分类 ID
+    string name = 2;                         // 新名称
+    string slug = 3;                         // 新别名
+    string description = 4;                  // 新描述
+    int64 parent_id = 5;                     // 新父分类
+    int32 sort_order = 6;                    // 新排序
+    string icon = 7;                         // 新图标
+}
+
+// 更新分类响应
+message UpdateCategoryResponse {
+    int64 id = 1;                            // 分类 ID
+    string name = 2;                         // 分类名称
+}
+
+// 删除分类请求
+message DeleteCategoryRequest {
+    int64 id = 1;                            // 分类 ID
+    bool force = 2;                          // 是否强制删除（包括子分类）
+}
+
+// 删除分类响应
+message DeleteCategoryResponse {
+    bool success = 1;                        // 是否删除成功
+}
+
+// ============== 标签相关 ==============
+
+// 分页查询标签请求
+message ListTagsRequest {
+    int32 page = 1;                          // 页码
+    int32 page_size = 2;                     // 每页数量
+}
+
+// 分页查询标签响应
+message ListTagsResponse {
+    repeated Tag tags = 1;                   // 标签列表
+    int64 total = 2;                         // 标签总数
+}
+
+// 标签信息
+message Tag {
+    int64 id = 1;                            // 标签 ID
+    string name = 2;                         // 标签名称
+    string slug = 3;                         // URL 友好别名
+    int64 article_count = 4;                 // 关联文章数
+    int64 created_at = 5;                    // 创建时间
+}
+
+// 创建标签请求
+message CreateTagRequest {
+    string name = 1;                         // 标签名称
+    string slug = 2;                         // 别名
+}
+
+// 创建标签响应
+message CreateTagResponse {
+    int64 id = 1;                            // 新标签 ID
+    string name = 2;                         // 标签名称
+}
+
+// 删除标签请求
+message DeleteTagRequest {
+    int64 id = 1;                            // 要删除的标签 ID
+}
+
+// 删除标签响应
+message DeleteTagResponse {
+    bool success = 1;                        // 是否删除成功
+}

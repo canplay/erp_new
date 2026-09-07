@@ -1,0 +1,25 @@
+[package]
+name = "auth-core"
+version.workspace = true
+edition.workspace = true
+[lib]
+name = "auth_core"
+path = "src/lib.rs"
+
+description = "核心认证功能 - JWT 和密码服务"
+
+[dependencies]
+tracing = "0.1"
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+jsonwebtoken = { workspace = true, features = ["rust_crypto"] }
+common.workspace = true
+chrono.workspace = true
+
+# HTTP 框架（用于中间件）
+axum.workspace = true
+async-trait.workspace = true
+
+[dev-dependencies]
+tokio-test = "0.4"

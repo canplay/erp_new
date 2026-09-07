@@ -1,0 +1,22 @@
+/** i18n module: profile */
+export default {
+    title: 'Personal Center',
+    basicInfo: 'Basic Info',
+    changePassword: 'Change Password',
+    old_password: 'Old Password',
+    new_password: 'New Password',
+    confirmPassword: 'Confirm Password',
+    passwordMismatch: 'Passwords do not match',
+    passwordChanged: 'Password changed successfully',
+    profileSaved: 'Profile saved successfully',
+    saveChanges: 'Save Changes',
+    changeAvatar: 'Change Avatar',
+    avatarUploadDemo: 'Avatar upload is for demo',
+    role: 'Role',
+    registered: 'Registered',
+    lastLogin: 'Last Login',
+    username: 'Username',
+    email: 'Email',
+    phone: 'Phone',
+    updatePassword: 'Update Password',
+  }

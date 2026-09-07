@@ -1,0 +1,38 @@
+{{/*
+=============================================================================
+微服务 Service 模板
+=============================================================================
+*/}}
+{{- range $serviceName, $serviceConfig := .Values.services }}
+{{- if $serviceConfig.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $serviceConfig.name }}
+  labels:
+    {{- include "myai.labels" (dict "Values" $.Values "serviceName" $serviceName "Chart" $.Chart "Release" $.Release) | nindent 4 }}
+spec:
+  type: {{ if $serviceConfig.service }}{{ $serviceConfig.service.type | default "ClusterIP" }}{{ else }}ClusterIP{{ end }}
+  selector:
+    {{- include "myai.selectorLabels" (dict "Values" $.Values "serviceName" $serviceName "Chart" $.Chart "Release" $.Release) | nindent 4 }}
+  ports:
+    {{- if and $serviceConfig.service $serviceConfig.service.ports }}
+    {{- range $serviceConfig.service.ports }}
+    - name: {{ .name }}
+      port: {{ .port }}
+      targetPort: {{ .targetPort }}
+      protocol: {{ .protocol | default "TCP" }}
+    {{- end }}
+    {{- else }}
+    - name: grpc
+      port: {{ $serviceConfig.ports.grpc }}
+      targetPort: {{ $serviceConfig.ports.grpc }}
+      protocol: TCP
+    - name: http
+      port: {{ $serviceConfig.ports.http }}
+      targetPort: {{ $serviceConfig.ports.http }}
+      protocol: TCP
+    {{- end }}
+{{- end }}
+{{- end }}

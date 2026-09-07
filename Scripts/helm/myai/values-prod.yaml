@@ -1,0 +1,136 @@
+# =============================================================================
+# 生产环境配置
+# =============================================================================
+
+# 镜像配置
+image:
+  repository: myai-backend
+  tag: "20260730.1"
+  pullPolicy: IfNotPresent
+
+# 副本数配置（生产环境使用多个副本）
+replicaCount:
+  apiGateway: 3
+  authService: 3
+  userService: 2
+  cmsService: 2
+  messageService: 2
+  fileService: 2
+  tenantService: 2
+  workflowService: 2
+  feedbackService: 1
+  auditService: 2
+  apiKeyService: 1
+  hikService: 1
+  payService: 2
+  cleanService: 1
+  towService: 1
+  ctpService: 1
+  xltService: 1
+  ebikeService: 1
+
+# 资源限制配置（生产环境资源限制严格）
+resources:
+  apiGateway:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+  authService:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+  userService:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+  default:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+
+# 日志配置（生产环境使用 info 级别）
+logging:
+  level: info
+  format: json
+  maxSize: 500
+  maxFiles: 14
+
+# ConfigMap 配置
+configMap:
+  logging:
+    RUST_LOG: info
+    LOG_FORMAT: json
+    LOG_MAX_SIZE: "500"
+    LOG_MAX_FILES: "14"
+  otel:
+    OTEL_ENABLED: "true"
+    OTEL_SERVICE_NAME: myai-backend-prod
+
+# OpenTelemetry 配置（生产环境启用）
+otel:
+  enabled: true
+  exporterOtlpEndpoint: "http://jaeger-collector:4317"
+  serviceName: myai-backend-prod
+
+# Ingress 配置（生产环境）
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  hosts:
+    - host: api.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: myai-backend-tls
+      hosts:
+        - api.example.com
+
+# 基础设施配置（生产环境使用较大的存储）
+infrastructure:
+  postgres:
+    persistence:
+      size: 100Gi
+  redis:
+    persistence:
+      size: 20Gi
+
+# 文件服务存储（生产环境）
+services:
+  fileService:
+    persistence:
+      size: 100Gi
+
+# 节点选择器（生产环境可以指定特定节点）
+nodeSelector:
+  # environment: production
+
+# 亲和性配置（生产环境）
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                  - myai-backend
+          topologyKey: kubernetes.io/hostname

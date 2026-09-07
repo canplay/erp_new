@@ -1,0 +1,30 @@
+# Cargo 构建配置
+
+[build]
+# 启用增量编译
+incremental = true
+
+[target.x86_64-pc-windows-msvc]
+# Windows MSVC 特定配置
+rustflags = ["-C", "target-cpu=native"]
+
+[target.x86_64-unknown-linux-gnu]
+# Linux GNU 特定配置
+rustflags = ["-C", "target-cpu=native"]
+
+[profile.dev]
+# 开发环境优化
+opt-level = 0
+debug = true
+
+[profile.release]
+# 发布环境优化
+opt-level = 3
+lto = "thin"
+codegen-units = 16
+strip = false
+
+[net]
+# 加速依赖下载
+git-fetch-with-cli = true
+retry = 3

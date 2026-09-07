@@ -1,0 +1,37 @@
+[package]
+name = "social-ops-service"
+version.workspace = true
+edition.workspace = true
+
+[[bin]]
+name = "social-ops-service"
+path = "src/main.rs"
+
+[dependencies]
+common = { path = "../../crates/common" }
+grpc-proto = { path = "../../crates/grpc-proto" }
+auth-core = { path = "../../crates/auth-core" }
+crypto-core = { path = "../../crates/crypto-core" }
+cache-core = { path = "../../crates/cache-core" }
+grpc-core = { path = "../../crates/grpc-core" }
+
+axum.workspace = true
+tokio.workspace = true
+tonic.workspace = true
+prost.workspace = true
+sqlx.workspace = true
+redis.workspace = true
+reqwest.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+chrono.workspace = true
+uuid.workspace = true
+tracing.workspace = true
+anyhow.workspace = true
+thiserror.workspace = true
+log.workspace = true
+tokio-cron-scheduler.workspace = true
+async-trait.workspace = true
+sha2.workspace = true
+hex.workspace = true
+urlencoding = "2"

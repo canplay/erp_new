@@ -1,0 +1,45 @@
+[package]
+name = "cache-core"
+version.workspace = true
+edition.workspace = true
+[lib]
+name = "cache_core"
+path = "src/lib.rs"
+
+description = "缓存核心库 - 提供 Redis 缓存、本地 LRU 缓存和多级缓存"
+
+[features]
+default = ["redis-cache"]
+redis-cache = ["dep:redis"]
+
+[dependencies]
+tracing = "0.1"
+# 异步运行时
+tokio.workspace = true
+
+# Redis (optional)
+redis = { workspace = true, optional = true }
+
+# LRU 缓存
+lru.workspace = true
+
+# 序列化
+serde.workspace = true
+serde_json.workspace = true
+
+# 日志
+log.workspace = true
+
+# 错误处理
+thiserror.workspace = true
+anyhow.workspace = true
+
+# 并发
+parking_lot.workspace = true
+
+# 其他
+chrono.workspace = true
+dashmap.workspace = true
+
+[dev-dependencies]
+tokio-test = "0.4"

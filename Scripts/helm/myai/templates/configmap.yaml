@@ -1,0 +1,34 @@
+{{/*
+=============================================================================
+ConfigMap 模板 - 非敏感配置
+=============================================================================
+*/}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "myai.fullchartname" . }}-config
+  labels:
+    {{- include "myai.labels" . | nindent 4 }}
+data:
+  # 日志配置
+  RUST_LOG: {{ .Values.configMap.logging.RUST_LOG | quote }}
+  LOG_FORMAT: {{ .Values.configMap.logging.LOG_FORMAT | quote }}
+  LOG_MAX_SIZE: {{ .Values.configMap.logging.LOG_MAX_SIZE | quote }}
+  LOG_MAX_FILES: {{ .Values.configMap.logging.LOG_MAX_FILES | quote }}
+  
+  # OpenTelemetry 配置
+  OTEL_ENABLED: {{ .Values.configMap.otel.OTEL_ENABLED | quote }}
+  OTEL_SERVICE_NAME: {{ .Values.configMap.otel.OTEL_SERVICE_NAME | quote }}
+  {{- if .Values.otel.exporterOtlpEndpoint }}
+  OTEL_EXPORTER_OTLP_ENDPOINT: {{ .Values.otel.exporterOtlpEndpoint | quote }}
+  {{- end }}
+  
+  # 时区配置
+  TZ: {{ .Values.global.timezone | quote }}
+  
+  # 数据库连接池配置（共享同一 PG，避免连接数耗尽）
+  DB_POOL_MAX_CONNECTIONS: {{ .Values.configMap.databasePool.maxConnections | quote }}
+  DB_POOL_MIN_CONNECTIONS: {{ .Values.configMap.databasePool.minConnections | quote }}
+  DB_POOL_CONNECT_TIMEOUT: {{ .Values.configMap.databasePool.connectTimeout | quote }}
+  DB_POOL_IDLE_TIMEOUT: {{ .Values.configMap.databasePool.idleTimeout | quote }}
+  DB_POOL_MAX_LIFETIME: {{ .Values.configMap.databasePool.maxLifetime | quote }}

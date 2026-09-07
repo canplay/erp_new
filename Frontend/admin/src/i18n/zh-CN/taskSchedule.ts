@@ -1,0 +1,21 @@
+/** i18n module: taskSchedule */
+export default {
+    title: '任务调度',
+    add: '新增任务',
+    edit: '编辑任务',
+    name: '任务名称',
+    key: '任务标识',
+    type: '任务类型',
+    cron: 'Cron表达式',
+    endpoint: '请求地址',
+    description: '描述',
+    status: '状态',
+    lastRun: '上次执行',
+    created_at: '创建时间',
+    executionLog: '执行日志',
+    execute: '执行',
+    executing: '执行中...',
+    executeSuccess: '执行成功',
+    deleteConfirm: '确定要删除任务 "{name}" 吗？',
+    cronHint: 'Cron表达式格式: 秒 分 时 日 月 周 (例: 0 0 * * * ? 表示每小时)',
+  }

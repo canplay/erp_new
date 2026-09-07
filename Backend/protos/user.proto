@@ -1,0 +1,286 @@
+// user.proto -- 用户管理服务
+syntax = "proto3";
+package user;
+
+service UserService {
+    rpc GetUser(GetUserRequest) returns (GetUserResponse);
+    rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
+    rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse);
+    rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse);
+    rpc ListUsers(ListUsersRequest) returns (ListUsersResponse);
+
+    rpc UpdateUserStatus(UpdateUserStatusRequest) returns (UpdateUserStatusResponse);
+    rpc UpdateUserRole(UpdateUserRoleRequest) returns (UpdateUserRoleResponse);
+    rpc ResetPassword(ResetPasswordRequest) returns (ResetPasswordResponse);
+    rpc BatchUpdateUserRole(BatchUpdateUserRoleRequest) returns (BatchUpdateUserRoleResponse);
+    rpc BatchUpdateUserStatus(BatchUpdateUserStatusRequest) returns (BatchUpdateUserStatusResponse);
+    rpc BatchDeleteUsers(BatchDeleteUsersRequest) returns (BatchDeleteUsersResponse);
+
+    rpc ListRoles(ListRolesRequest) returns (ListRolesResponse);
+    rpc GetRole(GetRoleRequest) returns (GetRoleResponse);
+    rpc CreateRole(CreateRoleRequest) returns (CreateRoleResponse);
+    rpc UpdateRole(UpdateRoleRequest) returns (UpdateRoleResponse);
+    rpc DeleteRole(DeleteRoleRequest) returns (DeleteRoleResponse);
+    rpc GetRolePermissions(GetRolePermissionsRequest) returns (GetRolePermissionsResponse);
+    rpc SetRolePermissions(SetRolePermissionsRequest) returns (SetRolePermissionsResponse);
+    rpc GetRoleUsers(GetRoleUsersRequest) returns (GetRoleUsersResponse);
+
+    rpc ListDepartments(ListDepartmentsRequest) returns (ListDepartmentsResponse);
+    rpc GetDepartment(GetDepartmentRequest) returns (GetDepartmentResponse);
+    rpc CreateDepartment(CreateDepartmentRequest) returns (CreateDepartmentResponse);
+    rpc UpdateDepartment(UpdateDepartmentRequest) returns (UpdateDepartmentResponse);
+    rpc DeleteDepartment(DeleteDepartmentRequest) returns (DeleteDepartmentResponse);
+    rpc GetDepartmentTree(GetDepartmentTreeRequest) returns (GetDepartmentTreeResponse);
+    rpc GetDepartmentUsers(GetDepartmentUsersRequest) returns (GetDepartmentUsersResponse);
+
+    rpc ListDictionaryTypes(ListDictionaryTypesRequest) returns (ListDictionaryTypesResponse);
+    rpc GetDictionaryType(GetDictionaryTypeRequest) returns (GetDictionaryTypeResponse);
+    rpc CreateDictionaryType(CreateDictionaryTypeRequest) returns (CreateDictionaryTypeResponse);
+    rpc UpdateDictionaryType(UpdateDictionaryTypeRequest) returns (UpdateDictionaryTypeResponse);
+    rpc DeleteDictionaryType(DeleteDictionaryTypeRequest) returns (DeleteDictionaryTypeResponse);
+    rpc ListDictionaryItems(ListDictionaryItemsRequest) returns (ListDictionaryItemsResponse);
+    rpc GetDictionaryItem(GetDictionaryItemRequest) returns (GetDictionaryItemResponse);
+    rpc CreateDictionaryItem(CreateDictionaryItemRequest) returns (CreateDictionaryItemResponse);
+    rpc UpdateDictionaryItem(UpdateDictionaryItemRequest) returns (UpdateDictionaryItemResponse);
+    rpc DeleteDictionaryItem(DeleteDictionaryItemRequest) returns (DeleteDictionaryItemResponse);
+
+    // ============ 用户导入导出 ============
+    rpc ImportUsers(ImportUsersRequest) returns (ImportUsersResponse);
+    rpc ExportUsers(ExportUsersRequest) returns (ExportUsersResponse);
+
+    rpc ListAnnouncements(ListAnnouncementsRequest) returns (ListAnnouncementsResponse);
+    rpc GetAnnouncement(GetAnnouncementRequest) returns (GetAnnouncementResponse);
+    rpc CreateAnnouncement(CreateAnnouncementRequest) returns (CreateAnnouncementResponse);
+    rpc UpdateAnnouncement(UpdateAnnouncementRequest) returns (UpdateAnnouncementResponse);
+    rpc DeleteAnnouncement(DeleteAnnouncementRequest) returns (DeleteAnnouncementResponse);
+
+    rpc ListSystemConfigs(ListSystemConfigsRequest) returns (ListSystemConfigsResponse);
+    rpc UpdateSystemConfig(UpdateSystemConfigRequest) returns (UpdateSystemConfigResponse);
+    rpc BatchUpdateSystemConfigs(BatchUpdateSystemConfigsRequest) returns (BatchUpdateSystemConfigsResponse);
+
+    // ============ 权限管理扩展 ============
+    rpc GetRolePermissionConfig(GetRolePermissionConfigRequest) returns (GetRolePermissionConfigResponse);
+    rpc UpdateRolePermissionConfig(UpdateRolePermissionConfigRequest) returns (UpdateRolePermissionConfigResponse);
+    rpc GetRoleDataPermissions(GetRoleDataPermissionsRequest) returns (GetRoleDataPermissionsResponse);
+    rpc SetRoleDataPermissions(SetRoleDataPermissionsRequest) returns (SetRoleDataPermissionsResponse);
+    rpc GetRoleFieldPermissions(GetRoleFieldPermissionsRequest) returns (GetRoleFieldPermissionsResponse);
+    rpc SetRoleFieldPermissions(SetRoleFieldPermissionsRequest) returns (SetRoleFieldPermissionsResponse);
+    rpc GetRoleInheritChain(GetRoleInheritChainRequest) returns (GetRoleInheritChainResponse);
+    rpc SetRoleInherit(SetRoleInheritRequest) returns (SetRoleInheritResponse);
+    rpc RemoveRoleInherit(RemoveRoleInheritRequest) returns (RemoveRoleInheritResponse);
+    rpc GetAccessibleDepartments(GetAccessibleDepartmentsRequest) returns (GetAccessibleDepartmentsResponse);
+    rpc GetAccessibleTenants(GetAccessibleTenantsRequest) returns (GetAccessibleTenantsResponse);
+    rpc ListPermissionDefinitions(ListPermissionDefinitionsRequest) returns (ListPermissionDefinitionsResponse);
+    rpc CreatePermissionDefinition(CreatePermissionDefinitionRequest) returns (CreatePermissionDefinitionResponse);
+    rpc UpdatePermissionDefinition(UpdatePermissionDefinitionRequest) returns (UpdatePermissionDefinitionResponse);
+    rpc DeletePermissionDefinition(DeletePermissionDefinitionRequest) returns (DeletePermissionDefinitionResponse);
+    rpc BatchCreatePermissionDefinitions(BatchCreatePermissionDefinitionsRequest) returns (BatchCreatePermissionDefinitionsResponse);
+    rpc BatchAssignPermissions(BatchAssignPermissionsRequest) returns (BatchAssignPermissionsResponse);
+    rpc CopyRolePermissions(CopyRolePermissionsRequest) returns (CopyRolePermissionsResponse);
+    rpc ValidateDataPermission(ValidateDataPermissionRequest) returns (ValidateDataPermissionResponse);
+    rpc CheckSensitivePermission(CheckSensitivePermissionRequest) returns (CheckSensitivePermissionResponse);
+}
+
+message GetUserRequest { int64 user_id = 1; }
+message GetUserResponse { int64 id = 1; string username = 2; string nickname = 3; string avatar = 4; string phone = 5; string email = 6; int32 gender = 7; string address = 8; string role = 9; int32 status = 10; int64 created_at = 11; int64 updated_at = 12; }
+message CreateUserRequest { string username = 1; string password = 2; string email = 3; string nickname = 4; string phone = 5; int32 gender = 6; }
+message CreateUserResponse { int64 id = 1; string username = 2; string nickname = 3; }
+message UpdateUserRequest { int64 user_id = 1; string nickname = 2; string avatar = 3; int32 gender = 4; string address = 5; }
+message UpdateUserResponse { int64 id = 1; string username = 2; string nickname = 3; }
+message DeleteUserRequest { int64 user_id = 1; }
+message DeleteUserResponse { bool success = 1; }
+message ListUsersRequest { int32 page = 1; int32 page_size = 2; string keyword = 3; }
+message ListUsersResponse { repeated GetUserResponse users = 1; int64 total = 2; }
+
+message UpdateUserStatusRequest { int64 user_id = 1; int32 status = 2; int32 lock_hours = 3; }
+message UpdateUserStatusResponse { bool success = 1; }
+message UpdateUserRoleRequest { int64 user_id = 1; string role = 2; }
+message UpdateUserRoleResponse { bool success = 1; }
+message ResetPasswordRequest { int64 user_id = 1; string new_password = 2; }
+message ResetPasswordResponse { bool success = 1; }
+message BatchUpdateUserRoleRequest { repeated int64 user_ids = 1; string role = 2; }
+message BatchUpdateUserRoleResponse { bool success = 1; int32 affected = 2; }
+message BatchUpdateUserStatusRequest { repeated int64 user_ids = 1; int32 status = 2; }
+message BatchUpdateUserStatusResponse { bool success = 1; int32 affected = 2; }
+message BatchDeleteUsersRequest { repeated int64 user_ids = 1; }
+message BatchDeleteUsersResponse { bool success = 1; int32 deleted = 2; }
+
+message RoleInfo { int64 id = 1; string name = 2; string description = 3; string type = 4; int32 status = 5; int64 created_at = 6; int64 updated_at = 7; int64 user_count = 8; }
+message ListRolesRequest { int32 page = 1; int32 page_size = 2; string keyword = 3; string type = 4; int32 status = 5; }
+message ListRolesResponse { repeated RoleInfo roles = 1; int64 total = 2; }
+message GetRoleRequest { string name = 1; }
+message GetRoleResponse { RoleInfo role = 1; }
+message CreateRoleRequest { string name = 1; string description = 2; string type = 3; }
+message CreateRoleResponse { RoleInfo role = 1; }
+message UpdateRoleRequest { string name = 1; string description = 2; string type = 3; int32 status = 4; }
+message UpdateRoleResponse { bool success = 1; }
+message DeleteRoleRequest { string name = 1; }
+message DeleteRoleResponse { bool success = 1; }
+message GetRolePermissionsRequest { string name = 1; }
+message GetRolePermissionsResponse { repeated string permissions = 1; }
+message SetRolePermissionsRequest { string name = 1; repeated string permissions = 2; }
+message SetRolePermissionsResponse { bool success = 1; }
+message GetRoleUsersRequest { string name = 1; int32 page = 2; int32 page_size = 3; }
+message GetRoleUsersResponse { repeated GetUserResponse users = 1; int64 total = 2; }
+
+message DepartmentInfo { int64 id = 1; string name = 2; int64 parent_id = 3; string description = 4; int32 sort_order = 5; int32 status = 6; int64 created_at = 7; int64 updated_at = 8; }
+message ListDepartmentsRequest { int32 page = 1; int32 page_size = 2; string keyword = 3; }
+message ListDepartmentsResponse { repeated DepartmentInfo departments = 1; int64 total = 2; }
+message GetDepartmentRequest { int64 id = 1; }
+message GetDepartmentResponse { DepartmentInfo department = 1; }
+message CreateDepartmentRequest { string name = 1; int64 parent_id = 2; string description = 3; int32 sort_order = 4; }
+message CreateDepartmentResponse { DepartmentInfo department = 1; }
+message UpdateDepartmentRequest { int64 id = 1; string name = 2; int64 parent_id = 3; string description = 4; int32 sort_order = 5; int32 status = 6; }
+message UpdateDepartmentResponse { bool success = 1; }
+message DeleteDepartmentRequest { int64 id = 1; }
+message DeleteDepartmentResponse { bool success = 1; }
+message GetDepartmentTreeRequest { int64 parent_id = 1; }
+message GetDepartmentTreeResponse { repeated DepartmentInfo tree = 1; }
+message GetDepartmentUsersRequest { int64 department_id = 1; int32 page = 2; int32 page_size = 3; }
+message GetDepartmentUsersResponse { repeated GetUserResponse users = 1; int64 total = 2; }
+
+message DictionaryTypeInfo { int64 id = 1; string code = 2; string name = 3; string description = 4; int32 sort = 5; int32 status = 6; int64 created_at = 7; int64 updated_at = 8; }
+message DictionaryItemInfo { int64 id = 1; int64 type_id = 2; string label = 3; string value = 4; int32 sort = 5; int32 status = 6; bool is_default = 7; string remark = 8; int64 created_at = 9; int64 updated_at = 10; }
+message ListDictionaryTypesRequest { int32 page = 1; int32 page_size = 2; string keyword = 3; int32 status = 4; }
+message ListDictionaryTypesResponse { repeated DictionaryTypeInfo types = 1; int64 total = 2; }
+message GetDictionaryTypeRequest { int64 id = 1; }
+message GetDictionaryTypeResponse { DictionaryTypeInfo type = 1; }
+message CreateDictionaryTypeRequest { string code = 1; string name = 2; string description = 3; int32 sort = 4; }
+message CreateDictionaryTypeResponse { DictionaryTypeInfo type = 1; }
+message UpdateDictionaryTypeRequest { int64 id = 1; string name = 2; string description = 3; int32 sort = 4; int32 status = 5; }
+message UpdateDictionaryTypeResponse { bool success = 1; }
+message DeleteDictionaryTypeRequest { int64 id = 1; }
+message DeleteDictionaryTypeResponse { bool success = 1; }
+message ListDictionaryItemsRequest { int64 type_id = 1; string type_code = 2; string keyword = 3; int32 status = 4; }
+message ListDictionaryItemsResponse { repeated DictionaryItemInfo items = 1; int64 total = 2; }
+message GetDictionaryItemRequest { int64 id = 1; }
+message GetDictionaryItemResponse { DictionaryItemInfo item = 1; }
+message CreateDictionaryItemRequest { int64 type_id = 1; string label = 2; string value = 3; int32 sort = 4; int32 status = 5; bool is_default = 6; string remark = 7; }
+message CreateDictionaryItemResponse { DictionaryItemInfo item = 1; }
+message UpdateDictionaryItemRequest { int64 id = 1; string label = 2; string value = 3; int32 sort = 4; int32 status = 5; bool is_default = 6; string remark = 7; }
+message UpdateDictionaryItemResponse { bool success = 1; }
+message DeleteDictionaryItemRequest { int64 id = 1; }
+message DeleteDictionaryItemResponse { bool success = 1; }
+
+message AnnouncementInfo { int64 id = 1; string title = 2; string content = 3; string type = 4; int32 priority = 5; bool is_pinned = 6; bool is_active = 7; string created_by = 8; string start_time = 9; string end_time = 10; int64 created_at = 11; int64 updated_at = 12; }
+message ListAnnouncementsRequest { int32 page = 1; int32 page_size = 2; int32 is_active = 3; }
+message ListAnnouncementsResponse { repeated AnnouncementInfo announcements = 1; int64 total = 2; }
+message GetAnnouncementRequest { int64 id = 1; }
+message GetAnnouncementResponse { AnnouncementInfo announcement = 1; }
+message CreateAnnouncementRequest { string title = 1; string content = 2; string type = 3; int32 priority = 4; bool is_pinned = 5; bool is_active = 6; string start_time = 7; string end_time = 8; string created_by = 9; }
+message CreateAnnouncementResponse { AnnouncementInfo announcement = 1; }
+message UpdateAnnouncementRequest { int64 id = 1; string title = 2; string content = 3; string type = 4; int32 priority = 5; bool is_pinned = 6; bool is_active = 7; string start_time = 8; string end_time = 9; }
+message UpdateAnnouncementResponse { bool success = 1; }
+message DeleteAnnouncementRequest { int64 id = 1; }
+message DeleteAnnouncementResponse { bool success = 1; }
+
+message SystemConfigInfo { int64 id = 1; string category = 2; string key = 3; string value = 4; string type = 5; string label = 6; string description = 7; int32 sort = 8; int32 status = 9; int64 created_at = 10; int64 updated_at = 11; }
+message ListSystemConfigsRequest { string category = 1; }
+message ListSystemConfigsResponse { repeated SystemConfigInfo configs = 1; }
+message UpdateSystemConfigRequest { string key = 1; string value = 2; }
+message UpdateSystemConfigResponse { bool success = 1; }
+message BatchUpdateSystemConfigsRequest { repeated UpdateSystemConfigRequest configs = 1; }
+message BatchUpdateSystemConfigsResponse { bool success = 1; }
+
+// ==================== 用户导入导出 ====================
+
+message ImportUsersRequest {
+    string filename = 1; string format = 2;
+    repeated string headers = 3; string data_base64 = 4;
+    string update_mode = 5; // skip/overwrite
+}
+message ImportUsersResponse {
+    int32 total = 1; int32 success_count = 2; int32 fail_count = 3;
+    repeated string errors = 4;
+}
+
+message ExportUsersRequest {
+    string format = 1; string keyword = 2; int32 status = 3; string role = 4;
+}
+message ExportUsersResponse {
+    bytes data = 1; string filename = 2; string format = 3;
+}
+
+// ==================== 权限管理 ====================
+
+message PermissionDefinitionInfo {
+    string key = 1; string name = 2; string description = 3; string category = 4;
+    string entity_type = 5; string action = 6; bool is_sensitive = 7; int32 sort = 8;
+}
+
+message DataPermissionInfo {
+    string permission = 1; string name = 2; string entity_type = 3;
+    int32 scope = 4; repeated int64 custom_scope = 5;
+    string filter_group_json = 6;
+}
+
+message FieldPermissionInfo {
+    string permission = 1; string name = 2; string entity_type = 3; string field = 4;
+    bool can_view = 5; bool can_edit = 6; repeated string allowed_fields = 7;
+    repeated string denied_fields = 8; bool read_only = 9; string description = 10;
+    bool sensitive = 11;
+}
+
+message InheritInfo {
+    string role_name = 1; repeated string inherit_from = 2;
+    repeated string effective_permissions = 3;
+}
+
+message PermissionChangeLogInfo {
+    int64 id = 1; string role_name = 2; string permission = 3; string action = 4;
+    string operator_name = 5; string detail = 6; int64 created_at = 7;
+}
+
+message GetRolePermissionConfigRequest { string role_name = 1; }
+message GetRolePermissionConfigResponse {
+    repeated DataPermissionInfo data_permissions = 1;
+    repeated FieldPermissionInfo field_permissions = 2;
+}
+message UpdateRolePermissionConfigRequest {
+    string role_name = 1; repeated DataPermissionInfo data_permissions = 2;
+    repeated FieldPermissionInfo field_permissions = 3;
+}
+message UpdateRolePermissionConfigResponse { bool success = 1; }
+
+message GetRoleDataPermissionsRequest { string role_name = 1; }
+message GetRoleDataPermissionsResponse { repeated DataPermissionInfo data_permissions = 1; }
+message SetRoleDataPermissionsRequest { string role_name = 1; repeated DataPermissionInfo data_permissions = 2; }
+message SetRoleDataPermissionsResponse { bool success = 1; }
+
+message GetRoleFieldPermissionsRequest { string role_name = 1; }
+message GetRoleFieldPermissionsResponse { repeated FieldPermissionInfo field_permissions = 1; }
+message SetRoleFieldPermissionsRequest { string role_name = 1; repeated FieldPermissionInfo field_permissions = 2; }
+message SetRoleFieldPermissionsResponse { bool success = 1; }
+
+message GetRoleInheritChainRequest { string role_name = 1; }
+message GetRoleInheritChainResponse { InheritInfo info = 1; }
+message SetRoleInheritRequest { string role_name = 1; repeated string inherit_from = 2; }
+message SetRoleInheritResponse { bool success = 1; }
+message RemoveRoleInheritRequest { string role_name = 1; }
+message RemoveRoleInheritResponse { bool success = 1; }
+
+message GetAccessibleDepartmentsRequest { string role_name = 1; int32 page = 2; int32 page_size = 3; }
+message GetAccessibleDepartmentsResponse { repeated DepartmentInfo departments = 1; int64 total = 2; }
+message GetAccessibleTenantsRequest { string role_name = 1; int32 page = 2; int32 page_size = 3; }
+message GetAccessibleTenantsResponse { repeated TenantInfo tenants = 1; int64 total = 2; }
+
+message TenantInfo { int64 id = 1; string name = 2; string code = 3; int32 status = 4; int64 created_at = 5; int64 updated_at = 6; }
+
+message ListPermissionDefinitionsRequest { string category = 1; int32 page = 2; int32 page_size = 3; }
+message ListPermissionDefinitionsResponse { repeated PermissionDefinitionInfo permissions = 1; int64 total = 2; }
+message CreatePermissionDefinitionRequest { string key = 1; string name = 2; string description = 3; string category = 4; string entity_type = 5; string action = 6; bool is_sensitive = 7; int32 sort = 8; }
+message CreatePermissionDefinitionResponse { PermissionDefinitionInfo permission = 1; }
+message UpdatePermissionDefinitionRequest { string key = 1; string name = 2; string description = 3; string category = 4; string entity_type = 5; string action = 6; bool is_sensitive = 7; int32 sort = 8; }
+message UpdatePermissionDefinitionResponse { bool success = 1; }
+message DeletePermissionDefinitionRequest { string key = 1; }
+message DeletePermissionDefinitionResponse { bool success = 1; }
+message BatchCreatePermissionDefinitionsRequest { repeated CreatePermissionDefinitionRequest permissions = 1; }
+message BatchCreatePermissionDefinitionsResponse { int32 count = 1; }
+message BatchAssignPermissionsRequest { string role_name = 1; repeated string permission_keys = 2; }
+message BatchAssignPermissionsResponse { bool success = 1; int32 affected = 2; }
+message CopyRolePermissionsRequest { string from_role = 1; string to_role = 2; }
+message CopyRolePermissionsResponse { bool success = 1; }
+message ValidateDataPermissionRequest { string permission = 1; string entity_type = 2; int64 resource_owner = 3; int64 resource_dept = 4; }
+message ValidateDataPermissionResponse { bool allowed = 1; }
+message CheckSensitivePermissionRequest { string permission = 1; }
+message CheckSensitivePermissionResponse { bool sensitive = 1; }

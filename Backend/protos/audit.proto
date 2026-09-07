@@ -1,0 +1,148 @@
+// audit.proto -- 审计日志服务
+//
+// 提供操作日志的记录、查询、统计和归档功能
+// 以及登录日志、API 调用日志等专项审计功能
+
+syntax = "proto3";
+
+package audit;
+
+// 审计服务
+service AuditService {
+    // ============ 操作日志 ============
+    rpc LogAction(LogActionRequest) returns (LogActionResponse);
+    rpc ListLogs(ListLogsRequest) returns (ListLogsResponse);
+    rpc GetLog(GetLogRequest) returns (GetLogResponse);
+
+    // ============ 登录日志 ============
+    rpc CreateLoginLog(CreateLoginLogRequest) returns (CreateLoginLogResponse);
+    rpc ListLoginLogs(ListLoginLogsRequest) returns (ListLoginLogsResponse);
+    rpc GetLoginLog(GetLoginLogRequest) returns (GetLoginLogResponse);
+    rpc ClearLoginLogs(ClearLoginLogsRequest) returns (ClearLoginLogsResponse);
+
+    // ============ API 调用日志 ============
+    rpc ListApiCallLogs(ListApiCallLogsRequest) returns (ListApiCallLogsResponse);
+    rpc GetApiCallLog(GetApiCallLogRequest) returns (GetApiCallLogResponse);
+
+    // ============ 日志统计 ============
+    rpc GetStats(GetStatsRequest) returns (GetStatsResponse);
+
+    // ============ 日志归档 ============
+    rpc ArchiveLogs(ArchiveLogsRequest) returns (ArchiveLogsResponse);
+
+    // ============ 日志导出 ============
+    rpc ExportLogs(ExportLogsRequest) returns (ExportLogsResponse);
+}
+
+// ============== 已有类型（保持不变） ==============
+
+enum AuditAction {
+    CREATE = 0; UPDATE = 1; DELETE = 2;
+    LOGIN = 3; LOGOUT = 4; EXPORT = 5; IMPORT = 6;
+    OTHER = 99;
+}
+
+message AuditLog {
+    int64 id = 1; int64 user_id = 2; string username = 3;
+    string ip_address = 4; string user_agent = 5;
+    AuditAction action = 6; string resource_type = 7;
+    int64 resource_id = 8; string description = 9;
+    map<string, string> old_data = 10; map<string, string> new_data = 11;
+    int64 created_at = 12;
+}
+
+message LogActionRequest {
+    int64 user_id = 1; string username = 2; AuditAction action = 3;
+    string resource_type = 4; int64 resource_id = 5;
+    string description = 6; map<string, string> old_data = 7;
+    map<string, string> new_data = 8;
+}
+message LogActionResponse { int64 id = 1; bool success = 2; }
+
+message ListLogsRequest {
+    int32 page = 1; int32 page_size = 2; int64 user_id = 3;
+    AuditAction action = 4; string resource_type = 5;
+    int64 resource_id = 6; string keyword = 7;
+    string start_time = 8; string end_time = 9;
+}
+message ListLogsResponse { repeated AuditLog logs = 1; int64 total = 2; }
+
+message GetLogRequest { int64 id = 1; }
+message GetLogResponse { AuditLog log = 1; }
+
+// ============== 登录日志 ==============
+
+message CreateLoginLogRequest {
+    int64 user_id = 1; string username = 2;
+    string ip_address = 3; string user_agent = 4;
+    string login_location = 5; int32 login_status = 6;
+    string fail_reason = 7; string login_type = 8;
+}
+message CreateLoginLogResponse { int64 id = 1; bool success = 2; }
+
+message LoginLogInfo {
+    int64 id = 1; int64 user_id = 2; string username = 3;
+    string ip_address = 4; string user_agent = 5;
+    bool success = 6; string fail_reason = 7;
+    string login_method = 8; int64 created_at = 9;
+}
+
+message ListLoginLogsRequest {
+    int32 page = 1; int32 page_size = 2; int64 user_id = 3;
+    string keyword = 4; int32 status = 5;  // 0=全部 1=成功 2=失败
+    string start_time = 6; string end_time = 7;
+}
+message ListLoginLogsResponse { repeated LoginLogInfo logs = 1; int64 total = 2; }
+
+message GetLoginLogRequest { int64 id = 1; }
+message GetLoginLogResponse { LoginLogInfo log = 1; }
+
+message ClearLoginLogsRequest { string before_date = 1; }
+message ClearLoginLogsResponse { int64 cleared_count = 1; }
+
+// ============== API 调用日志 ==============
+
+message ApiCallLogInfo {
+    int64 id = 1; int64 user_id = 2; string username = 3;
+    string method = 4; string path = 5; int32 status_code = 6;
+    int64 duration_ms = 7; string ip_address = 8;
+    string user_agent = 9; string request_body = 10;
+    string response_body = 11; int64 created_at = 12;
+}
+
+message ListApiCallLogsRequest {
+    int32 page = 1; int32 page_size = 2; int64 user_id = 3;
+    string method = 4; string path = 5; int32 status_code = 6;
+    string start_time = 7; string end_time = 8;
+}
+message ListApiCallLogsResponse { repeated ApiCallLogInfo logs = 1; int64 total = 2; }
+
+message GetApiCallLogRequest { int64 id = 1; }
+message GetApiCallLogResponse { ApiCallLogInfo log = 1; }
+
+// ============== 统计 ==============
+
+message AuditStats {
+    int64 total_count = 1; int64 today_count = 2; int64 week_count = 3;
+    map<int32, int64> by_action = 4; map<string, int64> by_resource_type = 5;
+    repeated TopUser top_users = 6; repeated TopResource top_resources = 7;
+}
+
+message TopUser { int64 user_id = 1; string username = 2; int64 count = 3; }
+message TopResource { string resource_type = 1; int64 resource_id = 2; int64 count = 3; }
+
+message GetStatsRequest { string period = 1; }
+message GetStatsResponse { AuditStats stats = 1; }
+
+// ============== 归档与导出 ==============
+
+message ArchiveLogsRequest {
+    string start_time = 1; string end_time = 2; int64 archive_user_id = 3;
+}
+message ArchiveLogsResponse { int64 archived_count = 1; string archive_path = 2; }
+
+message ExportLogsRequest {
+    string start_time = 1; string end_time = 2;
+    string format = 3; string log_type = 4;
+}
+message ExportLogsResponse { bytes data = 1; string filename = 2; }

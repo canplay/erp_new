@@ -1,0 +1,10 @@
+packages:
+  - 'admin'
+  - 'ops'
+  - 'social'
+  - 'template'
+  - 'packages/*'
+allowBuilds:
+  '@parcel/watcher': true
+  '@sentry/cli': true
+  esbuild: true

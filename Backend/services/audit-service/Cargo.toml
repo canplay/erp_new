@@ -1,0 +1,31 @@
+[package]
+name = "audit-service"
+version.workspace = true
+edition.workspace = true
+description = "审计服务 - 提供登录日志和操作日志管理"
+
+[[bin]]
+name = "audit-service"
+path = "src/main.rs"
+
+[dependencies]
+tracing = "0.1"
+tokio.workspace = true
+common.workspace = true
+sqlx.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+log.workspace = true
+
+axum.workspace = true
+thiserror.workspace = true
+chrono.workspace = true
+uuid.workspace = true
+
+# gRPC
+tonic.workspace = true
+grpc-proto.workspace = true
+
+[dev-dependencies]
+tokio-test = "0.4"
+

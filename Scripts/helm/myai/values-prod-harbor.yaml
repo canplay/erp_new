@@ -1,0 +1,735 @@
+# =============================================================================
+# MyAI Backend - Harbor 生产环境配置
+# =============================================================================
+# 使用方法:
+#   helm install myai-backend ./helm/myai-backend \
+#     --namespace myai-prod \
+#     -f ./helm/myai-backend/values-prod-harbor.yaml \
+#     -f ./helm/myai-backend/secrets.yaml
+# =============================================================================
+
+# =============================================================================
+# 全局配置
+# =============================================================================
+global:
+  # Harbor 镜像仓库
+  imageRegistry: "harbor.100.100.100.101.example.com:8003/erp"
+  imagePullSecrets:
+    - name: harbor-secret
+  # 环境变量前缀
+  envPrefix: ""
+  # 时区
+  timezone: Asia/Shanghai
+
+# =============================================================================
+# 镜像配置（全局默认值，各服务通过 services.<name>.imageName 覆盖）
+# =============================================================================
+image:
+  repository: myai-backend
+  tag: "20260731.8"
+  pullPolicy: Always
+
+# =============================================================================
+# 副本数配置
+# 审计修复 (D2): 关键服务 2 副本 + PDB(>1 副本自动生成) + HPA, 消除单点故障
+# =============================================================================
+replicaCount:
+  apiGateway: 2
+  authService: 2
+  userService: 2
+  cmsService: 2
+  messageService: 1
+  fileService: 1
+  tenantService: 1
+  workflowService: 1
+  feedbackService: 1
+  auditService: 1
+  apiKeyService: 1
+  hikService: 1
+  payService: 2
+  cleanService: 1
+  towService: 1
+  ctpService: 1
+  xltService: 1
+  ebikeService: 1
+  socialOpsService: 1
+  browserService: 1
+
+# =============================================================================
+# 资源限制配置
+# =============================================================================
+resources:
+  apiGateway:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  authService:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  userService:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  default:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+# =============================================================================
+# 健康检查配置（生产环境使用较宽松的时间）
+# =============================================================================
+healthCheck:
+  enabled: true
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 3
+    successThreshold: 1
+  readinessProbe:
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+    successThreshold: 1
+
+# =============================================================================
+# 服务配置
+# =============================================================================
+services:
+  # ===== 核心后端服务 =====
+
+  # API Gateway（对外暴露）
+  apiGateway:
+    enabled: true
+    name: api-gateway
+    containerName: myai-api-gateway
+    imageName: myai-api-gateway
+    ports:
+      grpc: 9090
+      http: 8090
+    service:
+      type: ClusterIP
+      ports:
+        - name: http
+          port: 8090
+          targetPort: 8090
+          protocol: TCP
+    healthCheck:
+      enabled: true
+    env:
+      SERVICE_PORT: 8090
+      GRPC_PORT: 9090
+      # 上游服务 gRPC URL（K8s 集群内部 DNS）
+      AUTH_SERVICE_GRPC_URL: auth-service:9091
+      USER_SERVICE_GRPC_URL: user-service:9090
+      CMS_SERVICE_GRPC_URL: cms-service:9082
+      MESSAGE_SERVICE_GRPC_URL: messaging-service:9083
+      FILE_SERVICE_GRPC_URL: file-service:9092
+      TENANT_SERVICE_GRPC_URL: tenant-service:9095
+      WORKFLOW_SERVICE_GRPC_URL: workflow-service:9088
+      AUDIT_SERVICE_GRPC_URL: audit-service:9010
+      API_KEY_SERVICE_GRPC_URL: api-key-service:9014
+      FEEDBACK_SERVICE_GRPC_URL: feedback-service:9085
+      HIK_SERVICE_GRPC_URL: hik-service:9096
+      PAY_SERVICE_GRPC_URL: pay-service:9097
+      CLEAN_SERVICE_GRPC_URL: clean-service:9087
+      TOW_SERVICE_GRPC_URL: tow-service:9086
+      SOCIAL_OPS_SERVICE_GRPC_URL: social-ops-service:9110
+      BROWSER_SERVICE_GRPC_URL: browser-service:9120
+      CTP_SERVICE_GRPC_URL: ctp-service:9098
+      XLT_SERVICE_GRPC_URL: xlt-service:9099
+      EBIKE_SERVICE_GRPC_URL: ebike-service:9100
+      LPR_SERVICE_GRPC_URL: lpr-service:9101
+      # 限流配置
+      RATE_LIMIT_MAX: 100
+      RATE_LIMIT_WINDOW: 60
+      RATE_LIMIT_BURST: 20
+      # 熔断器配置
+      CIRCUIT_BREAKER_FAILURE_THRESHOLD: 5
+      CIRCUIT_BREAKER_TIMEOUT_SECS: 60
+      CIRCUIT_BREAKER_HALF_OPEN_REQUESTS: 3
+      # CORS 配置
+      # 审计修复 D5: 收敛为具体域名(生产为 admin 站点), 禁止 *
+      CORS_ALLOWED_ORIGINS: "https://admin.100.100.100.100.example.com,https://api.100.100.100.100.example.com"
+      CORS_ALLOWED_METHODS: "GET,POST,PUT,DELETE,PATCH,OPTIONS"
+      CORS_ALLOWED_HEADERS: "Content-Type,Authorization,X-Requested-With"
+      CORS_MAX_AGE: 3600
+
+  # 认证服务
+  authService:
+    enabled: true
+    name: auth-service
+    containerName: myai-auth-service
+    imageName: myai-auth-service
+    ports:
+      grpc: 9091
+      http: 8081
+    service:
+      type: ClusterIP
+    env:
+      SERVICE_PORT: 8081
+      GRPC_PORT: 9091
+      JWT_ISSUER: myai
+      JWT_AUDIENCE: myai-users
+      JWT_ACCESS_EXPIRY: 900
+      JWT_REFRESH_EXPIRY: 604800
+      SESSION_MAX_LOGINS: 5
+      SESSION_TIMEOUT_SECS: 1800
+      DEVICE_LIMIT: 3
+      PASSWORD_MIN_LENGTH: 8
+      LOGIN_MAX_ATTEMPTS: 5
+      LOGIN_LOCKOUT_SECS: 1800
+
+  # 用户服务
+  userService:
+    enabled: true
+    name: user-service
+    containerName: myai-user-service
+    imageName: myai-user-service
+    ports:
+      grpc: 9090
+      http: 8080
+    service:
+      type: ClusterIP
+    env:
+      SERVICE_PORT: 8080
+      GRPC_PORT: 9090
+
+  # ===== 前端 =====
+  # 管理后台（Nginx + Vue）
+  admin:
+    enabled: true
+    name: myai-admin
+    containerName: myai-admin
+    imageName: myai-admin
+    tag: "test1"
+    ports:
+      http: 80
+      grpc: 0
+    service:
+      type: ClusterIP
+      ports:
+        - name: http
+          port: 80
+          targetPort: 80
+          protocol: TCP
+    env:
+      SERVICE_PORT: "80"
+      # 前端 API 网关地址 (通过 ingress host-based routing)
+      VITE_API_BASE_URL: "https://api.100.100.100.100.example.com/api"
+    healthCheck:
+      enabled: true
+    securityContext:
+      readOnlyRootFilesystem: false
+      runAsNonRoot: false
+      runAsUser: 0 # nginx 官方镜像模式: root master + worker 降权(审计修复 D5 复核: 非 root 无法写 /run/nginx.pid)
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - ALL
+        add:
+          - CHOWN
+          - NET_BIND_SERVICE
+          - SETUID
+          - SETGID
+    podSecurityContext:
+      runAsNonRoot: false
+      runAsUser: 0
+      fsGroup: 0
+
+  # ===== 其余服务 =====
+  cmsService:
+    enabled: true
+    name: cms-service
+    containerName: myai-cms-service
+    imageName: myai-cms-service
+    ports:
+      grpc: 9082
+      http: 8082
+    service:
+      type: ClusterIP
+    healthCheck:
+      enabled: true
+    env:
+      SERVICE_PORT: 8082
+      GRPC_PORT: 9082
+
+  messageService:
+    enabled: true
+    name: messaging-service
+    containerName: myai-messaging-service
+    imageName: myai-messaging-service
+    ports:
+      grpc: 9083
+      http: 8083
+    service:
+      type: ClusterIP
+    healthCheck:
+      enabled: true
+    env:
+      SERVICE_PORT: 8083
+      GRPC_PORT: 9083
+
+  fileService:
+    enabled: true
+    name: file-service
+    containerName: myai-file-service
+    imageName: myai-file-service
+    ports:
+      grpc: 9092
+      http: 8086
+    # 审计修复 (D3-架构评审): 启用持久化——上传文件写入 /data PVC, Pod 重启不丢失
+    persistence:
+      enabled: true
+      size: 10Gi
+      storageClass: ""
+    service:
+      type: ClusterIP
+    healthCheck:
+      enabled: true
+    # 审计修复 (D4): 文件服务需写入 /tmp 与挂载卷, 放宽只读根文件系统(其余安全项保持)
+    securityContext:
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: false
+      runAsNonRoot: true
+      runAsUser: 1001
+      capabilities:
+        drop:
+          - ALL
+    env:
+      SERVICE_PORT: 8086
+      # 审计修复 (D3): 上传目录指向持久卷(原默认 ./uploads 在容器本地盘, 重启即丢)
+      UPLOAD_BASE_PATH: /data/uploads
+      GRPC_PORT: 9092
+
+  tenantService:
+    enabled: true
+    name: tenant-service
+    containerName: myai-tenant-service
+    imageName: myai-tenant-service
+    ports:
+      grpc: 9095
+      http: 8087
+    service:
+      type: ClusterIP
+    healthCheck:
+      enabled: true
+    env:
+      SERVICE_PORT: 8087
+      GRPC_PORT: 9095
+
+  workflowService:
+    enabled: true
+    name: workflow-service
+    containerName: myai-workflow-service
+    imageName: myai-workflow-service
+    ports:
+      grpc: 9088
+      http: 8088
+    service:
+      type: ClusterIP
+    healthCheck:
+      enabled: true
+    env:
+      SERVICE_PORT: 8088
+      GRPC_PORT: 9088
+
+  feedbackService:
+    enabled: true
+    name: feedback-service
+    containerName: myai-feedback-service
+    imageName: myai-feedback-service
+    ports:
+      grpc: 9085
+      http: 8085
+    service:
+      type: ClusterIP
+    healthCheck:
+      enabled: true
+    env:
+      SERVICE_PORT: 8085
+      GRPC_PORT: 9085
+
+  auditService:
+    enabled: true
+    name: audit-service
+    containerName: myai-audit-service
+    imageName: myai-audit-service
+    ports:
+      grpc: 9010
+      http: 8089
+    service:
+      type: ClusterIP
+    healthCheck:
+      enabled: true
+    env:
+      SERVICE_PORT: 8089
+      GRPC_PORT: 9010
+
+  apiKeyService:
+    enabled: true
+    name: api-key-service
+    containerName: myai-api-key-service
+    imageName: myai-api-key-service
+    ports:
+      grpc: 9014
+      http: 8091
+    service:
+      type: ClusterIP
+    healthCheck:
+      enabled: true
+    env:
+      SERVICE_PORT: 8091
+      GRPC_PORT: 9014
+
+  hikService:
+    enabled: true
+    name: hik-service
+    containerName: myai-hik-service
+    imageName: myai-hik-service
+    ports:
+      grpc: 9096
+      http: 8092
+    service:
+      type: ClusterIP
+    healthCheck:
+      enabled: true
+    env:
+      SERVICE_PORT: 8092
+      GRPC_PORT: 9096
+
+  payService:
+    enabled: true
+    name: pay-service
+    containerName: myai-pay-service
+    imageName: myai-pay-service
+    ports:
+      grpc: 9097
+      http: 8093
+    service:
+      type: ClusterIP
+    healthCheck:
+      enabled: true
+    env:
+      SERVICE_PORT: 8093
+      GRPC_PORT: 9097
+
+  cleanService:
+    enabled: true
+    name: clean-service
+    containerName: myai-clean-service
+    imageName: myai-clean-service
+    ports:
+      grpc: 9087
+      http: 8095
+    service:
+      type: ClusterIP
+    healthCheck:
+      enabled: true
+    env:
+      SERVICE_PORT: 8095
+      GRPC_PORT: 9087
+
+  towService:
+    enabled: true
+    name: tow-service
+    containerName: myai-tow-service
+    imageName: myai-tow-service
+    ports:
+      grpc: 9086
+      http: 8094
+    service:
+      type: ClusterIP
+    healthCheck:
+      enabled: true
+    env:
+      SERVICE_PORT: 8094
+      GRPC_PORT: 9086
+
+  ctpService:
+    enabled: true
+    name: ctp-service
+    containerName: myai-ctp-service
+    imageName: myai-ctp-service
+    ports:
+      grpc: 9098
+      http: 8096
+    service:
+      type: ClusterIP
+    healthCheck:
+      enabled: true
+    env:
+      SERVICE_PORT: 8096
+      GRPC_PORT: 9098
+
+  xltService:
+    enabled: true
+    name: xlt-service
+    containerName: myai-xlt-service
+    imageName: myai-xlt-service
+    ports:
+      grpc: 9099
+      http: 8097
+    service:
+      type: ClusterIP
+    healthCheck:
+      enabled: true
+    env:
+      SERVICE_PORT: 8097
+      GRPC_PORT: 9099
+
+  ebikeService:
+    enabled: true
+    name: ebike-service
+    containerName: myai-ebike-service
+    imageName: myai-ebike-service
+    ports:
+      grpc: 9100
+      http: 8098
+    service:
+      type: ClusterIP
+    healthCheck:
+      enabled: true
+    env:
+      SERVICE_PORT: 8098
+      GRPC_PORT: 9100
+
+  lprService:
+    enabled: true
+    name: lpr-service
+    containerName: myai-lpr-service
+    imageName: myai-lpr-service
+    ports:
+      grpc: 9101
+      http: 8099
+    service:
+      type: ClusterIP
+    healthCheck:
+      enabled: true
+    env:
+      SERVICE_PORT: 8099
+      GRPC_PORT: 9101
+
+  socialOpsService:
+    enabled: true
+    name: social-ops-service
+    containerName: myai-social-ops-service
+    imageName: myai-social-ops-service
+    ports:
+      grpc: 9110
+      http: 8110
+    service:
+      type: ClusterIP
+    healthCheck:
+      enabled: true
+    env:
+      SERVICE_PORT: 8110
+      GRPC_PORT: 9110
+
+  browserService:
+    enabled: true
+    name: browser-service
+    containerName: myai-browser-service
+    imageName: myai-browser-service
+    ports:
+      grpc: 9120
+      http: 8120
+    service:
+      type: ClusterIP
+    healthCheck:
+      enabled: true
+    env:
+      SERVICE_PORT: 8120
+      GRPC_PORT: 9120
+
+# =============================================================================
+# 基础设施配置（暂不启用，使用外部 PostgreSQL/Redis）
+# =============================================================================
+infrastructure:
+  postgres:
+    enabled: false
+  redis:
+    enabled: false
+
+# =============================================================================
+# 日志配置
+# =============================================================================
+logging:
+  level: info
+  format: json
+  maxSize: 100
+  maxFiles: 7
+
+# =============================================================================
+# OpenTelemetry 配置（暂不启用）
+# =============================================================================
+otel:
+  enabled: false
+  exporterOtlpEndpoint: ""
+  serviceName: myai-backend
+
+# =============================================================================
+# Ingress 配置（支持 example.com 域名 + 端口路由）
+# =============================================================================
+# example.com 域名说明:
+#   - X-X-X-X.example.com 解析为 IP X.X.X.X
+#   - 端口访问通过 service.X-X-X-X.example.com:N 或 ingress host + path 路由
+#   - 本配置同时提供:
+#     1. Host-based routing (推荐): admin.100.100.100.100.example.com:8900
+#     2. Port-based routing: api-gateway.100.100.100.100.example.com:8900
+ingress:
+  enabled: true
+  className: traefik
+  baseDomain: "100.100.100.100.example.com"
+  tlsSecretName: tls
+  annotations:
+    # 仅启用 HTTPS (websecure entrypoint → 8901)
+    # 与 rancher/ceph 等其他 Ingress 一致：HTTP (8900) 返回 404，强制 HTTPS
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+
+  # Host-based routing (推荐方式)
+  hosts:
+    - host: admin.100.100.100.100.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+          service: myai-admin
+          port: 80
+    - host: api.100.100.100.100.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+          service: api-gateway
+          port: 8090
+
+  # Port-based routing (example.com 端口直连)
+  # NOTE: example.com 的特殊性:
+  #   - DNS 解析: X-X-X-X.example.com → X.X.X.X
+  #   - 端口: 必须使用非标准端口 (8900-8999)
+  #   - TLS: 需要通配符证书 *.106-60-80-54.example.com (当前为自签证书)
+  #   - 浏览器访问: https://domain.example.com:port + 忽略证书警告
+  #   - 生产环境建议: 使用标准域名 + CDN/WAF + 标准 443 端口
+  # sslipPorts 已废弃 — 改用 host-based routing (推荐):
+  #   admin.106-60-80-54.example.com:8900/8901
+  #   api.106-60-80-54.example.com:8900/8901
+  sslipPorts: {}
+    # apiGateway:
+    #   port: 8900
+    #   description: "API Gateway - HTTP/GRPC"
+    # myaiAdmin:
+    #   port: 8901
+    #   description: "Admin Frontend"
+
+  tls:
+    - hosts:
+        - "*.100.100.100.100.example.com"
+      secretName: tls
+
+# =============================================================================
+# ConfigMap 配置（非敏感配置）
+# =============================================================================
+configMap:
+  logging:
+    RUST_LOG: info
+    LOG_FORMAT: json
+    LOG_MAX_SIZE: "100"
+    LOG_MAX_FILES: "7"
+  otel:
+    OTEL_ENABLED: "false"
+    OTEL_SERVICE_NAME: myai-backend
+  # 数据库连接池（22个服务共享同一 PG，必须控制单服务连接数）
+  databasePool:
+    maxConnections: "3"
+    minConnections: "1"
+    connectTimeout: "30"
+    idleTimeout: "300"
+    maxLifetime: "1800"
+
+# =============================================================================
+# Secret 配置（敏感配置）
+# 注意: 此文件可能用于参考，实际敏感信息应放在独立的 secrets.yaml 中
+# =============================================================================
+secret:
+  database:
+    # 安全加固: 真实密码由外部管理(kubectl patch 注入, 见 deploy/scripts/apply-secrets.sh)
+    POSTGRES_PASSWORD: "CHANGE-ME-MANAGED-EXTERNALLY"
+    DATABASE_URL: "postgresql://postgres:848St1q9dR@pg-cluster-postgresql-postgresql.default.svc.cluster.local:5432/myai"
+  redis:
+    REDIS_URL: "redis://default:y590bx4RV7@redis-replication-redis-redis.default.svc.cluster.local:6379/0"
+  jwt:
+    # 安全加固: 真实 JWT_SECRET 由外部管理(kubectl patch 注入, 见 deploy/scripts/apply-secrets.sh),
+    # 此处仅放占位符, 不再把真实密钥提交 git。
+    # 注意: helm upgrade 会用此占位值覆盖 Secret → 所有 token 立即失效(fail-closed, 可被立刻发现),
+    # 之后必须执行 apply-secrets.sh 重放真实密钥并重启 gateway/auth-service。
+    JWT_SECRET: "CHANGE-ME-MANAGED-EXTERNALLY"
+    JWT_ISSUER: "myai"
+    JWT_AUDIENCE: "myai-users"
+    JWT_ACCESS_EXPIRY: "900"
+    # gRPC 服务间鉴权共享令牌(审计修复 B2): 真实值由 apply-secrets.sh 注入,
+    # 未注入时服务间 gRPC 鉴权不启用(各服务日志告警)。
+    GRPC_AUTH_TOKEN: "CHANGE-ME-MANAGED-EXTERNALLY"
+  s3:
+    S3_ACCESS_KEY: ""
+    S3_SECRET_KEY: ""
+  oss:
+    OSS_ACCESS_KEY_ID: ""
+    OSS_ACCESS_KEY_SECRET: ""
+  hik:
+    HIK_URL: ""
+    HIK_CLIENT_ID: ""
+    HIK_CLIENT_SECRET: ""
+    HIK_APP_KEY: ""
+    HIK_APP_SECRET: ""
+  pay:
+    CCB_MERCHANT_ID: ""
+    CCB_MERCHANT_NAME: ""
+    CCB_TERMINAL_ID: ""
+    CCB_KEY: ""
+    CCB_CERT: ""
+    CCB_GATEWAY_URL: ""
+    UMS_MERCHANT_ID: ""
+    UMS_TERMINAL_ID: ""
+    UMS_KEY: ""
+    UMS_GATEWAY_URL: ""
+    PAY_NOTIFY_URL: ""
+    PAY_RETURN_URL: ""
+
+# =============================================================================
+# 其他配置
+# =============================================================================
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+serviceAccount:
+  create: false
+  annotations: {}
+  name: ""
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1001
+  fsGroup: 1000
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1001
+  capabilities:
+    drop:
+      - ALL

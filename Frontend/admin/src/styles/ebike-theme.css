@@ -1,0 +1,7 @@
+/* E-bike dark theme CSS variables */
+:root {
+  --ebike-bg-primary: #1c1c2e;
+  --ebike-text-secondary: #a0a0b0;
+  --ebike-text-primary: #e0e0e0;
+  --ebike-bg-hover: rgba(255, 255, 255, 0.05);
+}

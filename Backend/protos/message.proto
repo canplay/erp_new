@@ -1,0 +1,197 @@
+// message.proto -- 消息通知服务
+// 提供站内信发送、接收、管理和消息模板功能
+// 用于系统通知、用户消息和待办事项的推送
+
+syntax = "proto3";
+
+package message;
+
+// 消息服务
+// 管理站内信的发送、接收、模板管理，支持单发和批量发送
+service MessageService {
+    // 站内信
+    rpc ListMessages(ListMessagesRequest) returns (ListMessagesResponse);        // 分页查询消息列表
+    rpc GetMessage(GetMessageRequest) returns (GetMessageResponse);              // 获取消息详情
+    rpc SendMessage(SendMessageRequest) returns (SendMessageResponse);           // 发送消息（单发/批量）
+    rpc MarkAsRead(MarkAsReadRequest) returns (MarkAsReadResponse);              // 标记消息已读
+    rpc DeleteMessage(DeleteMessageRequest) returns (DeleteMessageResponse);     // 删除消息
+    rpc GetUnreadCount(GetUnreadCountRequest) returns (GetUnreadCountResponse);  // 获取未读消息数
+
+    // 消息模板
+    rpc ListTemplates(ListTemplatesRequest) returns (ListTemplatesResponse);     // 分页查询模板列表
+    rpc CreateTemplate(CreateTemplateRequest) returns (CreateTemplateResponse);  // 创建消息模板
+    rpc UpdateTemplate(UpdateTemplateRequest) returns (UpdateTemplateResponse);  // 更新消息模板
+    rpc DeleteTemplate(DeleteTemplateRequest) returns (DeleteTemplateResponse);  // 删除消息模板
+}
+
+// ============== 站内信相关 ==============
+
+// 分页查询消息请求
+message ListMessagesRequest {
+    int64 user_id = 1;                       // 接收方用户 ID
+    int32 page = 2;                          // 页码
+    int32 page_size = 3;                     // 每页数量
+    string type = 4;                         // 消息类型：system, user, notice, todo
+    bool unread_only = 5;                    // 是否仅查询未读消息
+}
+
+// 分页查询消息响应
+message ListMessagesResponse {
+    repeated Message messages = 1;           // 消息列表
+    int64 total = 2;                         // 消息总数
+    int64 unread_count = 3;                  // 未读消息数
+}
+
+// 消息信息
+message Message {
+    int64 id = 1;                            // 消息 ID
+    int64 user_id = 2;                       // 接收方用户 ID
+    string type = 3;                         // 消息类型
+    string title = 4;                        // 消息标题
+    string content = 5;                      // 消息正文
+    string sender = 6;                       // 发送者标识
+    bool is_read = 7;                        // 是否已读
+    int64 read_at = 8;                       // 阅读时间
+    int64 created_at = 9;                    // 创建时间
+    MessageData data = 10;                   // 扩展数据（JSON）
+}
+
+// 消息扩展数据
+message MessageData {
+    string action = 1;                       // 点击后的动作
+    string url = 2;                          // 关联链接
+    string image = 3;                        // 消息图片 URL
+    map<string, string> extra = 4;           // 其他扩展字段
+}
+
+// 获取消息详情请求
+message GetMessageRequest {
+    int64 id = 1;                            // 消息 ID
+    int64 user_id = 2;                       // 用户 ID
+}
+
+// 获取消息详情响应
+message GetMessageResponse {
+    Message message = 1;                     // 消息详情
+}
+
+// 发送消息请求
+message SendMessageRequest {
+    int64 user_id = 1;                       // 接收方用户 ID
+    int64 sender_id = 2;                     // 发送方用户 ID（0 表示系统）
+    string type = 3;                         // 消息类型
+    string title = 4;                        // 消息标题
+    string content = 5;                      // 消息内容
+    MessageData data = 6;                    // 扩展数据
+    repeated int64 user_ids = 7;             // 批量发送的目标用户 ID 列表
+}
+
+// 发送消息响应
+message SendMessageResponse {
+    int64 id = 1;                            // 消息 ID
+    int32 sent_count = 2;                    // 实际发送数量
+}
+
+// 标记已读请求
+message MarkAsReadRequest {
+    int64 user_id = 1;                       // 用户 ID
+    repeated int64 message_ids = 2;          // 要标记的消息 ID 列表（空表示全部已读）
+}
+
+// 标记已读响应
+message MarkAsReadResponse {
+    int32 count = 1;                         // 标记为已读的数量
+}
+
+// 删除消息请求
+message DeleteMessageRequest {
+    int64 user_id = 1;                       // 用户 ID
+    repeated int64 message_ids = 2;          // 要删除的消息 ID 列表
+}
+
+// 删除消息响应
+message DeleteMessageResponse {
+    int32 count = 1;                         // 实际删除的数量
+}
+
+// 获取未读消息数请求
+message GetUnreadCountRequest {
+    int64 user_id = 1;                       // 用户 ID
+    string type = 2;                         // 消息类型（空表示全部类型）
+}
+
+// 获取未读消息数响应
+message GetUnreadCountResponse {
+    int64 count = 1;                         // 未读消息数
+}
+
+// ============== 消息模板相关 ==============
+
+// 分页查询模板请求
+message ListTemplatesRequest {
+    int32 page = 1;                          // 页码
+    int32 page_size = 2;                     // 每页数量
+    string type = 3;                         // 按类型筛选
+}
+
+// 分页查询模板响应
+message ListTemplatesResponse {
+    repeated MessageTemplate templates = 1;  // 模板列表
+    int64 total = 2;                         // 模板总数
+}
+
+// 消息模板
+message MessageTemplate {
+    int64 id = 1;                            // 模板 ID
+    string name = 2;                         // 模板名称
+    string type = 3;                         // 模板类型
+    string title_template = 4;               // 标题模板（支持变量）
+    string content_template = 5;             // 内容模板（支持变量）
+    map<string, string> variables = 6;       // 变量定义及默认值
+    bool is_active = 7;                      // 是否启用
+    int64 created_at = 8;                    // 创建时间
+    int64 updated_at = 9;                    // 更新时间
+}
+
+// 创建模板请求
+message CreateTemplateRequest {
+    string name = 1;                         // 模板名称
+    string type = 2;                         // 模板类型
+    string title_template = 3;               // 标题模板
+    string content_template = 4;             // 内容模板
+    map<string, string> variables = 5;       // 变量定义
+    bool is_active = 6;                      // 是否启用
+}
+
+// 创建模板响应
+message CreateTemplateResponse {
+    int64 id = 1;                            // 新模板 ID
+    string name = 2;                         // 模板名称
+}
+
+// 更新模板请求
+message UpdateTemplateRequest {
+    int64 id = 1;                            // 模板 ID
+    string name = 2;                         // 新名称
+    string type = 3;                         // 新类型
+    string title_template = 4;               // 新标题模板
+    string content_template = 5;             // 新内容模板
+    map<string, string> variables = 6;       // 新变量定义
+    bool is_active = 7;                      // 是否启用
+}
+
+// 更新模板响应
+message UpdateTemplateResponse {
+    int64 id = 1;                            // 模板 ID
+    string name = 2;                         // 模板名称
+}
+
+// 删除模板请求
+message DeleteTemplateRequest {
+    int64 id = 1;                            // 要删除的模板 ID
+}
+
+// 删除模板响应
+message DeleteTemplateResponse {
+    bool success = 1;                        // 是否删除成功
+}

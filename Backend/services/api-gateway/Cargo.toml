@@ -1,0 +1,54 @@
+[package]
+name = "api-gateway"
+version.workspace = true
+edition.workspace = true
+description = "API 网关 - HTTP 入口和代理"
+
+[[bin]]
+name = "api-gateway"
+path = "src/main.rs"
+
+[lib]
+name = "api_gateway"
+path = "src/lib.rs"
+
+[dependencies]
+tracing.workspace = true
+tokio.workspace = true
+common.workspace = true
+grpc-proto.workspace = true
+axum.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+reqwest.workspace = true
+log.workspace = true
+
+tower.workspace = true
+tower-http.workspace = true
+parking_lot.workspace = true
+jsonwebtoken.workspace = true
+chrono.workspace = true
+
+# gRPC 客户端支持
+tonic.workspace = true
+
+# 异步工具
+futures-util.workspace = true
+
+# 熔断器
+circuit-breaker-core.workspace = true
+
+# gRPC 核心库（服务发现、连接池）
+grpc-core.workspace = true
+
+# JWT 服务
+auth-core.workspace = true
+
+# 错误处理
+anyhow.workspace = true
+
+# 日志
+log-core.workspace = true
+
+# SQL 驱动（Repository 类型需要）
+sqlx = { workspace = true, features = ["runtime-tokio", "postgres", "tls-rustls", "chrono"] }

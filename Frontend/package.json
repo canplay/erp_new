@@ -1,0 +1,18 @@
+{
+  "name": "myai-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "MyAI 前端项目 — 包含 admin/ops/social/template",
+  "scripts": {
+    "dev:admin": "pnpm --filter myai-admin dev",
+    "dev:ops": "pnpm --filter myai-ops dev",
+    "dev:social": "pnpm --filter myai-social dev",
+    "build:admin": "pnpm --filter myai-admin build",
+    "build:ops": "pnpm --filter myai-ops build",
+    "build:social": "pnpm --filter myai-social build",
+    "lint": "pnpm -r lint:check",
+    "lint:fix": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "upgrade": "pnpm up -r -L"
+  }
+}

@@ -1,0 +1,35 @@
+[package]
+name = "user-service"
+version.workspace = true
+edition.workspace = true
+description = "用户服务 - 提供用户CRUD操作"
+
+[lib]
+name = "user_service"
+path = "src/lib.rs"
+
+[[bin]]
+name = "user-service"
+path = "src/main.rs"
+
+[dependencies]
+tracing = "0.1"
+tokio.workspace = true
+common.workspace = true
+grpc-proto.workspace = true
+sqlx.workspace = true
+tonic.workspace = true
+prost.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+log.workspace = true
+
+thiserror.workspace = true
+chrono.workspace = true
+axum.workspace = true
+argon2.workspace = true
+csv.workspace = true
+
+[build-dependencies]
+prost-build.workspace = true
+

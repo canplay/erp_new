@@ -1,0 +1,20 @@
+/** i18n module: batchActions */
+export default {
+    selected: '已选择 {count} 项',
+    enable: '启用',
+    disable: '禁用',
+    delete: '删除',
+    export: '导出',
+    clearSelection: '清除选择',
+    enableConfirm: '确定要启用选中的 {count} 项吗？',
+    disableConfirm: '确定要禁用选中的 {count} 项吗？',
+    deleteConfirm: '确定要删除选中的 {count} 项吗？此操作不可恢复。',
+    enableSuccess: '成功启用 {count} 个项目',
+    disableSuccess: '成功禁用 {count} 个项目',
+    deleteSuccess: '成功删除 {count} 个项目',
+    exportSuccess: '成功导出 {count} 个项目',
+    batchAddSuccess: '成功添加 {count} 条字典项',
+    importSuccess: '成功导入 {count} 条字典项',
+    enabledSuccess: '成功启用 {count} 个字典类型',
+    disabledSuccess: '成功禁用 {count} 个字典类型',
+};

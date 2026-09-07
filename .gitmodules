@@ -1,0 +1,15 @@
+[submodule "ThirdParty/UFO"]
+	path = ThirdParty/UFO
+	url = https://github.com/microsoft/UFO
+[submodule "ThirdParty/RAGFlow"]
+	path = ThirdParty/RAGFlow
+	url = https://github.com/infiniflow/ragflow
+[submodule "ThirdParty/tuwunel"]
+	path = ThirdParty/tuwunel
+	url = https://github.com/matrix-construct/tuwunel
+[submodule "ThirdParty/fluffychat"]
+	path = ThirdParty/fluffychat
+	url = https://github.com/krille-chan/fluffychat
+[submodule "ThirdParty/AgentTeams"]
+	path = ThirdParty/AgentTeams
+	url = https://github.com/agentscope-ai/AgentTeams.git

@@ -1,0 +1,197 @@
+/**
+ * @file message.ts
+ * @description 站内信 API
+ * @date 2026-05-17
+ * @description 2026-05-17 更新：统一使用 httpClient
+ */
+
+import { httpClient } from '@/utils/alova';
+
+/**
+ * @brief 消息类型
+ */
+export type MessageType = 'system' | 'user' | 'announcement';
+
+/**
+ * @brief 消息优先级
+ */
+export type MessagePriority = 0 | 1 | 2;
+
+/**
+ * @brief 发送目标类型
+ */
+export type MessageTargetType = 'all' | 'dept' | 'role' | 'user';
+
+/**
+ * @brief 消息接口
+ */
+export interface Message {
+  id: number;
+  type: MessageType;
+  title: string;
+  content: string;
+  sender_id?: number;
+  sender_name?: string;
+  receiver_id?: number;
+  receiver_name?: string;
+  priority: MessagePriority;
+  attachmentUrls?: string[];
+  targetType: MessageTargetType;
+  target_ids?: number[];
+  expireTime?: string;
+  created_at: string;
+  updated_at: string;
+  /** 是否已读 */
+  is_read?: boolean;
+  /** 是否星标 */
+  is_starred?: boolean;
+}
+
+/**
+ * @brief 用户消息关联接口
+ */
+export interface MessageUser {
+  id: number;
+  messageId: number;
+  user_id: number;
+  is_read: boolean;
+  readTime?: string;
+  is_starred: boolean;
+  isDeleted: boolean;
+  isArchived: boolean;
+  created_at: string;
+}
+
+/**
+ * @brief 消息查询参数
+ */
+export interface MessageQueryParams {
+  type?: MessageType;
+  priority?: MessagePriority;
+  is_read?: boolean;
+  is_starred?: boolean;
+  keyword?: string;
+  start_date?: string;
+  end_date?: string;
+  page?: number;
+  page_size?: number;
+}
+
+/**
+ * @brief 消息创建参数
+ */
+export interface MessageCreateParams {
+  type: MessageType;
+  title: string;
+  content: string;
+  priority?: MessagePriority;
+  attachmentUrls?: string[];
+  targetType: MessageTargetType;
+  target_ids?: number[];
+  expireTime?: string;
+}
+
+/**
+ * @brief 获取消息列表
+ */
+export function getMessageList(params?: MessageQueryParams) {
+  return httpClient.get('/messages', { params });
+}
+
+/**
+ * @brief 获取收件箱消息
+ */
+export function getInboxMessages(params?: Omit<MessageQueryParams, 'type'>) {
+  return httpClient.get('/messages/inbox', { params });
+}
+
+/**
+ * @brief 获取发件箱消息
+ */
+export function getOutboxMessages(params?: Omit<MessageQueryParams, 'type'>) {
+  return httpClient.get('/messages/outbox', { params });
+}
+
+/**
+ * @brief 获取系统公告
+ */
+export function getAnnouncements(params?: Omit<MessageQueryParams, 'type'>) {
+  return httpClient.get('/messages/announcements', { params });
+}
+
+/**
+ * @brief 获取消息详情
+ */
+export function getMessageDetail(id: number) {
+  return httpClient.get(`/messages/${id}`);
+}
+
+/**
+ * @brief 发送消息
+ */
+export function sendMessage(data: MessageCreateParams) {
+  return httpClient.post('/messages', data);
+}
+
+/**
+ * @brief 批量发送消息
+ */
+export function batchSendMessages(messageIds: number[], user_ids: number[]) {
+  return httpClient.post('/messages/batch-send', { messageIds, user_ids });
+}
+
+/**
+ * @brief 标记消息已读
+ */
+export function markAsRead(messageId: number) {
+  return httpClient.put(`/messages/${messageId}/read`);
+}
+
+/**
+ * @brief 批量标记已读
+ */
+export function batchMarkAsRead(messageIds: number[]) {
+  return httpClient.put('/messages/read/batch', { messageIds });
+}
+
+/**
+ * @brief 标记所有消息已读
+ */
+export function markAllAsRead() {
+  return httpClient.put('/messages/read/all');
+}
+
+/**
+ * @brief 标记星标
+ */
+export function markAsStarred(messageId: number, starred: boolean) {
+  return httpClient.put(`/messages/${messageId}/star`, { starred });
+}
+
+/**
+ * @brief 删除消息（软删除）
+ */
+export function deleteMessage(messageId: number) {
+  return httpClient.delete(`/messages/${messageId}`);
+}
+
+/**
+ * @brief 批量删除消息
+ */
+export function batchDeleteMessages(messageIds: number[]) {
+  return httpClient.delete('/messages/batch', { data: { messageIds } });
+}
+
+/**
+ * @brief 获取未读消息数量
+ */
+export function getUnreadCount() {
+  return httpClient.get('/messages/unread-count');
+}
+
+/**
+ * @brief 获取未读公告数量
+ */
+export function getUnreadAnnouncementCount() {
+  return httpClient.get('/messages/announcements/unread-count');
+}

@@ -1,0 +1,35 @@
+[package]
+name = "xlt-service"
+version.workspace = true
+edition.workspace = true
+description = "信路通外停车 MQTT 协议对接 - 车辆进出场、停车计费、状态同步"
+
+[lib]
+name = "xlt_service"
+path = "src/lib.rs"
+
+[dependencies]
+tracing = "0.1"
+common = { workspace = true }
+tokio = { workspace = true }
+axum = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+log = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+chrono = { workspace = true }
+reqwest = { workspace = true }
+redis = { workspace = true }
+uuid = { workspace = true }
+futures-util = { workspace = true }
+bytes = { workspace = true }
+
+# gRPC
+tonic = { workspace = true }
+grpc-proto = { workspace = true }
+prost = { workspace = true }
+
+[[bin]]
+name = "xlt-service"
+path = "src/main.rs"

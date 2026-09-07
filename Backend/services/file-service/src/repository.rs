@@ -1,0 +1,201 @@
+//! 文件数据库操作
+
+use crate::error::FileResult;
+use crate::models::SysFile;
+use chrono::{DateTime, Utc};
+use sqlx::PgPool;
+
+/// 文件仓储
+#[derive(Clone)]
+pub struct FileRepository {
+    pool: PgPool,
+}
+
+impl FileRepository {
+    /// 创建文件仓储
+    #[must_use]
+    pub const fn new(pool: PgPool) -> Self {
+        Self { pool }
+    }
+
+    /// 插入文件记录
+    pub async fn insert(&self, file: &crate::models::SysFile) -> FileResult<i64> {
+        let result = sqlx::query_scalar!(
+            r#"
+            INSERT INTO sys_files (
+                file_name, original_name, file_size, mime_type,
+                storage_path, storage_type, bucket, url, md5,
+                created_by, tenant_id
+            )
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+            RETURNING id
+            "#,
+            &file.file_name,
+            &file.original_name,
+            file.file_size,
+            file.mime_type.as_deref(),
+            &file.storage_path,
+            &file.storage_type,
+            file.bucket.as_deref(),
+            file.url.as_deref(),
+            file.md5.as_deref(),
+            file.created_by,
+            file.tenant_id,
+        )
+        .fetch_one(&self.pool)
+        .await?;
+
+        Ok(result)
+    }
+
+    /// 根据ID查询文件
+    pub async fn find_by_id(&self, id: i64) -> FileResult<Option<SysFile>> {
+        let file = sqlx::query_as!(
+            SysFile,
+            r#"
+            SELECT id, file_name, original_name, file_size, mime_type,
+                   storage_path, COALESCE(storage_type, '') AS "storage_type!",
+                   bucket, url, md5,
+                   created_by, tenant_id, created_at, updated_at, deleted_at
+            FROM sys_files
+            WHERE id = $1 AND deleted_at IS NULL
+            "#,
+            id,
+        )
+        .fetch_optional(&self.pool)
+        .await?;
+
+        Ok(file)
+    }
+
+    /// 分页查询文件列表
+    pub async fn find_list(
+        &self,
+        page: u32,
+        page_size: u32,
+        category: Option<&str>,
+        keyword: Option<&str>,
+        start_date: Option<&str>,
+        end_date: Option<&str>,
+    ) -> FileResult<(Vec<SysFile>, i64)> {
+        let offset = (page.saturating_sub(1)) * page_size;
+
+        // 可选过滤条件: 空字符串/空值表示不过滤
+        let category_filter = category.unwrap_or("");
+        let keyword_filter = keyword.map(|k| format!("%{k}%")).unwrap_or_default();
+        let start = start_date.and_then(parse_datetime);
+        let end = end_date.and_then(parse_datetime);
+
+        // 查询总数
+        let total = sqlx::query_scalar!(
+            r#"
+            SELECT COUNT(*) FROM sys_files
+            WHERE ($1 = '' OR category = $1)
+              AND ($2 = '' OR original_name ILIKE $2)
+              AND ($3::timestamptz IS NULL OR created_at >= $3::timestamptz)
+              AND ($4::timestamptz IS NULL OR created_at <= $4::timestamptz)
+              AND deleted_at IS NULL
+            "#,
+            category_filter,
+            keyword_filter,
+            start,
+            end,
+        )
+        .fetch_one(&self.pool)
+        .await?
+        .unwrap_or(0);
+
+        // 查询列表
+        let files = sqlx::query_as!(
+            SysFile,
+            r#"
+            SELECT id, file_name, original_name, file_size, mime_type,
+                   storage_path, COALESCE(storage_type, '') AS "storage_type!",
+                   bucket, url, md5,
+                   created_by, tenant_id, created_at, updated_at, deleted_at
+            FROM sys_files
+            WHERE ($1 = '' OR category = $1)
+              AND ($2 = '' OR original_name ILIKE $2)
+              AND ($3::timestamptz IS NULL OR created_at >= $3::timestamptz)
+              AND ($4::timestamptz IS NULL OR created_at <= $4::timestamptz)
+              AND deleted_at IS NULL
+            ORDER BY created_at DESC
+            LIMIT $5 OFFSET $6
+            "#,
+            category_filter,
+            keyword_filter,
+            start,
+            end,
+            i64::from(page_size),
+            i64::from(offset),
+        )
+        .fetch_all(&self.pool)
+        .await?;
+
+        Ok((files, total))
+    }
+
+    /// 删除文件（软删除）
+    pub async fn delete(&self, id: i64) -> FileResult<bool> {
+        let result = sqlx::query!(
+            r#"
+            UPDATE sys_files
+            SET deleted_at = CURRENT_TIMESTAMP
+            WHERE id = $1 AND deleted_at IS NULL
+            "#,
+            id,
+        )
+        .execute(&self.pool)
+        .await?;
+
+        Ok(result.rows_affected() > 0)
+    }
+
+    /// 批量删除文件（软删除）
+    pub async fn batch_delete(&self, ids: &[i64]) -> FileResult<u64> {
+        if ids.is_empty() {
+            return Ok(0);
+        }
+
+        let result = sqlx::query!(
+            r#"
+            UPDATE sys_files
+            SET deleted_at = CURRENT_TIMESTAMP
+            WHERE id = ANY($1) AND deleted_at IS NULL
+            "#,
+            ids,
+        )
+        .execute(&self.pool)
+        .await?;
+
+        Ok(result.rows_affected())
+    }
+
+    /// 检查文件是否被使用
+    pub async fn is_file_in_use(&self, id: i64) -> FileResult<bool> {
+        // 可以根据业务需求扩展检查逻辑
+        // 例如检查文件是否被文章、设备等引用
+        let count = sqlx::query_scalar!(
+            "SELECT COUNT(*) FROM sys_files WHERE id = $1 AND deleted_at IS NULL",
+            id,
+        )
+        .fetch_one(&self.pool)
+        .await?
+        .unwrap_or(0);
+
+        Ok(count > 0)
+    }
+}
+
+/// 解析日期时间字符串为 UTC 时间（支持 `%Y-%m-%d %H:%M:%S` 与 `%Y-%m-%d` 两种格式）
+fn parse_datetime(s: &str) -> Option<DateTime<Utc>> {
+    chrono::NaiveDateTime::parse_from_str(s, "%Y-%m-%d %H:%M:%S")
+        .ok()
+        .map(|n| DateTime::<Utc>::from_naive_utc_and_offset(n, Utc))
+        .or_else(|| {
+            chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d")
+                .ok()
+                .and_then(|d| d.and_hms_opt(0, 0, 0))
+                .map(|n| DateTime::<Utc>::from_naive_utc_and_offset(n, Utc))
+        })
+}

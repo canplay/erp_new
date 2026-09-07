@@ -1,0 +1,23 @@
+/** i18n module: shortcuts */
+export default {
+    title: '键盘快捷键',
+    general: '通用',
+    table: '表格',
+    navigation: '导航',
+    showHelp: '显示帮助',
+    globalSearch: '全局搜索',
+    new: '新建',
+    close: '关闭/取消',
+    save: '保存',
+    undo: '撤销',
+    navigateRows: '上下选择行',
+    editRow: '编辑选中行',
+    deleteRow: '删除选中行',
+    selectRow: '选中和取消选中',
+    selectAll: '全选',
+    goHome: '返回首页',
+    goProfile: '前往个人中心',
+    goSettings: '前往系统设置',
+    prevTab: '上一个标签页',
+    nextTab: '下一个标签页',
+  }

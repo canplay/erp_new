@@ -1,0 +1,68 @@
+[package]
+name = "common"
+version.workspace = true
+edition = "2024"
+description = "公共库 - 提供共享的类型、错误处理、配置等"
+
+[lib]
+name = "common"
+path = "src/lib.rs"
+
+[features]
+default = ["telemetry", "grpc"]
+telemetry = [
+    "dep:opentelemetry",
+    "dep:opentelemetry_sdk",
+    "dep:opentelemetry-otlp",
+    "dep:tracing-opentelemetry",
+    "log-core/telemetry",
+]
+grpc = ["dep:prost", "dep:tonic"]
+
+[dependencies]
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+anyhow.workspace = true
+async-trait.workspace = true
+sqlx.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+log.workspace = true
+tracing-log.workspace = true
+log-core = { path = "../log-core" }
+chrono.workspace = true
+uuid.workspace = true
+axum.workspace = true
+tower.workspace = true
+tower-http = { version = "0.6", features = ["cors", "trace", "fs", "normalize-path"] }
+config.workspace = true
+jsonwebtoken.workspace = true
+reqwest.workspace = true
+tonic = { workspace = true, optional = true }
+prost = { workspace = true, optional = true }
+dotenvy.workspace = true
+parking_lot.workspace = true
+rand = { version = "0.10", features = ["std"] }
+lru = { workspace = true }
+urlencoding = { workspace = true }
+strum = { version = "0.26", features = ["derive"] }
+hex.workspace = true
+argon2.workspace = true
+bcrypt.workspace = true
+regex = "1"
+lazy_static = "1.5"
+hashlink = "0.9"
+indexmap = "2.0"
+redis = { version = "0.27", features = ["aio", "tokio-comp"] }
+futures = "0.3"
+
+# OpenTelemetry (optional)
+opentelemetry = { workspace = true, optional = true }
+opentelemetry_sdk = { workspace = true, optional = true }
+opentelemetry-otlp = { workspace = true, optional = true }
+tracing-opentelemetry = { workspace = true, optional = true }
+
+[dev-dependencies]
+tokio-test = "0.4"

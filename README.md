@@ -10,7 +10,7 @@ MyAI 是一套面向多业务场景的全栈微服务管理平台，采用 Rust 
 
 ```
 myai/
-├── Backend/                        # 后端（22 个 gRPC 微服务 + API Gateway）
+├── Backend/                        # 后端（21 个 gRPC 微服务 + API Gateway）
 │   ├── services/                   # 各微服务源码
 │   │   ├── api-gateway/            # HTTP 网关（统一 REST + WS 入口）
 │   │   ├── auth-service/           # 认证服务
@@ -34,7 +34,7 @@ myai/
 │   │   ├── clean-service/          # 清洁服务
 │   │   ├── xlt-service/            # XLT 服务
 │   │   └── ...
-│   ├── crates/                     # 共享 Crate（9 个）
+│   ├── crates/                     # 共享 Crate（8 个）
 │   │   ├── auth-core/              # 认证核心
 │   │   ├── cache-core/             # 缓存核心
 │   │   ├── circuit-breaker-core/   # 熔断核心
@@ -45,7 +45,7 @@ myai/
 │   │   └── log-core/               # 日志核心
 │   ├── protos/                     # gRPC Proto 定义（20+ .proto）
 │   ├── sql/
-│   │   └── schema.sql              # 数据库 schema（83+ 表）
+│   │   └── schema.sql              # 数据库 schema（98 表）
 │   ├── Cargo.toml                  # 工作区配置
 │   └── Dockerfile.*                # 多阶段构建
 │

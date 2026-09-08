@@ -13,7 +13,7 @@
 
 请通过以下方式私下联系维护者：
 
-- **邮箱**：security@example.com（占位，请替换为实际邮箱）
+- **邮箱**：[维护者邮箱]（待配置，请先通过 GitHub Security Advisory 报告）
 - **GitHub Security Advisory**：[创建私有报告](https://github.com/canplay/myai/security/advisories/new)
 
 报告请包含：

@@ -87,7 +87,7 @@ myai/
 | 层 | 技术 |
 |---|---|
 | 后端框架 | Rust (Actix Web) + gRPC (Tonic) |
-| 前端框架 | Vue 3.5 + Quasar 2 + Pinia + Vite |
+| 前端框架 | Vue 3.5 + Quasar 2 + Pinia + Vite（admin 87 / ops 19 / social 13） |
 | 数据库 | PostgreSQL |
 | 缓存 / 任务 | Redis / Hangfire |
 | 认证 | JWT Bearer + ASP.NET Identity |

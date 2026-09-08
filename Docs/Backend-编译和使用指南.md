@@ -681,7 +681,7 @@ MyAI/
 │   │   ├── api-gateway/        # API 网关
 │   │   ├── auth-service/      # 认证服务
 │   │   ├── user-service/      # 用户服务
-│   │   └── ... (24个服务)
+│   │   └── ... (21个服务)
 │   ├── protos/               # Protobuf 源文件
 │   ├── sql/                 # 数据库 Schema
 │   └── template/             # Docker 模板

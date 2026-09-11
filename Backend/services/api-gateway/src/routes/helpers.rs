@@ -26,17 +26,35 @@ pub fn json_error_fmt(msg: &str, e: &impl std::fmt::Display) -> Json<Value> {
     Json(json!({"success": false, "code": 500, "message": format!("{}: {}", msg, e)}))
 }
 
-/// Stub: 空列表
+/// Deprecated: 空列表 — 使用 `json_success(Vec::new())` 替代
+#[deprecated(note = "使用 json_success(Vec::new()) 替代")]
 pub async fn stub_list() -> Json<Value> {
     Json(json!({"success": true, "code": 200, "data": {"list": [], "total": 0}}))
 }
 
-/// Stub: 空成功
+/// Deprecated: 空成功 — 使用 `json_ok()` 替代
+#[deprecated(note = "使用 json_ok() 替代")]
 pub async fn stub_ok() -> Json<Value> {
     Json(json!({"success": true, "code": 200}))
 }
 
-/// Stub: 空 JSON
+/// Deprecated: 空 JSON — 使用 `json_success(())` 替代
+#[deprecated(note = "使用 json_success(()) 替代")]
 pub async fn stub_json() -> Json<Value> {
     Json(json!({"success": true, "code": 200, "data": null}))
+}
+
+/// gRPC client accessor macro — reads client from AppState and returns
+/// a JSON error response on failure (eliminates ~10 duplicate get_*_client fns).
+///
+/// Usage: `grpc_client!(state, audit_client)`
+/// Expands to: `state.grpc_clients.read().await.audit_client().await.map_err(|e| json_error(&format!("{} 不可用: {}", "audit_client", e)))?`
+#[macro_export]
+macro_rules! grpc_client {
+    ($state:expr, $client:ident) => {
+        match $state.grpc_clients.read().await.$client().await {
+            Ok(c) => c,
+            Err(e) => return json_error(&format!("{} 不可用: {}", stringify!($client), e)),
+        }
+    };
 }

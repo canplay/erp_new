@@ -113,30 +113,44 @@ pub async fn get_dashboard_stats(
     let mut login_type_map: std::collections::HashMap<String, i64> = std::collections::HashMap::new();
 
     if let Ok(mut user_client) = state.grpc_clients.read().await.user_client().await {
-        // 拉取全部用户（管理后台规模可接受，分页上限 10000）
-        match user_client.list_users(1, 10000, String::new()).await {
-            Ok(resp) => {
-                total_users = resp.total;
-                let mut day_count: std::collections::HashMap<String, i64> = std::collections::HashMap::new();
-                for u in &resp.users {
-                    let created = u.created_at;
-                    if created >= today_start {
-                        new_users_today += 1;
+        // Paginated fetching: 500 per page, max 5 pages = 2500 users
+        let mut all_users = Vec::new();
+        let mut page: i32 = 1;
+        let page_size: i32 = 500;
+        let max_pages = 5;
+        loop {
+            match user_client.list_users(page, page_size, String::new()).await {
+                Ok(resp) => {
+                    let count = resp.users.len() as i64;
+                    all_users.extend(resp.users);
+                    total_users = resp.total;
+                    if count < page_size as i64 || page >= max_pages {
+                        break;
                     }
-                    *day_count.entry(fmt_label(created)).or_insert(0) += 1;
+                    page += 1;
                 }
-                // 近 7 天增长（含今天）
-                for i in (0..7).rev() {
-                    let day = today_start - i * 86400;
-                    user_growth.push(UserGrowthPoint {
-                        label: fmt_label(day),
-                        value: *day_count.get(&fmt_label(day)).unwrap_or(&0),
-                    });
+                Err(e) => {
+                    tracing::warn!("【统计】ListUsers 失败: {e}");
+                    break;
                 }
             }
-            Err(e) => {
-                tracing::warn!("【统计】ListUsers 失败: {e}");
+        }
+        // Process all_users
+        let mut day_count: std::collections::HashMap<String, i64> = std::collections::HashMap::new();
+        for u in &all_users {
+            let created = u.created_at;
+            if created >= today_start {
+                new_users_today += 1;
             }
+            *day_count.entry(fmt_label(created)).or_insert(0) += 1;
+        }
+        // 近 7 天增长（含今天）
+        for i in (0..7).rev() {
+            let day = today_start - i * 86400;
+            user_growth.push(UserGrowthPoint {
+                label: fmt_label(day),
+                value: *day_count.get(&fmt_label(day)).unwrap_or(&0),
+            });
         }
     } else {
         tracing::warn!("【统计】user-service gRPC 不可用");
@@ -176,20 +190,31 @@ pub async fn get_dashboard_stats(
             Ok(resp) => successful_logins = resp.total,
             Err(e) => tracing::warn!("【统计】ListLoginLogs(成功) 失败: {e}"),
         }
-        // 活跃用户（本月成功登录的去重 user_id）与登录类型分布
-        match audit_client
-            .list_login_logs(1, 10000, 0, String::new(), 1, start.clone(), end.clone())
-            .await
-        {
-            Ok(resp) => {
-                for l in &resp.logs {
-                    if l.user_id > 0 {
-                        active_user_ids.insert(l.user_id);
+        // 活跃用户（本月成功登录的去重 user_id）与登录类型分布（分页拉取，避免全表加载）
+        let mut page: i32 = 1;
+        let page_size: i32 = 500;
+        loop {
+            match audit_client
+                .list_login_logs(page, page_size, 0, String::new(), 1, start.clone(), end.clone())
+                .await
+            {
+                Ok(resp) => {
+                    for l in &resp.logs {
+                        if l.user_id > 0 {
+                            active_user_ids.insert(l.user_id);
+                        }
+                        *login_type_map.entry(l.login_method.clone()).or_insert(0) += 1;
                     }
-                    *login_type_map.entry(l.login_method.clone()).or_insert(0) += 1;
+                    if (resp.logs.len() as i32) < page_size || ((page as i64) * (page_size as i64)) >= resp.total {
+                        break;
+                    }
+                    page += 1;
+                }
+                Err(e) => {
+                    tracing::warn!("【统计】ListLoginLogs(活跃) 失败: {e}");
+                    break;
                 }
             }
-            Err(e) => tracing::warn!("【统计】ListLoginLogs(活跃) 失败: {e}"),
         }
     } else {
         tracing::warn!("【统计】audit-service gRPC 不可用");

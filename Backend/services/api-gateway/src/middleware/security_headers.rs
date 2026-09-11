@@ -38,7 +38,7 @@ pub async fn security_headers_middleware(request: Request, next: Next) -> Respon
     );
     headers.insert(
         HeaderName::from_static("content-security-policy"),
-        HeaderValue::from_static("default-src 'self'"),
+        HeaderValue::from_static("default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:"),
     );
     headers.insert(
         HeaderName::from_static("referrer-policy"),

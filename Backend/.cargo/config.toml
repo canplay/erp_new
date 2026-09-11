@@ -4,6 +4,9 @@
 # 启用增量编译
 incremental = true
 
+[env]
+PROTOC = { value = "C:\\Users\\canplay\\.nuget\\packages\\grpc.tools\\2.59.0\\tools\\windows_x64\\protoc.exe", force = true }
+
 [target.x86_64-pc-windows-msvc]
 # Windows MSVC 特定配置
 rustflags = ["-C", "target-cpu=native"]

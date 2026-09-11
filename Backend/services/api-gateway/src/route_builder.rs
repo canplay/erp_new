@@ -22,6 +22,7 @@ use crate::{
     grpc_error_middleware::grpc_error_handler_middleware,
     middleware::{auth_middleware, cors_layer, logging_middleware, operation_log_middleware, rate_limit_middleware, security_headers_middleware},
 };
+use common::middleware::csrf_protection_middleware;
 
 /// Create the fully configured HTTP router
 ///
@@ -46,6 +47,10 @@ pub fn create_router(
         .route("/ws/messages", axum::routing::get(crate::ws_routes::ws_messages_handler))
         // 8. Innermost: gRPC error handler (catches handler/propagation errors)
         .layer(axum::middleware::from_fn(grpc_error_handler_middleware));
+
+    // 7. CSRF 保护中间件 —— 验证写操作的 CSRF Token（需在 auth 之后）
+    let router = router
+        .layer(axum::middleware::from_fn(csrf_protection_middleware));
 
     // 7. 操作日志中间件 —— 记录写操作到审计日志（需在 auth 之后以获取用户信息）
     let router = router

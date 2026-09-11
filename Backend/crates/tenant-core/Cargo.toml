@@ -1,0 +1,19 @@
+[package]
+name = "tenant-core"
+version.workspace = true
+edition.workspace = true
+description = "多租户核心 - 租户上下文、隔离级别、查询过滤"
+
+[dependencies]
+tokio.workspace = true
+chrono.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+async-trait.workspace = true
+uuid.workspace = true
+base64 = "0.22"
+axum.workspace = true
+tower.workspace = true
+futures-util = "0.3"

@@ -9,7 +9,7 @@
 //!
 
 use std::sync::Arc;
-use audit_service::grpc_handlers::{{AuditAppState, AuditGrpcService}};
+use audit_service::grpc_handlers::{AuditAppState, AuditGrpcService};
 use audit_service::AuditRepository;
 use common::health::health_routes;
 use common::service_bootstrap::{ServiceBootstrap, ServiceConfig};

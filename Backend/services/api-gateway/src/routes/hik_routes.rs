@@ -7,7 +7,7 @@ use crate::AppState;
 use crate::routes::helpers::*;
 
 async fn get_client(state: &Arc<AppState>) -> Result<crate::grpc_clients::HikGrpcClient, Json<Value>> {
-    state.grpc_clients.write().await.hik_client().await
+    state.grpc_clients.read().await.hik_client().await
         .map_err(|e| json_error(&format!("hik-service 不可用: {e}")))
 }
 

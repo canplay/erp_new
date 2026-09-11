@@ -23,9 +23,7 @@ pub use otel::shutdown_otel;
 pub mod models;
 pub mod repository;
 pub mod response;
-pub mod service;
 pub mod service_bootstrap;
-pub mod service_builder;
 pub mod service_runner;
 pub mod shutdown; // 优雅关闭信号
 pub mod validation; // 参数校验和密码工具 // 服务运行器（gRPC + HTTP 双服务）
@@ -66,10 +64,6 @@ pub use middleware::{
 
 // Re-export CSRF 保护相关
 pub use middleware::{HEADER_CSRF_TOKEN, csrf_protection_middleware, generate_csrf_token};
-
-// Re-export service builder (deprecated, use ServiceRunner instead)
-#[allow(deprecated)]
-pub use service_builder::ServiceBuilder2;
 
 // Re-export HTTP 响应辅助函数
 pub use http::{

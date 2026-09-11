@@ -7,7 +7,7 @@ use crate::AppState;
 use crate::routes::helpers::*;
 
 async fn get_client(state: &Arc<AppState>) -> Result<crate::grpc_clients::BrowserGrpcClient, Json<Value>> {
-    state.grpc_clients.write().await.browser_client().await
+    state.grpc_clients.read().await.browser_client().await
         .map_err(|e| json_error(&format!("browser-service 不可用: {e}")))
 }
 

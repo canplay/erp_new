@@ -9,6 +9,7 @@ members = [
     "crates/log-core",
     "crates/circuit-breaker-core",
     "crates/grpc-proto",
+    "crates/tenant-core",
     "services/api-gateway",
     "services/auth-service",
     "services/user-service",
@@ -47,6 +48,7 @@ log-core = { path = "crates/log-core" }
 circuit-breaker-core = { path = "crates/circuit-breaker-core" }
 auth-core = { path = "crates/auth-core" }
 crypto-core = { path = "crates/crypto-core" }
+tenant-core = { path = "crates/tenant-core" }
 
 # 异步运行时
 tokio = { version = "1.52", features = ["rt-multi-thread", "macros", "net", "sync", "time", "signal", "rt", "fs", "io-util"] }

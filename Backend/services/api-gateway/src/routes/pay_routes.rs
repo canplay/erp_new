@@ -7,7 +7,7 @@ use crate::AppState;
 use crate::routes::helpers::*;
 
 async fn get_client(state: &Arc<AppState>) -> Result<crate::grpc_clients::PayGrpcClient, Json<Value>> {
-    state.grpc_clients.write().await.pay_client().await
+    state.grpc_clients.read().await.pay_client().await
         .map_err(|e| json_error(&format!("pay-service 不可用: {e}")))
 }
 

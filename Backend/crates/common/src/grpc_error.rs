@@ -336,4 +336,27 @@ mod tests {
         let status = tonic::Status::from(&err);
         assert_eq!(status.code(), tonic::Code::PermissionDenied);
     }
+
+    #[test]
+    fn test_partial_failure_round_trip() {
+        let err = AppError::PartialFailure {
+            success_count: 5,
+            fail_count: 2,
+        };
+        let status: tonic::Status = err.into();
+        assert_eq!(status.code(), tonic::Code::Internal);
+        let msg = status.message();
+        assert!(msg.contains("5"), "message should contain success_count");
+        assert!(msg.contains("2"), "message should contain fail_count");
+    }
+
+    #[test]
+    fn test_partial_failure_via_from() {
+        let err = AppError::PartialFailure {
+            success_count: 10,
+            fail_count: 0,
+        };
+        let status = tonic::Status::from(&err);
+        assert_eq!(status.code(), tonic::Code::Internal);
+    }
 }

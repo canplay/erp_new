@@ -282,7 +282,7 @@ pub async fn car(
             let time_start = req["time"]["start"].as_str().unwrap_or("");
             let time_end = req["time"]["end"].as_str().unwrap_or("");
             // 分页参数：默认每页 50 条，最大 500 条
-            let limit = req["limit"].as_i64().unwrap_or(50).min(500).max(1);
+            let limit = req["limit"].as_i64().unwrap_or(50).clamp(1, 500);
             let offset = req["offset"].as_i64().unwrap_or(0).max(0);
 
             match state

@@ -1,7 +1,7 @@
 //! Persistent repository types for api-gateway state management
 //!
 //! Each repository loads data from DB on construction and persists writes.
-//! All use `Arc<Mutex<Vec<T>>>` for thread-safe interior mutability.
+//! All use `Arc<RwLock<Vec<T>>>` for thread-safe interior mutability.
 //!
 //! Tables use the `gw_` prefix (gateway-owned) to avoid clashing with
 //! business tables in schema.sql. Queries use runtime SQL (no offline
@@ -10,7 +10,8 @@
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 use sqlx::PgPool;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
+use std::sync::RwLock;
 
 // ==================== LoginDevice (re-export from device_routes) ====================
 
@@ -105,17 +106,26 @@ pub struct ReportTemplateEntry {
 #[derive(Debug, Clone)]
 pub struct DeviceRepository {
     pool: PgPool,
-    cache: Arc<Mutex<Vec<LoginDevice>>>,
+    cache: Arc<RwLock<Vec<LoginDevice>>>,
 }
 
 impl DeviceRepository {
     pub async fn new(pool: PgPool) -> Self {
         let repo = Self {
             pool,
-            cache: Arc::new(Mutex::new(Vec::new())),
+            cache: Arc::new(RwLock::new(Vec::new())),
         };
         repo.load_from_db().await;
         repo
+    }
+
+    /// 创建一个空的 repository（用于测试，不连接数据库）
+    #[cfg(test)]
+    pub fn new_nop(pool: PgPool) -> Self {
+        Self {
+            pool,
+            cache: Arc::new(RwLock::new(Vec::new())),
+        }
     }
 
     async fn load_from_db(&self) {
@@ -131,19 +141,19 @@ impl DeviceRepository {
                 Vec::new()
             }
         };
-        let mut cache = self.cache.lock().unwrap();
+        let mut cache = self.cache.write().unwrap();
         *cache = devices;
     }
 
     #[must_use]
     pub fn entries(&self) -> Vec<LoginDevice> {
-        let cache = self.cache.lock().unwrap();
+        let cache = self.cache.read().unwrap();
         cache.clone()
     }
 
     /// 获取所有条目（可修改）
     pub fn entries_mut(&self) -> Vec<LoginDevice> {
-        let cache = self.cache.lock().unwrap();
+        let cache = self.cache.read().unwrap();
         cache.clone()
     }
 
@@ -176,7 +186,7 @@ impl DeviceRepository {
         .execute(&self.pool)
         .await?;
 
-        let mut cache = self.cache.lock().unwrap();
+        let mut cache = self.cache.write().unwrap();
         cache.push(entry);
         Ok(())
     }
@@ -187,17 +197,26 @@ impl DeviceRepository {
 #[derive(Debug, Clone)]
 pub struct IpWhitelistRepository {
     pool: PgPool,
-    cache: Arc<Mutex<Vec<IpWhitelistEntry>>>,
+    cache: Arc<RwLock<Vec<IpWhitelistEntry>>>,
 }
 
 impl IpWhitelistRepository {
     pub async fn new(pool: PgPool) -> Self {
         let repo = Self {
             pool,
-            cache: Arc::new(Mutex::new(Vec::new())),
+            cache: Arc::new(RwLock::new(Vec::new())),
         };
         repo.load_from_db().await;
         repo
+    }
+
+    /// 创建一个空的 repository（用于测试，不连接数据库）
+    #[cfg(test)]
+    pub fn new_nop(pool: PgPool) -> Self {
+        Self {
+            pool,
+            cache: Arc::new(RwLock::new(Vec::new())),
+        }
     }
 
     async fn load_from_db(&self) {
@@ -213,19 +232,19 @@ impl IpWhitelistRepository {
                 Vec::new()
             }
         };
-        let mut cache = self.cache.lock().unwrap();
+        let mut cache = self.cache.write().unwrap();
         *cache = entries;
     }
 
     #[must_use]
     pub fn entries(&self) -> Vec<IpWhitelistEntry> {
-        let cache = self.cache.lock().unwrap();
+        let cache = self.cache.read().unwrap();
         cache.clone()
     }
 
     /// 获取所有条目（可修改）
     pub fn entries_mut(&self) -> Vec<IpWhitelistEntry> {
-        let cache = self.cache.lock().unwrap();
+        let cache = self.cache.read().unwrap();
         cache.clone()
     }
 
@@ -241,7 +260,7 @@ impl IpWhitelistRepository {
         .execute(&self.pool)
         .await?;
 
-        let mut cache = self.cache.lock().unwrap();
+        let mut cache = self.cache.write().unwrap();
         cache.push(entry);
         Ok(())
     }
@@ -252,17 +271,26 @@ impl IpWhitelistRepository {
 #[derive(Debug, Clone)]
 pub struct SensitiveAuditRepository {
     pool: PgPool,
-    cache: Arc<Mutex<Vec<SensitiveAuditEntry>>>,
+    cache: Arc<RwLock<Vec<SensitiveAuditEntry>>>,
 }
 
 impl SensitiveAuditRepository {
     pub async fn new(pool: PgPool) -> Self {
         let repo = Self {
             pool,
-            cache: Arc::new(Mutex::new(Vec::new())),
+            cache: Arc::new(RwLock::new(Vec::new())),
         };
         repo.load_from_db().await;
         repo
+    }
+
+    /// 创建一个空的 repository（用于测试，不连接数据库）
+    #[cfg(test)]
+    pub fn new_nop(pool: PgPool) -> Self {
+        Self {
+            pool,
+            cache: Arc::new(RwLock::new(Vec::new())),
+        }
     }
 
     async fn load_from_db(&self) {
@@ -278,19 +306,19 @@ impl SensitiveAuditRepository {
                 Vec::new()
             }
         };
-        let mut cache = self.cache.lock().unwrap();
+        let mut cache = self.cache.write().unwrap();
         *cache = entries;
     }
 
     #[must_use]
     pub fn entries(&self) -> Vec<SensitiveAuditEntry> {
-        let cache = self.cache.lock().unwrap();
+        let cache = self.cache.read().unwrap();
         cache.clone()
     }
 
     /// 获取所有条目（可修改）
     pub fn entries_mut(&self) -> Vec<SensitiveAuditEntry> {
-        let cache = self.cache.lock().unwrap();
+        let cache = self.cache.read().unwrap();
         cache.clone()
     }
 
@@ -307,7 +335,7 @@ impl SensitiveAuditRepository {
         .execute(&self.pool)
         .await?;
 
-        let mut cache = self.cache.lock().unwrap();
+        let mut cache = self.cache.write().unwrap();
         cache.push(entry);
         Ok(())
     }
@@ -318,17 +346,26 @@ impl SensitiveAuditRepository {
 #[derive(Debug, Clone)]
 pub struct ScheduledTaskRepository {
     pool: PgPool,
-    cache: Arc<Mutex<Vec<ScheduledTaskEntry>>>,
+    cache: Arc<RwLock<Vec<ScheduledTaskEntry>>>,
 }
 
 impl ScheduledTaskRepository {
     pub async fn new(pool: PgPool) -> Self {
         let repo = Self {
             pool,
-            cache: Arc::new(Mutex::new(Vec::new())),
+            cache: Arc::new(RwLock::new(Vec::new())),
         };
         repo.load_from_db().await;
         repo
+    }
+
+    /// 创建一个空的 repository（用于测试，不连接数据库）
+    #[cfg(test)]
+    pub fn new_nop(pool: PgPool) -> Self {
+        Self {
+            pool,
+            cache: Arc::new(RwLock::new(Vec::new())),
+        }
     }
 
     async fn load_from_db(&self) {
@@ -344,19 +381,19 @@ impl ScheduledTaskRepository {
                 Vec::new()
             }
         };
-        let mut cache = self.cache.lock().unwrap();
+        let mut cache = self.cache.write().unwrap();
         *cache = entries;
     }
 
     #[must_use]
     pub fn entries(&self) -> Vec<ScheduledTaskEntry> {
-        let cache = self.cache.lock().unwrap();
+        let cache = self.cache.read().unwrap();
         cache.clone()
     }
 
     /// 获取所有条目（可修改）
     pub fn entries_mut(&self) -> Vec<ScheduledTaskEntry> {
-        let cache = self.cache.lock().unwrap();
+        let cache = self.cache.read().unwrap();
         cache.clone()
     }
 
@@ -373,7 +410,7 @@ impl ScheduledTaskRepository {
         .execute(&self.pool)
         .await?;
 
-        let mut cache = self.cache.lock().unwrap();
+        let mut cache = self.cache.write().unwrap();
         cache.push(entry);
         Ok(())
     }
@@ -384,17 +421,26 @@ impl ScheduledTaskRepository {
 #[derive(Debug, Clone)]
 pub struct ReportRepository {
     pool: PgPool,
-    cache: Arc<Mutex<Vec<ReportEntry>>>,
+    cache: Arc<RwLock<Vec<ReportEntry>>>,
 }
 
 impl ReportRepository {
     pub async fn new(pool: PgPool) -> Self {
         let repo = Self {
             pool,
-            cache: Arc::new(Mutex::new(Vec::new())),
+            cache: Arc::new(RwLock::new(Vec::new())),
         };
         repo.load_from_db().await;
         repo
+    }
+
+    /// 创建一个空的 repository（用于测试，不连接数据库）
+    #[cfg(test)]
+    pub fn new_nop(pool: PgPool) -> Self {
+        Self {
+            pool,
+            cache: Arc::new(RwLock::new(Vec::new())),
+        }
     }
 
     async fn load_from_db(&self) {
@@ -410,19 +456,19 @@ impl ReportRepository {
                 Vec::new()
             }
         };
-        let mut cache = self.cache.lock().unwrap();
+        let mut cache = self.cache.write().unwrap();
         *cache = entries;
     }
 
     #[must_use]
     pub fn entries(&self) -> Vec<ReportEntry> {
-        let cache = self.cache.lock().unwrap();
+        let cache = self.cache.read().unwrap();
         cache.clone()
     }
 
     /// 获取所有条目（可修改）
     pub fn entries_mut(&self) -> Vec<ReportEntry> {
-        let cache = self.cache.lock().unwrap();
+        let cache = self.cache.read().unwrap();
         cache.clone()
     }
 
@@ -439,7 +485,7 @@ impl ReportRepository {
         .execute(&self.pool)
         .await?;
 
-        let mut cache = self.cache.lock().unwrap();
+        let mut cache = self.cache.write().unwrap();
         cache.push(entry);
         Ok(())
     }
@@ -450,17 +496,26 @@ impl ReportRepository {
 #[derive(Debug, Clone)]
 pub struct DataSourceRepository {
     pool: PgPool,
-    cache: Arc<Mutex<Vec<DataSourceEntry>>>,
+    cache: Arc<RwLock<Vec<DataSourceEntry>>>,
 }
 
 impl DataSourceRepository {
     pub async fn new(pool: PgPool) -> Self {
         let repo = Self {
             pool,
-            cache: Arc::new(Mutex::new(Vec::new())),
+            cache: Arc::new(RwLock::new(Vec::new())),
         };
         repo.load_from_db().await;
         repo
+    }
+
+    /// 创建一个空的 repository（用于测试，不连接数据库）
+    #[cfg(test)]
+    pub fn new_nop(pool: PgPool) -> Self {
+        Self {
+            pool,
+            cache: Arc::new(RwLock::new(Vec::new())),
+        }
     }
 
     async fn load_from_db(&self) {
@@ -476,19 +531,19 @@ impl DataSourceRepository {
                 Vec::new()
             }
         };
-        let mut cache = self.cache.lock().unwrap();
+        let mut cache = self.cache.write().unwrap();
         *cache = entries;
     }
 
     #[must_use]
     pub fn entries(&self) -> Vec<DataSourceEntry> {
-        let cache = self.cache.lock().unwrap();
+        let cache = self.cache.read().unwrap();
         cache.clone()
     }
 
     /// 获取所有条目（可修改）
     pub fn entries_mut(&self) -> Vec<DataSourceEntry> {
-        let cache = self.cache.lock().unwrap();
+        let cache = self.cache.read().unwrap();
         cache.clone()
     }
 
@@ -505,7 +560,7 @@ impl DataSourceRepository {
         .execute(&self.pool)
         .await?;
 
-        let mut cache = self.cache.lock().unwrap();
+        let mut cache = self.cache.write().unwrap();
         cache.push(entry);
         Ok(())
     }
@@ -516,17 +571,26 @@ impl DataSourceRepository {
 #[derive(Debug, Clone)]
 pub struct ReportTemplateRepository {
     pool: PgPool,
-    cache: Arc<Mutex<Vec<ReportTemplateEntry>>>,
+    cache: Arc<RwLock<Vec<ReportTemplateEntry>>>,
 }
 
 impl ReportTemplateRepository {
     pub async fn new(pool: PgPool) -> Self {
         let repo = Self {
             pool,
-            cache: Arc::new(Mutex::new(Vec::new())),
+            cache: Arc::new(RwLock::new(Vec::new())),
         };
         repo.load_from_db().await;
         repo
+    }
+
+    /// 创建一个空的 repository（用于测试，不连接数据库）
+    #[cfg(test)]
+    pub fn new_nop(pool: PgPool) -> Self {
+        Self {
+            pool,
+            cache: Arc::new(RwLock::new(Vec::new())),
+        }
     }
 
     async fn load_from_db(&self) {
@@ -542,19 +606,19 @@ impl ReportTemplateRepository {
                 Vec::new()
             }
         };
-        let mut cache = self.cache.lock().unwrap();
+        let mut cache = self.cache.write().unwrap();
         *cache = entries;
     }
 
     #[must_use]
     pub fn entries(&self) -> Vec<ReportTemplateEntry> {
-        let cache = self.cache.lock().unwrap();
+        let cache = self.cache.read().unwrap();
         cache.clone()
     }
 
     /// 获取所有条目（可修改）
     pub fn entries_mut(&self) -> Vec<ReportTemplateEntry> {
-        let cache = self.cache.lock().unwrap();
+        let cache = self.cache.read().unwrap();
         cache.clone()
     }
 
@@ -571,7 +635,7 @@ impl ReportTemplateRepository {
         .execute(&self.pool)
         .await?;
 
-        let mut cache = self.cache.lock().unwrap();
+        let mut cache = self.cache.write().unwrap();
         cache.push(entry);
         Ok(())
     }

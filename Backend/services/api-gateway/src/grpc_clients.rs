@@ -192,6 +192,15 @@ pub struct GrpcClients {
     pub browser_service: GrpcClient<grpc_proto::browser::browser_service_client::BrowserServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>>,
 }
 
+impl std::fmt::Debug for GrpcClients {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("GrpcClients")
+            .field("config", &self.config)
+            .field("services", &"21 gRPC clients")
+            .finish()
+    }
+}
+
 macro_rules! disconnected_client {
     ($config:expr, $default_url:expr) => {
         GrpcClient::new($default_url.to_string(), $config.clone())

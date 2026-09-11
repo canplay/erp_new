@@ -52,3 +52,6 @@ log-core.workspace = true
 
 # SQL 驱动（Repository 类型需要）
 sqlx = { workspace = true, features = ["runtime-tokio", "postgres", "tls-rustls", "chrono"] }
+
+[dev-dependencies]
+http-body-util = "0.1"

@@ -8,7 +8,7 @@ use crate::AppState;
 use crate::routes::helpers::*;
 
 async fn get_client(state: &Arc<AppState>) -> Result<crate::grpc_clients::XltGrpcClient, Json<Value>> {
-    state.grpc_clients.write().await.xlt_client().await
+    state.grpc_clients.read().await.xlt_client().await
         .map_err(|e| json_error(&format!("xlt-service 不可用: {e}")))
 }
 

@@ -74,6 +74,7 @@ dependencies = [
  "futures-util",
  "grpc-core",
  "grpc-proto",
+ "http-body-util",
  "jsonwebtoken",
  "log",
  "log-core",
@@ -5080,6 +5081,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "tenant-core"
+version = "0.2.0"
+dependencies = [
+ "async-trait",
+ "axum",
+ "base64 0.22.1",
+ "chrono",
+ "futures-util",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "tower",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "tenant-service"
 version = "0.2.0"
 dependencies = [
@@ -5094,6 +5113,7 @@ dependencies = [
  "serde",
  "serde_json",
  "sqlx",
+ "tenant-core",
  "thiserror",
  "tokio",
  "tonic",

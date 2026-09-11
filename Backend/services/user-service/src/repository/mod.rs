@@ -10,8 +10,9 @@ mod user_repository;
 // 导出所有 Repository 和类型
 pub use announcement_repository::{
     Announcement, AnnouncementListItem, AnnouncementRepository, AnnouncementRepositoryError,
-    DictionaryItem, DictionaryType, LoginLog, PaginatedAnnouncements, PaginatedDictionaryItems,
-    PaginatedDictionaryTypes, PaginatedLoginLogs, SystemConfig,
+    CreateDictionaryItemParams, DictionaryItem, DictionaryType, LoginLog, PaginatedAnnouncements,
+    PaginatedDictionaryItems, PaginatedDictionaryTypes, PaginatedLoginLogs, SystemConfig,
+    UpdateDictionaryItemParams,
 };
 pub use department_repository::{
     Department, DepartmentListItem, DepartmentRepository, DepartmentRepositoryError,

@@ -1105,8 +1105,18 @@ impl UserService for UserServiceImpl {
         let is_default = Some(req.is_default);
         let remark = if req.remark.is_empty() { None } else { Some(req.remark.as_str()) };
 
+        let params = crate::repository::CreateDictionaryItemParams {
+            type_id: req.type_id,
+            label: &req.label,
+            value: &req.value,
+            sort,
+            status,
+            is_default,
+            remark,
+        };
+
         let item_id = self.state.announcement_repository
-            .create_dictionary_item(req.type_id, &req.label, &req.value, sort, status, is_default, remark)
+            .create_dictionary_item(params)
             .await.map_err(|e| Status::internal(e.to_string()))?;
 
         Ok(Response::new(CreateDictionaryItemResponse {
@@ -1135,9 +1145,18 @@ impl UserService for UserServiceImpl {
         let status_val = if req.status == 0 { None } else { Some(req.status) };
         let is_default_val = if req.is_default { Some(true) } else { None };
 
-        self.state.announcement_repository.update_dictionary_item(
-            req.id, label, value, sort_val, status_val, is_default_val, remark,
-        ).await.map_err(|e| Status::internal(e.to_string()))?;
+        let update_params = crate::repository::UpdateDictionaryItemParams {
+            id: req.id,
+            label: label.as_deref().unwrap_or(""),
+            value: value.as_deref().unwrap_or(""),
+            sort: sort_val,
+            status: status_val,
+            is_default: is_default_val,
+            remark: remark.as_deref(),
+        };
+
+        self.state.announcement_repository.update_dictionary_item(update_params)
+            .await.map_err(|e| Status::internal(e.to_string()))?;
 
         Ok(Response::new(UpdateDictionaryItemResponse { success: true }))
     }
@@ -1536,7 +1555,7 @@ impl common::service_bootstrap::GrpcServiceBuilder for UserServiceImpl {
     fn build_grpc_server(&self, grpc_addr: &str) -> Result<tokio::task::JoinHandle<()>, Box<dyn std::error::Error + Send + Sync>> {
         use tonic::transport::Server;
 
-        let addr: SocketAddr = grpc_addr.parse().expect("invalid grpc addr");
+        let addr: SocketAddr = grpc_addr.parse().map_err(|e| -> Box<dyn std::error::Error + Send + Sync> { format!("invalid grpc addr: {e}").into() })?;
         let server = UserServiceServer::new(UserServiceImpl::new(self.state.clone()));
         let handle = tokio::spawn(async move {
             if let Err(e) = Server::builder()

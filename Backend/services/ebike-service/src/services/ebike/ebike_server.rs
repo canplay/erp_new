@@ -256,7 +256,7 @@ impl EbikeServiceTrait for EbikeGrpcService {
             0,
             0,
         ).await.map_err(|e| Status::internal(format!("{e}")))?;
-        let proto: Vec<CarInfo> = cars.iter().map(|c| car_to_proto(c)).collect();
+        let proto: Vec<CarInfo> = cars.iter().map(car_to_proto).collect();
         Ok(Response::new(CarListResponse { cars: proto }))
     }
 
@@ -267,7 +267,7 @@ impl EbikeServiceTrait for EbikeGrpcService {
         let req = request.into_inner();
         let cars = self.state.car_repo.history(&req.code)
             .await.map_err(|e| Status::internal(format!("{e}")))?;
-        let proto: Vec<CarInfo> = cars.iter().map(|c| car_to_proto(c)).collect();
+        let proto: Vec<CarInfo> = cars.iter().map(car_to_proto).collect();
         Ok(Response::new(CarListResponse { cars: proto }))
     }
 
@@ -284,7 +284,7 @@ impl EbikeServiceTrait for EbikeGrpcService {
             &req.alert,
             &req.remark,
         ).await.map_err(|e| Status::internal(format!("{e}")))?;
-        let proto: Vec<CarInfo> = cars.iter().map(|c| car_to_proto(c)).collect();
+        let proto: Vec<CarInfo> = cars.iter().map(car_to_proto).collect();
         Ok(Response::new(CarListResponse { cars: proto }))
     }
 
@@ -308,7 +308,7 @@ impl EbikeServiceTrait for EbikeGrpcService {
             0,
             0,
         ).await.map_err(|e| Status::internal(format!("{e}")))?;
-        let proto: Vec<OrderInfo> = orders.iter().map(|o| order_to_proto(o)).collect();
+        let proto: Vec<OrderInfo> = orders.iter().map(order_to_proto).collect();
         Ok(Response::new(OrderListResponse { orders: proto }))
     }
 
@@ -482,7 +482,7 @@ impl EbikeServiceTrait for EbikeGrpcService {
             &req.provide,
             req.status,
         ).await.map_err(|e| Status::internal(format!("{e}")))?;
-        let proto: Vec<StorageInfo> = storages.iter().map(|s| storage_to_proto(s)).collect();
+        let proto: Vec<StorageInfo> = storages.iter().map(storage_to_proto).collect();
         Ok(Response::new(StorageListResponse { storages: proto }))
     }
 
@@ -493,7 +493,7 @@ impl EbikeServiceTrait for EbikeGrpcService {
         let req = request.into_inner();
         let storages = self.state.storage_repo.history(&req.code)
             .await.map_err(|e| Status::internal(format!("{e}")))?;
-        let proto: Vec<StorageInfo> = storages.iter().map(|s| storage_to_proto(s)).collect();
+        let proto: Vec<StorageInfo> = storages.iter().map(storage_to_proto).collect();
         Ok(Response::new(StorageListResponse { storages: proto }))
     }
 
@@ -546,7 +546,7 @@ impl EbikeServiceTrait for EbikeGrpcService {
         opts["system"] = serde_json::json!(req.system);
         opts["alert"] = serde_json::json!(req.alert);
         options.options = opts;
-        let success = self.state.options_repo.update(&options).await
+        let success = self.state.options_repo.update(options).await
             .map_err(|e| Status::internal(format!("{e}")))?;
         Ok(Response::new(GenericResponse {
             code: if success { 0 } else { -1 },

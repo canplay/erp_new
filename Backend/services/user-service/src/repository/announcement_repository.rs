@@ -128,6 +128,28 @@ pub struct PaginatedDictionaryItems {
     pub total: i64,
 }
 
+/// 创建字典项参数
+pub struct CreateDictionaryItemParams<'a> {
+    pub type_id: i64,
+    pub label: &'a str,
+    pub value: &'a str,
+    pub sort: Option<i32>,
+    pub status: Option<i32>,
+    pub is_default: Option<bool>,
+    pub remark: Option<&'a str>,
+}
+
+/// 更新字典项参数
+pub struct UpdateDictionaryItemParams<'a> {
+    pub id: i64,
+    pub label: &'a str,
+    pub value: &'a str,
+    pub sort: Option<i32>,
+    pub status: Option<i32>,
+    pub is_default: Option<bool>,
+    pub remark: Option<&'a str>,
+}
+
 /// 公告和配置仓储
 #[derive(Clone)]
 pub struct AnnouncementRepository {
@@ -839,27 +861,22 @@ impl AnnouncementRepository {
     }
 
     /// 创建字典项
+    #[allow(clippy::too_many_arguments)]
     pub async fn create_dictionary_item(
         &self,
-        type_id: i64,
-        label: &str,
-        value: &str,
-        sort: Option<i32>,
-        status: Option<i32>,
-        is_default: Option<bool>,
-        remark: Option<&str>,
+        params: CreateDictionaryItemParams<'_>,
     ) -> Result<i64, AnnouncementRepositoryError> {
         let row = sqlx::query!(
             r"INSERT INTO dictionary_items (type_id, label, value, sort, status, is_default, remark)
                VALUES ($1, $2, $3, $4, $5, $6, $7)
                RETURNING id",
-            type_id,
-            label,
-            value,
-            sort,
-            status,
-            is_default,
-            remark,
+            params.type_id,
+            params.label,
+            params.value,
+            params.sort,
+            params.status,
+            params.is_default,
+            params.remark,
         )
         .fetch_one(&self.pool)
         .await?;
@@ -868,15 +885,10 @@ impl AnnouncementRepository {
     }
 
     /// 更新字典项
+    #[allow(clippy::too_many_arguments)]
     pub async fn update_dictionary_item(
         &self,
-        id: i64,
-        label: Option<String>,
-        value: Option<String>,
-        sort: Option<i32>,
-        status: Option<i32>,
-        is_default: Option<bool>,
-        remark: Option<String>,
+        params: UpdateDictionaryItemParams<'_>,
     ) -> Result<bool, AnnouncementRepositoryError> {
         let result = sqlx::query!(
             r"UPDATE dictionary_items
@@ -888,13 +900,13 @@ impl AnnouncementRepository {
                    remark = COALESCE($6, remark),
                    updated_at = NOW()
                WHERE id = $7",
-            label.as_deref(),
-            value.as_deref(),
-            sort,
-            status,
-            is_default,
-            remark.as_deref(),
-            id,
+            params.label,
+            params.value,
+            params.sort,
+            params.status,
+            params.is_default,
+            params.remark,
+            params.id,
         )
         .execute(&self.pool)
         .await?;

@@ -491,7 +491,7 @@ where
                 .with_file(false)
                 .with_line_number(false)
                 .with_ansi(false)
-                .with_writer(|| std::io::stdout());
+                .with_writer(std::io::stdout);
 
             Registry::default()
                 .with(extra_layer)

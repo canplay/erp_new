@@ -31,6 +31,7 @@ pub mod user_routes;
 pub mod workflow_routes;
 pub mod xlt_routes;
 pub mod options_routes;
+pub use options_routes::routes as options_routes;
 
 use std::sync::Arc;
 use axum::Router;
@@ -89,4 +90,5 @@ pub fn all_routes() -> Router<Arc<AppState>> {
         .merge(ebike_routes())
         .merge(hik_routes())
         .merge(xlt_routes())
+        .merge(options_routes())
 }

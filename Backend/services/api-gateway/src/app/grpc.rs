@@ -4,16 +4,16 @@
 
 use std::sync::Arc;
 
+use grpc_core::ServiceDiscovery;
 use tokio::sync::RwLock as AsyncRwLock;
 
 use crate::grpc_clients::GrpcClientConfig;
-use crate::grpc_error_middleware::ServiceDiscovery;
 
 /// gRPC client configuration bundle.
 ///
 /// Holds the gRPC client map and the service discovery
 /// responsible for locating upstream service instances.
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct GrpcConfig {
     /// The gRPC client map keyed by service name.
     pub clients: Arc<AsyncRwLock<crate::grpc_clients::GrpcClients>>,

@@ -8,7 +8,7 @@ use crate::AppState;
 use crate::routes::helpers::*;
 
 async fn get_client(state: &Arc<AppState>) -> Result<crate::grpc_clients::LprGrpcClient, Json<Value>> {
-    state.grpc_clients.write().await.lpr_client().await
+    state.grpc_clients.read().await.lpr_client().await
         .map_err(|e| json_error(&format!("lpr-service 不可用: {e}")))
 }
 

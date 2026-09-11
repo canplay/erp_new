@@ -29,18 +29,6 @@ pub struct RefreshTokenRequest {
 
 // ============ Handler: 登录 ============
 
-/// 从请求头提取客户端 IP（依次尝试 X-Forwarded-For / X-Real-IP / ConnectInfo）
-fn extract_client_ip(headers: &axum::http::HeaderMap) -> String {
-    if let Some(v) = headers.get("x-forwarded-for").and_then(|v| v.to_str().ok())
-        && let Some(first) = v.split(',').next() {
-        return first.trim().to_string();
-    }
-    if let Some(v) = headers.get("x-real-ip").and_then(|v| v.to_str().ok()) {
-        return v.trim().to_string();
-    }
-    String::new()
-}
-
 /// 记录登录日志（成功 status=1，失败 status=2）
 async fn record_login_log(
     state: &Arc<AppState>,
@@ -50,7 +38,18 @@ async fn record_login_log(
     login_status: i32,
     fail_reason: &str,
 ) {
-    let ip_address = extract_client_ip(headers);
+    let ip_address = headers
+        .get("x-forwarded-for")
+        .and_then(|v| v.to_str().ok())
+        .and_then(|v| v.split(',').next())
+        .map(|s| s.trim().to_string())
+        .or_else(|| {
+            headers
+                .get("x-real-ip")
+                .and_then(|v| v.to_str().ok())
+                .map(|s| s.trim().to_string())
+        })
+        .unwrap_or_default();
     let user_agent = headers
         .get("user-agent")
         .and_then(|v| v.to_str().ok())

@@ -25,6 +25,9 @@ uuid.workspace = true
 axum.workspace = true
 argon2.workspace = true
 
+# Multi-tenancy
+tenant-core.workspace = true
+
 # gRPC
 tonic.workspace = true
 grpc-proto.workspace = true

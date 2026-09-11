@@ -7,9 +7,15 @@
 //! - `grpc` — gRPC client configuration
 //! - `circuit_breaker` — circuit breaker settings
 //! - `repositories` — all data stores
-//! - `state` — the composed AppState
+//!
+//! Note: `AppState` itself lives in `lib.rs` to avoid circular dependencies.
 
 pub mod grpc;
 pub mod circuit_breaker;
 pub mod repositories;
 pub mod state;
+
+// Re-exports
+pub use circuit_breaker::CircuitBreakerConfigBundle;
+pub use grpc::GrpcConfig;
+pub use repositories::Repositories;

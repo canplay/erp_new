@@ -8,7 +8,7 @@ use crate::routes::helpers::*;
 
 macro_rules! sops_client {
     ($state:expr, $client:ident, $method:ident) => {
-        $state.grpc_clients.write().await.$client().await
+        $state.grpc_clients.read().await.$client().await
             .map_err(|e| json_error(&format!("social-ops 不可用: {e}")))
     };
 }

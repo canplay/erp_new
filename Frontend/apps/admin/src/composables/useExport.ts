@@ -325,7 +325,7 @@ export function useExport() {
       const colNames = headers.map((h) => h.name);
       const fieldMapping: Record<string, string> = {};
       headers.forEach((h) => { fieldMapping[h.name] = h.label; });
-      const progressFn = updateProgress as (percent: number, stage: string, message: string) => void;
+      const progressFn = updateProgress;
       _exportToExcel(data as Array<Record<string, unknown>>, { filename, fieldMapping }, progressFn);
       $q.notify({ type: 'positive', message: 'Export successful' });
     } catch (error) {

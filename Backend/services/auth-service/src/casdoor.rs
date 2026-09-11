@@ -33,7 +33,7 @@ impl Default for CasdoorConfig {
             client_id: std::env::var("CASDOOR_CLIENT_ID")
                 .unwrap_or_else(|_| "default-client-id".to_string()),
             client_secret: std::env::var("CASDOOR_CLIENT_SECRET")
-                .unwrap_or_else(|_| "default-client-secret".to_string()),
+                .expect("CASDOOR_CLIENT_SECRET must be set"),
             organization: std::env::var("CASDOOR_ORGANIZATION")
                 .unwrap_or_else(|_| "built-in".to_string()),
             application: std::env::var("CASDOOR_APPLICATION")

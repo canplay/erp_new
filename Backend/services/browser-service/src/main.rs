@@ -40,9 +40,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Err(_) => {
             log::warn!("[BrowserService] browser pool init failed (Edge may not be installed)");
             log::warn!("[BrowserService] starting without browser — browser operations will fail");
-            let empty_pool = BrowserPool::new(0).await.unwrap_or_else(|_| {
-                panic!("无法创建空浏览器池，请检查 drission 依赖是否正确安装");
-            });
+            let empty_pool = BrowserPool::new(0).await.map_err(|e| {
+                std::io::Error::new(
+                    std::io::ErrorKind::Other,
+                    format!("无法创建空浏览器池: {e}。请检查 drission 依赖是否正确安装"),
+                )
+            })?;
             Arc::new(empty_pool)
         }
     };

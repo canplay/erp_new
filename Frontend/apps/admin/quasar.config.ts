@@ -47,6 +47,19 @@ export default (ctx: {
             if (id.includes('node_modules')) return 'vendor';
           };
         }
+
+        // Add workspace package aliases
+        viteConf.resolve ??= {};
+        const resolveConf = viteConf.resolve as Record<string, unknown>;
+        resolveConf.alias ??= {};
+        const alias = resolveConf.alias as Record<string, string>;
+        alias['@myai-workspace/api'] = ctx.appPaths.resolve.app('../../packages/api/src');
+        alias['@myai-workspace/types'] = ctx.appPaths.resolve.app('../../packages/types/src');
+        alias['@myai-workspace/utils'] = ctx.appPaths.resolve.app('../../packages/utils/src');
+        alias['@myai-workspace/components'] = ctx.appPaths.resolve.app('../../packages/components/src');
+        alias['@myai-workspace/composables'] = ctx.appPaths.resolve.app('../../packages/composables/src');
+        alias['@myai-workspace/stores'] = ctx.appPaths.resolve.app('../../packages/stores/src');
+        alias['@myai-workspace/boot'] = ctx.appPaths.resolve.app('../../packages/boot/src');
       },
 
       vitePlugins: [

@@ -15,9 +15,16 @@
     "postinstall": "quasar prepare --silent"
   },
   "dependencies": {
+    "@myai-workspace/api": "workspace:*",
+    "@myai-workspace/boot": "workspace:*",
+    "@myai-workspace/components": "workspace:*",
+    "@myai-workspace/composables": "workspace:*",
+    "@myai-workspace/stores": "workspace:*",
+    "@myai-workspace/types": "workspace:*",
+    "@myai-workspace/utils": "workspace:*",
     "@quasar/extras": "^2.0.1",
     "matrix-js-sdk": "^41.8.0",
-    "pinia": "^3.0.4",
+    "pinia": "^4.0.2",
     "quasar": "^2.20.3",
     "vue": "^3.5.39",
     "vue-i18n": "^11.4.6",

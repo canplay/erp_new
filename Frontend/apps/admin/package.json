@@ -16,6 +16,13 @@
   },
   "dependencies": {
     "@alova/adapter-axios": "^2.0.18",
+    "@myai-workspace/api": "workspace:*",
+    "@myai-workspace/boot": "workspace:*",
+    "@myai-workspace/components": "workspace:*",
+    "@myai-workspace/composables": "workspace:*",
+    "@myai-workspace/stores": "workspace:*",
+    "@myai-workspace/types": "workspace:*",
+    "@myai-workspace/utils": "workspace:*",
     "@quasar/extras": "^2.0.1",
     "@types/leaflet": "^1.9.22",
     "alova": "^3.5.1",

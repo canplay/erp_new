@@ -4,21 +4,65 @@
  * @date 2026-04-04
  */
 
+import { ref, computed } from 'vue';
 import { useQuasar } from 'quasar';
 import { useI18n } from 'vue-i18n';
 import { useUserColumns } from './useUserColumns';
 import { useUserForm } from './useUserForm';
 import { useUserActions } from './useUserActions';
-import { useUserListCore } from './useUserListCore';
-import { useUserListPagination } from './useUserListPagination';
 import type { User } from '@/api/user';
 
 export function useUserList() {
   const $q = useQuasar();
   const { t: $t } = useI18n();
 
-  const { loading, users, selectedUsers } = useUserListCore();
-  const { filters, pagination, hasFilters, resetFilters, buildQueryParams } = useUserListPagination();
+  // Core state (merged from useUserListCore.ts)
+  const loading = ref(false);
+  const users = ref<User[]>([]);
+  const selectedUsers = ref<User[]>([]);
+
+  // Pagination & filters state (merged from useUserListPagination.ts)
+  const filters = ref({
+    keyword: '',
+    start_date: '',
+    end_date: '',
+    status: null as number | null,
+    role: null as string | null,
+  });
+  const pagination = ref({
+    page: 1,
+    rowsPerPage: 10,
+    rowsNumber: 0,
+    sortBy: 'id',
+    descending: true,
+  });
+  const hasFilters = computed(() => !!(
+    filters.value.keyword ||
+    filters.value.start_date ||
+    filters.value.end_date ||
+    filters.value.status !== null ||
+    filters.value.role
+  ));
+  function resetFilters() {
+    filters.value = {
+      keyword: '',
+      start_date: '',
+      end_date: '',
+      status: null,
+      role: null,
+    };
+    pagination.value.page = 1;
+  }
+  function buildQueryParams(): Record<string, unknown> {
+    const params: Record<string, unknown> = {
+      page: pagination.value.page,
+      page_size: pagination.value.rowsPerPage,
+    };
+    if (filters.value.keyword) params.keyword = filters.value.keyword;
+    if (filters.value.status !== null && filters.value.status !== undefined) params.status = filters.value.status;
+    if (filters.value.role) params.role = filters.value.role;
+    return params;
+  }
 
   const {
     columnDefinitions,

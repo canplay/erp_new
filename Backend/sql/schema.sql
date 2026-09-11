@@ -6,7 +6,7 @@
 --
 -- Use instead:
 --   1. Backend/sql/000_init.sql - Safe initialization (CREATE TABLE IF NOT EXISTS only)
---   2. Backend/sql/999_reset.sql - Destructive reset (DROP TABLE IF EXISTS only)
+--   2. Backend/sql/999_reset.sql - Destructive reset (removes all tables)
 --
 -- For initial deployment:
 #   psql -U postgres -d myai -f Backend/sql/000_init.sql

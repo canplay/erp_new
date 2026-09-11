@@ -10,8 +10,8 @@ MyAI 是一套面向多业务场景的全栈微服务管理平台，采用 Rust 
 
 ```
 myai/
-├── Backend/                        # 后端（21 个 gRPC 微服务 + API Gateway）
-│   ├── services/                   # 各微服务源码
+├── Backend/                        # 后端（21 个微服务 + API Gateway + 9 个共享 Crates）
+│   ├── services/                   # 各微服务源码（21 个）
 │   │   ├── api-gateway/            # HTTP 网关（统一 REST + WS 入口）
 │   │   ├── auth-service/           # 认证服务
 │   │   ├── user-service/           # 用户服务
@@ -24,17 +24,16 @@ myai/
 │   │   ├── pay-service/            # 支付服务
 │   │   ├── feedback-service/       # 反馈服务
 │   │   ├── api-key-service/        # API Key 管理
-│   │   ├── social-ops-service:     # 社交运营
+│   │   ├── social-ops-service/     # 社交运营
 │   │   ├── ctp-service/            # CTP 服务
 │   │   ├── ebike-service/          # 电单车
 │   │   ├── hik-service/            # 海康接入
 │   │   ├── lpr-service/            # 车牌识别
 │   │   ├── tow-service/            # 拖车
-│   │   ├── browser-service:        # 浏览器服务
+│   │   ├── browser-service/        # 浏览器服务
 │   │   ├── clean-service/          # 清洁服务
-│   │   ├── xlt-service/            # XLT 服务
-│   │   └── ...
-│   ├── crates/                     # 共享 Crate（8 个）
+│   │   └── xlt-service/            # XLT 服务
+│   ├── crates/                     # 共享 Crates（9 个）
 │   │   ├── auth-core/              # 认证核心
 │   │   ├── cache-core/             # 缓存核心
 │   │   ├── circuit-breaker-core/   # 熔断核心
@@ -42,10 +41,11 @@ myai/
 │   │   ├── crypto-core/            # 加密核心
 │   │   ├── grpc-core/              # gRPC 核心
 │   │   ├── grpc-proto/             # gRPC Proto 生成
-│   │   └── log-core/               # 日志核心
-│   ├── protos/                     # gRPC Proto 定义（20+ .proto）
+│   │   ├── log-core/               # 日志核心
+│   │   └── tenant-core/            # 租户核心（多租户隔离）
+│   ├── protos/                     # gRPC Proto 定义（20 个 .proto）
 │   ├── sql/
-│   │   └── schema.sql              # 数据库 schema（98 表）
+│   │   └── 000_init.sql            # 数据库 schema（103 表）
 │   ├── Cargo.toml                  # 工作区配置
 │   └── Dockerfile.*                # 多阶段构建
 │
@@ -86,11 +86,11 @@ myai/
 
 | 层 | 技术 |
 |---|---|
-| 后端框架 | Rust (Actix Web) + gRPC (Tonic) |
-| 前端框架 | Vue 3.5 + Quasar 2 + Pinia + Vite（admin 87 / ops 19 / social 13） |
-| 数据库 | PostgreSQL |
-| 缓存 / 任务 | Redis / Hangfire |
-| 认证 | JWT Bearer + ASP.NET Identity |
+| 后端框架 | Rust (Axum) + gRPC (Tonic) |
+| 前端框架 | Vue 3.5 + Quasar 2 + Pinia + Vite（admin 216 / ops 23 / social 21） |
+| 数据库 | PostgreSQL（103 表） |
+| 缓存 / 任务 | Redis |
+| 认证 | JWT Bearer |
 | 容器化 | Docker / Podman / Kubernetes |
 | 部署 | Helm / docker-compose |
 | 工程化 | pnpm workspaces + Turborepo |
@@ -110,7 +110,7 @@ myai/
 cp .env.example .env
 
 # 2. 初始化数据库
-psql -h <host> -U postgres -d myai -f Backend/sql/schema.sql
+psql -h <host> -U postgres -d myai -f Backend/sql/000_init.sql
 
 # 3. 启动后端（按需启动服务）
 cd Backend

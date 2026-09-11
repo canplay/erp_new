@@ -7,7 +7,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useQuasar } from 'quasar';
 import { useI18n } from 'vue-i18n';
 import { listOperationLogs, exportOperationLogs, type OperationLog } from '@/api/log';
-import { useExport } from '@/composables/useExport/useExport';
+import { useExport } from '@/composables/useExport';
 
 export interface OperationLogFilters {
   keyword?: string;

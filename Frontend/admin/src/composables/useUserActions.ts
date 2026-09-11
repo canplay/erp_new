@@ -7,7 +7,7 @@ import { ref } from 'vue';
 import { useQuasar } from 'quasar';
 import { useI18n } from 'vue-i18n';
 import type { User } from '@/api/user';
-import { useExport } from '@/composables/useExport/useExport';
+import { useExport } from '@/composables/useExport';
 
 export function useUserActions(onLoadUsers: () => Promise<void>) {
   const $q = useQuasar();

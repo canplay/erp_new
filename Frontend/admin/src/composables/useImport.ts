@@ -7,7 +7,7 @@
 import { ref } from 'vue';
 import { useQuasar } from 'quasar';
 import { logger } from '@/utils/logger';
-import { useExport } from '@/composables/useExport/useExport';
+import { useExport } from '@/composables/useExport';
 import ExcelJS from 'exceljs';
 
 // Quasar Column 类型定义

@@ -9,7 +9,7 @@ import { useI18n } from 'vue-i18n';
 import { useNotificationStore } from '@/stores/notification';
 import type { Notification, NotificationType } from '@/types/notification';
 import type { AdvancedFilters } from '@/types/advanced-search';
-import { useExport } from '@/composables/useExport/useExport';
+import { useExport } from '@/composables/useExport';
 
 /** 删除对话框最小接口 */
 interface DeleteDialog {

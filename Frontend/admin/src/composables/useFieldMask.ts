@@ -175,7 +175,7 @@ export function useFieldMask() {
     handleRuleChange(rule);
   }
 
-  function handleRuleChange(rule: { field: string; [key: string]: any }) {
+  function handleRuleChange(rule: { field: string; [key: string]: unknown }) {
     const result = FieldMaskUtils.applyMask(rule.sampleValue, rule.strategy, {
       ...(rule.customPattern !== undefined ? { customPattern: rule.customPattern } : {}),
       ...(rule.replaceChar !== undefined ? { replaceChar: rule.replaceChar } : {}),

@@ -835,7 +835,7 @@ mod tests {
         let diff = manager.compare_versions("file_001", 1, 2).await;
         assert!(diff.is_some());
 
-        let diff = diff.unwrap();
+        let diff = diff.expect("diff should exist");
         assert_eq!(diff.diff_type, DiffType::Modified);
         assert_eq!(diff.added_bytes, 1000);
         assert_eq!(diff.removed_bytes, 0);
@@ -907,7 +907,7 @@ mod tests {
         // 验证新版本内容与目标版本一致
         let current = manager.get_current_version("file_001").await;
         assert!(current.is_some());
-        assert_eq!(current.unwrap().file_size, 1000);
+        assert_eq!(current.expect("current version should exist").file_size, 1000);
     }
 
     #[tokio::test]
@@ -934,13 +934,13 @@ mod tests {
 
         let version = manager.get_version("file_001", 1).await;
         assert!(version.is_some());
-        assert!(version.unwrap().tags.contains(&"important".to_string()));
+        assert!(version.expect("version should exist").tags.contains(&"important".to_string()));
 
         let removed = manager.remove_tag("file_001", 1, "important").await;
         assert!(removed);
 
         let version = manager.get_version("file_001", 1).await;
-        assert!(version.unwrap().tags.is_empty());
+        assert!(version.expect("version should exist").tags.is_empty());
     }
 
     #[tokio::test]
@@ -982,7 +982,7 @@ mod tests {
 
         // 验证状态
         let v1 = manager.get_version("file_001", 1).await;
-        assert_eq!(v1.unwrap().state, VersionState::Archived);
+        assert_eq!(v1.expect("v1 should exist").state, VersionState::Archived);
 
         // 删除版本 2（不是初始版本）
         let deleted = manager.delete_version("file_001", 2).await;

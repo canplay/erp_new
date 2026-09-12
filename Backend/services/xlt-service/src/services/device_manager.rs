@@ -102,7 +102,7 @@ mod tests {
 
         let device = manager.get_device("SN001").await;
         assert!(device.is_some());
-        let device = device.unwrap();
+        let device = device.expect("device should exist");
         assert_eq!(device.sn, "SN001");
         assert_eq!(device.client_id, "client-1");
         assert_eq!(device.dev_info, "info1");
@@ -138,14 +138,14 @@ mod tests {
         let manager = DeviceManager::new();
         manager.register_device("SN001", "client-1", "info1", "1.0").await;
 
-        let device_before = manager.get_device("SN001").await.unwrap();
+        let device_before = manager.get_device("SN001").await.expect("test assertion");
         let heartbeat_before = device_before.last_heartbeat.clone();
 
         // Small delay to ensure timestamp changes
         tokio::time::sleep(tokio::time::Duration::from_millis(10)).await;
         manager.update_heartbeat("SN001").await;
 
-        let device_after = manager.get_device("SN001").await.unwrap();
+        let device_after = manager.get_device("SN001").await.expect("test assertion");
         assert!(device_after.last_heartbeat >= heartbeat_before);
     }
 
@@ -161,7 +161,7 @@ mod tests {
         let manager = DeviceManager::new();
         manager.register_device("SN001", "client-1", "info1", "1.0").await;
 
-        let device = manager.get_device("SN001").await.unwrap();
+        let device = manager.get_device("SN001").await.expect("test assertion");
         assert!(!device.connected_at.is_empty());
         assert_eq!(device.connected_at, device.last_heartbeat);
     }

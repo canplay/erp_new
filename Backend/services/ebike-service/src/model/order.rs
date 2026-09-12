@@ -77,7 +77,7 @@ mod tests {
             gps_type: Some(1),
         };
 
-        let json = serde_json::to_string(&order).unwrap();
+        let json = serde_json::to_string(&order).expect("test assertion");
         assert!(json.contains("\"code\":\"ORD001\""));
         assert!(json.contains("\"payable\":100.0"));
         assert!(json.contains("\"hash\":\"abc123\""));
@@ -100,7 +100,7 @@ mod tests {
             "pay_status": 0,
             "paytype": 0
         }"#;
-        let order: OrderInfo = serde_json::from_str(json).unwrap();
+        let order: OrderInfo = serde_json::from_str(json).expect("test assertion");
         assert_eq!(order.code, Some("ORD002".to_string()));
         assert_eq!(order.status, 0);
     }

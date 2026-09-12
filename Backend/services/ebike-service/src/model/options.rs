@@ -30,7 +30,7 @@ mod tests {
             delete: Some(false),
         };
 
-        let json = serde_json::to_string(&options).unwrap();
+        let json = serde_json::to_string(&options).expect("test assertion");
         assert!(json.contains("\"name\":\"site_config\""));
         assert!(json.contains("\"level\":1"));
         assert!(json.contains("\"key\":\"value\""));
@@ -44,7 +44,7 @@ mod tests {
             "options": {"theme": "dark"},
             "level": 2
         }"#;
-        let options: OptionsInfo = serde_json::from_str(json).unwrap();
+        let options: OptionsInfo = serde_json::from_str(json).expect("test assertion");
         assert_eq!(options.name, "system");
         assert_eq!(options.options["theme"], "dark");
         assert_eq!(options.level, 2);

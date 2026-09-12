@@ -232,7 +232,7 @@ mod tests {
 
     #[test]
     fn test_parse_status_two_counts() {
-        let result = parse_status_two("032014C81500").unwrap();
+        let result = parse_status_two("032014C81500").expect("status parsing should not fail");
         // 0320 = entry count, 14C8 = exit count, 1500 = theft count
         assert!(result.total_entry_count > 0 || result.total_exit_count > 0);
     }

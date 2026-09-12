@@ -44,7 +44,7 @@ async fn test_account_crud() {
         is_active: Some(false),
     };
     svc.update(created.id, &update_req).await.expect("更新失败");
-    let updated = svc.get(created.id).await.expect("查询失败").unwrap();
+    let updated = svc.get(created.id).await.expect("查询失败").expect("test assertion");
     assert_eq!(updated.account_name, "测试账号(已更新)");
     println!("✅ 更新账号: {} -> {}", created.account_name, updated.account_name);
 
@@ -74,8 +74,8 @@ async fn test_content_crud() {
     println!("✅ 内容列表: {} 条 (共 {})", items.len(), total);
 
     // 查询详情
-    let id: Uuid = created["id"].as_str().unwrap().parse().unwrap();
-    let detail = svc.get(id).await.expect("查询失败").unwrap();
+    let id: Uuid = created["id"].as_str().expect("test assertion").parse().expect("test assertion");
+    let detail = svc.get(id).await.expect("查询失败").expect("test assertion");
     println!("✅ 内容详情: {}", detail["title"]);
 
     println!("🎉 内容库 CRUD 测试通过!\n");
@@ -105,7 +105,7 @@ async fn test_llm_provider_crud() {
     println!("✅ LLM 提供商列表: {} 条", list.len());
 
     // 删除
-    let id: Uuid = provider["id"].as_str().unwrap().parse().unwrap();
+    let id: Uuid = provider["id"].as_str().expect("test assertion").parse().expect("test assertion");
     svc.delete_provider(id).await.expect("删除失败");
     println!("✅ 删除 LLM 提供商成功");
 

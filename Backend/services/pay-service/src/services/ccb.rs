@@ -161,7 +161,7 @@ mod tests {
     #[test]
     fn test_ccb_config_deserialize() {
         let json = r#"{"merchantid": "M001", "branchid": "B001", "posid": "P001", "qupwd": "secret", "pub": "key123"}"#;
-        let config: CcbConfig = serde_json::from_str(json).unwrap();
+        let config: CcbConfig = serde_json::from_str(json).expect("test assertion");
         assert_eq!(config.merchantid, "M001");
         assert_eq!(config.branchid, "B001");
         assert_eq!(config.posid, "P001");
@@ -172,7 +172,7 @@ mod tests {
     #[test]
     fn test_ccb_query_params_deserialize() {
         let json = r#"{"posid": "P001", "date": "20260618", "order": "ORDER001"}"#;
-        let params: CcbQueryParams = serde_json::from_str(json).unwrap();
+        let params: CcbQueryParams = serde_json::from_str(json).expect("test assertion");
         assert_eq!(params.posid, Some("P001".to_string()));
         assert_eq!(params.date, Some("20260618".to_string()));
         assert_eq!(params.order_no, Some("ORDER001".to_string()));
@@ -181,7 +181,7 @@ mod tests {
     #[test]
     fn test_ccb_order_params_deserialize() {
         let json = r#"{"order": "ORDER001", "amount": 100.50, "goods": "test goods"}"#;
-        let params: CcbOrderParams = serde_json::from_str(json).unwrap();
+        let params: CcbOrderParams = serde_json::from_str(json).expect("test assertion");
         assert_eq!(params.order, "ORDER001");
         assert!((params.amount - 10050).abs() < 1);
         assert_eq!(params.goods, Some("test goods".to_string()));
@@ -199,7 +199,7 @@ mod tests {
             refund_amount: Some("0".to_string()),
             query_order: vec![],
         };
-        let json = serde_json::to_string(&response).unwrap();
+        let json = serde_json::to_string(&response).expect("test assertion");
         assert!(json.contains("000000"));
         assert!(json.contains("成功"));
     }
@@ -212,7 +212,7 @@ mod tests {
             qr_url: None,
             message: Some("成功".to_string()),
         };
-        let json = serde_json::to_string(&response).unwrap();
+        let json = serde_json::to_string(&response).expect("test assertion");
         assert!(json.contains("true"));
         assert!(json.contains("https://pay.ccb.com/order/ORDER001"));
     }

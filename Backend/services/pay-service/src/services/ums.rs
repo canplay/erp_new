@@ -114,7 +114,7 @@ impl UmsService {
 
         let timestamp = SystemTime::now()
             .duration_since(UNIX_EPOCH)
-            .unwrap()
+            .expect("system time should be after UNIX epoch")
             .as_secs();
 
         let timestamp_str = format!(
@@ -578,7 +578,7 @@ mod tests {
     #[test]
     fn test_ums_query_params_deserialize() {
         let json = r#"{"time": "2026-06-18", "no": "ORDER001"}"#;
-        let params: UmsQueryParams = serde_json::from_str(json).unwrap();
+        let params: UmsQueryParams = serde_json::from_str(json).expect("test assertion");
         assert_eq!(params.time, "2026-06-18");
         assert_eq!(params.no, Some("ORDER001".to_string()));
     }
@@ -586,7 +586,7 @@ mod tests {
     #[test]
     fn test_ums_order_params_deserialize() {
         let json = r#"{"time": "2026-06-18", "no": "ORDER001", "amount": 100.50}"#;
-        let params: UmsOrderParams = serde_json::from_str(json).unwrap();
+        let params: UmsOrderParams = serde_json::from_str(json).expect("test assertion");
         assert_eq!(params.time, "2026-06-18");
         assert_eq!(params.no, "ORDER001");
         assert!((params.amount - 100.50).abs() < f64::EPSILON);
@@ -595,7 +595,7 @@ mod tests {
     #[test]
     fn test_ums_order_params_with_optional_fields() {
         let json = r#"{"time": "2026-06-18", "no": "ORDER001", "amount": 50.0, "desc": "test order", "zone": "ysjc"}"#;
-        let params: UmsOrderParams = serde_json::from_str(json).unwrap();
+        let params: UmsOrderParams = serde_json::from_str(json).expect("test assertion");
         assert_eq!(params.desc, Some("test order".to_string()));
         assert_eq!(params.zone, Some("ysjc".to_string()));
     }
@@ -603,7 +603,7 @@ mod tests {
     #[test]
     fn test_ums_close_params_deserialize() {
         let json = r#"{"no": "ORDER001", "time": "2026-06-18"}"#;
-        let params: UmsCloseParams = serde_json::from_str(json).unwrap();
+        let params: UmsCloseParams = serde_json::from_str(json).expect("test assertion");
         assert_eq!(params.no, "ORDER001");
         assert_eq!(params.time, "2026-06-18");
     }
@@ -611,7 +611,7 @@ mod tests {
     #[test]
     fn test_ums_refund_params_deserialize() {
         let json = r#"{"time": "2026-06-18", "no": "ORDER001", "amount": 50.0, "refundno": "REF001"}"#;
-        let params: UmsRefundParams = serde_json::from_str(json).unwrap();
+        let params: UmsRefundParams = serde_json::from_str(json).expect("test assertion");
         assert_eq!(params.time, "2026-06-18");
         assert_eq!(params.no, "ORDER001");
         assert_eq!(params.refundno, "REF001");
@@ -620,7 +620,7 @@ mod tests {
     #[test]
     fn test_ums_notify_params_deserialize() {
         let json = r#"{"order": "ORDER001"}"#;
-        let params: UmsNotifyParams = serde_json::from_str(json).unwrap();
+        let params: UmsNotifyParams = serde_json::from_str(json).expect("test assertion");
         assert_eq!(params.order, "ORDER001");
     }
 }

@@ -421,7 +421,7 @@ fn uuid_v4() -> String {
     use std::time::{SystemTime, UNIX_EPOCH};
     let timestamp = SystemTime::now()
         .duration_since(UNIX_EPOCH)
-        .unwrap()
+        .expect("system time should be after UNIX epoch")
         .as_nanos();
     format!("{timestamp:032x}")
 }
@@ -450,7 +450,7 @@ mod tests {
         // 验证回执可以获取
         let fetched = manager.get_receipt("msg_001", "user_001").await;
         assert!(fetched.is_some());
-        assert_eq!(fetched.unwrap().status, ReceiptStatus::Read);
+        assert_eq!(fetched.expect("receipt should exist").status, ReceiptStatus::Read);
     }
 
     #[tokio::test]

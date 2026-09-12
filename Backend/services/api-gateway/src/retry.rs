@@ -197,7 +197,7 @@ impl Retryer {
             use std::time::SystemTime;
             let now = SystemTime::now()
                 .duration_since(SystemTime::UNIX_EPOCH)
-                .unwrap()
+                .expect("system time should be after UNIX epoch")
                 .as_nanos();
             let jitter_factor = (((now % 1000) as f64) / 1000.0).mul_add(0.5, 1.0); // 0.5-1.0 的抖动
             Duration::from_millis((delay * jitter_factor) as u64)

@@ -470,7 +470,7 @@ mod tests {
 
         let fetched = manager.get_tenant("tenant_001").await;
         assert!(fetched.is_some());
-        assert_eq!(fetched.unwrap().name, "测试租户");
+        assert_eq!(fetched.expect("tenant should exist").name, "测试租户");
     }
 
     #[tokio::test]
@@ -490,7 +490,7 @@ mod tests {
 
         let fetched = manager.get_isolation_policy("tenant_001").await;
         assert!(fetched.is_some());
-        assert!(fetched.unwrap().encryption_enabled);
+        assert!(fetched.expect("tenant should exist").encryption_enabled);
     }
 
     #[tokio::test]
@@ -574,7 +574,7 @@ mod tests {
         assert!(updated);
 
         let fetched = manager.get_tenant("tenant_001").await;
-        assert_eq!(fetched.unwrap().state, TenantState::Suspended);
+        assert_eq!(fetched.expect("tenant should exist").state, TenantState::Suspended);
     }
 
     #[tokio::test]

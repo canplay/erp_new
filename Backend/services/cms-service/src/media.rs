@@ -238,7 +238,7 @@ impl MediaManager {
     pub fn generate_file_id(&self) -> String {
         let timestamp = SystemTime::now()
             .duration_since(UNIX_EPOCH)
-            .unwrap()
+            .expect("system time should be after UNIX epoch")
             .as_nanos();
         format!("media_{:x}", timestamp)
     }
@@ -443,7 +443,7 @@ impl MediaManager {
                 record.synced_at = Some(
                     SystemTime::now()
                         .duration_since(UNIX_EPOCH)
-                        .unwrap()
+                        .expect("system time should be after UNIX epoch")
                         .as_secs()
                 );
             }
@@ -497,7 +497,7 @@ impl MediaManager {
     pub fn cleanup_unused(&self, older_than_secs: u64) -> usize {
         let cutoff = SystemTime::now()
             .duration_since(UNIX_EPOCH)
-            .unwrap()
+            .expect("system time should be after UNIX epoch")
             .as_secs()
             .saturating_sub(older_than_secs);
 
@@ -645,12 +645,12 @@ mod tests {
         manager.register_media(metadata);
 
         // 获取元数据
-        let retrieved = manager.get_metadata("test123").unwrap();
+        let retrieved = manager.get_metadata("test123").expect("metadata should exist");
         assert_eq!(retrieved.filename, "test.jpg");
 
         // 记录访问
         manager.record_access("test123");
-        let updated = manager.get_metadata("test123").unwrap();
+        let updated = manager.get_metadata("test123").expect("metadata should exist");
         assert_eq!(updated.access_count, 1);
 
         // 获取统计

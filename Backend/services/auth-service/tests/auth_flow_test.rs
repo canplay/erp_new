@@ -117,7 +117,7 @@ impl MockAuthServiceImpl {
 
     fn with_test_user(username: &str, password: &str) -> Self {
         let mut service = Self::new();
-        let password_hash = service.password_service.hash_password(password).unwrap();
+        let password_hash = service.password_service.hash_password(password).expect("test assertion");
         let user = UserInfo {
             id: 1,
             username: username.to_string(),
@@ -129,13 +129,13 @@ impl MockAuthServiceImpl {
             role: "user".to_string(),
             must_change_password: false,
         };
-        service.users.lock().unwrap().add_user(user);
+        service.users.lock().expect("test assertion").add_user(user);
         service
     }
 
     fn with_disabled_user(username: &str, password: &str) -> Self {
         let mut service = Self::new();
-        let password_hash = service.password_service.hash_password(password).unwrap();
+        let password_hash = service.password_service.hash_password(password).expect("test assertion");
         let user = UserInfo {
             id: 1,
             username: username.to_string(),
@@ -147,7 +147,7 @@ impl MockAuthServiceImpl {
             role: "user".to_string(),
             must_change_password: false,
         };
-        service.users.lock().unwrap().add_user(user);
+        service.users.lock().expect("test assertion").add_user(user);
         service
     }
 
@@ -156,7 +156,7 @@ impl MockAuthServiceImpl {
         username: &str,
         password: &str,
     ) -> Result<LoginResponse, Status> {
-        let users = self.users.lock().unwrap();
+        let users = self.users.lock().expect("test assertion");
         let user = users
             .find_by_username(username)
             .await
@@ -223,7 +223,7 @@ impl MockAuthServiceImpl {
             .hash_bcrypt(password)
             .map_err(|e| Status::internal(format!("Password hash error: {}", e)))?;
 
-        let mut users = self.users.lock().unwrap();
+        let mut users = self.users.lock().expect("test assertion");
         let user_id = users
             .create(username, &password_hash, Some(email.to_string()))
             .await
@@ -264,7 +264,7 @@ impl MockAuthServiceImpl {
             .verify_refresh_token(refresh_token)
             .map_err(|_| Status::unauthenticated("Invalid refresh token"))?;
 
-        let users = self.users.lock().unwrap();
+        let users = self.users.lock().expect("test assertion");
         let user = users
             .find_by_id(user_id)
             .await
@@ -303,7 +303,7 @@ mod auth_flow_tests {
         let result = service.login("testuser", "password123").await;
         assert!(result.is_ok());
 
-        let response = result.unwrap();
+        let response = result.expect("test assertion");
         assert!(!response.token.is_empty());
         assert_eq!(response.user_id, 1);
         assert_eq!(response.username, "testuser");
@@ -317,7 +317,7 @@ mod auth_flow_tests {
         let result = service.login("admin", "admin12345").await;
         assert!(result.is_ok());
 
-        let response = result.unwrap();
+        let response = result.expect("test assertion");
         assert!(!response.token.is_empty());
         assert!(response.user_id > 0);
     }
@@ -361,7 +361,7 @@ mod auth_flow_tests {
         let service = MockAuthServiceImpl::with_test_user("testuser", "password123");
 
         // Login to get tokens
-        let login_response = service.login("testuser", "password123").await.unwrap();
+        let login_response = service.login("testuser", "password123").await.expect("test assertion");
         assert!(!login_response.token.is_empty());
 
         // Verify the token is valid
@@ -373,13 +373,13 @@ mod auth_flow_tests {
         let refresh_token = service
             .jwt_service
             .generate_refresh_token(1)
-            .unwrap();
+            .expect("test assertion");
 
         // Use refresh token to get new access token
         let refresh_response = service.refresh_token(&refresh_token).await;
         assert!(refresh_response.is_ok());
 
-        let new_token = refresh_response.unwrap();
+        let new_token = refresh_response.expect("test assertion");
         assert!(!new_token.token.is_empty());
         assert_eq!(new_token.user_id, 1);
     }
@@ -406,7 +406,7 @@ mod auth_flow_tests {
             60,
         );
 
-        let token = different_jwt_service.generate_access_token(1, "testuser", "user").unwrap();
+        let token = different_jwt_service.generate_access_token(1, "testuser", "user").expect("test assertion");
 
         // Try to validate with the original service (different secret)
         let service = MockAuthServiceImpl::with_test_user("testuser", "password123");
@@ -462,7 +462,7 @@ mod auth_flow_tests {
             .await;
         assert!(result.is_ok());
 
-        let response = result.unwrap();
+        let response = result.expect("test assertion");
         assert!(!response.token.is_empty());
         assert_eq!(response.username, "newuser");
         assert!(response.user_id > 0);
@@ -492,7 +492,7 @@ mod auth_flow_tests {
         let service = MockAuthServiceImpl::with_test_user("testuser", "password123");
 
         // Login to get a valid token
-        let login_response = service.login("testuser", "password123").await.unwrap();
+        let login_response = service.login("testuser", "password123").await.expect("test assertion");
 
         // Validate the token
         let validation = service.validate_token(&login_response.token).await;
@@ -517,7 +517,7 @@ mod auth_flow_tests {
     async fn test_tampered_token_validation_fails() {
         let service = MockAuthServiceImpl::with_test_user("testuser", "password123");
 
-        let login_response = service.login("testuser", "password123").await.unwrap();
+        let login_response = service.login("testuser", "password123").await.expect("test assertion");
 
         // Tamper with the token
         let mut tampered_token = login_response.token;
@@ -542,7 +542,7 @@ mod auth_flow_tests {
 
         let token = different_service
             .generate_access_token(1, "testuser", "user")
-            .unwrap();
+            .expect("test assertion");
 
         // Try to validate with the original service
         let service = MockAuthServiceImpl::with_test_user("testuser", "password123");
@@ -560,13 +560,13 @@ mod auth_flow_tests {
         let register_response = service
             .register("newuser", "securePass123", "new@example.com")
             .await
-            .unwrap();
+            .expect("test assertion");
 
         // Login with the same credentials
         let login_response = service
             .login("newuser", "securePass123")
             .await
-            .unwrap();
+            .expect("test assertion");
 
         // Both should have the same user_id
         assert_eq!(register_response.user_id, login_response.user_id);
@@ -593,7 +593,7 @@ mod auth_flow_tests {
         let register_response = service
             .register("fulluser", "fullPass123", "full@example.com")
             .await
-            .unwrap();
+            .expect("test assertion");
         assert!(!register_response.token.is_empty());
 
         // 2. Validate the registration token
@@ -602,7 +602,7 @@ mod auth_flow_tests {
         assert_eq!(validation.username, "fulluser");
 
         // 3. Login
-        let login_response = service.login("fulluser", "fullPass123").await.unwrap();
+        let login_response = service.login("fulluser", "fullPass123").await.expect("test assertion");
         assert!(!login_response.token.is_empty());
 
         // 4. Validate login token
@@ -614,8 +614,8 @@ mod auth_flow_tests {
         let refresh_token = service
             .jwt_service
             .generate_refresh_token(register_response.user_id)
-            .unwrap();
-        let refresh_response = service.refresh_token(&refresh_token).await.unwrap();
+            .expect("test assertion");
+        let refresh_response = service.refresh_token(&refresh_token).await.expect("test assertion");
         assert!(!refresh_response.token.is_empty());
 
         // 6. Validate refreshed token
@@ -658,7 +658,7 @@ mod auth_flow_tests {
         let service = MockAuthServiceImpl::new();
 
         // Generate a refresh token for a non-existent user
-        let refresh_token = service.jwt_service.generate_refresh_token(999).unwrap();
+        let refresh_token = service.jwt_service.generate_refresh_token(999).expect("test assertion");
 
         let result = service.refresh_token(&refresh_token).await;
         assert!(result.is_err());
@@ -670,14 +670,14 @@ mod auth_flow_tests {
         let service = MockAuthServiceImpl::with_test_user("testuser", "password123");
 
         // Original token
-        let login_response = service.login("testuser", "password123").await.unwrap();
+        let login_response = service.login("testuser", "password123").await.expect("test assertion");
 
         // Generate refresh token and get new access token
         let refresh_token = service
             .jwt_service
             .generate_refresh_token(login_response.user_id)
-            .unwrap();
-        let refresh_response = service.refresh_token(&refresh_token).await.unwrap();
+            .expect("test assertion");
+        let refresh_response = service.refresh_token(&refresh_token).await.expect("test assertion");
 
         // New token should be valid
         let validation = service.validate_token(&refresh_response.token).await;
@@ -751,8 +751,8 @@ mod jwt_service_tests {
     async fn test_jwt_generate_and_verify() {
         let service = JwtService::new("test-secret", "test-issuer", "test-audience", 3600, 604800);
 
-        let token = service.generate_access_token(1, "testuser", "admin").unwrap();
-        let claims = service.verify_token(&token).unwrap();
+        let token = service.generate_access_token(1, "testuser", "admin").expect("test assertion");
+        let claims = service.verify_token(&token).expect("test assertion");
 
         assert_eq!(claims.sub, 1);
         assert_eq!(claims.username, "testuser");
@@ -763,8 +763,8 @@ mod jwt_service_tests {
     async fn test_jwt_refresh_token_flow() {
         let service = JwtService::new("test-secret", "test-issuer", "test-audience", 3600, 604800);
 
-        let refresh_token = service.generate_refresh_token(42).unwrap();
-        let user_id = service.verify_refresh_token(&refresh_token).unwrap();
+        let refresh_token = service.generate_refresh_token(42).expect("test assertion");
+        let user_id = service.verify_refresh_token(&refresh_token).expect("test assertion");
 
         assert_eq!(user_id, 42);
     }
@@ -772,7 +772,7 @@ mod jwt_service_tests {
     #[tokio::test]
     async fn test_jwt_wrong_audience_fails() {
         let service = JwtService::new("test-secret", "test-issuer", "wrong-audience", 3600, 604800);
-        let token = service.generate_access_token(1, "testuser", "admin").unwrap();
+        let token = service.generate_access_token(1, "testuser", "admin").expect("test assertion");
 
         let wrong_service = JwtService::new("test-secret", "test-issuer", "correct-audience", 3600, 604800);
         let result = wrong_service.verify_token(&token);
@@ -782,7 +782,7 @@ mod jwt_service_tests {
     #[tokio::test]
     async fn test_jwt_wrong_issuer_fails() {
         let service = JwtService::new("test-secret", "wrong-issuer", "test-audience", 3600, 604800);
-        let token = service.generate_access_token(1, "testuser", "admin").unwrap();
+        let token = service.generate_access_token(1, "testuser", "admin").expect("test assertion");
 
         let wrong_service = JwtService::new("test-secret", "correct-issuer", "test-audience", 3600, 604800);
         let result = wrong_service.verify_token(&token);

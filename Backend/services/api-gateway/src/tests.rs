@@ -133,7 +133,7 @@ mod route_tests {
             // 注意：由于 repository 需要 PgPool，我们使用一个 mock pool
             // 实际上这些 repository 在测试中不会被真正使用（因为它们需要真实的数据库连接）
             // 但我们仍需要提供某种形式的 pool 来满足类型系统
-            let pool = sqlx::PgPool::connect_lazy("postgres://localhost:5432/test").unwrap();
+            let pool = sqlx::PgPool::connect_lazy("postgres://localhost:5432/test").expect("test assertion");
 
             Arc::new(AppState {
                 service_discovery,
@@ -189,8 +189,8 @@ mod route_tests {
 
     /// 从响应体中提取 JSON Value
     async fn extract_json(body: Body) -> Value {
-        let bytes = body.collect().await.unwrap().to_bytes();
-        let body_str = String::from_utf8(bytes.to_vec()).unwrap();
+        let bytes = body.collect().await.expect("test assertion").to_bytes();
+        let body_str = String::from_utf8(bytes.to_vec()).expect("test assertion");
         if body_str.is_empty() {
             Value::Null
         } else {
@@ -212,10 +212,10 @@ mod route_tests {
                     Request::builder()
                         .uri("/health")
                         .body(Body::empty())
-                        .unwrap(),
+                        .expect("test assertion"),
                 )
                 .await
-                .unwrap();
+                .expect("test assertion");
             assert_eq!(response.status(), StatusCode::OK);
         }
 
@@ -228,10 +228,10 @@ mod route_tests {
                     Request::builder()
                         .uri("/ready")
                         .body(Body::empty())
-                        .unwrap(),
+                        .expect("test assertion"),
                 )
                 .await
-                .unwrap();
+                .expect("test assertion");
             // 没有 gRPC 服务连接，返回 503
             assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
         }
@@ -245,10 +245,10 @@ mod route_tests {
                     Request::builder()
                         .uri("/health/detailed")
                         .body(Body::empty())
-                        .unwrap(),
+                        .expect("test assertion"),
                 )
                 .await
-                .unwrap();
+                .expect("test assertion");
             assert_eq!(response.status(), StatusCode::OK);
             let body = response.into_body();
             let json = extract_json(body).await;
@@ -264,10 +264,10 @@ mod route_tests {
                     Request::builder()
                         .uri("/health/discovery")
                         .body(Body::empty())
-                        .unwrap(),
+                        .expect("test assertion"),
                 )
                 .await
-                .unwrap();
+                .expect("test assertion");
             assert_eq!(response.status(), StatusCode::OK);
         }
 
@@ -280,10 +280,10 @@ mod route_tests {
                     Request::builder()
                         .uri("/health/database")
                         .body(Body::empty())
-                        .unwrap(),
+                        .expect("test assertion"),
                 )
                 .await
-                .unwrap();
+                .expect("test assertion");
             assert_eq!(response.status(), StatusCode::OK);
         }
     }
@@ -308,17 +308,17 @@ mod route_tests {
                                 "username": "testuser",
                                 "password": "testpass123"
                             }))
-                            .unwrap(),
+                            .expect("test assertion"),
                         ))
-                        .unwrap(),
+                        .expect("test assertion"),
                 )
                 .await
-                .unwrap();
+                .expect("test assertion");
             assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
             let body = response.into_body();
             let json = extract_json(body).await;
             assert_eq!(json["success"], false);
-            assert!(json["message"].as_str().unwrap().contains("认证服务不可用"));
+            assert!(json["message"].as_str().expect("test assertion").contains("认证服务不可用"));
         }
 
         #[tokio::test]
@@ -337,12 +337,12 @@ mod route_tests {
                                 "password": "newpass123",
                                 "email": "test@example.com"
                             }))
-                            .unwrap(),
+                            .expect("test assertion"),
                         ))
-                        .unwrap(),
+                        .expect("test assertion"),
                 )
                 .await
-                .unwrap();
+                .expect("test assertion");
             assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
         }
 
@@ -360,12 +360,12 @@ mod route_tests {
                             serde_json::to_string(&json!({
                                 "refresh_token": "some-refresh-token"
                             }))
-                            .unwrap(),
+                            .expect("test assertion"),
                         ))
-                        .unwrap(),
+                        .expect("test assertion"),
                 )
                 .await
-                .unwrap();
+                .expect("test assertion");
             assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
         }
 
@@ -387,12 +387,12 @@ mod route_tests {
                                 "oldPassword": "oldpass123",
                                 "newPassword": "123"
                             }))
-                            .unwrap(),
+                            .expect("test assertion"),
                         ))
-                        .unwrap(),
+                        .expect("test assertion"),
                 )
                 .await
-                .unwrap();
+                .expect("test assertion");
             // 因为没有 JWT Extension，handler 会尝试从 Extension 获取 claims
             // 这会导致 panic 或错误，所以我们需要测试 400 的情况
             // 实际上没有 Extension 会导致 500，但弱密码检查在前
@@ -415,12 +415,12 @@ mod route_tests {
                             serde_json::to_string(&json!({
                                 "password": "testpass123"
                             }))
-                            .unwrap(),
+                            .expect("test assertion"),
                         ))
-                        .unwrap(),
+                        .expect("test assertion"),
                 )
                 .await
-                .unwrap();
+                .expect("test assertion");
             // auth_client 失败在前，返回 503
             assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
         }
@@ -436,12 +436,12 @@ mod route_tests {
                         .uri("/api/user/register")
                         .header(CONTENT_TYPE, "application/json")
                         .body(Body::from(
-                            serde_json::to_string(&json!({})).unwrap(),
+                            serde_json::to_string(&json!({})).expect("test assertion"),
                         ))
-                        .unwrap(),
+                        .expect("test assertion"),
                 )
                 .await
-                .unwrap();
+                .expect("test assertion");
             assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
         }
     }
@@ -460,10 +460,10 @@ mod route_tests {
                     Request::builder()
                         .uri("/api/admin/users")
                         .body(Body::empty())
-                        .unwrap(),
+                        .expect("test assertion"),
                 )
                 .await
-                .unwrap();
+                .expect("test assertion");
             // gRPC 不可用时返回 500 (json_error)
             let body = response.into_body();
             let json = extract_json(body).await;
@@ -485,12 +485,12 @@ mod route_tests {
                                 "username": "testuser",
                                 "password": "testpass123"
                             }))
-                            .unwrap(),
+                            .expect("test assertion"),
                         ))
-                        .unwrap(),
+                        .expect("test assertion"),
                 )
                 .await
-                .unwrap();
+                .expect("test assertion");
             let body = response.into_body();
             let json = extract_json(body).await;
             assert_eq!(json["success"], false);
@@ -505,10 +505,10 @@ mod route_tests {
                     Request::builder()
                         .uri("/api/admin/users/1")
                         .body(Body::empty())
-                        .unwrap(),
+                        .expect("test assertion"),
                 )
                 .await
-                .unwrap();
+                .expect("test assertion");
             let body = response.into_body();
             let json = extract_json(body).await;
             assert_eq!(json["success"], false);
@@ -528,12 +528,12 @@ mod route_tests {
                             serde_json::to_string(&json!({
                                 "nickname": "updated"
                             }))
-                            .unwrap(),
+                            .expect("test assertion"),
                         ))
-                        .unwrap(),
+                        .expect("test assertion"),
                 )
                 .await
-                .unwrap();
+                .expect("test assertion");
             let body = response.into_body();
             let json = extract_json(body).await;
             assert_eq!(json["success"], false);
@@ -549,10 +549,10 @@ mod route_tests {
                         .method("DELETE")
                         .uri("/api/admin/users/1")
                         .body(Body::empty())
-                        .unwrap(),
+                        .expect("test assertion"),
                 )
                 .await
-                .unwrap();
+                .expect("test assertion");
             let body = response.into_body();
             let json = extract_json(body).await;
             assert_eq!(json["success"], false);
@@ -568,10 +568,10 @@ mod route_tests {
                         .method("POST")
                         .uri("/api/admin/users/import")
                         .body(Body::empty())
-                        .unwrap(),
+                        .expect("test assertion"),
                 )
                 .await
-                .unwrap();
+                .expect("test assertion");
             assert_eq!(response.status(), StatusCode::OK);
             let body = response.into_body();
             let json = extract_json(body).await;
@@ -587,10 +587,10 @@ mod route_tests {
                     Request::builder()
                         .uri("/api/admin/users/export")
                         .body(Body::empty())
-                        .unwrap(),
+                        .expect("test assertion"),
                 )
                 .await
-                .unwrap();
+                .expect("test assertion");
             assert_eq!(response.status(), StatusCode::OK);
             let body = response.into_body();
             let json = extract_json(body).await;
@@ -613,10 +613,10 @@ mod route_tests {
                     Request::builder()
                         .uri("/api/admin/announcements")
                         .body(Body::empty())
-                        .unwrap(),
+                        .expect("test assertion"),
                 )
                 .await
-                .unwrap();
+                .expect("test assertion");
             assert_eq!(response.status(), StatusCode::OK);
             let body = response.into_body();
             let json = extract_json(body).await;
@@ -639,12 +639,12 @@ mod route_tests {
                                 "title": "Test Announcement",
                                 "content": "Content"
                             }))
-                            .unwrap(),
+                            .expect("test assertion"),
                         ))
-                        .unwrap(),
+                        .expect("test assertion"),
                 )
                 .await
-                .unwrap();
+                .expect("test assertion");
             assert_eq!(response.status(), StatusCode::OK);
             let body = response.into_body();
             let json = extract_json(body).await;
@@ -660,10 +660,10 @@ mod route_tests {
                     Request::builder()
                         .uri("/api/announcements/active")
                         .body(Body::empty())
-                        .unwrap(),
+                        .expect("test assertion"),
                 )
                 .await
-                .unwrap();
+                .expect("test assertion");
             assert_eq!(response.status(), StatusCode::OK);
         }
     }
@@ -682,10 +682,10 @@ mod route_tests {
                     Request::builder()
                         .uri("/api/config/system-configs")
                         .body(Body::empty())
-                        .unwrap(),
+                        .expect("test assertion"),
                 )
                 .await
-                .unwrap();
+                .expect("test assertion");
             assert_eq!(response.status(), StatusCode::OK);
             let body = response.into_body();
             let json = extract_json(body).await;
@@ -707,12 +707,12 @@ mod route_tests {
                             serde_json::to_string(&json!({
                                 "value": "dark"
                             }))
-                            .unwrap(),
+                            .expect("test assertion"),
                         ))
-                        .unwrap(),
+                        .expect("test assertion"),
                 )
                 .await
-                .unwrap();
+                .expect("test assertion");
             assert_eq!(response.status(), StatusCode::OK);
         }
     }
@@ -731,10 +731,10 @@ mod route_tests {
                     Request::builder()
                         .uri("/api/roles")
                         .body(Body::empty())
-                        .unwrap(),
+                        .expect("test assertion"),
                 )
                 .await
-                .unwrap();
+                .expect("test assertion");
             let body = response.into_body();
             let json = extract_json(body).await;
             assert_eq!(json["success"], false);
@@ -755,12 +755,12 @@ mod route_tests {
                                 "name": "test_role",
                                 "description": "Test"
                             }))
-                            .unwrap(),
+                            .expect("test assertion"),
                         ))
-                        .unwrap(),
+                        .expect("test assertion"),
                 )
                 .await
-                .unwrap();
+                .expect("test assertion");
             let body = response.into_body();
             let json = extract_json(body).await;
             assert_eq!(json["success"], false);
@@ -781,10 +781,10 @@ mod route_tests {
                     Request::builder()
                         .uri("/api/admin/departments")
                         .body(Body::empty())
-                        .unwrap(),
+                        .expect("test assertion"),
                 )
                 .await
-                .unwrap();
+                .expect("test assertion");
             let body = response.into_body();
             let json = extract_json(body).await;
             assert_eq!(json["success"], false);
@@ -799,10 +799,10 @@ mod route_tests {
                     Request::builder()
                         .uri("/api/admin/departments/tree")
                         .body(Body::empty())
-                        .unwrap(),
+                        .expect("test assertion"),
                 )
                 .await
-                .unwrap();
+                .expect("test assertion");
             let body = response.into_body();
             let json = extract_json(body).await;
             assert_eq!(json["success"], false);
@@ -823,10 +823,10 @@ mod route_tests {
                     Request::builder()
                         .uri("/api/admin/dictionary/types")
                         .body(Body::empty())
-                        .unwrap(),
+                        .expect("test assertion"),
                 )
                 .await
-                .unwrap();
+                .expect("test assertion");
             let body = response.into_body();
             let json = extract_json(body).await;
             assert_eq!(json["success"], false);
@@ -841,10 +841,10 @@ mod route_tests {
                     Request::builder()
                         .uri("/api/admin/dictionary/items")
                         .body(Body::empty())
-                        .unwrap(),
+                        .expect("test assertion"),
                 )
                 .await
-                .unwrap();
+                .expect("test assertion");
             let body = response.into_body();
             let json = extract_json(body).await;
             assert_eq!(json["success"], false);
@@ -859,10 +859,10 @@ mod route_tests {
                     Request::builder()
                         .uri("/api/admin/dictionary/all-enabled")
                         .body(Body::empty())
-                        .unwrap(),
+                        .expect("test assertion"),
                 )
                 .await
-                .unwrap();
+                .expect("test assertion");
             let body = response.into_body();
             let json = extract_json(body).await;
             assert_eq!(json["success"], false);
@@ -880,8 +880,8 @@ mod route_tests {
             let token = state
                 .jwt_service
                 .generate_access_token(1, "testuser", "admin")
-                .unwrap();
-            let claims = state.jwt_service.verify_token(&token).unwrap();
+                .expect("test assertion");
+            let claims = state.jwt_service.verify_token(&token).expect("test assertion");
             assert_eq!(claims.sub, 1);
             assert_eq!(claims.username, "testuser");
             assert_eq!(claims.role, "admin");
@@ -890,8 +890,8 @@ mod route_tests {
         #[tokio::test]
         async fn test_jwt_refresh_token_generation_and_validation() {
             let state = mock_state!();
-            let refresh_token = state.jwt_service.generate_refresh_token(42).unwrap();
-            let user_id = state.jwt_service.verify_refresh_token(&refresh_token).unwrap();
+            let refresh_token = state.jwt_service.generate_refresh_token(42).expect("test assertion");
+            let user_id = state.jwt_service.verify_refresh_token(&refresh_token).expect("test assertion");
             assert_eq!(user_id, 42);
         }
 
@@ -908,7 +908,7 @@ mod route_tests {
             let token = state
                 .jwt_service
                 .generate_access_token(1, "testuser", "admin")
-                .unwrap();
+                .expect("test assertion");
             // 使用不同的 secret 创建新的 JwtService
             let other_service = auth_core::JwtService::new(
                 "different-secret",
@@ -1089,7 +1089,7 @@ mod route_tests {
         #[tokio::test]
         async fn test_password_service_hash_and_verify() {
             let service = auth_core::PasswordService;
-            let hash = service.hash_password("testpass123").unwrap();
+            let hash = service.hash_password("testpass123").expect("test assertion");
             assert!(service.verify_password("testpass123", &hash));
             assert!(!service.verify_password("wrongpass", &hash));
         }
@@ -1196,7 +1196,7 @@ mod route_tests {
                 .iter()
                 .find(|d| d.key == "auth");
             assert!(auth_def.is_some());
-            assert_eq!(auth_def.unwrap().name, "auth-service");
+            assert_eq!(auth_def.expect("test assertion").name, "auth-service");
         }
 
         #[tokio::test]
@@ -1205,7 +1205,7 @@ mod route_tests {
                 .iter()
                 .find(|d| d.key == "user");
             assert!(user_def.is_some());
-            assert_eq!(user_def.unwrap().name, "user-service");
+            assert_eq!(user_def.expect("test assertion").name, "user-service");
         }
 
         #[tokio::test]
@@ -1214,7 +1214,7 @@ mod route_tests {
                 .iter()
                 .find(|d| d.key == "cms");
             assert!(cms_def.is_some());
-            assert_eq!(cms_def.unwrap().name, "cms-service");
+            assert_eq!(cms_def.expect("test assertion").name, "cms-service");
         }
 
         #[tokio::test]
@@ -1223,7 +1223,7 @@ mod route_tests {
                 .iter()
                 .find(|d| d.key == "workflow");
             assert!(wf_def.is_some());
-            assert_eq!(wf_def.unwrap().name, "workflow-service");
+            assert_eq!(wf_def.expect("test assertion").name, "workflow-service");
         }
 
         #[tokio::test]
@@ -1232,7 +1232,7 @@ mod route_tests {
                 .iter()
                 .find(|d| d.key == "file");
             assert!(file_def.is_some());
-            assert_eq!(file_def.unwrap().name, "file-service");
+            assert_eq!(file_def.expect("test assertion").name, "file-service");
         }
     }
 }

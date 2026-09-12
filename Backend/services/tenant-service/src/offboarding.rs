@@ -395,21 +395,21 @@ mod tests {
     #[test]
     fn test_offboarding_step_serialization() {
         let step = OffboardingStep::DataExported("/path/to/export.json".to_string());
-        let json = serde_json::to_string(&step).unwrap();
+        let json = serde_json::to_string(&step).expect("test assertion");
         assert!(json.contains("export.json"));
     }
 
     #[test]
     fn test_offboarding_status_serialization() {
         let status = OffboardingStatus::Completed;
-        let json = serde_json::to_string(&status).unwrap();
+        let json = serde_json::to_string(&status).expect("test assertion");
         assert!(json.contains("Completed"));
     }
 
     #[test]
     fn test_data_export_format_serialization() {
         let format = DataExportFormat::Csv;
-        let json = serde_json::to_string(&format).unwrap();
+        let json = serde_json::to_string(&format).expect("test assertion");
         assert!(json.contains("Csv"));
     }
 

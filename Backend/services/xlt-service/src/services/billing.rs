@@ -177,7 +177,7 @@ mod tests {
 
         let result = service.calculate(&req).await;
         assert!(result.is_ok());
-        let result = result.unwrap();
+        let result = result.expect("billing result should exist");
         assert_eq!(result.plate_no, "粤A12345");
         assert_eq!(result.park_code, "P001");
         assert_eq!(result.duration_minutes, 150); // 2.5 hours

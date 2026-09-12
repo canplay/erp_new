@@ -157,7 +157,7 @@ mod tests {
     #[test]
     fn test_signo_config_tags_have_phone_and_key() {
         let config = SignoConfig::new();
-        let tag = config.tags.get("双桥花园地下停车场").unwrap();
+        let tag = config.tags.get("双桥花园地下停车场").expect("tag should exist");
         assert_eq!(tag.phone, "13800000001");
         assert_eq!(tag.key, "F7A1C5BA");
     }
@@ -165,7 +165,7 @@ mod tests {
     #[test]
     fn test_hik_request_deserialize() {
         let json = r#"{"method": "test", "phone": 13800000001}"#;
-        let req: HikRequest = serde_json::from_str(json).unwrap();
+        let req: HikRequest = serde_json::from_str(json).expect("JSON deserialization should not fail");
         assert_eq!(req.method, "test");
         assert_eq!(req.phone, Some(13800000001));
     }
@@ -173,7 +173,7 @@ mod tests {
     #[test]
     fn test_coupon_request_deserialize() {
         let json = r#"{"phone": "13800000001", "amount": 500, "start": 1000, "end": "2026-01-01", "type": "discount"}"#;
-        let req: CouponRequest = serde_json::from_str(json).unwrap();
+        let req: CouponRequest = serde_json::from_str(json).expect("JSON deserialization should not fail");
         assert_eq!(req.phone, "13800000001");
         assert_eq!(req.amount, 500);
         assert_eq!(req.r#type, "discount");
@@ -182,7 +182,7 @@ mod tests {
     #[test]
     fn test_hik_request_defaults() {
         let json = r#"{"method": "test"}"#;
-        let req: HikRequest = serde_json::from_str(json).unwrap();
+        let req: HikRequest = serde_json::from_str(json).expect("JSON deserialization should not fail");
         assert_eq!(req.method, "test");
         assert!(req.phone.is_none());
         assert!(req.plate_no.is_none());

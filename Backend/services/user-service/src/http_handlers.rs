@@ -633,7 +633,7 @@ pub async fn download_import_template() -> impl IntoResponse {
             "attachment; filename=user_import_template.csv",
         )
         .body(axum::body::Body::from(csv_content))
-        .unwrap(),)
+        .expect("response building should not fail"),)
         .into_response()
 }
 
@@ -815,7 +815,7 @@ pub async fn export_users(
                     "attachment; filename=users_export.csv",
                 )
                 .body(axum::body::Body::from(csv_content))
-                .unwrap(),)
+                .expect("response building should not fail"),)
                 .into_response()
         }
         Err(e) => {

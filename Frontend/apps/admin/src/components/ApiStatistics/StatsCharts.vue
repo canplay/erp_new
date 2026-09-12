@@ -1,7 +1,8 @@
 /**
- * @file ApiStatistics/StatsCharts.vue
+ * @file StatsCharts.vue
  * @description API统计 - 趋势图表、分布、分类、基线告警、端点表格
  * @date 2026-08-22
+ * @refactored 2026-09-12 - Split into composables
  */
 
 <template>
@@ -210,6 +211,10 @@
 </template>
 
 <script setup lang="ts">
+import { useStatsCharts } from './composables/useStatsCharts';
+
+// ============ Types ============
+
 interface TrendPoint {
   avg_response_time: number;
   p95_response_time: number;
@@ -247,6 +252,8 @@ interface EndpointStat {
   lastCalledAt: string;
 }
 
+// ============ Props ============
+
 interface Props {
   trendData: TrendPoint[];
   responseDistribution: ResponseBucket[];
@@ -273,7 +280,7 @@ interface Props {
   endpointTitle?: string;
 }
 
-const _props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   max_response_time: 1000,
   trendTitle: '响应时间趋势',
   legendAvg: '平均响应时间',
@@ -292,36 +299,9 @@ const _props = withDefaults(defineProps<Props>(), {
   endpointTitle: '端点详情',
 });
 
-function getMethodColor(method: string): string {
-  const colors: Record<string, string> = {
-    GET: 'green',
-    POST: 'blue',
-    PUT: 'orange',
-    DELETE: 'red',
-    PATCH: 'purple',
-  };
-  return colors[method] || 'grey';
-}
+// ============ Composable ============
 
-function getDistributionColor(max: number): string {
-  if (max < 100) return '#4caf50';
-  if (max < 200) return '#ff9800';
-  return '#f44336';
-}
-
-function getBaselineStatusColor(status: string): string {
-  const colors: Record<string, string> = {
-    critical: 'red',
-    degraded: 'orange',
-    normal: 'green',
-  };
-  return colors[status] || 'grey';
-}
-
-function formatTime(timeStr?: string): string {
-  if (!timeStr) return '-';
-  return new Date(timeStr).toLocaleString('zh-CN');
-}
+const { getMethodColor, getDistributionColor, getBaselineStatusColor, formatTime } = useStatsCharts();
 </script>
 
 <style scoped>

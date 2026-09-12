@@ -66,7 +66,7 @@ impl ApiKey {
             .map(|_| {
                 let chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
                 let idx = (rand::random::<u8>() as usize) % 62;
-                chars.chars().nth(idx).unwrap()
+                chars.chars().nth(idx).expect("char should exist at valid index")
             })
             .collect();
 
@@ -74,7 +74,7 @@ impl ApiKey {
         let key_hash = Self::hash_key(&key);
         let key_hint = key_secret[key_secret.len().saturating_sub(4)..].to_string();
 
-        let now = DateTime::from_timestamp(Utc::now().timestamp(), 0).unwrap();
+        let now = DateTime::from_timestamp(Utc::now().timestamp(), 0).expect("valid timestamp");
         let api_key = Self {
             id: Uuid::new_v4().to_string(),
             name,
@@ -118,7 +118,7 @@ impl ApiKey {
     #[must_use]
     pub fn is_expired(&self) -> bool {
         if let Some(expires_at) = self.expires_at {
-            expires_at < DateTime::from_timestamp(Utc::now().timestamp(), 0).unwrap()
+            expires_at < DateTime::from_timestamp(Utc::now().timestamp(), 0).expect("valid timestamp")
         } else {
             false
         }
@@ -157,7 +157,7 @@ impl KeyUsageLog {
             ip_address: None,
             user_agent: None,
             error_message: None,
-            created_at: DateTime::from_timestamp(Utc::now().timestamp(), 0).unwrap(),
+            created_at: DateTime::from_timestamp(Utc::now().timestamp(), 0).expect("valid timestamp"),
         }
     }
 }

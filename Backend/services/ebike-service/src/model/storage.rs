@@ -48,8 +48,8 @@ mod tests {
             gps_type: 1,
         };
 
-        let json = serde_json::to_string(&storage).unwrap();
-        let deserialized: StorageInfo = serde_json::from_str(&json).unwrap();
+        let json = serde_json::to_string(&storage).expect("test assertion");
+        let deserialized: StorageInfo = serde_json::from_str(&json).expect("test assertion");
         assert_eq!(deserialized.code, "ST001");
         assert_eq!(deserialized.sum, 100);
         assert_eq!(deserialized.cur, 45);
@@ -60,7 +60,7 @@ mod tests {
     #[test]
     fn test_storage_info_minimal_deserialization() {
         let json = r#"{"code": "ST002", "status": 0, "provide": "", "speed": 0.0, "type": 0, "sum": 0, "cur": 0, "gps_type": 0}"#;
-        let storage: StorageInfo = serde_json::from_str(json).unwrap();
+        let storage: StorageInfo = serde_json::from_str(json).expect("test assertion");
         assert_eq!(storage.code, "ST002");
         assert_eq!(storage.sum, 0);
         assert_eq!(storage.cur, 0);

@@ -260,7 +260,7 @@ mod tests {
     #[test]
     fn test_response_serialization() {
         let resp = Response::success(100, "测试");
-        let json = serde_json::to_string(&resp).unwrap();
+        let json = serde_json::to_string(&resp).expect("test assertion");
         assert!(json.contains("\"code\":200"));
         assert!(json.contains("\"message\":\"测试\""));
         assert!(json.contains("\"data\":100"));
@@ -269,7 +269,7 @@ mod tests {
     #[test]
     fn test_response_error_serialization() {
         let resp = Response::<()>::error("错误");
-        let json = serde_json::to_string(&resp).unwrap();
+        let json = serde_json::to_string(&resp).expect("test assertion");
         assert!(json.contains("\"code\":500"));
         assert!(json.contains("\"message\":\"错误\""));
     }

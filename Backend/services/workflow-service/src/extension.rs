@@ -691,7 +691,7 @@ fn generate_id() -> String {
     use std::time::{SystemTime, UNIX_EPOCH};
     let timestamp = SystemTime::now()
         .duration_since(UNIX_EPOCH)
-        .unwrap()
+        .expect("system time should be after UNIX epoch")
         .as_nanos();
     format!("{timestamp:016x}")
 }
@@ -737,7 +737,7 @@ mod tests {
 
         let ext = manager.get_extension(NodeType::Custom).await;
         assert!(ext.is_some());
-        assert_eq!(ext.unwrap().display_name, "自定义节点");
+        assert_eq!(ext.expect("test assertion").display_name, "自定义节点");
     }
 
     #[tokio::test]
@@ -795,7 +795,7 @@ mod tests {
         assert!(updated);
 
         let fetched = manager.get_node(&node.node_id).await;
-        let fetched_node = fetched.as_ref().unwrap();
+        let fetched_node = fetched.as_ref().expect("test assertion");
         assert_eq!(fetched_node.name, "更新后节点");
         assert_eq!(fetched_node.state, NodeState::Active);
     }

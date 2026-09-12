@@ -132,7 +132,7 @@ impl AuditRepository {
             .date_naive()
             .and_hms_opt(0, 0, 0)
             .map(|n| DateTime::<Utc>::from_naive_utc_and_offset(n, Utc))
-            .unwrap();
+            .expect("valid HMS time");
         let today_count: i64 = sqlx::query_scalar!(
             "SELECT COUNT(*) FROM sys_login_logs WHERE created_at >= $1",
             today_start,

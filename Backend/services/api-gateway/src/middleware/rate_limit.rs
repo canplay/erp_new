@@ -66,6 +66,6 @@ pub async fn rate_limit_middleware(request: Request, next: Next) -> Response {
             .status(StatusCode::TOO_MANY_REQUESTS)
             .header("Content-Type", "application/json")
             .body(r#"{"error":"请求过于频繁，请稍后重试"}"#.into())
-            .unwrap()
+            .expect("response building should not fail")
     }
 }

@@ -545,19 +545,19 @@ mod tests {
         });
 
         // 添加标签
-        manager.add_tag(1, "tag1").unwrap();
-        manager.add_tag(1, "tag2").unwrap();
+        manager.add_tag(1, "tag1").expect("test assertion");
+        manager.add_tag(1, "tag2").expect("test assertion");
 
         // 更新偏好
-        manager.update_preference(1, PreferenceType::Theme, "dark", 90).unwrap();
-        manager.update_preference(1, PreferenceType::Language, "zh-CN", 80).unwrap();
+        manager.update_preference(1, PreferenceType::Theme, "dark", 90).expect("test assertion");
+        manager.update_preference(1, PreferenceType::Language, "zh-CN", 80).expect("test assertion");
 
         // 记录行为
-        manager.record_behavior(1, BehaviorType::View, "article1", "article", None, None).unwrap();
-        manager.record_behavior(1, BehaviorType::Favorite, "article2", "article", None, None).unwrap();
+        manager.record_behavior(1, BehaviorType::View, "article1", "article", None, None).expect("test assertion");
+        manager.record_behavior(1, BehaviorType::Favorite, "article2", "article", None, None).expect("test assertion");
 
         // 计算分数
-        let score = manager.calculate_profile_score(1).unwrap();
+        let score = manager.calculate_profile_score(1).expect("test assertion");
         assert!(score > 0);
 
         // 获取统计
@@ -580,16 +580,16 @@ mod tests {
         });
 
         // 用户1
-        manager.add_tag(1, "tech").unwrap();
+        manager.add_tag(1, "tech").expect("test assertion");
         
         // 用户2
-        manager.add_tag(2, "tech").unwrap();
+        manager.add_tag(2, "tech").expect("test assertion");
         
         // 用户3
-        manager.add_tag(3, "tech").unwrap();
+        manager.add_tag(3, "tech").expect("test assertion");
 
         // 查找相似用户
-        let similar = manager.find_similar_users(1, 5).unwrap();
+        let similar = manager.find_similar_users(1, 5).expect("test assertion");
         assert_eq!(similar.len(), 2); // 用户2和用户3
     }
 }

@@ -122,7 +122,7 @@ mod tests {
             base_url: "/uploads".to_string(),
         };
 
-        let storage = LocalStorage::new(config).unwrap();
+        let storage = LocalStorage::new(config).expect("storage creation should not fail");
         let path = storage.get_url("abc123.jpg");
         assert_eq!(path, "/uploads/abc123.jpg");
     }

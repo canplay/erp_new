@@ -586,7 +586,7 @@ fn generate_alert_id() -> String {
     use std::time::{SystemTime, UNIX_EPOCH};
     let timestamp = SystemTime::now()
         .duration_since(UNIX_EPOCH)
-        .unwrap()
+        .expect("system time should be after UNIX epoch")
         .as_nanos();
     format!("alert_{timestamp:016x}")
 }
@@ -635,7 +635,7 @@ mod tests {
 
             if i == 5 {
                 assert!(alert.is_some());
-                let a = alert.unwrap();
+                let a = alert.expect("alert should exist");
                 assert_eq!(a.alert_type, AlertType::LoginFailed);
                 assert_eq!(a.level, AlertLevel::Warning);
             } else {
@@ -654,7 +654,7 @@ mod tests {
             .await;
 
         assert!(alert.is_some());
-        assert_eq!(alert.unwrap().alert_type, AlertType::AbnormalAccess);
+        assert_eq!(alert.expect("alert should exist").alert_type, AlertType::AbnormalAccess);
     }
 
     #[tokio::test]
@@ -696,7 +696,7 @@ mod tests {
         assert!(acknowledged);
 
         let fetched = manager.get_alert(&alert.alert_id).await;
-        assert!(fetched.unwrap().acknowledged);
+        assert!(fetched.expect("fetched alert should exist").acknowledged);
     }
 
     #[tokio::test]

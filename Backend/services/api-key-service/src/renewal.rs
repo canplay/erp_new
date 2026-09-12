@@ -554,7 +554,7 @@ fn generate_key_id() -> String {
     use std::time::{SystemTime, UNIX_EPOCH};
     let timestamp = SystemTime::now()
         .duration_since(UNIX_EPOCH)
-        .unwrap()
+        .expect("system time should be after UNIX epoch")
         .as_nanos();
     format!("key_{timestamp:016x}")
 }
@@ -564,7 +564,7 @@ fn generate_key_pair() -> (String, String) {
     use std::time::{SystemTime, UNIX_EPOCH};
     let timestamp = SystemTime::now()
         .duration_since(UNIX_EPOCH)
-        .unwrap()
+        .expect("system time should be after UNIX epoch")
         .as_nanos();
     let hash = format!("{timestamp:032x}");
     let prefix = format!("{:08}", timestamp % 100000000);
@@ -646,7 +646,7 @@ mod tests {
         assert!(revoked);
 
         let fetched = manager.get_key(&key.key_id).await;
-        assert_eq!(fetched.unwrap().state, KeyState::Revoked);
+        assert_eq!(fetched.expect("fetched key should exist").state, KeyState::Revoked);
     }
 
     #[tokio::test]

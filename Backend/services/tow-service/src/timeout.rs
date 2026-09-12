@@ -658,7 +658,7 @@ fn generate_event_id() -> String {
     use std::time::{SystemTime, UNIX_EPOCH};
     let timestamp = SystemTime::now()
         .duration_since(UNIX_EPOCH)
-        .unwrap()
+        .expect("system time should be after UNIX epoch")
         .as_nanos();
     format!("evt_{timestamp:016x}")
 }
@@ -695,7 +695,7 @@ mod tests {
         assert!(completed);
 
         let task = manager.get_task("task_001").await;
-        assert_eq!(task.unwrap().status, TimeoutState::Processed);
+        assert_eq!(task.expect("task should exist").status, TimeoutState::Processed);
     }
 
     #[tokio::test]
@@ -708,7 +708,7 @@ mod tests {
         assert!(cancelled);
 
         let task = manager.get_task("task_001").await;
-        assert_eq!(task.unwrap().status, TimeoutState::Cancelled);
+        assert_eq!(task.expect("task should exist").status, TimeoutState::Cancelled);
     }
 
     #[tokio::test]

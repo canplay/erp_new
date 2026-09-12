@@ -45,7 +45,7 @@ mod tests {
             updated_at: None,
         };
 
-        let json = serde_json::to_string(&user).unwrap();
+        let json = serde_json::to_string(&user).expect("test assertion");
         assert!(json.contains("\"id\":1"));
         assert!(json.contains("\"username\":\"test_user\""));
         assert!(json.contains("\"nickname\":\"测试\""));
@@ -66,7 +66,7 @@ mod tests {
             "role": "admin",
             "status": 1
         }"#;
-        let user: UserInfo = serde_json::from_str(json).unwrap();
+        let user: UserInfo = serde_json::from_str(json).expect("deserialization should not fail");
         assert_eq!(user.id, 2);
         assert_eq!(user.username, "admin");
         assert_eq!(user.password_hash, "hash123");
@@ -85,7 +85,7 @@ mod tests {
             "role": "",
             "status": 0
         }"#;
-        let user: UserInfo = serde_json::from_str(json).unwrap();
+        let user: UserInfo = serde_json::from_str(json).expect("test assertion");
         assert_eq!(user.id, 0);
         assert!(user.created_at.is_none());
         assert!(user.nickname.is_none());

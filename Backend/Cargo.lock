@@ -2847,6 +2847,7 @@ name = "messaging-service"
 version = "0.2.0"
 dependencies = [
  "anyhow",
+ "async-trait",
  "auth-core",
  "axum",
  "chrono",
@@ -2854,6 +2855,7 @@ dependencies = [
  "futures-util",
  "grpc-proto",
  "log",
+ "parking_lot",
  "serde",
  "serde_json",
  "sqlx",
@@ -6523,6 +6525,7 @@ dependencies = [
  "futures-util",
  "grpc-proto",
  "log",
+ "parking_lot",
  "reqwest",
  "serde",
  "serde_json",

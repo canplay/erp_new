@@ -88,7 +88,7 @@ fn month_start_ts() -> i64 {
 /// epoch 秒 → "YYYY-MM-DD HH:mm:ss" 标签
 fn fmt_label(ts: i64) -> String {
     let dt = chrono::DateTime::from_timestamp(ts, 0)
-        .unwrap_or_else(|| chrono::DateTime::from_timestamp(0, 0).unwrap());
+        .unwrap_or_else(|| chrono::DateTime::from_timestamp(0, 0).expect("valid epoch timestamp"));
     dt.format("%m-%d").to_string()
 }
 

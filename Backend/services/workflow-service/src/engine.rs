@@ -965,16 +965,16 @@ mod tests {
         });
 
         // 手动验证解析逻辑
-        let nodes = definition.get("nodes").unwrap().as_array().unwrap();
+        let nodes = definition.get("nodes").expect("test assertion").as_array().expect("test assertion");
         let start_node_id = nodes
             .iter()
-            .find(|n| n.get("node_type").unwrap().as_str().unwrap() == "start")
-            .map(|n| n.get("id").unwrap().as_str().unwrap().to_string());
+            .find(|n| n.get("node_type").expect("test assertion").as_str().expect("test assertion") == "start")
+            .map(|n| n.get("id").expect("test assertion").as_str().expect("test assertion").to_string());
 
         let end_node_ids: Vec<String> = nodes
             .iter()
-            .filter(|n| n.get("node_type").unwrap().as_str().unwrap() == "end")
-            .filter_map(|n| n.get("id").unwrap().as_str())
+            .filter(|n| n.get("node_type").expect("test assertion").as_str().expect("test assertion") == "end")
+            .filter_map(|n| n.get("id").expect("test assertion").as_str())
             .map(String::from)
             .collect();
 

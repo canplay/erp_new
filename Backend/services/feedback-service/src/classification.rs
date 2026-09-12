@@ -631,7 +631,7 @@ fn generate_id() -> String {
     use std::time::{SystemTime, UNIX_EPOCH};
     let timestamp = SystemTime::now()
         .duration_since(UNIX_EPOCH)
-        .unwrap()
+        .expect("system time should be after UNIX epoch")
         .as_nanos();
     format!("fb_{:016x}", timestamp)
 }
@@ -714,7 +714,7 @@ mod tests {
         assert!(updated);
 
         let fetched = manager.get_feedback(&feedback.id).await;
-        assert_eq!(fetched.unwrap().state, FeedbackState::Processing);
+        assert_eq!(fetched.expect("fetched feedback should exist").state, FeedbackState::Processing);
     }
 
     #[tokio::test]
@@ -727,7 +727,7 @@ mod tests {
         assert!(assigned);
 
         let fetched = manager.get_feedback(&feedback.id).await;
-        assert_eq!(fetched.unwrap().assigned_to, Some("admin_001".to_string()));
+        assert_eq!(fetched.expect("fetched feedback should exist").assigned_to, Some("admin_001".to_string()));
     }
 
     #[tokio::test]

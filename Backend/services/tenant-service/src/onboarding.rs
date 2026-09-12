@@ -368,14 +368,14 @@ mod tests {
     #[test]
     fn test_onboarding_step_serialization() {
         let step = OnboardingStep::TenantCreated(42);
-        let json = serde_json::to_string(&step).unwrap();
+        let json = serde_json::to_string(&step).expect("test assertion");
         assert!(json.contains("42"));
     }
 
     #[test]
     fn test_onboarding_status_serialization() {
         let status = OnboardingStatus::Completed;
-        let json = serde_json::to_string(&status).unwrap();
+        let json = serde_json::to_string(&status).expect("test assertion");
         assert!(json.contains("Completed"));
     }
 

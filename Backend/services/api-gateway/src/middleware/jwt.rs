@@ -139,7 +139,7 @@ pub async fn auth_middleware(mut request: Request, next: Next) -> Response {
                 .status(StatusCode::UNAUTHORIZED)
                 .header("Content-Type", "application/json")
                 .body(r#"{"success":false,"error":"缺少有效的认证令牌"}"#.into())
-                .unwrap();
+                .expect("response building should not fail");
         }
     };
 
@@ -155,7 +155,7 @@ pub async fn auth_middleware(mut request: Request, next: Next) -> Response {
                     .status(StatusCode::UNAUTHORIZED)
                     .header("Content-Type", "application/json")
                     .body(r#"{"success":false,"error":"无效或过期的令牌"}"#.into())
-                    .unwrap();
+                    .expect("response building should not fail");
             }
         }
     } else {

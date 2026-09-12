@@ -1,0 +1,189 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  backend-test:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: myai_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: backend
+
+      - name: Run api-gateway tests
+        working-directory: backend
+        run: cargo test -p api-gateway
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/myai_test
+          REDIS_URL: redis://localhost:6379
+
+      - name: Run auth-service tests
+        working-directory: backend
+        run: cargo test -p auth-service
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/myai_test
+          REDIS_URL: redis://localhost:6379
+
+      - name: Run tenant-service tests
+        working-directory: backend
+        run: cargo test -p tenant-service
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/myai_test
+          REDIS_URL: redis://localhost:6379
+
+      - name: Run workflow-service tests
+        working-directory: backend
+        run: cargo test -p workflow-service
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/myai_test
+          REDIS_URL: redis://localhost:6379
+
+      - name: Run messaging-service tests
+        working-directory: backend
+        run: cargo test -p messaging-service
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/myai_test
+          REDIS_URL: redis://localhost:6379
+
+  frontend-test:
+    name: Frontend Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: pnpm install --frozen-lockfile
+
+      - name: Type check
+        working-directory: frontend
+        run: pnpm typecheck
+
+      - name: Lint
+        working-directory: frontend
+        run: pnpm lint
+
+      - name: Build admin
+        working-directory: frontend
+        run: pnpm build:admin
+
+      - name: Build ops
+        working-directory: frontend
+        run: pnpm build:ops
+
+      - name: Build social
+        working-directory: frontend
+        run: pnpm build:social
+
+  build-and-push:
+    name: Build & Push Docker Images
+    needs: [backend-test, frontend-test]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Generate image tag
+        id: tag
+        run: echo "IMAGE_TAG=$(date +%Y%m%d%H%M%S)-$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Login to Harbor
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.HARBOR_HOST }}
+          username: ${{ secrets.HARBOR_USER }}
+          password: ${{ secrets.HARBOR_PASS }}
+
+      - name: Build & push backend images
+        working-directory: backend
+        run: |
+          for service in api-gateway auth-service tenant-service workflow-service messaging-service; do
+            echo "Building $service..."
+            docker build \
+              -f multi-stage.Dockerfile \
+              --build-arg SERVICE_NAME=$service \
+              -t ${{ secrets.HARBOR_HOST }}/myai/$service:${{ steps.tag.outputs.IMAGE_TAG }} \
+              -t ${{ secrets.HARBOR_HOST }}/myai/$service:latest \
+              --push \
+              .
+          done
+
+      - name: Build & push frontend images
+        working-directory: frontend
+        run: |
+          for app in admin ops social; do
+            echo "Building $app..."
+            docker build \
+              -f multi-stage.Dockerfile.runtime \
+              --build-arg APP_NAME=$app \
+              -t ${{ secrets.HARBOR_HOST }}/myai/$app:${{ steps.tag.outputs.IMAGE_TAG }} \
+              -t ${{ secrets.HARBOR_HOST }}/myai/$app:latest \
+              --push \
+              .
+          done
+
+      - name: Output image tags
+        run: |
+          echo "Images pushed with tag: ${{ steps.tag.outputs.IMAGE_TAG }}"

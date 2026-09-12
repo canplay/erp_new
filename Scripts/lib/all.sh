@@ -24,9 +24,9 @@
 # Use dynamic path based on this file's location
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# 默认凭证（可被环境变量覆盖）
-: "${HARBOR_PASS:=ChangeMeHarbor123!}"
-: "${RANCHER_PASS:=canplay745144}"
+# 凭证: 优先从环境变量读取，未设置时报错
+: "${HARBOR_PASS:?Error: HARBOR_PASS environment variable required}"
+: "${RANCHER_PASS:?Error: RANCHER_PASS environment variable required}"
 
 source "$SCRIPT_DIR/logging.sh"
 source "$SCRIPT_DIR/services.sh"

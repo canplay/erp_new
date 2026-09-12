@@ -26,7 +26,7 @@ done
 HARBOR_URL="${HARBOR_URL:-harbor.100.100.100.101.example.com:8003}"
 HARBOR_PROJECT="${HARBOR_PROJECT:-myai}"
 HARBOR_USER="${HARBOR_USER:-admin}"
-HARBOR_PASS="${HARBOR_PASS:-ChangeMeHarbor123!}"
+HARBOR_PASS="${HARBOR_PASS:?Error: HARBOR_PASS environment variable required}"
 RANCHER_URL="${RANCHER_URL:-https://100.100.100.101.example.com:8800}"
 RANCHER_USER="${RANCHER_USER:-admin}"
 HELM_CHART="$PROJECT_ROOT/Scripts/helm/myai"

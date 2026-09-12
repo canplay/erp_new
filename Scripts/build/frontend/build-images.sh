@@ -112,8 +112,10 @@ log INFO "  ✓ podman 已安装"
 
 # 检查 Harbor 连接
 log INFO "检查 Harbor 连接..."
-if echo "admin:ChangeMeHarbor123!" | podman login \
-    --username admin \
+HARBOR_USER="${HARBOR_USER:-admin}"
+HARBOR_PASS="${HARBOR_PASS:?Error: HARBOR_PASS environment variable required}"
+if echo "${HARBOR_USER}:${HARBOR_PASS}" | podman login \
+    --username "${HARBOR_USER}" \
     --password-stdin \
     --tls-verify=false \
     "${HARBOR_HOST}" 2>&1 | grep -q "Login Succeeded"; then
@@ -158,10 +160,27 @@ else
 fi
 
 # =============================================================================
-# 步骤 2: 修复前端错误
+# 步骤 2: 运行测试
 # =============================================================================
 log INFO ""
-log INFO "步骤 2: 修复前端错误"
+log INFO "步骤 2: 运行测试"
+log INFO "=========================================="
+log INFO "执行 npx vitest run..."
+
+cd "${FRONTEND_DIR}"
+
+if npx vitest run 2>&1 | tail -30; then
+    log INFO "  ✓ 测试通过"
+else
+    log ERROR "  ✗ 测试失败"
+    exit 1
+fi
+
+# =============================================================================
+# 步骤 3: 修复前端错误
+# =============================================================================
+log INFO ""
+log INFO "步骤 3: 修复前端错误"
 log INFO "=========================================="
 log INFO "运行修复脚本..."
 

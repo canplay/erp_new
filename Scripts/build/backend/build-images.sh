@@ -14,10 +14,10 @@ readonly BACKEND_DIR="/d/Workspace/MyAI/Backend"
 readonly FRONTEND_DIR="/d/Workspace/MyAI/Frontend/admin"
 readonly HARBOR_HOST="harbor.100.100.100.101.example.com:8003"
 readonly RANCHER_HOST="https://100.100.100.101.example.com:8800"
-readonly HARBOR_USER="admin"
-readonly HARBOR_PASS="ChangeMeHarbor123!"
-readonly RANCHER_USER="admin"
-readonly RANCHER_PASS="canplay745144"
+readonly HARBOR_USER="${HARBOR_USER:-admin}"
+HARBOR_PASS="${HARBOR_PASS:?Error: HARBOR_PASS environment variable required}"
+readonly RANCHER_USER="${RANCHER_USER:-admin}"
+RANCHER_PASS="${RANCHER_PASS:?Error: RANCHER_PASS environment variable required}"
 readonly TAG="${1:-$(date +%Y%m%d%H%M%S)}"
 readonly TIMESTAMP=$(date +"%Y-%m-%d %H:%M:%S")
 readonly BUILD_TIMEOUT=3600  # 60 分钟超时
@@ -201,10 +201,24 @@ else
 fi
 
 # =============================================================================
-# 步骤 2: 清理旧镜像
+# 步骤 2: 运行测试
 # =============================================================================
 log INFO ""
-log INFO "步骤 2: 清理旧镜像..."
+log INFO "步骤 2: 运行测试..."
+cd "${BACKEND_DIR}"
+log INFO "执行 cargo test --workspace --lib..."
+if cargo test --workspace --lib 2>&1 | tail -n 50; then
+    log INFO "  ✓ 测试通过"
+else
+    log ERROR "  ✗ 测试失败"
+    exit 1
+fi
+
+# =============================================================================
+# 步骤 3: 清理旧镜像
+# =============================================================================
+log INFO ""
+log INFO "步骤 3: 清理旧镜像..."
 podman rmi -f "${HARBOR_HOST}/myai-builder:${TAG}" 2>/dev/null || true
 podman rmi -f "${HARBOR_HOST}/myai-api-gateway:${TAG}" 2>/dev/null || true
 podman rmi -f "${HARBOR_HOST}/myai-auth-service:${TAG}" 2>/dev/null || true

@@ -1,0 +1,31 @@
+{{/*
+=============================================================================
+ServiceMonitor for Prometheus Operator
+============================================================================
+Creates ServiceMonitor resources for each enabled service to enable
+Prometheus metrics scraping.
+*/}}
+{{- if .Values.monitoring.enabled }}
+{{- range $serviceName, $serviceConfig := .Values.services }}
+{{- if $serviceConfig.enabled }}
+{{- if and ($serviceConfig.ports.http) (gt ($serviceConfig.ports.http | int) 0) }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "myai.fullname" (dict "Values" $.Values "serviceName" $serviceName "componentName" $serviceConfig.name "Chart" $.Chart "Release" $.Release) }}
+  labels:
+    {{- include "myai.labels" (dict "Values" $.Values "serviceName" $serviceName "Chart" $.Chart "Release" $.Release) | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "myai.selectorLabels" (dict "Values" $.Values "serviceName" $serviceName "Chart" $.Chart "Release" $.Release) | nindent 6 }}
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: {{ $.Values.monitoring.scrapeInterval | default "30s" }}
+      scrapeTimeout: {{ $.Values.monitoring.scrapeTimeout | default "10s" }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

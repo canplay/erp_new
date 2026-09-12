@@ -81,7 +81,7 @@ impl TenantContext {
     }
 }
 
-/// 线程局部租户上下文存储
+// 线程局部租户上下文存储
 thread_local! {
     static TENANT_CTX: RefCell<Option<Arc<TenantContext>>> = const { RefCell::new(None) };
 }

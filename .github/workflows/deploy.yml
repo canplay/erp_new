@@ -1,0 +1,95 @@
+name: Deploy
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    branches: [main]
+    types:
+      - completed
+
+env:
+  HELM_CHART_PATH: Scripts/helm/myai
+
+jobs:
+  deploy:
+    name: Deploy to Kubernetes
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get image tag from CI
+        id: tag
+        run: |
+          # Extract the short SHA from the triggering workflow run
+          echo "IMAGE_TAG=$(date +%Y%m%d%H%M%S)-$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: 'latest'
+
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBECONFIG }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: 'latest'
+
+      - name: Add Helm repositories
+        run: |
+          helm repo add stable https://charts.helm.sh/stable
+          helm repo update
+
+      - name: Deploy with Helm
+        run: |
+          helm upgrade --install myai ${{ env.HELM_CHART_PATH }} \
+            --namespace ${{ secrets.K8S_NAMESPACE }} \
+            --create-namespace \
+            --set global.image.tag=${{ steps.tag.outputs.IMAGE_TAG }} \
+            --set global.image.registry=${{ secrets.HARBOR_HOST }} \
+            --values ${{ env.HELM_CHART_PATH }}/values.yaml \
+            --values ${{ env.HELM_CHART_PATH }}/values-prod.yaml \
+            --wait \
+            --timeout 10m
+
+      - name: Verify rollout status
+        run: |
+          kubectl rollout status deployment/myai-api-gateway \
+            -n ${{ secrets.K8S_NAMESPACE }} \
+            --timeout=300s
+          kubectl rollout status deployment/myai-auth-service \
+            -n ${{ secrets.K8S_NAMESPACE }} \
+            --timeout=300s
+          kubectl rollout status deployment/myai-tenant-service \
+            -n ${{ secrets.K8S_NAMESPACE }} \
+            --timeout=300s
+          kubectl rollout status deployment/myai-workflow-service \
+            -n ${{ secrets.K8S_NAMESPACE }} \
+            --timeout=300s
+          kubectl rollout status deployment/myai-messaging-service \
+            -n ${{ secrets.K8S_NAMESPACE }} \
+            --timeout=300s
+
+      - name: Verify frontend rollout
+        run: |
+          kubectl rollout status deployment/myai-admin \
+            -n ${{ secrets.K8S_NAMESPACE }} \
+            --timeout=300s
+          kubectl rollout status deployment/myai-ops \
+            -n ${{ secrets.K8S_NAMESPACE }} \
+            --timeout=300s
+          kubectl rollout status deployment/myai-social \
+            -n ${{ secrets.K8S_NAMESPACE }} \
+            --timeout=300s
+
+      - name: Check pod status
+        run: |
+          kubectl get pods -n ${{ secrets.K8S_NAMESPACE }} -l app.kubernetes.io/instance=myai

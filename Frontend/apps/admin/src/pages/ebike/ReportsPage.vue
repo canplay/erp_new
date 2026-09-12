@@ -20,10 +20,16 @@
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 import { date } from 'quasar';
 import { useI18n } from 'vue-i18n';
-import * as echarts from 'echarts';
+import { use } from 'echarts/core';
+import { CanvasRenderer } from 'echarts/renderers';
+import { BarChart, LineChart, PieChart } from 'echarts/charts';
+import { TitleComponent, TooltipComponent, GridComponent, LegendComponent } from 'echarts/components';
+import type { ECharts } from 'echarts/core';
 import { httpClient } from '@/utils/alova';
 import { useEbikeStore as useStore } from '@/stores/ebike';
 import { parseCarResponse } from '@/utils/ebike';
+
+use([CanvasRenderer, BarChart, LineChart, PieChart, TitleComponent, TooltipComponent, GridComponent, LegendComponent]);
 
 const { t: $t } = useI18n();
 

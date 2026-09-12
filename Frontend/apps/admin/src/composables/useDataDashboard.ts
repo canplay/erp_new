@@ -6,7 +6,8 @@
 
 import { ref, reactive } from 'vue';
 import { useI18n } from 'vue-i18n';
-import * as echarts from 'echarts';
+import { echarts } from '@/utils/echarts';
+import type { EChartsOption } from '@/utils/echarts';
 import { getReportData } from '@/api/report';
 import { logger } from '@/utils/logger';
 
@@ -196,10 +197,7 @@ export function useDataDashboard() {
           type: 'bar',
           data: [320, 452, 631, 824, 956, 1205],
           itemStyle: {
-            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-              { offset: 0, color: '#1976D2' },
-              { offset: 1, color: '#42A5F5' },
-            ]),
+            color: '#42A5F5',
             borderRadius: [4, 4, 0, 0],
           },
         },

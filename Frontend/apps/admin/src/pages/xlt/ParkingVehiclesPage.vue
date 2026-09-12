@@ -17,7 +17,7 @@
         <SkeletonLoader type="table" :columns="columns.length" :rows="5" />
       </template>
       <template #no-data>
-        <EmptyState icon="time_to_leave" :title="$t('empty.noData')" description="暂无在场车辆" />
+        <EmptyState icon="time_to_leave" :title="$t('empty.noData')" :description="$t('common.noParkedVehicle')" />
       </template>
     </q-table>
   </q-page>
@@ -28,6 +28,9 @@ import { ref } from 'vue';
 import { useXltStore } from '@/stores/xlt';
 import SkeletonLoader from '@/components/SkeletonLoader.vue';
 import EmptyState from '@/components/EmptyState.vue';
+
+import { useI18n } from 'vue-i18n'
+const { t: $t } = useI18n()
 const store = useXltStore();
 const plateNo = ref('');
 const parkCode = ref('PK001');

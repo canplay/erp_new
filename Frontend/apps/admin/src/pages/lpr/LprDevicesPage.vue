@@ -18,7 +18,7 @@
         </q-chip>
       </template>
       <template #no-data>
-        <div class="q-pa-lg text-center text-grey">暂无设备数据</div>
+        <div class="q-pa-lg text-center text-grey">{{ $t('common.noDeviceData') }}</div>
       </template>
     </q-table>
   </q-page>

@@ -4,6 +4,8 @@
  * @date 2026-05-18
  */
 
+import { useI18nT } from '@/composables/useI18nT';
+
 export enum PermissionModule {
   USER = "user",
   ROLE = "role",
@@ -148,42 +150,124 @@ export interface PermissionDataScope {
   description?: string;
 }
 
-export const PERMISSIONS: PermissionOption[] = [
-  { key: "system:user:list", name: "查看用户", type: "function", category: "page", module: PermissionModule.USER, description: "查看用户列表和详情" },
-  { key: "system:user:create", name: "创建用户", type: "function", category: "button", module: PermissionModule.USER, description: "创建新用户" },
-  { key: "system:user:update", name: "更新用户", type: "function", category: "button", module: PermissionModule.USER, description: "修改用户信息" },
-  { key: "system:user:delete", name: "删除用户", type: "function", category: "button", module: PermissionModule.USER, description: "删除用户" },
-  { key: "system:user:export", name: "导出用户", type: "function", category: "button", module: PermissionModule.USER, description: "导出用户数据" },
-  { key: "system:user:import", name: "导入用户", type: "function", category: "button", module: PermissionModule.USER, description: "导入用户数据" },
-  { key: "system:role:list", name: "查看角色", type: "function", category: "page", module: PermissionModule.ROLE, description: "查看角色列表" },
-  { key: "system:role:create", name: "创建角色", type: "function", category: "button", module: PermissionModule.ROLE, description: "创建新角色" },
-  { key: "system:role:update", name: "更新角色", type: "function", category: "button", module: PermissionModule.ROLE, description: "修改角色信息" },
-  { key: "system:role:delete", name: "删除角色", type: "function", category: "button", module: PermissionModule.ROLE, description: "删除角色" },
-  { key: "system:permission:list", name: "查看权限", type: "function", category: "page", module: PermissionModule.PERMISSION, description: "查看权限列表" },
-  { key: "system:permission:assign", name: "分配权限", type: "function", category: "button", module: PermissionModule.PERMISSION, description: "分配权限给角色" },
-];
-
-export function getSensitivePermissions(): PermissionOption[] {
-  return PERMISSIONS.filter(p => p.sensitive);
+/**
+ * Build a PermissionOption with i18n-resolved name/description.
+ * Uses i18nT so name and description are locale-aware at render time.
+ */
+function permDef(
+  key: string,
+  type: "function" | "data" | "field",
+  category: "page" | "button" | "field" | "data",
+  module: PermissionModule,
+  opts: { sensitive?: boolean } = {}
+): PermissionDefinition {
+  const { i18nT } = useI18nT();
+  return {
+    key,
+    name: i18nT(`common.perm.${key.replace(/:/g, '')}`, key),
+    type,
+    category,
+    module,
+    description: i18nT(`common.perm.${key.replace(/:/g, '')}Desc`, ''),
+    sensitive: opts.sensitive ?? false,
+  };
 }
 
+/**
+ * Static permission metadata (keys, types, categories, modules).
+ * Human-readable strings are resolved via i18n in `getPermissions()`.
+ */
+export const PERMISSION_META: Array<{
+  key: string;
+  type: "function" | "data" | "field";
+  category: "page" | "button" | "field" | "data";
+  module: PermissionModule;
+  sensitive?: boolean;
+}> = [
+  { key: "system:user:list",     type: "function", category: "page",   module: PermissionModule.USER },
+  { key: "system:user:create",  type: "function", category: "button", module: PermissionModule.USER },
+  { key: "system:user:update",  type: "function", category: "button", module: PermissionModule.USER },
+  { key: "system:user:delete",  type: "function", category: "button", module: PermissionModule.USER },
+  { key: "system:user:export",  type: "function", category: "button", module: PermissionModule.USER },
+  { key: "system:user:import",  type: "function", category: "button", module: PermissionModule.USER },
+  { key: "system:role:list",    type: "function", category: "page",   module: PermissionModule.ROLE },
+  { key: "system:role:create",  type: "function", category: "button", module: PermissionModule.ROLE },
+  { key: "system:role:update",  type: "function", category: "button", module: PermissionModule.ROLE },
+  { key: "system:role:delete",  type: "function", category: "button", module: PermissionModule.ROLE },
+  { key: "system:permission:list",  type: "function", category: "page",   module: PermissionModule.PERMISSION },
+  { key: "system:permission:assign", type: "function", category: "button", module: PermissionModule.PERMISSION },
+];
+
+/**
+ * Build a translated PermissionOption list.
+ * Call inside setup so that i18n locale is active.
+ */
+export function getPermissions(): PermissionDefinition[] {
+  return PERMISSION_META.map((m) => permDef(m.key, m.type, m.category, m.module, m));
+}
+
+/**
+ * Legacy export — empty by default, use getPermissions() for translated list.
+ * Kept for import compatibility; consumers should migrate to getPermissions().
+ */
+export const PERMISSIONS: PermissionOption[] = PERMISSION_META.map((m) => ({
+  key: m.key,
+  name: m.key,
+  type: m.type,
+  category: m.category,
+  module: m.module,
+  sensitive: m.sensitive ?? false,
+}));
+
+export function getSensitivePermissions(): PermissionOption[] {
+  return getPermissions().filter(p => p.sensitive);
+}
+
+/**
+ * Build a ModuleOption list with English labels.
+ * For translated labels, use getAllModules() inside setup where i18n is active.
+ */
 export function getAllModules(): ModuleOption[] {
   return [
-    { value: PermissionModule.USER, label: '用户管理', icon: 'people' },
-    { value: PermissionModule.ROLE, label: '角色管理', icon: 'admin_panel_settings' },
-    { value: PermissionModule.PERMISSION, label: '权限管理', icon: 'vpn_key' },
-    { value: PermissionModule.LOGIN_LOG, label: '登录日志', icon: 'login' },
-    { value: PermissionModule.OPERATION_LOG, label: '操作日志', icon: 'history' },
-    { value: PermissionModule.SYSTEM_CONFIG, label: '系统配置', icon: 'settings' },
-    { value: PermissionModule.DICTIONARY, label: '字典管理', icon: 'menu_book' },
-    { value: PermissionModule.NOTIFICATION, label: '通知管理', icon: 'notifications' },
-    { value: PermissionModule.ANNOUNCEMENT, label: '公告管理', icon: 'campaign' },
-    { value: PermissionModule.MONITOR, label: '监控管理', icon: 'monitor_heart' },
-    { value: PermissionModule.FILE, label: '文件管理', icon: 'folder' },
-    { value: PermissionModule.TASK, label: '任务管理', icon: 'schedule' },
-    { value: PermissionModule.IMPORT_EXPORT, label: '导入导出', icon: 'import_export' },
-    { value: PermissionModule.ORGANIZATION, label: '组织管理', icon: 'corporate_fare' },
-    { value: PermissionModule.AUDIT, label: '审计管理', icon: 'fact_check' },
+    { value: PermissionModule.USER, label: 'User Management', icon: 'people' },
+    { value: PermissionModule.ROLE, label: 'Role Management', icon: 'admin_panel_settings' },
+    { value: PermissionModule.PERMISSION, label: 'Permission Management', icon: 'vpn_key' },
+    { value: PermissionModule.LOGIN_LOG, label: 'Login Logs', icon: 'login' },
+    { value: PermissionModule.OPERATION_LOG, label: 'Operation Logs', icon: 'history' },
+    { value: PermissionModule.SYSTEM_CONFIG, label: 'System Config', icon: 'settings' },
+    { value: PermissionModule.DICTIONARY, label: 'Dictionary Mgmt', icon: 'menu_book' },
+    { value: PermissionModule.NOTIFICATION, label: 'Notification Mgmt', icon: 'notifications' },
+    { value: PermissionModule.ANNOUNCEMENT, label: 'Announcement Mgmt', icon: 'campaign' },
+    { value: PermissionModule.MONITOR, label: 'Monitoring', icon: 'monitor_heart' },
+    { value: PermissionModule.FILE, label: 'File Management', icon: 'folder' },
+    { value: PermissionModule.TASK, label: 'Task Management', icon: 'schedule' },
+    { value: PermissionModule.IMPORT_EXPORT, label: 'Import/Export', icon: 'import_export' },
+    { value: PermissionModule.ORGANIZATION, label: 'Organization Mgmt', icon: 'corporate_fare' },
+    { value: PermissionModule.AUDIT, label: 'Audit Management', icon: 'fact_check' },
+  ];
+}
+
+/**
+ * Get translated module labels. Call inside setup.
+ */
+export function getAllModulesI18n(): ModuleOption[] {
+  const { i18nT } = useI18nT();
+  return [
+    { value: PermissionModule.USER, label: i18nT('common.moduleUser', 'User Management'), icon: 'people' },
+    { value: PermissionModule.ROLE, label: i18nT('common.moduleRole', 'Role Management'), icon: 'admin_panel_settings' },
+    { value: PermissionModule.PERMISSION, label: i18nT('common.modulePermission', 'Permission Management'), icon: 'vpn_key' },
+    { value: PermissionModule.LOGIN_LOG, label: i18nT('common.moduleLoginLog', 'Login Logs'), icon: 'login' },
+    { value: PermissionModule.OPERATION_LOG, label: i18nT('common.moduleOperationLog', 'Operation Logs'), icon: 'history' },
+    { value: PermissionModule.SYSTEM_CONFIG, label: i18nT('common.moduleSystemConfig', 'System Config'), icon: 'settings' },
+    { value: PermissionModule.DICTIONARY, label: i18nT('common.moduleDictionary', 'Dictionary Mgmt'), icon: 'menu_book' },
+    { value: PermissionModule.NOTIFICATION, label: i18nT('common.moduleNotification', 'Notification Mgmt'), icon: 'notifications' },
+    { value: PermissionModule.ANNOUNCEMENT, label: i18nT('common.moduleAnnouncement', 'Announcement Mgmt'), icon: 'campaign' },
+    { value: PermissionModule.MONITOR, label: i18nT('common.moduleMonitor', 'Monitoring'), icon: 'monitor_heart' },
+    { value: PermissionModule.FILE, label: i18nT('common.moduleFile', 'File Management'), icon: 'folder' },
+    { value: PermissionModule.TASK, label: i18nT('common.moduleTask', 'Task Management'), icon: 'schedule' },
+    { value: PermissionModule.IMPORT_EXPORT, label: i18nT('common.moduleImportExport', 'Import/Export'), icon: 'import_export' },
+    { value: PermissionModule.ORGANIZATION, label: i18nT('common.moduleOrganization', 'Organization Mgmt'), icon: 'corporate_fare' },
+    { value: PermissionModule.AUDIT, label: i18nT('common.moduleAudit', 'Audit Management'), icon: 'fact_check' },
   ];
 }
 

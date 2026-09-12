@@ -39,7 +39,7 @@
           class="q-mt-md"
           icon="preview"
           :label="$t('common.permissionPreview')"
-          caption="查看此配置对应的数据访问范围"
+          :caption="$t('common.dataAccessRange')"
         >
           <q-card flat bordered class="q-pa-md">
             <div class="text-body2">

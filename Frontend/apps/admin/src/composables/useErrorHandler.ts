@@ -17,7 +17,7 @@ export interface ErrorInfo {
   dismissed: boolean;
 }
 
-export function useErrorHandler() {
+export async function useErrorHandler() {
   const $q = useQuasar();
   const errorHistory = ref<ErrorInfo[]>([]);
   const MAX_HISTORY_SIZE = 50;
@@ -124,7 +124,7 @@ export function useErrorHandler() {
   };
 }
 
-export function useGlobalErrorHandler() {
+export async function useGlobalErrorHandler() {
   const $q = useQuasar();
 
   function initGlobalErrorHandler() {

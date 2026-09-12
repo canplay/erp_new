@@ -33,7 +33,7 @@
       <q-banner type="negative" class="bg-red-1">
         {{ uploadError }}
         <template #action>
-          <q-btn flat color="negative" label="重试" @click="$emit('retry')" />
+          <q-btn flat color="negative" :label="$t('common.retry')" @click="$emit('retry')" />
           <q-btn flat color="grey" :label="$t('common.cancel')" @click="$emit('close')" />
         </template>
       </q-banner>
@@ -42,6 +42,9 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+const { t: $t } = useI18n()
+
 interface Props {
   isUploading?: boolean;
   uploadProgress?: number;

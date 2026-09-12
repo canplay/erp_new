@@ -4,20 +4,20 @@
 
     <div class="row q-col-gutter-sm q-mb-md">
       <StatCard
-        title="总请求数"
+        :title="$t('common.totalRequests')"
         :value="stats.totalRequests"
         icon="api"
         color="primary"
       />
       <StatCard
-        title="成功请求"
+        :title="$t('common.successRequests')"
         :value="stats.successRequests"
         icon="check_circle"
         color="positive"
       />
       <div class="col-3">
         <StatCard
-          title="失败请求"
+          :title="$t('common.failedRequests')"
           :value="stats.failedRequests"
           icon="cancel"
           color="negative"
@@ -25,7 +25,7 @@
       </div>
       <div class="col-3">
         <StatCard
-          title="平均响应时间"
+          :title="$t('common.avgResponseTime')"
           :value="`${stats.avgResponseTime}ms`"
           icon="schedule"
           color="warning"
@@ -35,10 +35,10 @@
 
     <div class="row q-col-gutter-sm">
       <div class="col-8">
-        <ChartContainer title="请求趋势" :chart-data="stats.trendData" />
+        <ChartContainer :title="$t('common.requestTrend')" :chart-data="stats.trendData" />
       </div>
       <div class="col-4">
-        <ChartContainer title="状态码分布" :chart-data="stats.statusData" />
+        <ChartContainer :title="$t('common.statusCodeDistribution')" :chart-data="stats.statusData" />
       </div>
     </div>
   </div>

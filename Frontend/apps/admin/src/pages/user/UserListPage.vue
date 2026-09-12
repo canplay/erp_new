@@ -163,7 +163,7 @@
 
         <q-card-section>
           <q-stepper v-model="importStep" vertical color="primary" header-class="hidden">
-            <q-step :name="1" title="选择文件" icon="upload" :done="importStep > 1" class="q-pb-none">
+            <q-step :name="1" :title="$t('common.selectFile')" icon="upload" :done="importStep > 1" class="q-pb-none">
               <q-file
                 v-model="importFile"
                 accept=".csv"
@@ -255,6 +255,8 @@ import UserEditDialog from '@/components/UserEditDialog.vue';
 import { ref } from 'vue';
 import { formatDate } from '@/utils/format';
 
+import { useI18n } from 'vue-i18n'
+const { t: $t } = useI18n()
 /** 后端返回 epoch 秒，格式化显示 */
 function formatUserTime(value: number | string): string {
   const num = typeof value === 'string' ? Number(value) : value;

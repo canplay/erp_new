@@ -13,6 +13,7 @@
  * 注意：后端 permissions 种子数据目前仅 21 个基础权限码。
  * 业务垂直域（ctp/lpr/xlt/tow/ebike）尚未在种子数据中定义权限码，
  * 暂以 ROLE_ADMIN 标记"仅超管可访问"，待后端补充权限码后逐一替换。
+ * Currently using ROLE_ADMIN to mark "superadmin only", will replace with granular permissions after backend support.
  */
 
 /** 仅 admin 角色可访问（业务垂直域等尚未定义权限码的资源） */

@@ -80,7 +80,7 @@ export interface DeviceQueryParams {
 // ==================== API 函数 ====================
 
 /** 接收设备上报数据 */
-export function reportDeviceData(data: DeviceDataUpload) {
+export async function reportDeviceData(data: DeviceDataUpload) {
   try {
     return await httpClient.post('/v1/ctp/report', data);
   } catch (error) {
@@ -90,7 +90,7 @@ export function reportDeviceData(data: DeviceDataUpload) {
 }
 
 /** 发送锁控制命令 */
-export function controlLock(cmd: LockControlRequest) {
+export async function controlLock(cmd: LockControlRequest) {
   try {
     return await httpClient.post('/v1/ctp/device/control', cmd);
   } catch (error) {
@@ -100,7 +100,7 @@ export function controlLock(cmd: LockControlRequest) {
 }
 
 /** 查询单个设备状态 */
-export function getDevice(deviceNo: string) {
+export async function getDevice(deviceNo: string) {
   try {
     return await httpClient.get(`/v1/ctp/device/${deviceNo}`);
   } catch (error) {
@@ -110,7 +110,7 @@ export function getDevice(deviceNo: string) {
 }
 
 /** 分页获取设备列表 */
-export function listDevices(params?: DeviceQueryParams) {
+export async function listDevices(params?: DeviceQueryParams) {
   try {
     return await httpClient.post('/v1/ctp/device/list', { params });
   } catch (error) {

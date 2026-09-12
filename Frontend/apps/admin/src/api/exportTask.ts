@@ -78,7 +78,7 @@ export interface ExportTaskStats {
 /**
  * 获取导出任务数量
  */
-export function countExportTasks(params: ExportTaskQuery) {
+export async function countExportTasks(params: ExportTaskQuery) {
   try {
     return await httpClient.get('/export/tasks/count', { params });
   } catch (error) {
@@ -90,7 +90,7 @@ export function countExportTasks(params: ExportTaskQuery) {
 /**
  * 获取导出任务列表
  */
-export function listExportTasks(params: ExportTaskQuery) {
+export async function listExportTasks(params: ExportTaskQuery) {
   try {
     return await httpClient.get('/export/tasks/list', { params });
   } catch (error) {
@@ -102,7 +102,7 @@ export function listExportTasks(params: ExportTaskQuery) {
 /**
  * 获取导出任务详情
  */
-export function getExportTask(taskId: string) {
+export async function getExportTask(taskId: string) {
   try {
     return await httpClient.get(`/export/tasks/${taskId}`);
   } catch (error) {
@@ -114,7 +114,7 @@ export function getExportTask(taskId: string) {
 /**
  * 创建导出任务
  */
-export function createExportTask(data: ExportTaskCreateParams) {
+export async function createExportTask(data: ExportTaskCreateParams) {
   try {
     return await httpClient.post('/export/tasks/create', data);
   } catch (error) {
@@ -126,7 +126,7 @@ export function createExportTask(data: ExportTaskCreateParams) {
 /**
  * 批量创建导出任务
  */
-export function batchCreateExportTasks(data: BatchExportParams) {
+export async function batchCreateExportTasks(data: BatchExportParams) {
   try {
     return await httpClient.post('/export/tasks/batch-create', data);
   } catch (error) {
@@ -138,7 +138,7 @@ export function batchCreateExportTasks(data: BatchExportParams) {
 /**
  * 取消导出任务
  */
-export function cancelExportTask(taskId: string) {
+export async function cancelExportTask(taskId: string) {
   try {
     return await httpClient.post(`/export/tasks/${taskId}/cancel`);
   } catch (error) {
@@ -150,7 +150,7 @@ export function cancelExportTask(taskId: string) {
 /**
  * 删除导出任务
  */
-export function deleteExportTask(taskId: string) {
+export async function deleteExportTask(taskId: string) {
   try {
     return await httpClient.delete(`/export/tasks/${taskId}`);
   } catch (error) {
@@ -162,7 +162,7 @@ export function deleteExportTask(taskId: string) {
 /**
  * 下载导出文件
  */
-export function downloadExportFile(taskId: string) {
+export async function downloadExportFile(taskId: string) {
   try {
     return await httpClient.get(`/export/tasks/${taskId}/download`, {
     responseType: 'blob',  });
@@ -175,7 +175,7 @@ export function downloadExportFile(taskId: string) {
 /**
  * 获取导出任务统计
  */
-export function getExportTaskStats(params?: {
+export async function getExportTaskStats(params?: {
   start_date?: string;
   end_date?: string;
   task_type?: string;
@@ -191,7 +191,7 @@ export function getExportTaskStats(params?: {
 /**
  * 获取导出任务进度
  */
-export function getExportTaskProgress(taskId: string) {
+export async function getExportTaskProgress(taskId: string) {
   try {
     return await httpClient.get(`/export/tasks/${taskId}/progress`);
   } catch (error) {
@@ -203,7 +203,7 @@ export function getExportTaskProgress(taskId: string) {
 /**
  * 重试导出任务
  */
-export function retryExportTask(taskId: string) {
+export async function retryExportTask(taskId: string) {
   try {
     return await httpClient.post(`/export/tasks/${taskId}/retry`);
   } catch (error) {
@@ -217,7 +217,7 @@ export function retryExportTask(taskId: string) {
 /**
  * 导出用户列表
  */
-export function exportUsers(params?: {
+export async function exportUsers(params?: {
   keyword?: string;
   status?: number;
   role?: string;
@@ -236,7 +236,7 @@ export function exportUsers(params?: {
 /**
  * 导出登录日志
  */
-export function exportLoginLogs(params?: {
+export async function exportLoginLogs(params?: {
   keyword?: string;
   status?: number;
   start_date?: string;
@@ -256,7 +256,7 @@ export function exportLoginLogs(params?: {
 /**
  * 导出操作日志
  */
-export function exportOperationLogs(params?: {
+export async function exportOperationLogs(params?: {
   keyword?: string;
   operator?: string;
   module?: string;
@@ -278,7 +278,7 @@ export function exportOperationLogs(params?: {
 /**
  * 导出审计日志
  */
-export function exportAuditLogs(params?: {
+export async function exportAuditLogs(params?: {
   keyword?: string;
   resource_type?: string;
   action?: string;

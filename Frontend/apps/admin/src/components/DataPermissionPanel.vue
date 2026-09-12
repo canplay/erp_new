@@ -28,11 +28,11 @@
           <div class="text-body2">
             <strong>数据权限范围说明：</strong>
             <ul class="q-my-sm" style="padding-left: 20px">
-              <li><strong>全部数据</strong> - 可以访问所有数据</li>
-              <li><strong>本部门</strong> - 仅能访问本部门创建的数据</li>
-              <li><strong>本部门及下级</strong> - 可访问本部门及子部门的数据</li>
-              <li><strong>仅本人</strong> - 仅能访问自己创建的数据</li>
-              <li><strong>自定义</strong> - 可指定特定部门的数据访问权限</li>
+              <li><strong>{{ $t('permission.allData') }}</strong> - 可以访问所有数据</li>
+              <li><strong>{{ $t('permission.currentDept') }}</strong> - 仅能访问本部门创建的数据</li>
+              <li><strong>{{ $t('permission.currentAndChildDepts') }}</strong> - 可访问本部门及子部门的数据</li>
+              <li><strong>{{ $t('permission.selfOnly') }}</strong> - 仅能访问自己创建的数据</li>
+              <li><strong>{{ $t('permission.custom') }}</strong> - 可指定特定部门的数据访问权限</li>
             </ul>
           </div>
         </q-banner>
@@ -70,7 +70,7 @@
                 flat
                 dense
                 color="primary"
-                label="选择部门"
+                :label="$t('common.selectDepartment')"
                 icon="corporate_fare"
                 @click="openDepartmentSelector(item)"
               />
@@ -134,7 +134,7 @@
     <q-dialog v-model="showDepartmentDialog" persistent>
       <q-card style="min-width: 400px">
         <q-card-section class="row items-center">
-          <div class="text-h6">选择部门</div>
+          <div class="text-h6">{{ $t('common.selectDepartment') }}</div>
           <q-space />
           <q-btn icon="close" flat round dense v-close-popup />
         </q-card-section>

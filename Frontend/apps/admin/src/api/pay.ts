@@ -62,7 +62,7 @@ export interface UmsOrderParams {
 /**
  * 获取支付订单数量
  */
-export function countPayOrders(params: PayQuery) {
+export async function countPayOrders(params: PayQuery) {
   try {
     return await httpClient.post('/v1/pay/count', { params });
   } catch (error) {
@@ -74,7 +74,7 @@ export function countPayOrders(params: PayQuery) {
 /**
  * 获取支付订单列表
  */
-export function listPayOrders(params: PayQuery) {
+export async function listPayOrders(params: PayQuery) {
   try {
     return await httpClient.post('/v1/pay/list', { params });
   } catch (error) {
@@ -86,7 +86,7 @@ export function listPayOrders(params: PayQuery) {
 /**
  * 获取用户最近支付订单
  */
-export function getLatestPayOrder(user_id: string) {
+export async function getLatestPayOrder(user_id: string) {
   try {
     return await httpClient.get(`/v1/pay/latest/${user_id}`);
   } catch (error) {
@@ -98,7 +98,7 @@ export function getLatestPayOrder(user_id: string) {
 /**
  * 创建支付订单
  */
-export function createPayOrder(data: PayCreateParams) {
+export async function createPayOrder(data: PayCreateParams) {
   try {
     return await httpClient.post('/v1/pay/create', data);
   } catch (error) {
@@ -112,7 +112,7 @@ export function createPayOrder(data: PayCreateParams) {
 /**
  * CCB 支付查询
  */
-export function ccbQuery(params: { merchant_order_id: string }) {
+export async function ccbQuery(params: { merchant_order_id: string }) {
   try {
     return await httpClient.post('/v1/pay/ccb/query', { params });
   } catch (error) {
@@ -124,7 +124,7 @@ export function ccbQuery(params: { merchant_order_id: string }) {
 /**
  * CCB 创建支付订单
  */
-export function ccbCreate(data: CcbOrderParams) {
+export async function ccbCreate(data: CcbOrderParams) {
   try {
     return await httpClient.post('/v1/pay/ccb/create', data);
   } catch (error) {
@@ -136,7 +136,7 @@ export function ccbCreate(data: CcbOrderParams) {
 /**
  * CCB 验证支付结果
  */
-export function ccbVerify(orderId: string) {
+export async function ccbVerify(orderId: string) {
   try {
     return await httpClient.get(`/v1/pay/ccb/verify/${orderId}`);
   } catch (error) {
@@ -148,7 +148,7 @@ export function ccbVerify(orderId: string) {
 /**
  * CCB 退款
  */
-export function ccbRefund(data: { order_id: string; amount: number }) {
+export async function ccbRefund(data: { order_id: string; amount: number }) {
   try {
     return await httpClient.post('/v1/pay/ccb/refund', data);
   } catch (error) {
@@ -162,7 +162,7 @@ export function ccbRefund(data: { order_id: string; amount: number }) {
 /**
  * UMS 支付查询
  */
-export function umsQuery(params: { order_id: string }) {
+export async function umsQuery(params: { order_id: string }) {
   try {
     return await httpClient.post('/v1/pay/ums/query', { params });
   } catch (error) {
@@ -174,7 +174,7 @@ export function umsQuery(params: { order_id: string }) {
 /**
  * UMS 创建支付订单
  */
-export function umsCreate(data: UmsOrderParams) {
+export async function umsCreate(data: UmsOrderParams) {
   try {
     return await httpClient.post('/v1/pay/ums/create', data);
   } catch (error) {
@@ -186,7 +186,7 @@ export function umsCreate(data: UmsOrderParams) {
 /**
  * UMS 关闭支付订单
  */
-export function umsClose(data: { order_id: string }) {
+export async function umsClose(data: { order_id: string }) {
   try {
     return await httpClient.post('/v1/pay/ums/close', data);
   } catch (error) {
@@ -198,7 +198,7 @@ export function umsClose(data: { order_id: string }) {
 /**
  * UMS 退款
  */
-export function umsRefund(data: { order_id: string; amount: number; reason?: string }) {
+export async function umsRefund(data: { order_id: string; amount: number; reason?: string }) {
   try {
     return await httpClient.post('/v1/pay/ums/refund', data);
   } catch (error) {
@@ -210,7 +210,7 @@ export function umsRefund(data: { order_id: string; amount: number; reason?: str
 /**
  * UMS 获取订单信息
  */
-export function umsInfo(orderId: string) {
+export async function umsInfo(orderId: string) {
   try {
     return await httpClient.get(`/v1/pay/ums/info/${orderId}`);
   } catch (error) {

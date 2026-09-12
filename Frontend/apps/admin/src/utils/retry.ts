@@ -44,7 +44,7 @@ const DEFAULT_OPTIONS: Required<RetryOptions> = {
  * 计算下一次重试的延迟时间
  * 使用指数退避算法并添加随机抖动
  */
-export function calculateDelay(
+export async function calculateDelay(
   attempt: number,
   options: Required<RetryOptions>
 ): number {
@@ -57,7 +57,7 @@ export function calculateDelay(
 /**
  * 判断是否应该重试
  */
-export function shouldRetry(
+export async function shouldRetry(
   error: Error,
   options: Required<RetryOptions>
 ): boolean {
@@ -150,6 +150,6 @@ export async function retry<T>(
   throw lastError!
 }
 
-function sleep(ms: number): Promise<void> {
+async function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms))
 }

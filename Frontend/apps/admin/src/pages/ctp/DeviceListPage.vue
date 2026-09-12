@@ -63,7 +63,7 @@
         <SkeletonLoader type="table" :columns="columns.length" :rows="5" />
       </template>
       <template #no-data>
-        <EmptyState icon="lock" :title="$t('empty.noData')" description="暂无设备数据" />
+        <EmptyState icon="lock" :title="$t('empty.noData')" :description="$t('common.noDeviceData')" />
       </template>
     </q-table>
   </q-page>

@@ -154,7 +154,7 @@
 
 <script setup lang="ts">
 import { watch } from 'vue';
-import { PermissionModule } from '@/types/permission';
+import type { PermissionModule } from '@/types/permission';
 import { usePermissionTree } from './composables/usePermissionTree';
 
 // ============ Props & Emits ============

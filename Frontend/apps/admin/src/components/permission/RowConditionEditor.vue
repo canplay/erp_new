@@ -13,11 +13,11 @@
       <q-select v-model="rule.operator" :options="OPERATOR_OPTIONS" dense outlined
         style="min-width: 130px" emit-value map-options />
       <q-input v-if="rule.operator === 'between'" v-model.number="(rule.value2 as number | undefined)" dense outlined
-        placeholder="至" style="min-width: 100px" />
+        :placeholder="$t('common.dateRangeTo')" style="min-width: 100px" />
       <q-input v-else v-model="String(rule.value)" dense outlined style="min-width: 150px" />
       <q-btn flat dense color="negative" icon="delete" @click="removeRule(idx)" />
     </div>
-    <q-btn flat dense color="primary" icon="add" label="添加条件" @click="addRule" />
+    <q-btn flat dense color="primary" icon="add" :label="$t('common.addCondition')" @click="addRule" />
   </div>
 </template>
 
@@ -26,6 +26,8 @@ import { ref, watch } from 'vue';
 import type { FilterRule, FilterGroup } from '@/types/rowPermission';
 import { FilterOperator, LogicalOperator, OPERATOR_OPTIONS } from '@/types/rowPermission';
 
+import { useI18n } from 'vue-i18n'
+const { t: $t } = useI18n()
 interface Props {
   modelValue: FilterGroup;
   availableFields: Array<{ field: string; label: string; type: string; enumOptions?: Array<{ label: string; value: unknown }> }>;

@@ -11,28 +11,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, onBeforeUnmount } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { use } from 'echarts/core';
-import { CanvasRenderer } from 'echarts/renderers';
-import {
-  LineChart, BarChart, PieChart,
-  GaugeChart, RadarChart, ScatterChart,
-} from 'echarts/charts';
-import {
-  GridComponent, TooltipComponent, LegendComponent,
-  TitleComponent, ToolboxComponent, DataZoomComponent,
-  VisualMapComponent,
-} from 'echarts/components';
-import * as echarts from 'echarts/core';
-import type { EChartsOption } from 'echarts';
-
-// 注册 ECharts 组件（按需引入以减小打包体积）
-use([
-  CanvasRenderer, LineChart, BarChart, PieChart,
-  GaugeChart, RadarChart, ScatterChart,
-  GridComponent, TooltipComponent, LegendComponent,
-  TitleComponent, ToolboxComponent, DataZoomComponent,
-  VisualMapComponent,
-]);
+import { echarts } from '@/utils/echarts';
+import type { EChartsOption, ECharts } from '@/utils/echarts';
 
 // ============ 类型定义 ============
 
@@ -43,7 +23,7 @@ export interface ChartDataItem {
 }
 
 export interface EChartsConfig {
-  type?: 'line' | 'bar' | 'pie' | 'gauge' | 'radar' | 'scatter';
+  type?: 'line' | 'bar' | 'pie';
   title?: string;
   data?: ChartDataItem[];
   width?: string | number;
@@ -58,11 +38,6 @@ export interface EChartsConfig {
   areaFill?: boolean;
   pieInnerRadius?: number | string;
   pieRadius?: number | string;
-  gaugeConfig?: {
-    min?: number;
-    max?: number;
-    splitNumber?: number;
-  };
 }
 
 // ============ Props ============
@@ -96,7 +71,7 @@ const emit = defineEmits<{
 
 const chartRef = ref<HTMLElement | null>(null);
 const isDark = ref(false);
-let chartInstance: echarts.ECharts | null = null;
+let chartInstance: ECharts | null = null;
 
 // ============ 计算属性 ============
 
@@ -149,7 +124,7 @@ function buildChartOptions(): EChartsOption {
     type = 'bar', title, data = [], color,
     showGrid = true, showLegend = true, showTooltip = true,
     showToolbox = false, xAxisRotate = 0, areaFill = false,
-    pieInnerRadius = 0, pieRadius = '75%', gaugeConfig = {},
+    pieInnerRadius = 0, pieRadius = '75%',
   } = props.config;
 
   const themeColors = isDark.value
@@ -172,7 +147,7 @@ function buildChartOptions(): EChartsOption {
   }
   if (showTooltip) {
     const tooltipOpt: EChartsOption['tooltip'] = {
-      trigger: type === 'pie' || type === 'gauge' ? 'item' : 'axis',
+      trigger: type === 'pie' ? 'item' : 'axis',
       axisPointer: { type: 'shadow' } as const,
       backgroundColor: isDark.value ? '#1e1e1e' : '#ffffff',
       borderColor: isDark.value ? '#333333' : '#e0e0e0',
@@ -257,61 +232,6 @@ function buildChartOptions(): EChartsOption {
           emphasis: { itemStyle: { shadowBlur: 10, shadowOffsetX: 0, shadowColor: 'rgba(0, 0, 0, 0.5)' } } as const,
           label: { show: data.length <= 10, formatter: '{b}: {d}%', color: textColor } as const,
         }],
-      };
-      return opts;
-    }
-    case 'gauge': {
-      const gaugeValue = data[0]?.value || 0;
-      const { min = 0, max = 100, splitNumber = 5 } = gaugeConfig;
-      const opts: EChartsOption = {
-        ...baseOptions,
-        series: [{
-          type: 'gauge' as const, startAngle: 90, endAngle: -270, radius: '90%', center: ['50%', '50%'] as [string, string],
-          pointer: { show: false } as const,
-          progress: { show: true, overlap: false, roundCap: true, clip: false, itemStyle: { color: themeColors[0] as string } } as const,
-          axisLine: { lineStyle: { width: 20, color: [[1, isDark.value ? '#333333' : '#e0e0e0'] as [number, string]] } } as const,
-          splitLine: { show: false } as const, axisTick: { show: false } as const, axisLabel: { show: false } as const,
-          data: [{ value: gaugeValue, name: data[0]?.label || '' }],
-          title: { fontSize: 14, color: textColor } as const,
-          detail: { fontSize: 30, fontWeight: 'bold' as const, color: themeColors[0] as string, formatter: '{value}%', valueAnimation: true } as const,
-          min, max, splitNumber,
-        }],
-      };
-      return opts;
-    }
-    case 'radar': {
-      const indicator = data.map((d) => ({ name: d.label, max: Math.max(...data.map((item) => item.value)) * 1.2 }));
-      const seriesData = [{
-        value: data.map((d) => d.value), name: '数据',
-        areaStyle: { color: themeColors[0] + '40' } as const,
-        lineStyle: { color: themeColors[0] as string, width: 2 } as const,
-        itemStyle: { borderWidth: 2 } as const,
-      }];
-      const opts: EChartsOption = {
-        ...baseOptions,
-        ...(grid !== undefined && { grid }),
-        legend: showLegend && data.length > 0
-          ? ({ bottom: 10, textStyle: { color: textColor } } as const)
-          : (undefined as unknown as NonNullable<EChartsOption['legend']>),
-        radar: {
-          indicator,
-          axisName: { color: textColor } as const,
-          splitLine: { lineStyle: { color: splitLineColor } } as const,
-          splitArea: { areaStyle: { color: [isDark.value ? '#1e1e1e' : '#ffffff'] } } as const,
-          center: ['50%', '55%'] as [string, string], radius: '65%',
-        } as const,
-        series: [{ type: 'radar' as const, data: seriesData }],
-      };
-      return opts;
-    }
-    case 'scatter': {
-      const scatterData = data.map((d) => [d.label, d.value]);
-      const opts: EChartsOption = {
-        ...baseOptions,
-        ...(grid !== undefined && { grid }),
-        xAxis: { type: 'category' as const, data: data.map((d) => d.label), ...axisBase, splitLine: { show: false } as const },
-        yAxis: yAxisBase,
-        series: [{ type: 'scatter' as const, data: scatterData, symbolSize: 10, itemStyle: { borderWidth: 2 } as const }],
       };
       return opts;
     }

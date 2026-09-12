@@ -74,7 +74,7 @@ export interface VehicleQueryParams {
 // ==================== API 函数 ====================
 
 /** 车辆入场 */
-export function vehicleEntry(event: VehicleEvent) {
+export async function vehicleEntry(event: VehicleEvent) {
   try {
     return await httpClient.post('/v1/xlt/parking/entry', event);
   } catch (error) {
@@ -84,7 +84,7 @@ export function vehicleEntry(event: VehicleEvent) {
 }
 
 /** 车辆出场 */
-export function vehicleExit(event: VehicleEvent) {
+export async function vehicleExit(event: VehicleEvent) {
   try {
     return await httpClient.post('/v1/xlt/parking/exit', event);
   } catch (error) {
@@ -94,7 +94,7 @@ export function vehicleExit(event: VehicleEvent) {
 }
 
 /** 查询在场车辆 */
-export function getParkingVehicle(parkCode: string, plateNo: string) {
+export async function getParkingVehicle(parkCode: string, plateNo: string) {
   try {
     return await httpClient.get(`/xlt/parking/vehicle/${parkCode}/${plateNo}`);
   } catch (error) {
@@ -104,7 +104,7 @@ export function getParkingVehicle(parkCode: string, plateNo: string) {
 }
 
 /** 计算停车费用 */
-export function calcBilling(req: BillingRequest) {
+export async function calcBilling(req: BillingRequest) {
   try {
     return await httpClient.post('/v1/xlt/parking/billing', req);
   } catch (error) {
@@ -114,7 +114,7 @@ export function calcBilling(req: BillingRequest) {
 }
 
 /** 查询进出记录列表 */
-export function listParkingRecords(params?: VehicleQueryParams) {
+export async function listParkingRecords(params?: VehicleQueryParams) {
   try {
     return await httpClient.get('/v1/xlt/parking/records', { params });
   } catch (error) {
@@ -124,7 +124,7 @@ export function listParkingRecords(params?: VehicleQueryParams) {
 }
 
 /** 获取设备列表 */
-export function listXltDevices() {
+export async function listXltDevices() {
   try {
     return await httpClient.get('/v1/xlt/device/list');
   } catch (error) {
@@ -134,7 +134,7 @@ export function listXltDevices() {
 }
 
 /** 开闸 */
-export function openBarrier(sn: string) {
+export async function openBarrier(sn: string) {
   try {
     return await httpClient.post('/v1/xlt/device/open', { sn });
   } catch (error) {
@@ -144,7 +144,7 @@ export function openBarrier(sn: string) {
 }
 
 /** 关闸 */
-export function closeBarrier(sn: string) {
+export async function closeBarrier(sn: string) {
   try {
     return await httpClient.post('/v1/xlt/device/close', { sn });
   } catch (error) {

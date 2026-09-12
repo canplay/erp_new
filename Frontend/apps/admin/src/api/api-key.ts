@@ -110,7 +110,7 @@ export interface ApiKeyStats {
 /**
  * 获取 API Key 列表
  */
-export function listApiKeys(query: ApiKeyQuery) {
+export async function listApiKeys(query: ApiKeyQuery) {
   try {
     return await httpClient.get('/apikeys', { params: query });
   } catch (error) {
@@ -122,7 +122,7 @@ export function listApiKeys(query: ApiKeyQuery) {
 /**
  * 获取 API Key 详情
  */
-export function getApiKey(id: string) {
+export async function getApiKey(id: string) {
   try {
     return await httpClient.get(`/apikeys/${id}`);
   } catch (error) {
@@ -134,7 +134,7 @@ export function getApiKey(id: string) {
 /**
  * 创建 API Key
  */
-export function createApiKey(data: CreateApiKeyRequest) {
+export async function createApiKey(data: CreateApiKeyRequest) {
   try {
     return await httpClient.post('/apikeys', data);
   } catch (error) {
@@ -146,7 +146,7 @@ export function createApiKey(data: CreateApiKeyRequest) {
 /**
  * 更新 API Key
  */
-export function updateApiKey(id: string, data: UpdateApiKeyRequest) {
+export async function updateApiKey(id: string, data: UpdateApiKeyRequest) {
   try {
     return await httpClient.put(`/apikeys/${id}`, data);
   } catch (error) {
@@ -158,7 +158,7 @@ export function updateApiKey(id: string, data: UpdateApiKeyRequest) {
 /**
  * 删除 API Key
  */
-export function deleteApiKey(id: string) {
+export async function deleteApiKey(id: string) {
   try {
     return await httpClient.delete(`/apikeys/${id}`);
   } catch (error) {
@@ -170,7 +170,7 @@ export function deleteApiKey(id: string) {
 /**
  * 禁用 API Key
  */
-export function disableApiKey(id: string) {
+export async function disableApiKey(id: string) {
   try {
     return await httpClient.post(`/apikeys/${id}/disable`);
   } catch (error) {
@@ -182,7 +182,7 @@ export function disableApiKey(id: string) {
 /**
  * 启用 API Key
  */
-export function enableApiKey(id: string) {
+export async function enableApiKey(id: string) {
   try {
     return await httpClient.post(`/apikeys/${id}/enable`);
   } catch (error) {
@@ -194,7 +194,7 @@ export function enableApiKey(id: string) {
 /**
  * 获取 API Key 统计
  */
-export function getApiKeyStats() {
+export async function getApiKeyStats() {
   try {
     return await httpClient.get('/apikeys/stats');
   } catch (error) {
@@ -206,7 +206,7 @@ export function getApiKeyStats() {
 /**
  * 验证 API Key
  */
-export function validateApiKey(key: string, ip_address?: string) {
+export async function validateApiKey(key: string, ip_address?: string) {
   try {
     return await httpClient.post(
     '/apikeys/validate',

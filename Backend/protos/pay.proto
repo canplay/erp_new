@@ -39,6 +39,112 @@ service PayService {
     rpc UmsInfo(UmsInfoRequest) returns (JsonValueResponse);
 }
 
+// ========== 订阅管理服务 ==========
+service SubscriptionService {
+    // 创建订阅
+    rpc CreateSubscription(CreateSubscriptionRequest) returns (SubscriptionResponse);
+    // 取消订阅
+    rpc CancelSubscription(CancelSubscriptionRequest) returns (SubscriptionResponse);
+    // 查询订阅
+    rpc GetSubscription(GetSubscriptionRequest) returns (SubscriptionResponse);
+    // 列出订阅
+    rpc ListSubscriptions(ListSubscriptionsRequest) returns (ListSubscriptionsResponse);
+}
+
+// ========== 订阅状态 ==========
+
+enum SubscriptionStatus {
+    SUBSCRIPTION_STATUS_UNSPECIFIED = 0;
+    SUBSCRIPTION_STATUS_ACTIVE = 1;
+    SUBSCRIPTION_STATUS_PAST_DUE = 2;
+    SUBSCRIPTION_STATUS_CANCELED = 3;
+    SUBSCRIPTION_STATUS_TRIALING = 4;
+}
+
+// ========== 订阅消息 ==========
+
+message Subscription {
+    int64 id = 1;
+    int64 tenant_id = 2;
+    string plan_id = 3;
+    SubscriptionStatus status = 4;
+    int64 current_period_start = 5;
+    int64 current_period_end = 6;
+    bool cancel_at_period_end = 7;
+    string created_at = 8;
+    string updated_at = 9;
+}
+
+message CreateSubscriptionRequest {
+    int64 tenant_id = 1;
+    string plan_id = 2;
+    string payment_method_id = 3;
+    int32 trial_days = 4;
+}
+
+message CancelSubscriptionRequest {
+    int64 subscription_id = 1;
+    bool immediate = 2;
+}
+
+message GetSubscriptionRequest {
+    int64 subscription_id = 1;
+}
+
+message ListSubscriptionsRequest {
+    int64 tenant_id = 1;
+    string status = 2;
+    int32 page = 3;
+    int32 page_size = 4;
+}
+
+message SubscriptionResponse {
+    Subscription subscription = 1;
+    string message = 2;
+}
+
+message ListSubscriptionsResponse {
+    repeated Subscription subscriptions = 1;
+    int64 total = 2;
+    string message = 3;
+}
+
+// ========== 订阅计划消息 ==========
+
+message SubscriptionPlan {
+    string id = 1;
+    string name = 2;
+    string description = 3;
+    int64 price_cents = 4;
+    string currency = 5;
+    string interval = 6;
+    int32 interval_count = 7;
+    int32 trial_days = 8;
+    bool active = 9;
+}
+
+message Invoice {
+    int64 id = 1;
+    int64 tenant_id = 2;
+    int64 subscription_id = 3;
+    string status = 4;
+    int64 amount_cents = 5;
+    string currency = 6;
+    int64 period_start = 7;
+    int64 period_end = 8;
+    string created_at = 9;
+    string updated_at = 10;
+}
+
+message InvoiceItem {
+    int64 id = 1;
+    int64 invoice_id = 2;
+    string description = 3;
+    int64 amount_cents = 4;
+    int32 quantity = 5;
+    string currency = 6;
+}
+
 // ========== 基础支付接口 ==========
 
 message PayQuery {

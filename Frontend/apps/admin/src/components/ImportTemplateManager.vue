@@ -64,7 +64,7 @@
               v-if="props.row.is_default"
               color="warning"
               text-color="black"
-              label="默认"
+              :label="$t('common.default')"
               class="q-ml-sm"
             />
           </div>
@@ -92,16 +92,16 @@
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
           <q-btn flat dense color="primary" icon="visibility" @click="previewTemplate(props.row)">
-            <q-tooltip>预览</q-tooltip>
+            <q-tooltip>{{ $t('common.preview') }}</q-tooltip>
           </q-btn>
           <q-btn flat dense color="info" icon="download" @click="downloadTemplate(props.row)">
-            <q-tooltip>下载模板</q-tooltip>
+            <q-tooltip>{{ $t('common.downloadTemplate') }}</q-tooltip>
           </q-btn>
           <q-btn flat dense color="primary" icon="edit" @click="openEditDialog(props.row)">
-            <q-tooltip>编辑</q-tooltip>
+            <q-tooltip>{{ $t('common.edit') }}</q-tooltip>
           </q-btn>
           <q-btn flat dense color="negative" icon="delete" @click="deleteTemplate(props.row)">
-            <q-tooltip>删除</q-tooltip>
+            <q-tooltip>{{ $t('common.delete') }}</q-tooltip>
           </q-btn>
         </q-td>
       </template>
@@ -115,8 +115,8 @@
       <template v-slot:no-data>
         <div class="text-center q-pa-xl">
           <q-icon name="folder_open" size="64px" color="grey-5" />
-          <div class="text-h6 q-mt-md text-grey">暂无导入模板</div>
-          <q-btn color="primary" label="创建第一个模板" class="q-mt-md" @click="openCreateDialog" />
+          <div class="text-h6 q-mt-md text-grey">{{ $t('common.noImportTemplate') }}</div>
+          <q-btn color="primary" :label="$t('common.createFirstTemplate')" class="q-mt-md" @click="openCreateDialog" />
         </div>
       </template>
     </q-table>
@@ -136,24 +136,24 @@
           <div v-if="previewTemplateData" class="template-preview">
             <!-- 基本信息 -->
             <div class="q-mb-lg">
-              <div class="text-subtitle2 q-mb-sm">基本信息</div>
+              <div class="text-subtitle2 q-mb-sm">{{ $t('common.basicInfo') }}</div>
               <q-list dense bordered separator>
                 <q-item>
-                  <q-item-section>模板名称</q-item-section>
+                  <q-item-section>{{ $t('common.templateName') }}</q-item-section>
                   <q-item-section side>{{ previewTemplateData.name }}</q-item-section>
                 </q-item>
                 <q-item>
-                  <q-item-section>实体类型</q-item-section>
+                  <q-item-section>{{ $t('common.entityType') }}</q-item-section>
                   <q-item-section side>{{
                     getEntityLabel(previewTemplateData.entity_type)
                   }}</q-item-section>
                 </q-item>
                 <q-item>
-                  <q-item-section>描述</q-item-section>
+                  <q-item-section>{{ $t('common.description') }}</q-item-section>
                   <q-item-section side>{{ previewTemplateData.description || '-' }}</q-item-section>
                 </q-item>
                 <q-item>
-                  <q-item-section>列数</q-item-section>
+                  <q-item-section>{{ $t('common.columnCount') }}</q-item-section>
                   <q-item-section side>{{
                     previewTemplateData.columns?.length || 0
                   }}</q-item-section>
@@ -163,7 +163,7 @@
 
             <!-- 列配置 -->
             <div class="q-mb-lg">
-              <div class="text-subtitle2 q-mb-sm">列配置</div>
+              <div class="text-subtitle2 q-mb-sm">{{ $t('common.columnConfig') }}</div>
               <q-table
                 :rows="previewTemplateData.columns || []"
                 :columns="columnConfigColumns"
@@ -204,7 +204,7 @@
 
             <!-- 示例数据 -->
             <div>
-              <div class="text-subtitle2 q-mb-sm">示例数据</div>
+              <div class="text-subtitle2 q-mb-sm">{{ $t('common.sampleData') }}</div>
               <q-table
                 :rows="previewSampleData"
                 :columns="previewColumns"
@@ -226,7 +226,7 @@
           <q-btn
             color="primary"
             icon="download"
-            label="下载模板"
+            :label="$t('common.downloadTemplate')"
             @click="downloadTemplate(previewTemplateData)"
           />
         </q-card-actions>
@@ -247,7 +247,7 @@
         <q-card-section style="max-height: 70vh; overflow-y: auto">
           <q-form class="q-gutter-md">
             <!-- 基本信息 -->
-            <div class="text-subtitle2">基本信息</div>
+            <div class="text-subtitle2">{{ $t('common.basicInfo') }}</div>
             <div class="row q-col-gutter-md">
               <div class="col-12 col-sm-6">
                 <q-input
@@ -273,7 +273,7 @@
               <q-input
                 v-model="formData.description"
                 outlined
-                label="描述"
+                :label="$t('common.description')"
                 type="textarea"
                 rows="2"
               />
@@ -283,9 +283,9 @@
 
             <!-- 列配置 -->
             <div class="row items-center q-mb-sm">
-              <div class="text-subtitle2">列配置</div>
+              <div class="text-subtitle2">{{ $t('common.columnConfig') }}</div>
               <q-space />
-              <q-btn flat dense color="primary" icon="add" label="添加列" @click="addColumn" />
+              <q-btn flat dense color="primary" icon="add" :label="$t('common.addColumn')" @click="addColumn" />
             </div>
 
             <div class="columns-editor">
@@ -307,11 +307,11 @@
                       :options="dataTypeOptions"
                       outlined
                       dense
-                      label="数据类型"
+                      :label="$t('common.dataType')"
                     />
                   </div>
                   <div class="col-12 col-sm-2">
-                    <q-toggle v-model="col.required" label="必填" />
+                    <q-toggle v-model="col.required" :label="$t('common.required')" />
                   </div>
                   <div class="col-12 col-sm-3">
                     <q-select
@@ -321,7 +321,7 @@
                       use-chips
                       outlined
                       dense
-                      label="选项"
+                      :label="$t('common.options')"
                       :options="[]"
                       new-value-mode="add-unique"
                     />
@@ -333,7 +333,7 @@
               </div>
 
               <div v-if="formData.columns.length === 0" class="text-center q-pa-lg text-grey">
-                暂无列配置，点击"添加列"开始配置
+                {{ $t('common.noColumnConfig') }}
               </div>
             </div>
           </q-form>
@@ -355,6 +355,8 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+const { t: $t } = useI18n()
 /**
  * @file ImportTemplateManager.vue
  * @description 导入模板管理组件 — 业务逻辑已提取至 useImportTemplateManager composable

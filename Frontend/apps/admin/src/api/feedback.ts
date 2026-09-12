@@ -100,7 +100,7 @@ export interface FeedbackHandleParams {
 /**
  * @brief 获取反馈列表（管理员）
  */
-export function getFeedbackList(params?: FeedbackQueryParams) {
+export async function getFeedbackList(params?: FeedbackQueryParams) {
   try {
     return await httpClient.get('/admin/feedback', { params });
   } catch (error) {
@@ -112,7 +112,7 @@ export function getFeedbackList(params?: FeedbackQueryParams) {
 /**
  * @brief 获取反馈详情
  */
-export function getFeedbackDetail(id: number) {
+export async function getFeedbackDetail(id: number) {
   try {
     return await httpClient.get(`/admin/feedback/${id}`);
   } catch (error) {
@@ -124,7 +124,7 @@ export function getFeedbackDetail(id: number) {
 /**
  * @brief 提交反馈（用户）
  */
-export function submitFeedback(data: FeedbackCreateParams) {
+export async function submitFeedback(data: FeedbackCreateParams) {
   try {
     return await httpClient.post('/feedback', data);
   } catch (error) {
@@ -136,7 +136,7 @@ export function submitFeedback(data: FeedbackCreateParams) {
 /**
  * @brief 处理反馈（管理员）
  */
-export function handleFeedback(id: number, data: FeedbackHandleParams) {
+export async function handleFeedback(id: number, data: FeedbackHandleParams) {
   try {
     return await httpClient.put(`/admin/feedback/${id}/handle`, data);
   } catch (error) {
@@ -148,7 +148,7 @@ export function handleFeedback(id: number, data: FeedbackHandleParams) {
 /**
  * @brief 转交反馈（更换处理人）
  */
-export function transferFeedback(id: number, handlerId: number) {
+export async function transferFeedback(id: number, handlerId: number) {
   try {
     return await httpClient.put(`/admin/feedback/${id}/transfer`, { handlerId });
   } catch (error) {
@@ -160,7 +160,7 @@ export function transferFeedback(id: number, handlerId: number) {
 /**
  * @brief 添加反馈回复
  */
-export function addFeedbackReply(id: number, reply: string) {
+export async function addFeedbackReply(id: number, reply: string) {
   try {
     return await httpClient.post(`/admin/feedback/${id}/reply`, { reply });
   } catch (error) {
@@ -172,7 +172,7 @@ export function addFeedbackReply(id: number, reply: string) {
 /**
  * @brief 关闭反馈
  */
-export function closeFeedback(id: number) {
+export async function closeFeedback(id: number) {
   try {
     return await httpClient.put(`/admin/feedback/${id}/close`);
   } catch (error) {
@@ -184,7 +184,7 @@ export function closeFeedback(id: number) {
 /**
  * @brief 删除反馈
  */
-export function deleteFeedback(id: number) {
+export async function deleteFeedback(id: number) {
   try {
     return await httpClient.delete(`/admin/feedback/${id}`);
   } catch (error) {
@@ -196,7 +196,7 @@ export function deleteFeedback(id: number) {
 /**
  * @brief 批量处理反馈
  */
-export function batchHandleFeedback(ids: number[], data: FeedbackHandleParams) {
+export async function batchHandleFeedback(ids: number[], data: FeedbackHandleParams) {
   try {
     return await httpClient.put('/admin/feedback/batch-handle', { ids, ...data });
   } catch (error) {
@@ -208,7 +208,7 @@ export function batchHandleFeedback(ids: number[], data: FeedbackHandleParams) {
 /**
  * @brief 获取反馈统计数据
  */
-export function getFeedbackStatistics(params?: { start_date?: string; end_date?: string }) {
+export async function getFeedbackStatistics(params?: { start_date?: string; end_date?: string }) {
   try {
     return await httpClient.get('/admin/feedback/statistics', { params });
   } catch (error) {
@@ -220,7 +220,7 @@ export function getFeedbackStatistics(params?: { start_date?: string; end_date?:
 /**
  * @brief 获取反馈类型统计
  */
-export function getFeedbackTypeStatistics(params?: { start_date?: string; end_date?: string }) {
+export async function getFeedbackTypeStatistics(params?: { start_date?: string; end_date?: string }) {
   try {
     return await httpClient.get('/admin/feedback/statistics/by-type', { params });
   } catch (error) {
@@ -232,7 +232,7 @@ export function getFeedbackTypeStatistics(params?: { start_date?: string; end_da
 /**
  * @brief 获取处理人列表
  */
-export function getFeedbackHandlers() {
+export async function getFeedbackHandlers() {
   try {
     return await httpClient.get('/admin/feedback/handlers');
   } catch (error) {

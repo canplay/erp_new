@@ -63,7 +63,7 @@ export interface LoginDeviceQueryParams {
 /**
  * @brief 获取当前用户的登录设备列表
  */
-export function getMyDevices(params?: Omit<LoginDeviceQueryParams, 'user_id'>) {
+export async function getMyDevices(params?: Omit<LoginDeviceQueryParams, 'user_id'>) {
   try {
     return await httpClient.get('/devices/my', { params });
   } catch (error) {
@@ -75,7 +75,7 @@ export function getMyDevices(params?: Omit<LoginDeviceQueryParams, 'user_id'>) {
 /**
  * @brief 获取指定用户的登录设备列表（管理员）
  */
-export function getUserDevices(user_id: number, params?: Omit<LoginDeviceQueryParams, 'user_id'>) {
+export async function getUserDevices(user_id: number, params?: Omit<LoginDeviceQueryParams, 'user_id'>) {
   try {
     return await httpClient.get(`/admin/devices/user/${user_id}`, { params });
   } catch (error) {
@@ -87,7 +87,7 @@ export function getUserDevices(user_id: number, params?: Omit<LoginDeviceQueryPa
 /**
  * @brief 获取所有用户的登录设备列表（管理员）
  */
-export function getAllDevices(params?: LoginDeviceQueryParams) {
+export async function getAllDevices(params?: LoginDeviceQueryParams) {
   try {
     return await httpClient.get('/admin/devices', { params });
   } catch (error) {
@@ -99,7 +99,7 @@ export function getAllDevices(params?: LoginDeviceQueryParams) {
 /**
  * @brief 获取设备详情
  */
-export function getDeviceDetail(id: number) {
+export async function getDeviceDetail(id: number) {
   try {
     return await httpClient.get(`/devices/${id}`);
   } catch (error) {
@@ -111,7 +111,7 @@ export function getDeviceDetail(id: number) {
 /**
  * @brief 标记设备为信任设备
  */
-export function trustDevice(id: number) {
+export async function trustDevice(id: number) {
   try {
     return await httpClient.put(`/devices/${id}/trust`);
   } catch (error) {
@@ -123,7 +123,7 @@ export function trustDevice(id: number) {
 /**
  * @brief 取消设备信任
  */
-export function untrustDevice(id: number) {
+export async function untrustDevice(id: number) {
   try {
     return await httpClient.put(`/devices/${id}/untrust`);
   } catch (error) {
@@ -135,7 +135,7 @@ export function untrustDevice(id: number) {
 /**
  * @brief 踢出设备（强制下线）
  */
-export function kickDevice(id: number) {
+export async function kickDevice(id: number) {
   try {
     return await httpClient.put(`/devices/${id}/kick`);
   } catch (error) {
@@ -147,7 +147,7 @@ export function kickDevice(id: number) {
 /**
  * @brief 踢出用户所有设备
  */
-export function kickAllUserDevices(user_id: number) {
+export async function kickAllUserDevices(user_id: number) {
   try {
     return await httpClient.put(`/admin/devices/user/${user_id}/kick-all`);
   } catch (error) {
@@ -159,7 +159,7 @@ export function kickAllUserDevices(user_id: number) {
 /**
  * @brief 踢出当前用户所有其他设备
  */
-export function kickOtherDevices() {
+export async function kickOtherDevices() {
   try {
     return await httpClient.put('/devices/kick-other');
   } catch (error) {
@@ -171,7 +171,7 @@ export function kickOtherDevices() {
 /**
  * @brief 删除设备记录
  */
-export function deleteDevice(id: number) {
+export async function deleteDevice(id: number) {
   try {
     return await httpClient.delete(`/devices/${id}`);
   } catch (error) {
@@ -183,7 +183,7 @@ export function deleteDevice(id: number) {
 /**
  * @brief 批量删除设备记录
  */
-export function batchDeleteDevices(ids: number[]) {
+export async function batchDeleteDevices(ids: number[]) {
   try {
     return await httpClient.delete('/devices/batch', { data: { ids } });
   } catch (error) {
@@ -195,7 +195,7 @@ export function batchDeleteDevices(ids: number[]) {
 /**
  * @brief 获取设备统计
  */
-export function getDeviceStatistics(params?: { user_id?: number }) {
+export async function getDeviceStatistics(params?: { user_id?: number }) {
   try {
     return await httpClient.get('/admin/devices/statistics', { params });
   } catch (error) {
@@ -207,7 +207,7 @@ export function getDeviceStatistics(params?: { user_id?: number }) {
 /**
  * @brief 获取登录概况（管理员）
  */
-export function getLoginOverview() {
+export async function getLoginOverview() {
   try {
     return await httpClient.get('/admin/devices/overview');
   } catch (error) {
@@ -219,7 +219,7 @@ export function getLoginOverview() {
 /**
  * @brief 获取异常登录记录
  */
-export function getAbnormalLogins(params?: { page?: number; page_size?: number }) {
+export async function getAbnormalLogins(params?: { page?: number; page_size?: number }) {
   try {
     return await httpClient.get('/admin/devices/abnormal', { params });
   } catch (error) {

@@ -49,7 +49,7 @@ export interface ListDepartmentsParams extends PaginationParams {
 /**
  * @brief 获取部门列表（树形）
  */
-export function listDepartments(params?: ListDepartmentsParams) {
+export async function listDepartments(params?: ListDepartmentsParams) {
   try {
     return await httpClient.get('/admin/departments', { params });
   } catch (error) {
@@ -61,7 +61,7 @@ export function listDepartments(params?: ListDepartmentsParams) {
 /**
  * @brief 获取部门详情
  */
-export function getDepartment(id: number) {
+export async function getDepartment(id: number) {
   try {
     return await httpClient.get(`/admin/departments/${id}`);
   } catch (error) {
@@ -73,7 +73,7 @@ export function getDepartment(id: number) {
 /**
  * @brief 创建部门
  */
-export function createDepartment(data: CreateDepartmentRequest) {
+export async function createDepartment(data: CreateDepartmentRequest) {
   try {
     return await httpClient.post('/admin/departments', data);
   } catch (error) {
@@ -85,7 +85,7 @@ export function createDepartment(data: CreateDepartmentRequest) {
 /**
  * @brief 更新部门
  */
-export function updateDepartment(id: number, data: UpdateDepartmentRequest) {
+export async function updateDepartment(id: number, data: UpdateDepartmentRequest) {
   try {
     return await httpClient.put(`/admin/departments/${id}`, data);
   } catch (error) {
@@ -97,7 +97,7 @@ export function updateDepartment(id: number, data: UpdateDepartmentRequest) {
 /**
  * @brief 删除部门
  */
-export function deleteDepartment(id: number) {
+export async function deleteDepartment(id: number) {
   try {
     return await httpClient.delete(`/admin/departments/${id}`);
   } catch (error) {
@@ -109,7 +109,7 @@ export function deleteDepartment(id: number) {
 /**
  * @brief 获取部门下的用户列表
  */
-export function getDepartmentUsers(id: number, params?: PaginationParams) {
+export async function getDepartmentUsers(id: number, params?: PaginationParams) {
   try {
     return await httpClient.get(
     `/admin/departments/${id}/users`,
@@ -123,7 +123,7 @@ export function getDepartmentUsers(id: number, params?: PaginationParams) {
 /**
  * @brief 移动部门
  */
-export function moveDepartment(id: number, newParentId?: number) {
+export async function moveDepartment(id: number, newParentId?: number) {
   try {
     return await httpClient.put(`/admin/departments/${id}/move`, { parent_id: newParentId });
   } catch (error) {
@@ -135,7 +135,7 @@ export function moveDepartment(id: number, newParentId?: number) {
 /**
  * @brief 获取部门树形结构
  */
-export function getDepartmentTree() {
+export async function getDepartmentTree() {
   try {
     return await httpClient.get('/admin/departments/tree');
   } catch (error) {

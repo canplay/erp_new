@@ -22,21 +22,21 @@
         >
           <q-icon name="cloud_upload" size="48px" color="grey-6" />
           <div class="q-mt-md text-grey-7">
-            拖拽文件到此处，或
-            <q-btn flat color="primary" label="点击选择" @click="selectFile" />
+            {{ $t('common.dragFileHereOr') }}
+            <q-btn flat color="primary" :label="$t('common.clickSelect')" @click="selectFile" />
           </div>
           <div class="text-caption text-grey-5 q-mt-sm">
-            支持的文件类型: {{ acceptedTypes }}
+            {{ $t('common.supportedFileTypes') }} {{ acceptedTypes }}
             <br />
-            最大文件大小: {{ formatFileSize(maxFileSize) }}
+            {{ $t('common.maxFileSize') }} {{ formatFileSize(maxFileSize) }}
           </div>
         </div>
 
         <!-- 分片上传选项 -->
         <div v-if="enableChunkedUpload" class="q-mt-md">
-          <q-toggle v-model="useChunkedUpload" label="启用分片上传（适合大文件）" />
+          <q-toggle v-model="useChunkedUpload" :label="$t('common.enableChunkedUpload')" />
           <div v-if="useChunkedUpload" class="q-mt-sm text-caption text-grey">
-            分片大小: {{ formatFileSize(chunkSize) }}
+            {{ $t('common.chunkSize') }} {{ formatFileSize(chunkSize) }}
           </div>
         </div>
       </q-card-section>
@@ -68,7 +68,7 @@
         <q-btn
           v-if="fileToUpload && !isUploading && !uploadSuccess"
           color="primary"
-          label="开始上传"
+          :label="$t('common.startUpload')"
           :loading="isUploading"
           @click="startUpload"
         />
@@ -81,7 +81,6 @@
 import { ref, computed, watch } from 'vue';
 import { useQuasar } from 'quasar';
 import { useAuthStore } from '@/stores/auth';
-import ExcelJS from 'exceljs';
 import ExportPreview from './ExportDialog/ExportPreview.vue';
 import ExportProgress from './ExportDialog/ExportProgress.vue';
 
@@ -205,6 +204,7 @@ async function handleFileSelect(file: File) {
 
 async function loadPreview(file: File) {
   try {
+    const ExcelJS = await import('exceljs');
     const workbook = new ExcelJS.Workbook();
     const arrayBuffer = await file.arrayBuffer();
     await workbook.xlsx.load(arrayBuffer);

@@ -16,7 +16,7 @@ import { handleApiError } from '@/utils/apiErrorHandler';
  * @brief 获取当前用户信息
  * @returns { id, username, nickname, avatar, phone, email, gender, address, role, status, created_at, updated_at }
  */
-export function getUserInfo() {
+export async function getUserInfo() {
   try {
     return await httpClient.get('/user/info');
   } catch (error) {
@@ -32,7 +32,7 @@ export function getUserInfo() {
  * @param data.phone - 手机号（可选）
  * @param data.email - 邮箱（可选）
  */
-export function updateUserInfo(data: {
+export async function updateUserInfo(data: {
   nickname?: string;
   avatar?: string;
   phone?: string;
@@ -51,7 +51,7 @@ export function updateUserInfo(data: {
  * @param data.old_password - 旧密码
  * @param data.new_password - 新密码
  */
-export function changePassword(data: { old_password: string; new_password: string }) {
+export async function changePassword(data: { old_password: string; new_password: string }) {
   try {
     return await httpClient.put('/user/password', {
     old_password: data.old_password,
@@ -65,7 +65,7 @@ export function changePassword(data: { old_password: string; new_password: strin
 /**
  * @brief 更新头像
  */
-export function updateAvatar(avatar: string) {
+export async function updateAvatar(avatar: string) {
   try {
     return await httpClient.put('/user/avatar', { avatar });
   } catch (error) {
@@ -79,7 +79,7 @@ export function updateAvatar(avatar: string) {
 /**
  * @brief 获取用户列表（分页）
  */
-export function listUsers(params?: UserQueryParams) {
+export async function listUsers(params?: UserQueryParams) {
   try {
     return await httpClient.get('/admin/users', { params });
   } catch (error) {
@@ -91,7 +91,7 @@ export function listUsers(params?: UserQueryParams) {
 /**
  * @brief 获取单个用户详情
  */
-export function getUser(id: number) {
+export async function getUser(id: number) {
   try {
     return await httpClient.get(`/admin/users/${id}`);
   } catch (error) {
@@ -103,7 +103,7 @@ export function getUser(id: number) {
 /**
  * @brief 创建用户
  */
-export function createUser(data: UserCreateForm) {
+export async function createUser(data: UserCreateForm) {
   try {
     return await httpClient.post('/admin/users', data);
   } catch (error) {
@@ -115,7 +115,7 @@ export function createUser(data: UserCreateForm) {
 /**
  * @brief 更新用户
  */
-export function updateUser(id: number, data: UserUpdateForm) {
+export async function updateUser(id: number, data: UserUpdateForm) {
   try {
     return await httpClient.put(`/admin/users/${id}`, data);
   } catch (error) {
@@ -129,7 +129,7 @@ export function updateUser(id: number, data: UserUpdateForm) {
  * @param status - 状态值: 0=禁用, 1=启用, 2=锁定
  * @param lockHours - 锁定时长（小时），仅 status=2 时有效
  */
-export function updateUserStatus(id: number, status: number, lockHours?: number) {
+export async function updateUserStatus(id: number, status: number, lockHours?: number) {
   try {
     return await httpClient.put(`/admin/users/${id}/status`, data);
   } catch (error) {
@@ -142,7 +142,7 @@ export function updateUserStatus(id: number, status: number, lockHours?: number)
  * @brief 更新用户角色
  * @param role - 角色: user, admin, vip
  */
-export function updateUserRole(id: number, role: string) {
+export async function updateUserRole(id: number, role: string) {
   try {
     return await httpClient.put(`/admin/users/${id}/role`, { role });
   } catch (error) {
@@ -154,7 +154,7 @@ export function updateUserRole(id: number, role: string) {
 /**
  * @brief 重置用户密码
  */
-export function resetUserPassword(id: number, password?: string) {
+export async function resetUserPassword(id: number, password?: string) {
   try {
     return await httpClient.post(`/admin/users/${id}/reset-password`, {
     password: password || '',  });
@@ -167,7 +167,7 @@ export function resetUserPassword(id: number, password?: string) {
 /**
  * @brief 删除用户
  */
-export function deleteUser(id: number) {
+export async function deleteUser(id: number) {
   try {
     return await httpClient.delete(`/admin/users/${id}`);
   } catch (error) {
@@ -181,7 +181,7 @@ export function deleteUser(id: number) {
 /**
  * @brief 批量更新用户角色
  */
-export function batchUpdateUserRole(params: BatchUpdateRoleParams) {
+export async function batchUpdateUserRole(params: BatchUpdateRoleParams) {
   try {
     return await httpClient.put('/admin/users/batch-role', {
     user_ids: params.user_ids,
@@ -195,7 +195,7 @@ export function batchUpdateUserRole(params: BatchUpdateRoleParams) {
 /**
  * @brief 批量更新用户状态
  */
-export function batchUpdateUserStatus(params: BatchUpdateStatusParams) {
+export async function batchUpdateUserStatus(params: BatchUpdateStatusParams) {
   try {
     return await httpClient.put('/admin/users/batch-status', {
     user_ids: params.user_ids,
@@ -209,7 +209,7 @@ export function batchUpdateUserStatus(params: BatchUpdateStatusParams) {
 /**
  * @brief 批量删除用户
  */
-export function batchDeleteUsers(user_ids: number[]) {
+export async function batchDeleteUsers(user_ids: number[]) {
   try {
     return await httpClient.post('/admin/users/batch-delete', {
     user_ids: user_ids,  });
@@ -224,7 +224,7 @@ export function batchDeleteUsers(user_ids: number[]) {
 /**
  * @brief 获取用户导入模板
  */
-export function getUserImportTemplate() {
+export async function getUserImportTemplate() {
   try {
     return await httpClient.get('/admin/users/import-template');
   } catch (error) {
@@ -236,7 +236,7 @@ export function getUserImportTemplate() {
 /**
  * @brief 导入用户
  */
-export function importUsers(file: File) {
+export async function importUsers(file: File) {
   try {
     return await httpClient.post('/admin/users/import', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },  });
@@ -249,7 +249,7 @@ export function importUsers(file: File) {
 /**
  * @brief 导出用户
  */
-export function exportUsers(params?: {
+export async function exportUsers(params?: {
   keyword?: string;
   status?: number;
   role?: string;
@@ -268,7 +268,7 @@ export function exportUsers(params?: {
 /**
  * @brief 下载用户导入模板
  */
-export function downloadUserImportTemplate() {
+export async function downloadUserImportTemplate() {
   try {
     return await httpClient.get('/admin/users/import-template/download', {
     responseType: 'blob',  });
@@ -307,7 +307,7 @@ export { listLoginLogs } from './log';
 /**
  * @brief 获取系统统计信息
  */
-export function getStatistics() {
+export async function getStatistics() {
   try {
     return await httpClient.get('/admin/stats');
   } catch (error) {

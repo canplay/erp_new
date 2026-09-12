@@ -173,7 +173,7 @@ const baseUrl = '/workflows';
 /**
  * @brief 获取工作流列表
  */
-export function listWorkflows(params?: WorkflowListParam) {
+export async function listWorkflows(params?: WorkflowListParam) {
   try {
     return await httpClient.get(`${baseUrl}`, { params });
   } catch (error) {
@@ -185,7 +185,7 @@ export function listWorkflows(params?: WorkflowListParam) {
 /**
  * @brief 获取工作流详情
  */
-export function getWorkflow(id: string) {
+export async function getWorkflow(id: string) {
   try {
     return await httpClient.get(`${baseUrl}/${id}`);
   } catch (error) {
@@ -197,7 +197,7 @@ export function getWorkflow(id: string) {
 /**
  * @brief 创建工作流
  */
-export function createWorkflow(data: CreateWorkflowParam) {
+export async function createWorkflow(data: CreateWorkflowParam) {
   try {
     return await httpClient.post(`${baseUrl}`, data);
   } catch (error) {
@@ -209,7 +209,7 @@ export function createWorkflow(data: CreateWorkflowParam) {
 /**
  * @brief 更新工作流
  */
-export function updateWorkflow(id: string, data: UpdateWorkflowParam) {
+export async function updateWorkflow(id: string, data: UpdateWorkflowParam) {
   try {
     return await httpClient.put(`${baseUrl}/${id}`, data);
   } catch (error) {
@@ -221,7 +221,7 @@ export function updateWorkflow(id: string, data: UpdateWorkflowParam) {
 /**
  * @brief 删除工作流
  */
-export function deleteWorkflow(id: string) {
+export async function deleteWorkflow(id: string) {
   try {
     return await httpClient.delete(`${baseUrl}/${id}`);
   } catch (error) {
@@ -233,7 +233,7 @@ export function deleteWorkflow(id: string) {
 /**
  * @brief 发布工作流
  */
-export function publishWorkflow(id: string) {
+export async function publishWorkflow(id: string) {
   try {
     return await httpClient.put(`${baseUrl}/${id}/publish`);
   } catch (error) {
@@ -245,7 +245,7 @@ export function publishWorkflow(id: string) {
 /**
  * @brief 获取工作流实例列表
  */
-export function listInstances(workflowId: string, params?: WorkflowListParam) {
+export async function listInstances(workflowId: string, params?: WorkflowListParam) {
   try {
     return await httpClient.get(`${baseUrl}/${workflowId}/instances`, { params });
   } catch (error) {
@@ -257,7 +257,7 @@ export function listInstances(workflowId: string, params?: WorkflowListParam) {
 /**
  * @brief 获取实例详情
  */
-export function getInstance(instanceId: string) {
+export async function getInstance(instanceId: string) {
   try {
     return await httpClient.get(`${baseUrl}/instances/${instanceId}`);
   } catch (error) {
@@ -269,7 +269,7 @@ export function getInstance(instanceId: string) {
 /**
  * @brief 启动工作流实例
  */
-export function startInstance(workflowId: string, data?: StartInstanceParam) {
+export async function startInstance(workflowId: string, data?: StartInstanceParam) {
   try {
     return await httpClient.post(`${baseUrl}/${workflowId}/instances`, data);
   } catch (error) {
@@ -281,7 +281,7 @@ export function startInstance(workflowId: string, data?: StartInstanceParam) {
 /**
  * @brief 执行实例动作
  */
-export function executeAction(instanceId: string, data: ExecuteActionParam) {
+export async function executeAction(instanceId: string, data: ExecuteActionParam) {
   try {
     return await httpClient.post(`${baseUrl}/instances/${instanceId}`, data);
   } catch (error) {
@@ -293,7 +293,7 @@ export function executeAction(instanceId: string, data: ExecuteActionParam) {
 /**
  * @brief 获取实例任务列表
  */
-export function listTasks(instanceId: string) {
+export async function listTasks(instanceId: string) {
   try {
     return await httpClient.get(`${baseUrl}/instances/${instanceId}/tasks`);
   } catch (error) {
@@ -305,7 +305,7 @@ export function listTasks(instanceId: string) {
 /**
  * @brief 完成任务
  */
-export function completeTask(taskId: string) {
+export async function completeTask(taskId: string) {
   try {
     return await httpClient.post(`${baseUrl}/tasks/${taskId}/complete`);
   } catch (error) {
@@ -317,7 +317,7 @@ export function completeTask(taskId: string) {
 /**
  * @brief 拒绝任务
  */
-export function rejectTask(taskId: string, comment?: string) {
+export async function rejectTask(taskId: string, comment?: string) {
   try {
     return await httpClient.post(`${baseUrl}/tasks/${taskId}/reject`, { comment });
   } catch (error) {
@@ -329,7 +329,7 @@ export function rejectTask(taskId: string, comment?: string) {
 /**
  * @brief 获取工作流节点
  */
-export function listNodes(workflowId: string) {
+export async function listNodes(workflowId: string) {
   try {
     return await httpClient.get(`${baseUrl}/${workflowId}/nodes`);
   } catch (error) {
@@ -341,7 +341,7 @@ export function listNodes(workflowId: string) {
 /**
  * @brief 创建节点
  */
-export function createNode(workflowId: string, data: CreateNodeParam) {
+export async function createNode(workflowId: string, data: CreateNodeParam) {
   try {
     return await httpClient.post(`${baseUrl}/${workflowId}/nodes`, data);
   } catch (error) {
@@ -353,7 +353,7 @@ export function createNode(workflowId: string, data: CreateNodeParam) {
 /**
  * @brief 更新节点
  */
-export function updateNode(workflowId: string, nodeId: string, data: UpdateNodeParam) {
+export async function updateNode(workflowId: string, nodeId: string, data: UpdateNodeParam) {
   try {
     return await httpClient.put(`${baseUrl}/${workflowId}/nodes/${nodeId}`, data);
   } catch (error) {
@@ -365,7 +365,7 @@ export function updateNode(workflowId: string, nodeId: string, data: UpdateNodeP
 /**
  * @brief 删除节点
  */
-export function deleteNode(workflowId: string, nodeId: string) {
+export async function deleteNode(workflowId: string, nodeId: string) {
   try {
     return await httpClient.delete(`${baseUrl}/${workflowId}/nodes/${nodeId}`);
   } catch (error) {
@@ -377,7 +377,7 @@ export function deleteNode(workflowId: string, nodeId: string) {
 /**
  * @brief 获取工作流边
  */
-export function listEdges(workflowId: string) {
+export async function listEdges(workflowId: string) {
   try {
     return await httpClient.get(`${baseUrl}/${workflowId}/edges`);
   } catch (error) {
@@ -389,7 +389,7 @@ export function listEdges(workflowId: string) {
 /**
  * @brief 创建边
  */
-export function createEdge(workflowId: string, data: CreateEdgeParam) {
+export async function createEdge(workflowId: string, data: CreateEdgeParam) {
   try {
     return await httpClient.post(`${baseUrl}/${workflowId}/edges`, data);
   } catch (error) {
@@ -401,7 +401,7 @@ export function createEdge(workflowId: string, data: CreateEdgeParam) {
 /**
  * @brief 更新边
  */
-export function updateEdge(workflowId: string, edgeId: string, data: Partial<CreateEdgeParam>) {
+export async function updateEdge(workflowId: string, edgeId: string, data: Partial<CreateEdgeParam>) {
   try {
     return await httpClient.put(`${baseUrl}/${workflowId}/edges/${edgeId}`, data);
   } catch (error) {
@@ -413,7 +413,7 @@ export function updateEdge(workflowId: string, edgeId: string, data: Partial<Cre
 /**
  * @brief 删除边
  */
-export function deleteEdge(workflowId: string, edgeId: string) {
+export async function deleteEdge(workflowId: string, edgeId: string) {
   try {
     return await httpClient.delete(`${baseUrl}/${workflowId}/edges/${edgeId}`);
   } catch (error) {

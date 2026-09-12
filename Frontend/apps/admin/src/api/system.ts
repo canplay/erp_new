@@ -42,7 +42,7 @@ export interface ConfigCategory {
 /**
  * @brief 获取所有系统配置（按分类）
  */
-export function getSystemConfigs() {
+export async function getSystemConfigs() {
   try {
     return await httpClient.get('/config/system-configs');
   } catch (error) {
@@ -55,7 +55,7 @@ export function getSystemConfigs() {
  * @brief 获取配置分类列表
  * @description 返回本地静态配置分类，如需从 API 获取可修改为 async 函数
  */
-export function getConfigCategories(): ConfigCategory[] {
+export async function getConfigCategories(): ConfigCategory[] {
   return [
     { name: 'basic', label: '基础设置', icon: 'settings', description: '站点基础信息配置' },
     { name: 'security', label: '安全设置', icon: 'security', description: '密码策略、登录限制等' },
@@ -68,7 +68,7 @@ export function getConfigCategories(): ConfigCategory[] {
 /**
  * @brief 获取单个配置
  */
-export function getConfig(key: string) {
+export async function getConfig(key: string) {
   try {
     return await httpClient.get(`/config/system-configs/${key}`);
   } catch (error) {
@@ -80,7 +80,7 @@ export function getConfig(key: string) {
 /**
  * @brief 更新配置
  */
-export function updateConfig(key: string, value: string) {
+export async function updateConfig(key: string, value: string) {
   try {
     return await httpClient.put(`/config/system-configs/${key}`, { value });
   } catch (error) {
@@ -92,7 +92,7 @@ export function updateConfig(key: string, value: string) {
 /**
  * @brief 批量更新配置
  */
-export function batchUpdateConfigs(configs: Array<{ key: string; value: string }>) {
+export async function batchUpdateConfigs(configs: Array<{ key: string; value: string }>) {
   try {
     return await httpClient.put('/config/system-configs/batch', { configs });
   } catch (error) {
@@ -104,7 +104,7 @@ export function batchUpdateConfigs(configs: Array<{ key: string; value: string }
 /**
  * @brief 重置配置到默认值
  */
-export function resetConfig(key: string) {
+export async function resetConfig(key: string) {
   try {
     return await httpClient.post(`/config/system-configs/${key}/reset`, {});
   } catch (error) {
@@ -136,7 +136,7 @@ export interface Announcement {
 /**
  * @brief 获取公告列表
  */
-export function listAnnouncements(params?: {
+export async function listAnnouncements(params?: {
   page?: number;
   page_size?: number;
   isActive?: boolean;
@@ -152,7 +152,7 @@ export function listAnnouncements(params?: {
 /**
  * @brief 获取单个公告
  */
-export function getAnnouncement(id: number) {
+export async function getAnnouncement(id: number) {
   try {
     return await httpClient.get(`/admin/announcements/${id}`);
   } catch (error) {
@@ -164,7 +164,7 @@ export function getAnnouncement(id: number) {
 /**
  * @brief 创建公告
  */
-export function createAnnouncement(data: {
+export async function createAnnouncement(data: {
   title: string;
   content: string;
   type?: 'info' | 'warning' | 'success' | 'error';
@@ -185,7 +185,7 @@ export function createAnnouncement(data: {
 /**
  * @brief 更新公告
  */
-export function updateAnnouncement(
+export async function updateAnnouncement(
   id: number,
   data: {
     title?: string;
@@ -209,7 +209,7 @@ export function updateAnnouncement(
 /**
  * @brief 删除公告
  */
-export function deleteAnnouncement(id: number) {
+export async function deleteAnnouncement(id: number) {
   try {
     return await httpClient.delete(`/admin/announcements/${id}`);
   } catch (error) {
@@ -221,7 +221,7 @@ export function deleteAnnouncement(id: number) {
 /**
  * @brief 获取启用的公告（供前端展示）
  */
-export function getActiveAnnouncements() {
+export async function getActiveAnnouncements() {
   try {
     return await httpClient.get('/announcements/active');
   } catch (error) {

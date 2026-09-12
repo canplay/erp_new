@@ -203,9 +203,9 @@
         <div class="text-body2">
           <template v-if="activeTab === 'assign'">
             将 <strong>{{ selectedRoles.length }}</strong> 个角色的权限
-            <span v-if="assignMode === 'add'">增加</span>
-            <span v-else-if="assignMode === 'set'">设置为</span>
-            <span v-else>移除</span>
+            <span v-if="assignMode === 'add'">{{ $t('common.add') }}</span>
+            <span v-else-if="assignMode === 'set'">{{ $t('common.setTo') }}</span>
+            <span v-else>{{ $t('common.remove') }}</span>
             <strong>{{ selectedPermissions.length }}</strong> 项
           </template>
           <template v-else>
@@ -240,8 +240,8 @@ import { ref, computed, watch } from 'vue';
 import { logger } from '@/utils/logger';
 import { useDialogPluginComponent } from 'quasar';
 import {
-  PERMISSIONS,
-  getAllModules,
+  PERMISSION_META,
+  getAllModulesI18n,
   PermissionModule,
 } from '@/types/permission';
 import { batchAssignPermissions, copyRolePermissions } from '@/api/permission';
@@ -333,20 +333,21 @@ const targetRoleOptions = computed(() => {
 
 /** 权限分组 */
 const permissionGroups = computed<PermissionGroupOption[]>(() => {
-  const modules = getAllModules();
+  const { i18nT } = useI18nT();
+  const modules = getAllModulesI18n();
   return modules
     .filter((m) => {
-      const modulePerms = PERMISSIONS.filter((p) => p.module === m.value);
+      const modulePerms = PERMISSION_META.filter((p) => p.module === m.value);
       return modulePerms.length > 0;
     })
     .map((m) => {
-      const modulePerms = PERMISSIONS.filter((p) => p.module === m.value);
+      const modulePerms = PERMISSION_META.filter((p) => p.module === m.value);
       return {
         module: m.value,
         label: m.label,
         icon: getModuleIcon(m.value),
         permissionOptions: modulePerms.map((p) => ({
-          label: `${p.name}${p.description ? ` - ${p.description}` : ''}`,
+          label: `${i18nT(`common.perm.${p.key.replace(/:/g, '')}`, p.key)}${i18nT(`common.perm.${p.key.replace(/:/g, '')}Desc}`, '') ? ` - ${i18nT(`common.perm.${p.key.replace(/:/g, '')}Desc}`, '')}` : ''}`,
           value: p.key,
         })),
       };

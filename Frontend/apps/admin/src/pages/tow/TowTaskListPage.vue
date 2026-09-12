@@ -20,7 +20,7 @@
         <SkeletonLoader type="table" :columns="columns.length" :rows="5" />
       </template>
       <template #no-data>
-        <EmptyState icon="local_shipping" :title="$t('empty.noData')" description="暂无拖车任务" />
+        <EmptyState icon="local_shipping" :title="$t('empty.noData')" :description="$t('common.noTowTask')" />
       </template>
     </q-table>
   </q-page>
@@ -32,6 +32,9 @@ import { useQuasar } from 'quasar';
 import { useTowStore } from '@/stores/tow';
 import SkeletonLoader from '@/components/SkeletonLoader.vue';
 import EmptyState from '@/components/EmptyState.vue';
+
+import { useI18n } from 'vue-i18n'
+const { t: $t } = useI18n()
 const $q = useQuasar();
 const store = useTowStore();
 const search = ref('');

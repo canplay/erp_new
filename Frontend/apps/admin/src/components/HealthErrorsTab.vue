@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="row justify-between q-mb-sm">
-      <div class="text-subtitle1">前端错误记录</div>
+      <div class="text-subtitle1">{{ $t('common.frontendErrors') }}</div>
       <div><q-btn flat dense color="negative" icon="check" :label="$t('common.allProcessed')" @click="$emit('resolveAll')" class="q-mr-sm" /><q-btn flat dense color="grey" icon="delete_sweep" :label="$t('common.clear')" @click="$emit('clear')" /></div>
     </div>
     <q-table
@@ -23,7 +23,7 @@
         <q-td :props="props"><q-btn flat dense icon="visibility" size="sm" color="primary" @click="$emit('showDetail', props.row)" /></q-td>
       </template>
       <template v-slot:no-data>
-        <div class="text-center q-pa-lg text-grey"><q-icon name="check_circle" size="48px" /><div class="q-mt-sm">暂无错误记录</div></div>
+        <div class="text-center q-pa-lg text-grey"><q-icon name="check_circle" size="48px" /><div class="q-mt-sm">{{ $t('common.noErrorRecords') }}</div></div>
       </template>
     </q-table>
   </div>
@@ -33,6 +33,8 @@
 import type { QTableProps } from 'quasar';
 import type { FrontendError } from '@/types/monitor';
 
+import { useI18n } from 'vue-i18n'
+const { t: $t } = useI18n()
 defineProps<{
   errorRecords: FrontendError[];
   errorColumns: QTableProps['columns'];

@@ -13,6 +13,7 @@ import { usePermissionStore } from '@/stores/permission';
 import { getSensitivePermissions } from '@/types/permission';
 import { checkSensitivePermission } from '@/api/permission';
 import { useQuasar } from 'quasar';
+import { useI18nT } from '@/composables/useI18nT';
 
 /**
  * @brief 权限指令修饰符
@@ -141,25 +142,27 @@ async function confirmSensitivePermission(permission: string): Promise<boolean> 
   }
 
   const $q = useQuasar();
+  const { i18nT } = useI18nT();
+  const confirmText = i18nT('common.confirm', '确认');
 
   return new Promise((resolve) => {
     $q.dialog({
-      title: '敏感权限确认',
-      message: `您正在执行敏感操作："${permission}"。此操作需要额外确认。是否继续？`,
+      title: i18nT('common.sensitivePermissionConfirm', 'Sensitive Permission Confirm'),
+      message: i18nT('common.sensitiveConfirmMsg', 'You are performing a sensitive action: "{permission}". This requires extra confirmation. Continue?', { permission }),
       prompt: {
         model: '',
         type: 'text',
-        placeholder: '请输入 "确认" 以继续',
-        isValid: (val: string) => val === '确认',
+        placeholder: i18nT('common.inputConfirmPlaceholder', 'Enter "confirm" to proceed'),
+        isValid: (val: string) => val === confirmText,
       },
       cancel: {
         flat: true,
         color: 'grey',
-        label: '取消',
+        label: i18nT('common.cancel', 'Cancel'),
       },
       ok: {
         color: 'negative',
-        label: '确认执行',
+        label: i18nT('common.executeLabel', 'Confirm Execute'),
       },
       persistent: true,
     }).onOk(() => {

@@ -35,7 +35,7 @@
             <q-btn
               color="positive"
               icon="add"
-              label="新建工作流"
+              :label="$t('common.newWorkflow')"
               @click="handleCreate"
             />
           </q-card-section>
@@ -80,7 +80,7 @@
                   icon="edit"
                   @click="handleEdit(props.row)"
                 >
-                  <q-tooltip>编辑</q-tooltip>
+                  <q-tooltip>{{ $t('common.edit') }}</q-tooltip>
                 </q-btn>
                 <q-btn
                   flat
@@ -89,7 +89,7 @@
                   icon="delete"
                   @click="handleDelete(props.row)"
                 >
-                  <q-tooltip>删除</q-tooltip>
+                  <q-tooltip>{{ $t('common.delete') }}</q-tooltip>
                 </q-btn>
               </q-btn-group>
             </q-td>
@@ -98,8 +98,8 @@
           <template #no-data>
             <EmptyState
               icon="account_tree"
-              message="暂无工作流定义"
-              action-text="创建工作流"
+              :message="$t('common.noWorkflowDefinition')"
+              :action-text="$t('common.createWorkflow')"
               @action="handleCreate"
             />
           </template>
@@ -118,14 +118,14 @@
           <q-form @submit="handleSubmit">
             <q-input
               v-model="formData.name"
-              label="工作流名称"
+              :label="$t('common.workflowName')"
               outlined
               :rules="[val => !!val || '请输入名称']"
             />
 
             <q-input
               v-model="formData.description"
-              label="描述"
+              :label="$t('common.description')"
               outlined
               type="textarea"
               rows="3"
@@ -155,7 +155,7 @@
     <!-- 确认删除对话框 -->
     <ConfirmDialog
       v-model="showDeleteDialog"
-      title="确认删除"
+      :title="$t('common.confirmDelete')"
       message="确定要删除该工作流吗？此操作不可撤销。"
       @confirm="confirmDelete"
     />
@@ -170,6 +170,8 @@ import { listWorkflows, createWorkflow, updateWorkflow, deleteWorkflow, type Wor
 import EmptyState from '@/components/EmptyState.vue';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 
+import { useI18n } from 'vue-i18n'
+const { t: $t } = useI18n()
 /**
  * @brief 工作流列表页面
  * 提供工作流的增删改查功能

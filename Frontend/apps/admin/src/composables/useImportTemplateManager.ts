@@ -1,6 +1,6 @@
 /**
  * @file useImportTemplateManager.ts
- * @description 导入模板管理 composable
+ * @description 导入模板管理 composable - 使用动态 ExcelJS
  * @date 2026-07-08
  */
 
@@ -10,7 +10,6 @@ import { logger } from '@/utils/logger';
 import type { QTableProps } from 'quasar';
 import type { ImportTemplate, ImportTemplateColumn } from '@/types/importExport';
 import { DEFAULT_IMPORT_TEMPLATES } from '@/types/importExport';
-import ExcelJS from 'exceljs';
 
 export function useImportTemplateManager() {
   const $q = useQuasar();
@@ -163,6 +162,7 @@ export function useImportTemplateManager() {
     if (!template) return;
 
     try {
+      const ExcelJS = await import('exceljs');
       const workbook = new ExcelJS.Workbook();
       const worksheet = workbook.addWorksheet(template.name);
 

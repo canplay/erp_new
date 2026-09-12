@@ -1,8 +1,8 @@
 <template>
   <q-list dense bordered separator class="q-mb-md">
-    <q-item-label header>节点属性</q-item-label>
+    <q-item-label header>{{ $t('common.nodeProperties') }}</q-item-label>
     <q-item v-if="!node">
-      <q-item-section class="text-grey">请选择节点进行配置</q-item-section>
+      <q-item-section class="text-grey">{{ $t('common.selectNodeToConfigure') }}</q-item-section>
     </q-item>
     <q-item v-else>
       <q-item-section>
@@ -22,6 +22,9 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+const { t: $t } = useI18n()
+
 interface WfNode { name: string; type: string; timeout?: number; }
 interface ApprovalCfg { assignee: string; approvalType: string; }
 interface ConditionCfg { expression: string; }

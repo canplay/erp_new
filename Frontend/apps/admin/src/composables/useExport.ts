@@ -6,7 +6,6 @@
 import { ref } from 'vue';
 import { useQuasar } from 'quasar';
 import { logger } from '@/utils/logger';
-import ExcelJS from 'exceljs';
 
 // ── Types ──
 
@@ -198,6 +197,7 @@ async function _exportToExcel<T extends Record<string, unknown>>(
   const $q = useQuasar();
 
   try {
+    const ExcelJS = await import('exceljs');
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet(sheetName, {
       views: [{ state: 'frozen', xSplit: 0, ySplit: 1 }],

@@ -73,7 +73,7 @@
                 outlined
                 dense
                 clearable
-                label="选择要继承的角色"
+                :label="$t('common.selectInheritRole')"
               >
                 <template v-slot:option="{ itemProps, opt }">
                   <q-item v-bind="itemProps">
@@ -94,7 +94,7 @@
               <q-btn
                 color="primary"
                 icon="add_link"
-                label="添加继承"
+                :label="$t('common.addInheritance')"
                 :disable="!selectedInheritRole"
                 @click="addInherit"
               />

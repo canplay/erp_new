@@ -6,17 +6,20 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+const { t: $t } = useI18n()
+
 /**
  * @file PermissionWrapper.vue
  * @description 权限包装组件 - 根据权限显示/隐藏内容
  * @date 2026-04-04
  * @example
  *   <PermissionWrapper permission="user:delete">
- *     <q-btn label="删除" />
+ *     <q-btn :label="$t('common.delete')" />
  *   </PermissionWrapper>
  *
  *   <PermissionWrapper :permission="['user:read', 'user:update']" mode="all">
- *     <q-btn label="编辑" />
+ *     <q-btn :label="$t('common.edit')" />
  *   </PermissionWrapper>
  */
 

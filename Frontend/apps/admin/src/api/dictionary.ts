@@ -52,7 +52,7 @@ export interface DictionaryTypeWithItems extends DictionaryType {
 /**
  * @brief 获取字典类型列表
  */
-export function listDictionaryTypes(params?: {
+export async function listDictionaryTypes(params?: {
   page?: number;
   page_size?: number;
   keyword?: string;
@@ -69,7 +69,7 @@ export function listDictionaryTypes(params?: {
 /**
  * @brief 获取单个字典类型
  */
-export function getDictionaryType(id: number) {
+export async function getDictionaryType(id: number) {
   try {
     return await httpClient.get(`/admin/dictionary/types/${id}`);
   } catch (error) {
@@ -81,7 +81,7 @@ export function getDictionaryType(id: number) {
 /**
  * @brief 创建字典类型
  */
-export function createDictionaryType(data: {
+export async function createDictionaryType(data: {
   code: string;
   name: string;
   description?: string;
@@ -98,7 +98,7 @@ export function createDictionaryType(data: {
 /**
  * @brief 更新字典类型
  */
-export function updateDictionaryType(
+export async function updateDictionaryType(
   id: number,
   data: {
     name?: string;
@@ -118,7 +118,7 @@ export function updateDictionaryType(
 /**
  * @brief 删除字典类型
  */
-export function deleteDictionaryType(id: number) {
+export async function deleteDictionaryType(id: number) {
   try {
     return await httpClient.delete(`/admin/dictionary/types/${id}`);
   } catch (error) {
@@ -130,7 +130,7 @@ export function deleteDictionaryType(id: number) {
 /**
  * @brief 批量删除字典类型
  */
-export function batchDeleteDictionaryTypes(ids: number[]) {
+export async function batchDeleteDictionaryTypes(ids: number[]) {
   try {
     return await httpClient.post('/admin/dictionary/types/batch-delete', { ids });
   } catch (error) {
@@ -144,7 +144,7 @@ export function batchDeleteDictionaryTypes(ids: number[]) {
 /**
  * @brief 获取字典项列表
  */
-export function listDictionaryItems(params?: {
+export async function listDictionaryItems(params?: {
   type_id?: number;
   keyword?: string;
   status?: number;
@@ -160,7 +160,7 @@ export function listDictionaryItems(params?: {
 /**
  * @brief 获取字典类型下的所有字典项
  */
-export function getDictionaryItemsByType(typeCode: string) {
+export async function getDictionaryItemsByType(typeCode: string) {
   try {
     return await httpClient.get(`/admin/dictionary/types/${typeCode}/items`);
   } catch (error) {
@@ -172,7 +172,7 @@ export function getDictionaryItemsByType(typeCode: string) {
 /**
  * @brief 获取单个字典项
  */
-export function getDictionaryItem(id: number) {
+export async function getDictionaryItem(id: number) {
   try {
     return await httpClient.get(`/admin/dictionary/items/${id}`);
   } catch (error) {
@@ -184,7 +184,7 @@ export function getDictionaryItem(id: number) {
 /**
  * @brief 创建字典项
  */
-export function createDictionaryItem(data: {
+export async function createDictionaryItem(data: {
   type_id: number;
   label: string;
   value: string;
@@ -204,7 +204,7 @@ export function createDictionaryItem(data: {
 /**
  * @brief 更新字典项
  */
-export function updateDictionaryItem(
+export async function updateDictionaryItem(
   id: number,
   data: {
     label?: string;
@@ -226,7 +226,7 @@ export function updateDictionaryItem(
 /**
  * @brief 删除字典项
  */
-export function deleteDictionaryItem(id: number) {
+export async function deleteDictionaryItem(id: number) {
   try {
     return await httpClient.delete(`/admin/dictionary/items/${id}`);
   } catch (error) {
@@ -238,7 +238,7 @@ export function deleteDictionaryItem(id: number) {
 /**
  * @brief 批量删除字典项
  */
-export function batchDeleteDictionaryItems(ids: number[]) {
+export async function batchDeleteDictionaryItems(ids: number[]) {
   try {
     return await httpClient.post('/admin/dictionary/items/batch-delete', { ids });
   } catch (error) {
@@ -250,7 +250,7 @@ export function batchDeleteDictionaryItems(ids: number[]) {
 /**
  * @brief 批量创建字典项
  */
-export function batchCreateDictionaryItems(type_id: number, items: Array<{
+export async function batchCreateDictionaryItems(type_id: number, items: Array<{
   label: string;
   value: string;
   sort?: number;
@@ -268,7 +268,7 @@ export function batchCreateDictionaryItems(type_id: number, items: Array<{
 /**
  * @brief 调整字典项顺序
  */
-export function reorderDictionaryItems(type_id: number, itemIds: number[]) {
+export async function reorderDictionaryItems(type_id: number, itemIds: number[]) {
   try {
     return await httpClient.put(`/admin/dictionary/types/${type_id}/items/reorder`, { itemIds });
   } catch (error) {
@@ -280,7 +280,7 @@ export function reorderDictionaryItems(type_id: number, itemIds: number[]) {
 /**
  * @brief 获取所有启用的字典（用于全局缓存）
  */
-export function getAllEnabledDictionaries() {
+export async function getAllEnabledDictionaries() {
   try {
     return await httpClient.get('/admin/dictionary/all-enabled');
   } catch (error) {

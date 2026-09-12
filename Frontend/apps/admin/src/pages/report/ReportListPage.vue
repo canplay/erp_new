@@ -27,7 +27,7 @@
               emit-value
               map-options
               style="width: 150px"
-              label="类型"
+              :label="$t('common.type')"
             />
 
             <q-select
@@ -47,7 +47,7 @@
             <q-btn
               color="positive"
               icon="add"
-              label="新建报表"
+              :label="$t('common.newReport')"
               @click="handleCreate"
             />
           </q-card-section>
@@ -100,7 +100,7 @@
                   icon="bar_chart"
                   @click="handlePreview(props.row)"
                 >
-                  <q-tooltip>预览</q-tooltip>
+                  <q-tooltip>{{ $t('common.preview') }}</q-tooltip>
                 </q-btn>
                 <q-btn
                   flat
@@ -127,7 +127,7 @@
                   icon="delete"
                   @click="handleDelete(props.row)"
                 >
-                  <q-tooltip>删除</q-tooltip>
+                  <q-tooltip>{{ $t('common.delete') }}</q-tooltip>
                 </q-btn>
               </q-btn-group>
             </q-td>
@@ -136,8 +136,8 @@
           <template #no-data>
             <EmptyState
               icon="assessment"
-              message="暂无报表"
-              action-text="新建报表"
+              :message="$t('common.noReport')"
+              :action-text="$t('common.newReport')"
               @action="handleCreate"
             />
           </template>

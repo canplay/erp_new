@@ -28,7 +28,7 @@
                   <q-select
                     v-model="filters.status"
                     :options="[0, 1, 2, 3]"
-                    label="状态"
+                    :label="$t('common.status')"
                     outlined
                     dense
                     clearable
@@ -91,6 +91,8 @@ import { parseCarResponse } from '@/utils/ebike';
 import { carColumns } from '@/composables/useEbikeColumns';
 import type { CarItem, StorageItem, AlertItem } from '@/types/ebike';
 
+import { useI18n } from 'vue-i18n'
+const { t: $t } = useI18n()
 const $q = useQuasar();
 const store = useStore();
 const mapComponentRef = ref<{ setCenter?: (gps: { lat?: number; lng?: number }, zoom?: number) => void } | null>(null);

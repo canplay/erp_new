@@ -64,7 +64,7 @@ export interface ListOperationLogsParams extends PaginationParams {
 /**
  * @brief 获取登录日志列表
  */
-export function listLoginLogs(params?: ListLoginLogsParams) {
+export async function listLoginLogs(params?: ListLoginLogsParams) {
   try {
     return await httpClient.get('/audit/login-logs', { params });
   } catch (error) {
@@ -76,7 +76,7 @@ export function listLoginLogs(params?: ListLoginLogsParams) {
 /**
  * @brief 获取登录日志详情
  */
-export function getLoginLog(id: number) {
+export async function getLoginLog(id: number) {
   try {
     return await httpClient.get(`/audit/login-logs/${id}`);
   } catch (error) {
@@ -88,7 +88,7 @@ export function getLoginLog(id: number) {
 /**
  * @brief 导出登录日志
  */
-export function exportLoginLogs(params?: Omit<ListLoginLogsParams, 'page' | 'page_size'>) {
+export async function exportLoginLogs(params?: Omit<ListLoginLogsParams, 'page' | 'page_size'>) {
   try {
     return await httpClient.get('/audit/login-logs/export', {
     params,
@@ -102,7 +102,7 @@ export function exportLoginLogs(params?: Omit<ListLoginLogsParams, 'page' | 'pag
 /**
  * @brief 获取操作日志列表
  */
-export function listOperationLogs(params?: ListOperationLogsParams) {
+export async function listOperationLogs(params?: ListOperationLogsParams) {
   try {
     return await httpClient.get('/audit/operation-logs', { params });
   } catch (error) {
@@ -114,7 +114,7 @@ export function listOperationLogs(params?: ListOperationLogsParams) {
 /**
  * @brief 获取操作日志详情
  */
-export function getOperationLog(id: number) {
+export async function getOperationLog(id: number) {
   try {
     return await httpClient.get(`/audit/operation-logs/${id}`);
   } catch (error) {
@@ -126,7 +126,7 @@ export function getOperationLog(id: number) {
 /**
  * @brief 导出操作日志
  */
-export function exportOperationLogs(params?: Omit<ListOperationLogsParams, 'page' | 'page_size'>) {
+export async function exportOperationLogs(params?: Omit<ListOperationLogsParams, 'page' | 'page_size'>) {
   try {
     return await httpClient.get('/audit/operation-logs/export', {
     params,
@@ -140,7 +140,7 @@ export function exportOperationLogs(params?: Omit<ListOperationLogsParams, 'page
 /**
  * @brief 清理登录日志
  */
-export function clearLoginLogs(days?: number) {
+export async function clearLoginLogs(days?: number) {
   try {
     return await httpClient.delete('/audit/login-logs', {
     params: { days },  });
@@ -153,7 +153,7 @@ export function clearLoginLogs(days?: number) {
 /**
  * @brief 清理操作日志
  */
-export function clearOperationLogs(days?: number) {
+export async function clearOperationLogs(days?: number) {
   try {
     return await httpClient.delete('/audit/operation-logs', {
     params: { days },  });

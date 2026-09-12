@@ -141,7 +141,7 @@ export interface PaymentWebStatisticsQuery {
 /**
  * 获取发票数量
  */
-export function countInvoices(params: InvoiceQuery) {
+export async function countInvoices(params: InvoiceQuery) {
   try {
     return await httpClient.get('/clean/invoice/count', { params });
   } catch (error) {
@@ -153,7 +153,7 @@ export function countInvoices(params: InvoiceQuery) {
 /**
  * 获取发票列表
  */
-export function listInvoices(params: InvoiceQuery) {
+export async function listInvoices(params: InvoiceQuery) {
   try {
     return await httpClient.get('/clean/invoice/info', { params });
   } catch (error) {
@@ -165,7 +165,7 @@ export function listInvoices(params: InvoiceQuery) {
 /**
  * 更新发票
  */
-export function updateInvoice(data: { id: string; invoice_no?: string; status?: string }) {
+export async function updateInvoice(data: { id: string; invoice_no?: string; status?: string }) {
   try {
     return await httpClient.post('/clean/invoice/update', data);
   } catch (error) {
@@ -179,7 +179,7 @@ export function updateInvoice(data: { id: string; invoice_no?: string; status?: 
 /**
  * 获取订单数量
  */
-export function countOrders(params: OrderQuery) {
+export async function countOrders(params: OrderQuery) {
   try {
     return await httpClient.get('/clean/order/count', { params });
   } catch (error) {
@@ -191,7 +191,7 @@ export function countOrders(params: OrderQuery) {
 /**
  * 获取订单列表
  */
-export function listOrders(params: OrderQuery) {
+export async function listOrders(params: OrderQuery) {
   try {
     return await httpClient.get('/clean/order/info', { params });
   } catch (error) {
@@ -205,7 +205,7 @@ export function listOrders(params: OrderQuery) {
 /**
  * 获取员工信息
  */
-export function getStaff(query: StaffQuery) {
+export async function getStaff(query: StaffQuery) {
   try {
     return await httpClient.post('/clean/staff/info', query);
   } catch (error) {
@@ -219,7 +219,7 @@ export function getStaff(query: StaffQuery) {
 /**
  * 获取正式账单数量
  */
-export function countFormalBills(params: FormalBillQuery) {
+export async function countFormalBills(params: FormalBillQuery) {
   try {
     return await httpClient.get('/clean/formal/count', { params });
   } catch (error) {
@@ -231,7 +231,7 @@ export function countFormalBills(params: FormalBillQuery) {
 /**
  * 获取正式账单列表
  */
-export function listFormalBills(params: FormalBillQuery) {
+export async function listFormalBills(params: FormalBillQuery) {
   try {
     return await httpClient.get('/clean/formal/info', { params });
   } catch (error) {
@@ -243,7 +243,7 @@ export function listFormalBills(params: FormalBillQuery) {
 /**
  * 获取正式账单统计
  */
-export function getFormalBillTotal(params: FormalBillQuery) {
+export async function getFormalBillTotal(params: FormalBillQuery) {
   try {
     return await httpClient.get('/clean/formal/total', { params });
   } catch (error) {
@@ -255,7 +255,7 @@ export function getFormalBillTotal(params: FormalBillQuery) {
 /**
  * 获取支付信息数量
  */
-export function countPaymentInfo(params: PaymentInfoQuery) {
+export async function countPaymentInfo(params: PaymentInfoQuery) {
   try {
     return await httpClient.get('/clean/payment/info/count', { params });
   } catch (error) {
@@ -267,7 +267,7 @@ export function countPaymentInfo(params: PaymentInfoQuery) {
 /**
  * 获取支付信息列表
  */
-export function listPaymentInfo(params: PaymentInfoQuery) {
+export async function listPaymentInfo(params: PaymentInfoQuery) {
   try {
     return await httpClient.get('/clean/payment/info/info', { params });
   } catch (error) {
@@ -279,7 +279,7 @@ export function listPaymentInfo(params: PaymentInfoQuery) {
 /**
  * 获取支付信息统计
  */
-export function getPaymentInfoTotal(params: PaymentStatisticsQuery) {
+export async function getPaymentInfoTotal(params: PaymentStatisticsQuery) {
   try {
     return await httpClient.get('/clean/payment/info/total', { params });
   } catch (error) {
@@ -291,7 +291,7 @@ export function getPaymentInfoTotal(params: PaymentStatisticsQuery) {
 /**
  * 获取网络支付数量
  */
-export function countPaymentWeb(params: PaymentWebQuery) {
+export async function countPaymentWeb(params: PaymentWebQuery) {
   try {
     return await httpClient.get('/clean/payment/web/count', { params });
   } catch (error) {
@@ -303,7 +303,7 @@ export function countPaymentWeb(params: PaymentWebQuery) {
 /**
  * 获取网络支付列表
  */
-export function listPaymentWeb(params: PaymentWebQuery) {
+export async function listPaymentWeb(params: PaymentWebQuery) {
   try {
     return await httpClient.get('/clean/payment/web/info', { params });
   } catch (error) {
@@ -315,7 +315,7 @@ export function listPaymentWeb(params: PaymentWebQuery) {
 /**
  * 获取网络支付统计
  */
-export function getPaymentWebTotal(params: PaymentWebStatisticsQuery) {
+export async function getPaymentWebTotal(params: PaymentWebStatisticsQuery) {
   try {
     return await httpClient.get('/clean/payment/web/total', { params });
   } catch (error) {

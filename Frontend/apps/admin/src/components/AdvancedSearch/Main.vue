@@ -28,7 +28,7 @@
       <SaveDialog v-model="showSaveDialog" :saved-searches="savedSearches" @save="handleSaveSearch" @load="loadSearch" @remove="removeSearch" />
 
       <q-card-section v-if="savedSearches.length > 0" class="saved-searches">
-        <div class="text-subtitle2 q-mb-sm">已保存的搜索</div>
+        <div class="text-subtitle2 q-mb-sm">{{ $t('common.savedSearches') }}</div>
         <div class="row q-gutter-sm">
           <q-chip v-for="(search, index) in savedSearches" :key="index" clickable removable color="primary" text-color="white" @click="loadSearch(search)" @remove="removeSearch(index)">
             {{ search.name }}

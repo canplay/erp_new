@@ -30,7 +30,7 @@
         <template v-slot:body-cell-title="props">
           <q-td :props="props">
             <div class="row items-center">
-              <q-badge v-if="props.row.isPinned" color="warning" class="q-mr-sm" label="置顶" />
+              <q-badge v-if="props.row.isPinned" color="warning" class="q-mr-sm" :label="$t('common.pin')" />
               <q-badge :color="getTypeColor(props.row.type)" :label="getTypeLabel(props.row.type)" class="q-mr-sm" />
               <span class="text-weight-medium">{{ props.row.title }}</span>
             </div>
@@ -118,8 +118,8 @@
           <div class="q-mb-md">
             <div class="text-h6">{{ viewingAnnouncement?.title }}</div>
             <div class="row q-gutter-sm q-mt-sm">
-              <q-badge v-if="viewingAnnouncement?.isPinned" color="warning" label="置顶" />
-              <q-badge v-if="viewingAnnouncement?.isActive" color="positive" label="已发布" />
+              <q-badge v-if="viewingAnnouncement?.isPinned" color="warning" :label="$t('common.pin')" />
+              <q-badge v-if="viewingAnnouncement?.isActive" color="positive" :label="$t('common.published')" />
             </div>
           </div>
           <q-separator class="q-my-md" />

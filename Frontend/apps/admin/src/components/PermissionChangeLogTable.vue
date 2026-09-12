@@ -40,7 +40,7 @@
               v-model="end_date_str"
               outlined
               dense
-              label="结束日期"
+              :label="$t('common.endDate')"
               readonly
             >
               <template v-slot:append>
@@ -61,7 +61,7 @@
               outlined
               dense
               clearable
-              label="角色"
+              :label="$t('common.role')"
               emit-value
               map-options
             />
@@ -75,7 +75,7 @@
               outlined
               dense
               clearable
-              label="操作类型"
+              :label="$t('common.operationType')"
               emit-value
               map-options
             />
@@ -171,7 +171,7 @@
         <q-card-section v-if="currentLog">
           <q-list separator>
             <q-item>
-              <q-item-section avatar>角色</q-item-section>
+              <q-item-section avatar>{{ $t('common.role') }}</q-item-section>
               <q-item-section>
                 <code>{{ currentLog.role_name }}</code>
               </q-item-section>
@@ -181,7 +181,7 @@
               <q-item-section>{{ currentLog.operator }}</q-item-section>
             </q-item>
             <q-item>
-              <q-item-section avatar>操作类型</q-item-section>
+              <q-item-section avatar>{{ $t('common.operationType') }}</q-item-section>
               <q-item-section>
                 <q-badge
                   :color="getChangeTypeColor(currentLog.changeType)"
@@ -214,6 +214,8 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+const { t: $t } = useI18n()
 /**
  * @file PermissionChangeLogTable.vue
  * @description 权限变更日志表格组件

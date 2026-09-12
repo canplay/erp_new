@@ -27,8 +27,8 @@
           <div class="text-body2">
             <strong>字段权限说明：</strong>
             <ul class="q-my-sm" style="padding-left: 20px">
-              <li><strong>可查看</strong> - 可以在详情页或列表中看到该字段</li>
-              <li><strong>可编辑</strong> - 可以修改该字段的值（需要先有查看权限）</li>
+              <li><strong>{{ $t('permission.viewable') }}</strong> - 可以在详情页或列表中看到该字段</li>
+              <li><strong>{{ $t('permission.editable') }}</strong> - 可以修改该字段的值（需要先有查看权限）</li>
               <li>敏感字段（如手机号、身份证号）建议仅对必要角色开放查看权限</li>
             </ul>
           </div>
@@ -97,7 +97,7 @@
                 v-if="props.row.sensitive"
                 color="warning"
                 text-color="black"
-                label="敏感"
+                :label="$t('common.sensitive')"
               />
             </q-td>
           </template>

@@ -205,7 +205,7 @@
               outlined
               dense
               type="number"
-              hint="数字越小优先级越高"
+              :hint="$t('common.lowerNumberHigherPriority')"
             />
 
             <!-- 状态 -->

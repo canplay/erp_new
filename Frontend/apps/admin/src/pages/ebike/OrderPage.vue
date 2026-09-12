@@ -21,7 +21,7 @@
               <q-select
                 v-model="filters.status"
                 :options="[0, 1, 2, 3]"
-                label="状态"
+                :label="$t('common.status')"
                 outlined
                 dense
                 clearable
@@ -70,6 +70,8 @@ import { parseCarResponse } from '@/utils/ebike';
 import { orderColumns } from '@/composables/useEbikeColumns';
 import type { OrderItem } from '@/types/ebike';
 
+import { useI18n } from 'vue-i18n'
+const { t: $t } = useI18n()
 const $q = useQuasar();
 const store = useStore();
 

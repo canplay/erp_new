@@ -18,8 +18,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch, onBeforeUnmount } from 'vue';
 import { useI18n } from 'vue-i18n';
-import * as echarts from 'echarts/core';
-import type { EChartsOption } from 'echarts';
+import type { EChartsOption } from '@/utils/echarts';
 import ChartRenderer from './ChartRenderer.vue';
 
 // ============ 类型定义 ============
@@ -184,7 +183,7 @@ const chartOption = computed<EChartsOption>(() => {
         legend: showLegend ? { bottom: 10, textStyle: { color: textColor } } : undefined,
         radar: { indicator, axisName: { color: textColor }, splitLine: { lineStyle: { color: splitLineColor } },
           center: ['50%', '55%'] as string[], radius: '65%' },
-        series: [{ type: 'radar' as const, data: [{ value: data.map((d) => d.value), name: '数据' }] }] } as unknown as EChartsOption;
+        series: [{ type: 'radar' as const, data: [{ value: data.map((d) => d.value), name: '数据' }] }] } as EChartsOption;
     }
     case 'scatter': {
       const opts = { ...baseOptions,

@@ -64,7 +64,7 @@ export interface TowTask {
 // ==================== API 函数 ====================
 
 /** 查询车辆列表 */
-export function listTowCars(params?: TowCarQueryParams) {
+export async function listTowCars(params?: TowCarQueryParams) {
   try {
     return await httpClient.get('/tow/cars', { params });
   } catch (error) {
@@ -74,7 +74,7 @@ export function listTowCars(params?: TowCarQueryParams) {
 }
 
 /** 获取车辆详情 */
-export function getTowCar(id: number) {
+export async function getTowCar(id: number) {
   try {
     return await httpClient.get(`/tow/cars/${id}`);
   } catch (error) {
@@ -84,7 +84,7 @@ export function getTowCar(id: number) {
 }
 
 /** 获取字典列表 */
-export function listDictItems(dictType: string) {
+export async function listDictItems(dictType: string) {
   try {
     return await httpClient.get('/tow/dict', { params: { dict_type: dictType } });
   } catch (error) {
@@ -94,16 +94,16 @@ export function listDictItems(dictType: string) {
 }
 
 /** 拖车类型字典 */
-export function listCarTypes() {
+export async function listCarTypes() {
   return listDictItems('car_type');
 }
 
 /** 车辆颜色字典 */
-export function listCarColors() {
+export async function listCarColors() {
   return listDictItems('car_color');
 }
 
 /** 拖车原因字典 */
-export function listDcCauses() {
+export async function listDcCauses() {
   return listDictItems('dc_causes');
 }

@@ -25,7 +25,7 @@
       </q-card-section>
 
       <q-card-actions align="right">
-        <q-btn flat label="关闭" color="primary" v-close-popup />
+        <q-btn flat :label="$t('common.close')" color="primary" v-close-popup />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -35,6 +35,8 @@
 import { computed } from 'vue';
 import { MaskStrategy } from '@/types/fieldMask';
 
+import { useI18n } from 'vue-i18n'
+const { t: $t } = useI18n()
 export interface LocalFieldMaskItem {
   fieldName?: string;
   strategy?: MaskStrategy;

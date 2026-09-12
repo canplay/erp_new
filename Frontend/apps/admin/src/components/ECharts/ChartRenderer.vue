@@ -10,8 +10,9 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue';
-import * as echarts from 'echarts';
-import type { EChartsOption, SeriesOption } from 'echarts';
+import { echarts } from '@/utils/echarts';
+import type { EChartsOption } from '@/utils/echarts';
+import type { ECharts } from '@/utils/echarts';
 
 interface Props {
   option: EChartsOption;
@@ -29,12 +30,12 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<{
-  rendered: [chart: echarts.ECharts];
+  rendered: [chart: ECharts];
   click: [params: unknown];
 }>();
 
 const chartRef = ref<HTMLElement | null>(null);
-let chart: echarts.ECharts | null = null;
+let chart: ECharts | null = null;
 
 function initChart() {
   if (!chartRef.value) return;

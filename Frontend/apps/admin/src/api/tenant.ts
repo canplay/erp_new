@@ -14,7 +14,7 @@ import { handleApiError } from '@/utils/apiErrorHandler';
 /**
  * @brief 获取所有租户列表（管理员）
  */
-export function listAllTenants(params?: {
+export async function listAllTenants(params?: {
   page?: number;
   page_size?: number;
   keyword?: string;
@@ -32,7 +32,7 @@ export function listAllTenants(params?: {
 /**
  * @brief 获取租户详情（管理员）
  */
-export function getTenantById(id: number) {
+export async function getTenantById(id: number) {
   try {
     return await httpClient.get(`/admin/tenants/${id}`);
   } catch (error) {
@@ -44,7 +44,7 @@ export function getTenantById(id: number) {
 /**
  * @brief 创建租户（管理员）
  */
-export function createTenant(data: {
+export async function createTenant(data: {
   name: string;
   code: string;
   domain?: string;
@@ -66,7 +66,7 @@ export function createTenant(data: {
 /**
  * @brief 更新租户（管理员）
  */
-export function updateTenantAdmin(id: number, data: {
+export async function updateTenantAdmin(id: number, data: {
   name?: string;
   domain?: string;
   plan?: string;
@@ -86,7 +86,7 @@ export function updateTenantAdmin(id: number, data: {
 /**
  * @brief 删除租户（管理员）
  */
-export function deleteTenant(id: number) {
+export async function deleteTenant(id: number) {
   try {
     return await httpClient.delete(`/admin/tenants/${id}`);
   } catch (error) {
@@ -98,7 +98,7 @@ export function deleteTenant(id: number) {
 /**
  * @brief 启用租户（管理员）
  */
-export function enableTenant(id: number) {
+export async function enableTenant(id: number) {
   try {
     return await httpClient.put(`/admin/tenants/${id}/enable`);
   } catch (error) {
@@ -110,7 +110,7 @@ export function enableTenant(id: number) {
 /**
  * @brief 禁用租户（管理员）
  */
-export function disableTenant(id: number) {
+export async function disableTenant(id: number) {
   try {
     return await httpClient.put(`/admin/tenants/${id}/disable`);
   } catch (error) {
@@ -122,7 +122,7 @@ export function disableTenant(id: number) {
 /**
  * @brief 重置租户配额（管理员）
  */
-export function resetTenantQuota(id: number) {
+export async function resetTenantQuota(id: number) {
   try {
     return await httpClient.post(`/admin/tenants/${id}/reset-quota`);
   } catch (error) {
@@ -134,7 +134,7 @@ export function resetTenantQuota(id: number) {
 /**
  * @brief 获取租户用户列表（管理员）
  */
-export function listTenantUsersAdmin(tenantId: number, params?: {
+export async function listTenantUsersAdmin(tenantId: number, params?: {
   page?: number;
   page_size?: number;
   role?: string;
@@ -151,7 +151,7 @@ export function listTenantUsersAdmin(tenantId: number, params?: {
 /**
  * @brief 添加租户用户（管理员）
  */
-export function addTenantUserAdmin(tenantId: number, data: {
+export async function addTenantUserAdmin(tenantId: number, data: {
   user_id: number;
   role: string;
   department?: string;
@@ -168,7 +168,7 @@ export function addTenantUserAdmin(tenantId: number, data: {
 /**
  * @brief 移除租户用户（管理员）
  */
-export function removeTenantUserAdmin(tenantId: number, user_id: number) {
+export async function removeTenantUserAdmin(tenantId: number, user_id: number) {
   try {
     return await httpClient.delete(`/admin/tenants/${tenantId}/users/${user_id}`);
   } catch (error) {
@@ -180,7 +180,7 @@ export function removeTenantUserAdmin(tenantId: number, user_id: number) {
 /**
  * @brief 根据邮箱搜索用户
  */
-export function searchUsersByEmail(email: string) {
+export async function searchUsersByEmail(email: string) {
   try {
     return await httpClient.get('/admin/users/search', { params: { email } });
   } catch (error) {
@@ -192,7 +192,7 @@ export function searchUsersByEmail(email: string) {
 /**
  * @brief 获取租户套餐列表
  */
-export function getTenantPlans() {
+export async function getTenantPlans() {
   try {
     return await httpClient.get('/admin/tenant-plans');
   } catch (error) {
@@ -206,7 +206,7 @@ export function getTenantPlans() {
 /**
  * @brief 获取当前租户信息
  */
-export function getCurrentTenant() {
+export async function getCurrentTenant() {
   try {
     return await httpClient.get('/tenant/current');
   } catch (error) {
@@ -218,7 +218,7 @@ export function getCurrentTenant() {
 /**
  * @brief 更新租户信息
  */
-export function updateTenant(id: number, data: Partial<Tenant>) {
+export async function updateTenant(id: number, data: Partial<Tenant>) {
   try {
     return await httpClient.put(`/tenant/${id}`, data);
   } catch (error) {
@@ -230,7 +230,7 @@ export function updateTenant(id: number, data: Partial<Tenant>) {
 /**
  * @brief 获取租户用户列表
  */
-export function listTenantUsers(params?: {
+export async function listTenantUsers(params?: {
   page?: number;
   page_size?: number;
   role?: string;
@@ -247,7 +247,7 @@ export function listTenantUsers(params?: {
 /**
  * @brief 添加租户用户
  */
-export function addTenantUser(data: {
+export async function addTenantUser(data: {
   user_id: number;
   role: string;
   department?: string;
@@ -264,7 +264,7 @@ export function addTenantUser(data: {
 /**
  * @brief 更新租户用户
  */
-export function updateTenantUser(user_id: number, data: Partial<TenantUser>) {
+export async function updateTenantUser(user_id: number, data: Partial<TenantUser>) {
   try {
     return await httpClient.put(`/tenant/users/${user_id}`, data);
   } catch (error) {
@@ -276,7 +276,7 @@ export function updateTenantUser(user_id: number, data: Partial<TenantUser>) {
 /**
  * @brief 移除租户用户
  */
-export function removeTenantUser(user_id: number) {
+export async function removeTenantUser(user_id: number) {
   try {
     return await httpClient.delete(`/tenant/users/${user_id}`);
   } catch (error) {
@@ -288,7 +288,7 @@ export function removeTenantUser(user_id: number) {
 /**
  * @brief 切换租户
  */
-export function switchTenant(tenantId: number) {
+export async function switchTenant(tenantId: number) {
   try {
     return await httpClient.post('/tenant/switch', { tenant_id: tenantId });
   } catch (error) {
@@ -300,7 +300,7 @@ export function switchTenant(tenantId: number) {
 /**
  * @brief 获取套餐列表
  */
-export function listPlans() {
+export async function listPlans() {
   try {
     return await httpClient.get('/tenant/plans');
   } catch (error) {
@@ -312,7 +312,7 @@ export function listPlans() {
 /**
  * @brief 获取当前套餐
  */
-export function getCurrentPlan() {
+export async function getCurrentPlan() {
   try {
     return await httpClient.get('/tenant/plan/current');
   } catch (error) {
@@ -324,7 +324,7 @@ export function getCurrentPlan() {
 /**
  * @brief 升级/续费套餐
  */
-export function upgradePlan(planId: string, interval: 'month' | 'year') {
+export async function upgradePlan(planId: string, interval: 'month' | 'year') {
   try {
     return await httpClient.post('/tenant/plan/upgrade', { plan_id: planId, interval });
   } catch (error) {
@@ -336,7 +336,7 @@ export function upgradePlan(planId: string, interval: 'month' | 'year') {
 /**
  * @brief 获取使用统计
  */
-export function getUsageStats() {
+export async function getUsageStats() {
   try {
     return await httpClient.get('/tenant/usage');
   } catch (error) {
@@ -348,7 +348,7 @@ export function getUsageStats() {
 /**
  * @brief 获取审计日志
  */
-export function getAuditLogs(params?: {
+export async function getAuditLogs(params?: {
   page?: number;
   page_size?: number;
   action?: string;
@@ -367,7 +367,7 @@ export function getAuditLogs(params?: {
 /**
  * @brief 导出审计日志
  */
-export function exportAuditLogs(params: {
+export async function exportAuditLogs(params: {
   start_date: string;
   end_date: string;
   format: 'csv' | 'xlsx';

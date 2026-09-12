@@ -1,6 +1,6 @@
 /**
  * @file useImport.ts
- * @description 数据导入 Composable - 使用 ExcelJS
+ * @description 数据导入 Composable - 使用 ExcelJS (动态加载)
  * @date 2026-04-04
  */
 
@@ -8,7 +8,6 @@ import { ref } from 'vue';
 import { useQuasar } from 'quasar';
 import { logger } from '@/utils/logger';
 import { useExport } from '@/composables/useExport';
-import ExcelJS from 'exceljs';
 
 // Quasar Column 类型定义
 type Column = Record<string, unknown>;
@@ -96,6 +95,7 @@ export function useImport<T extends Record<string, unknown> = Record<string, unk
 
     try {
       // 动态导入 ExcelJS
+      const ExcelJS = await import('exceljs');
       const workbook = new ExcelJS.Workbook();
       // 将 File 转换为 ArrayBuffer 以兼容 ExcelJS
       const arrayBuffer = await file.arrayBuffer();
@@ -161,7 +161,7 @@ export function useImport<T extends Record<string, unknown> = Record<string, unk
   /**
    * @brief 获取单元格值
    */
-  function getCellValue(cell: ExcelJS.Cell): unknown {
+  function getCellValue(cell: { value: unknown }): unknown {
     const value = cell.value;
 
     if (value === null || value === undefined) {

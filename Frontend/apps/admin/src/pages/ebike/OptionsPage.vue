@@ -25,7 +25,7 @@
       <q-card-section class="flex justify-end">
         <q-btn
           color="primary"
-          label="保存"
+          :label="$t('common.save')"
           @click="onSave"
         />
       </q-card-section>
@@ -37,6 +37,8 @@
 import { useQuasar } from 'quasar';
 import { useEbikeStore as useStore } from '@/stores/ebike';
 
+import { useI18n } from 'vue-i18n'
+const { t: $t } = useI18n()
 const $q = useQuasar();
 const store = useStore();
 

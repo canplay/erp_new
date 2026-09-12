@@ -22,7 +22,7 @@
           clearable
           emit-value
           map-options
-          placeholder="按模块筛选"
+          :placeholder="$t('common.filterByModule')"
         />
       </div>
       <div class="col-12 col-sm-3">
@@ -34,7 +34,7 @@
           clearable
           emit-value
           map-options
-          placeholder="按类型筛选"
+          :placeholder="$t('common.filterByType')"
         />
       </div>
       <div class="col-12 col-sm-4">
@@ -212,7 +212,7 @@
               </q-item-section>
             </q-item>
             <q-item v-if="selectedPermission.description">
-              <q-item-section>描述</q-item-section>
+              <q-item-section>{{ $t('common.description') }}</q-item-section>
               <q-item-section side>{{ selectedPermission.description }}</q-item-section>
             </q-item>
           </q-list>
@@ -246,6 +246,8 @@
 <script setup lang="ts">
 import { usePermissionMatrix } from '@/composables/usePermissionMatrix';
 
+import { useI18n } from 'vue-i18n'
+const { t: $t } = useI18n()
 const {
   moduleFilter, categoryFilter, searchQuery, viewMode,
   showDetailDialog, selectedPermission, roles,

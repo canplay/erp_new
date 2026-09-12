@@ -52,14 +52,14 @@
             :options="maskStrategyOptions"
             outlined
             dense
-            label="批量设置脱敏策略"
+            :label="$t('common.batchSetMaskStrategy')"
             emit-value
             map-options
             style="width: 200px"
           />
           <q-btn
             color="primary"
-            label="应用到所选"
+            :label="$t('common.applyToSelected')"
             class="q-ml-sm"
             :disable="selectedFields.length === 0"
             @click="applyBatchStrategy"
@@ -67,7 +67,7 @@
           <q-space />
           <q-btn
             color="positive"
-            label="保存所有修改"
+            :label="$t('common.saveAllChanges')"
             icon="save"
             @click="saveAllRules"
           />

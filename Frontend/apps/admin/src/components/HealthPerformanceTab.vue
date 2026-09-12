@@ -3,7 +3,7 @@
     <div class="col-12 col-md-8">
       <q-card flat bordered>
         <q-card-section>
-          <div class="text-subtitle1 q-mb-md">核心性能指标</div>
+          <div class="text-subtitle1 q-mb-md">{{ $t('common.coreMetrics') }}</div>
           <div class="row q-col-gutter-md">
             <div class="col-6 col-sm-3" v-for="m in coreMetrics" :key="m.key">
               <q-card class="metric-card" flat bordered>
@@ -19,7 +19,7 @@
         <q-separator />
         <q-card-section>
           <div class="row items-center q-mb-sm">
-            <div class="text-subtitle1">加载时间</div>
+            <div class="text-subtitle1">{{ $t('common.loadTime') }}</div>
           </div>
           <div class="row q-col-gutter-md">
             <div class="col-4" v-for="m in loadMetrics" :key="m.key">
@@ -34,7 +34,7 @@
     <div class="col-12 col-md-4">
       <q-card flat bordered>
         <q-card-section>
-          <div class="text-subtitle1 q-mb-md">资源使用</div>
+          <div class="text-subtitle1 q-mb-md">{{ $t('common.resourceUsage') }}</div>
           <div class="q-gutter-y-md" v-for="r in resourceItems" :key="r.key">
             <div>
               <div class="row items-center justify-between q-mb-xs">
@@ -53,6 +53,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
+import { useI18n } from 'vue-i18n'
+const { t: $t } = useI18n()
 const props = defineProps<{
   metrics: { FCP: number; LCP: number; CLS: number; FID: number; DOMContentLoaded: number; pageLoadTime: number; loadComplete: number };
   apiStats: { avg_response_time: number; errorRate: number };

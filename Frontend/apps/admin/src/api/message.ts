@@ -95,7 +95,7 @@ export interface MessageCreateParams {
 /**
  * @brief 获取消息列表
  */
-export function getMessageList(params?: MessageQueryParams) {
+export async function getMessageList(params?: MessageQueryParams) {
   try {
     return await httpClient.get('/messages', { params });
   } catch (error) {
@@ -107,7 +107,7 @@ export function getMessageList(params?: MessageQueryParams) {
 /**
  * @brief 获取收件箱消息
  */
-export function getInboxMessages(params?: Omit<MessageQueryParams, 'type'>) {
+export async function getInboxMessages(params?: Omit<MessageQueryParams, 'type'>) {
   try {
     return await httpClient.get('/messages/inbox', { params });
   } catch (error) {
@@ -119,7 +119,7 @@ export function getInboxMessages(params?: Omit<MessageQueryParams, 'type'>) {
 /**
  * @brief 获取发件箱消息
  */
-export function getOutboxMessages(params?: Omit<MessageQueryParams, 'type'>) {
+export async function getOutboxMessages(params?: Omit<MessageQueryParams, 'type'>) {
   try {
     return await httpClient.get('/messages/outbox', { params });
   } catch (error) {
@@ -131,7 +131,7 @@ export function getOutboxMessages(params?: Omit<MessageQueryParams, 'type'>) {
 /**
  * @brief 获取系统公告
  */
-export function getAnnouncements(params?: Omit<MessageQueryParams, 'type'>) {
+export async function getAnnouncements(params?: Omit<MessageQueryParams, 'type'>) {
   try {
     return await httpClient.get('/messages/announcements', { params });
   } catch (error) {
@@ -143,7 +143,7 @@ export function getAnnouncements(params?: Omit<MessageQueryParams, 'type'>) {
 /**
  * @brief 获取消息详情
  */
-export function getMessageDetail(id: number) {
+export async function getMessageDetail(id: number) {
   try {
     return await httpClient.get(`/messages/${id}`);
   } catch (error) {
@@ -155,7 +155,7 @@ export function getMessageDetail(id: number) {
 /**
  * @brief 发送消息
  */
-export function sendMessage(data: MessageCreateParams) {
+export async function sendMessage(data: MessageCreateParams) {
   try {
     return await httpClient.post('/messages', data);
   } catch (error) {
@@ -167,7 +167,7 @@ export function sendMessage(data: MessageCreateParams) {
 /**
  * @brief 批量发送消息
  */
-export function batchSendMessages(messageIds: number[], user_ids: number[]) {
+export async function batchSendMessages(messageIds: number[], user_ids: number[]) {
   try {
     return await httpClient.post('/messages/batch-send', { messageIds, user_ids });
   } catch (error) {
@@ -179,7 +179,7 @@ export function batchSendMessages(messageIds: number[], user_ids: number[]) {
 /**
  * @brief 标记消息已读
  */
-export function markAsRead(messageId: number) {
+export async function markAsRead(messageId: number) {
   try {
     return await httpClient.put(`/messages/${messageId}/read`);
   } catch (error) {
@@ -191,7 +191,7 @@ export function markAsRead(messageId: number) {
 /**
  * @brief 批量标记已读
  */
-export function batchMarkAsRead(messageIds: number[]) {
+export async function batchMarkAsRead(messageIds: number[]) {
   try {
     return await httpClient.put('/messages/read/batch', { messageIds });
   } catch (error) {
@@ -203,7 +203,7 @@ export function batchMarkAsRead(messageIds: number[]) {
 /**
  * @brief 标记所有消息已读
  */
-export function markAllAsRead() {
+export async function markAllAsRead() {
   try {
     return await httpClient.put('/messages/read/all');
   } catch (error) {
@@ -215,7 +215,7 @@ export function markAllAsRead() {
 /**
  * @brief 标记星标
  */
-export function markAsStarred(messageId: number, starred: boolean) {
+export async function markAsStarred(messageId: number, starred: boolean) {
   try {
     return await httpClient.put(`/messages/${messageId}/star`, { starred });
   } catch (error) {
@@ -227,7 +227,7 @@ export function markAsStarred(messageId: number, starred: boolean) {
 /**
  * @brief 删除消息（软删除）
  */
-export function deleteMessage(messageId: number) {
+export async function deleteMessage(messageId: number) {
   try {
     return await httpClient.delete(`/messages/${messageId}`);
   } catch (error) {
@@ -239,7 +239,7 @@ export function deleteMessage(messageId: number) {
 /**
  * @brief 批量删除消息
  */
-export function batchDeleteMessages(messageIds: number[]) {
+export async function batchDeleteMessages(messageIds: number[]) {
   try {
     return await httpClient.delete('/messages/batch', { data: { messageIds } });
   } catch (error) {
@@ -251,7 +251,7 @@ export function batchDeleteMessages(messageIds: number[]) {
 /**
  * @brief 获取未读消息数量
  */
-export function getUnreadCount() {
+export async function getUnreadCount() {
   try {
     return await httpClient.get('/messages/unread-count');
   } catch (error) {
@@ -263,7 +263,7 @@ export function getUnreadCount() {
 /**
  * @brief 获取未读公告数量
  */
-export function getUnreadAnnouncementCount() {
+export async function getUnreadAnnouncementCount() {
   try {
     return await httpClient.get('/messages/announcements/unread-count');
   } catch (error) {

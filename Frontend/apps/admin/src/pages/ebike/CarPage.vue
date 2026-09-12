@@ -51,7 +51,7 @@
 
                 <div class="col-auto" style="width: 5px" />
 
-                <q-input class="col" filled v-model="track.time!.end" label="关闭时间">
+                <q-input class="col" filled v-model="track.time!.end" :label="$t('common.closeTime')">
                   <template v-slot:append>
                     <q-icon name="event" class="cursor-pointer">
                       <q-popup-proxy transition-show="scale" transition-hide="scale">
@@ -152,7 +152,7 @@
           <q-select
             v-model="track.model"
             :options="track.options"
-            label="历史记录"
+            :label="$t('common.history')"
             @input="onTrackChange"
           />
         </div>
@@ -175,6 +175,8 @@ import { httpClient as api } from '@/utils/alova';
 import { parseCarResponse } from '@/utils/ebike';
 import { STATUS_MAP_CAR, type CarInfo, type MapWebView, type TrackState } from '@/types/ebike';
 
+import { useI18n } from 'vue-i18n'
+const { t: $t } = useI18n()
 const $q = useQuasar();
 const store = useStore();
 

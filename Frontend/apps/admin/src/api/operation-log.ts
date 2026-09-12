@@ -19,7 +19,7 @@ import { handleApiError } from '@/utils/apiErrorHandler';
 /**
  * @brief 获取操作日志列表
  */
-export function listOperationLogs(params?: {
+export async function listOperationLogs(params?: {
   page?: number;
   page_size?: number;
   keyword?: string;
@@ -41,7 +41,7 @@ export function listOperationLogs(params?: {
 /**
  * @brief 获取单个操作日志详情
  */
-export function getOperationLog(id: number) {
+export async function getOperationLog(id: number) {
   try {
     return await httpClient.get(`/audit/operation-logs/${id}`);
   } catch (error) {
@@ -53,7 +53,7 @@ export function getOperationLog(id: number) {
 /**
  * @brief 获取操作统计
  */
-export function getOperationStats(params?: OperationStatsParams) {
+export async function getOperationStats(params?: OperationStatsParams) {
   try {
     return await httpClient.get('/audit/operation-stats', { params });
   } catch (error) {
@@ -65,7 +65,7 @@ export function getOperationStats(params?: OperationStatsParams) {
 /**
  * @brief 导出操作日志
  */
-export function exportOperationLogs(params?: {
+export async function exportOperationLogs(params?: {
   keyword?: string;
   username?: string;
   module?: string;
@@ -86,7 +86,7 @@ export function exportOperationLogs(params?: {
 /**
  * @brief 获取审计日志列表
  */
-export function listAuditLogs(params?: {
+export async function listAuditLogs(params?: {
   page?: number;
   page_size?: number;
   keyword?: string;
@@ -108,7 +108,7 @@ export function listAuditLogs(params?: {
 /**
  * @brief 获取审计日志详情
  */
-export function getAuditLog(id: number) {
+export async function getAuditLog(id: number) {
   try {
     return await httpClient.get(`/audit/api-call-logs/${id}`);
   } catch (error) {
@@ -120,7 +120,7 @@ export function getAuditLog(id: number) {
 /**
  * @brief 导出审计日志
  */
-export function exportAuditLogs(params?: {
+export async function exportAuditLogs(params?: {
   keyword?: string;
   resource_type?: string;
   start_date?: string;

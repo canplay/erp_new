@@ -105,7 +105,7 @@
     <EmptyState
       v-else
       icon="assessment"
-      message="暂无报表数据"
+      :message="$t('common.noReportData')"
     />
 
     <!-- 工具栏 -->
@@ -126,6 +126,8 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+const { t: $t } = useI18n()
 /**
  * @brief 报表预览页面
  * @description 根据报表类型渲染不同的预览视图
@@ -262,7 +264,7 @@ function parseChartData(data: Record<string, unknown>) {
   // 使用默认数据集或第一个数据集
   const defaultData = datasets[0]?.data ?? [];
   reportChartConfig.value = {
-    type: chartType as 'line' | 'bar' | 'pie',
+    type: chartType,
     title: datasets[0]?.label ?? '',
     data: labels.map((label, i) => ({ label, value: defaultData[i] ?? 0 })),
   };

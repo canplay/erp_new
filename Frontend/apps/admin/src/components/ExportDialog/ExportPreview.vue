@@ -47,7 +47,7 @@
         <q-input
           v-model="localDescription"
           outlined
-          label="文件描述"
+          :label="$t('common.fileDescription')"
           type="textarea"
           autogrow
         />
@@ -73,6 +73,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 
+import { useI18n } from 'vue-i18n'
+const { t: $t } = useI18n()
 interface UploadFile {
   file: File;
   name: string;

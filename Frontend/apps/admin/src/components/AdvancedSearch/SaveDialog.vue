@@ -2,7 +2,7 @@
   <q-dialog v-model="model" persistent>
     <q-card style="min-width: 350px">
       <q-card-section>
-        <div class="text-h6">保存搜索条件</div>
+        <div class="text-h6">{{ $t('common.saveSearchCondition') }}</div>
       </q-card-section>
       <q-card-section>
         <q-input v-model="savedSearchName" outlined :label="$t('common.searchName')" :rules="[val => !!val || '请输入搜索名称']" />

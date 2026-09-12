@@ -8,21 +8,15 @@ import { logger } from '@/utils/logger';
 import { useQuasar } from 'quasar';
 import type { QTableProps } from 'quasar';
 import type { PermissionMatrixPermission } from '@/types/permissionMatrix';
-import { PERMISSIONS, type PermissionModule } from '@/types/permission';
+import { PERMISSION_META, getAllModulesI18n, type PermissionModule } from '@/types/permission';
 import { updateRolePermissionConfig } from '@/api/permission';
-
-const MODULE_LABELS: Record<string, string> = {
-  user: '用户管理', role: '角色管理', permission: '权限管理',
-  login_log: '登录日志', operation_log: '操作日志', system_config: '系统配置',
-  dictionary: '数据字典', notification: '通知管理', announcement: '公告管理',
-  monitor: '系统监控', file: '文件管理', task: '任务调度',
-  import_export: '导入导出', audit: '审计日志',
-};
+import { useI18nT } from '@/composables/useI18nT';
 
 const DEFAULT_ROLES = ['admin', 'user', 'guest'] as const;
 
 export function usePermissionMatrix() {
   const $q = useQuasar();
+  const { i18nT } = useI18nT();
 
   const moduleFilter = ref<PermissionModule | null>(null);
   const categoryFilter = ref<'page' | 'button' | 'field' | 'data' | null>(null);
@@ -34,32 +28,57 @@ export function usePermissionMatrix() {
   const matrixData = reactive<Record<string, Record<string, boolean>>>({});
   const roles = ref<string[]>([...DEFAULT_ROLES]);
 
+  const MODULE_LABELS = computed<Record<string, string>>(() => ({
+    user: i18nT('common.moduleUser', 'User Management'),
+    role: i18nT('common.moduleRole', 'Role Management'),
+    permission: i18nT('common.modulePermission', 'Permission Management'),
+    login_log: i18nT('common.moduleLoginLog', 'Login Logs'),
+    operation_log: i18nT('common.moduleOperationLog', 'Operation Logs'),
+    system_config: i18nT('common.moduleSystemConfig', 'System Config'),
+    dictionary: i18nT('common.moduleDictionary', 'Dictionary Mgmt'),
+    notification: i18nT('common.moduleNotification', 'Notification Mgmt'),
+    announcement: i18nT('common.moduleAnnouncement', 'Announcement Mgmt'),
+    monitor: i18nT('common.moduleMonitor', 'Monitoring'),
+    file: i18nT('common.moduleFile', 'File Management'),
+    task: i18nT('common.moduleTask', 'Task Management'),
+    import_export: i18nT('common.moduleImportExport', 'Import/Export'),
+    audit: i18nT('common.moduleAudit', 'Audit Management'),
+  }));
+
   const moduleOptions = computed(() => {
-    const modules = new Set(PERMISSIONS.map((p) => p.module));
+    const modules = new Set(PERMISSION_META.map((p) => p.module));
     return [
-      { label: '全部模块', value: null },
-      ...Array.from(modules).map((m) => ({ label: MODULE_LABELS[m ?? ''] ?? m ?? '', value: m })),
+      { label: i18nT('common.all', 'All'), value: null },
+      ...Array.from(modules).map((m) => ({ label: MODULE_LABELS.value[m ?? ''] ?? m ?? '', value: m })),
     ];
   });
 
   const categoryOptions = computed(() => [
-    { label: '全部类型', value: null },
-    { label: '页面', value: 'page' },
-    { label: '按钮', value: 'button' },
-    { label: '字段', value: 'field' },
-    { label: '数据', value: 'data' },
+    { label: i18nT('common.all', 'All'), value: null },
+    { label: i18nT('common.page', 'Page') || 'Page', value: 'page' },
+    { label: 'Button', value: 'button' },
+    { label: 'Field', value: 'field' },
+    { label: 'Data', value: 'data' },
   ]);
 
   const filteredPermissions = computed(() => {
-    return PERMISSIONS.filter((p) => {
+    return PERMISSION_META.filter((p) => {
       if (moduleFilter.value && p.module !== moduleFilter.value) return false;
       if (categoryFilter.value && p.category !== categoryFilter.value) return false;
       if (searchQuery.value) {
         const query = searchQuery.value.toLowerCase();
-        return p.name.toLowerCase().includes(query) || p.key.toLowerCase().includes(query);
+        return p.key.toLowerCase().includes(query);
       }
       return true;
-    });
+    }).map((p) => ({
+      key: p.key,
+      name: i18nT(`common.perm.${p.key.replace(/:/g, '')}`, p.key),
+      type: p.type,
+      category: p.category,
+      module: p.module,
+      description: i18nT(`common.perm.${p.key.replace(/:/g, '')}Desc`, ''),
+      sensitive: p.sensitive ?? false,
+    }));
   });
 
   const filteredPermissionGroups = computed(() => {
@@ -95,16 +114,16 @@ export function usePermissionMatrix() {
   });
 
   const listColumns: QTableProps['columns'] = [
-    { name: 'permission', label: '权限', field: 'name', align: 'left', sortable: true },
-    { name: 'module', label: '模块', field: 'module', align: 'center' },
-    { name: 'category', label: '类型', field: 'category', align: 'center' },
-    { name: 'roles', label: '角色授权', field: 'roles', align: 'center' },
-    { name: 'actions', label: '操作', field: 'actions', align: 'center' },
+    { name: 'permission', label: 'Permission', field: 'name', align: 'left', sortable: true },
+    { name: 'module', label: 'Module', field: 'module', align: 'center' },
+    { name: 'category', label: 'Type', field: 'category', align: 'center' },
+    { name: 'roles', label: 'Roles', field: 'roles', align: 'center' },
+    { name: 'actions', label: 'Actions', field: 'actions', align: 'center' },
   ];
 
-  function getModuleLabel(module: string): string { return MODULE_LABELS[module] || module; }
+  function getModuleLabel(module: string): string { return MODULE_LABELS.value[module] || module; }
   function getRoleLabel(role: string): string {
-    const labels: Record<string, string> = { admin: '管理员', user: '普通用户', guest: '访客' };
+    const labels: Record<string, string> = { admin: 'Admin', user: 'User', guest: 'Guest' };
     return labels[role] || role;
   }
 
@@ -113,7 +132,7 @@ export function usePermissionMatrix() {
     if (!roleData) {
       matrixData[role] = {};
       if (role === 'admin') {
-        PERMISSIONS.forEach((p) => { matrixData[role]![p.key] = true; });
+        PERMISSION_META.forEach((p) => { matrixData[role]![p.key] = true; });
       }
       return matrixData[role][permissionKey] ?? false;
     }
@@ -135,7 +154,7 @@ export function usePermissionMatrix() {
   function handleRefresh() {
     Object.keys(matrixData).forEach((role) => { delete matrixData[role]; });
     initDefaultPermissions();
-    $q.notify({ type: 'positive', message: '权限矩阵已刷新' });
+    $q.notify({ type: 'positive', message: 'Permission matrix refreshed' });
   }
 
   async function handleSave() {
@@ -147,15 +166,15 @@ export function usePermissionMatrix() {
       });
       rolePermissions[role] = permissions;
     });
-    $q.loading.show({ message: '正在保存权限配置...' });
+    $q.loading.show({ message: 'Saving permission config...' });
     try {
       const adminConfig = { function_permissions: rolePermissions['admin'] || [], data_permissions: [], field_permissions: [] };
       await updateRolePermissionConfig('admin', adminConfig);
       logger.info('【权限矩阵】保存配置成功：', rolePermissions);
-      $q.notify({ type: 'positive', message: '权限配置已保存' });
+      $q.notify({ type: 'positive', message: 'Permission config saved' });
     } catch (error) {
       logger.error('【权限矩阵】保存配置失败：', error);
-      $q.notify({ type: 'negative', message: '保存失败，请重试' });
+      $q.notify({ type: 'negative', message: 'Save failed, please retry' });
     } finally {
       $q.loading.hide();
     }
@@ -170,10 +189,10 @@ export function usePermissionMatrix() {
     roles.value.forEach((role) => {
       if (role === 'admin') {
         matrixData[role] = {};
-        PERMISSIONS.forEach((p) => { matrixData[role]![p.key] = true; });
+        PERMISSION_META.forEach((p) => { matrixData[role]![p.key] = true; });
       } else if (role === 'user') {
         matrixData[role] = {};
-        PERMISSIONS.filter((p) => p.category === 'page').forEach((p) => { matrixData[role]![p.key] = true; });
+        PERMISSION_META.filter((p) => p.category === 'page').forEach((p) => { matrixData[role]![p.key] = true; });
       } else {
         matrixData[role] = {};
       }

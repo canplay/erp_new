@@ -39,12 +39,12 @@
 
     <div v-else-if="searchQuery" class="no-results">
       <q-icon name="search_off" size="xl" color="grey" />
-      <div class="text-grey q-mt-sm">未找到匹配的命令</div>
+      <div class="text-grey q-mt-sm">{{ $t('common.noMatchingCommands') }}</div>
     </div>
 
     <div v-else class="empty-state">
       <q-icon name="keyboard" size="xl" color="grey" />
-      <div class="text-grey q-mt-sm">输入关键字搜索命令</div>
+      <div class="text-grey q-mt-sm">{{ $t('common.inputKeywordSearchCommand') }}</div>
       <div class="text-caption text-grey-6 q-mt-sm">
         按 <kbd>Ctrl</kbd>+<kbd>K</kbd> 打开命令面板
       </div>
@@ -54,6 +54,9 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+
+import { useI18n } from 'vue-i18n'
+const { t: $t } = useI18n()
 interface Command {
   id: string;
   name: string;

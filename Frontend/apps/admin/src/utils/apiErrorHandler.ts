@@ -10,7 +10,7 @@ import { logger } from '@/utils/logger';
  * Standardized API error handler
  * Logs the error and re-throws for caller handling
  */
-export function handleApiError(error: unknown, context: string): void {
+export async function handleApiError(error: unknown, context: string): void {
   if (error instanceof Error) {
     logger.error(`[API Error] ${context}: ${error.message}`, error);
   } else if (typeof error === 'object' && error !== null) {

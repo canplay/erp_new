@@ -17,11 +17,11 @@
         </div>
         <div class="row q-mb-md items-center">
           <q-select v-model="selected_entity_type" :options="entity_type_options" outlined dense
-            label="实体类型" emit-value map-options style="min-width: 200px" class="q-mr-md" />
+            :label="$t('common.entityType')" emit-value map-options style="min-width: 200px" class="q-mr-md" />
           <q-select v-model="selectedRoleName" :options="roleOptions" outlined dense
-            label="角色" emit-value map-options clearable style="min-width: 150px" />
+            :label="$t('common.role')" emit-value map-options clearable style="min-width: 150px" />
           <q-space />
-          <q-btn color="primary" icon="add" label="新建规则" @click="openCreateDialog" />
+          <q-btn color="primary" icon="add" :label="$t('common.newRule')" @click="openCreateDialog" />
         </div>
         <q-table :rows="rowPermissions" :columns="columns" row-key="id" flat bordered
           :loading="loading" :pagination="{ rowsPerPage: 10 }">
@@ -60,13 +60,13 @@
           <template v-slot:body-cell-actions="props">
             <q-td :props="props">
               <q-btn flat dense color="primary" icon="edit" @click="openEditDialog(props.row)">
-                <q-tooltip>编辑</q-tooltip>
+                <q-tooltip>{{ $t('common.edit') }}</q-tooltip>
               </q-btn>
               <q-btn flat dense color="info" icon="content_copy" @click="duplicateRule(props.row)">
                 <q-tooltip>复制</q-tooltip>
               </q-btn>
               <q-btn flat dense color="negative" icon="delete" @click="handleDelete(props.row)">
-                <q-tooltip>删除</q-tooltip>
+                <q-tooltip>{{ $t('common.delete') }}</q-tooltip>
               </q-btn>
             </q-td>
           </template>
@@ -81,7 +81,7 @@
         <q-separator />
         <q-card-section style="max-height: 70vh; overflow-y: auto">
           <q-form class="q-gutter-md">
-            <div class="text-subtitle2 q-mb-sm">基本信息</div>
+            <div class="text-subtitle2 q-mb-sm">{{ $t('common.basicInfo') }}</div>
             <div class="row q-col-gutter-md">
               <div class="col-12 col-sm-6">
                 <q-input v-model="formData.name" outlined label="规则名称 *"
@@ -100,8 +100,8 @@
                   :rules="[(val) => !!val || '请选择实体类型']" />
               </div>
               <div class="col-12 col-sm-6">
-                <q-toggle v-model="formData.enabled" label="立即启用" color="primary" />
-                <q-toggle v-model="formData.allowCustomize" label="允许用户自定义" color="positive" />
+                <q-toggle v-model="formData.enabled" :label="$t('common.enableNow')" color="primary" />
+                <q-toggle v-model="formData.allowCustomize" :label="$t('common.allowUserCustomize')" color="positive" />
               </div>
             </div>
             <q-separator />
@@ -112,7 +112,7 @@
         </q-card-section>
         <q-separator />
         <q-card-actions align="right">
-          <q-btn flat label="取消" color="grey" v-close-popup />
+          <q-btn flat :label="$t('common.cancel')" color="grey" v-close-popup />
           <q-btn color="primary" :label="isEditMode ? '保存修改' : '创建规则'" @click="handleSave" />
         </q-card-actions>
       </q-card>
@@ -131,6 +131,8 @@ import RowConditionEditor from './RowConditionEditor.vue';
 import RowPermissionPreview from './RowPermissionPreview.vue';
 import { EntityTypeOptions, RoleOptions, entityFields, defaultPermissions } from './RowPermissionConfig';
 
+import { useI18n } from 'vue-i18n'
+const { t: $t } = useI18n()
 const $q = useQuasar();
 
 const props = defineProps<{

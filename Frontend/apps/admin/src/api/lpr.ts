@@ -82,7 +82,7 @@ export interface LprDevice {
 // ==================== API 函数 ====================
 
 /** 获取设备列表 */
-export function listLprDevices(params?: { park_code?: string; status?: string }) {
+export async function listLprDevices(params?: { park_code?: string; status?: string }) {
   try {
     return await httpClient.get('/v1/lpr/devices', { params });
   } catch (error) {
@@ -92,7 +92,7 @@ export function listLprDevices(params?: { park_code?: string; status?: string })
 }
 
 /** 获取设备详情 */
-export function getLprDevice(id: string) {
+export async function getLprDevice(id: string) {
   try {
     return await httpClient.get(`/v1/lpr/devices/${id}`);
   } catch (error) {
@@ -102,7 +102,7 @@ export function getLprDevice(id: string) {
 }
 
 /** 查询通行记录列表 */
-export function listPassRecords(params?: PassRecordQueryParams) {
+export async function listPassRecords(params?: PassRecordQueryParams) {
   try {
     return await httpClient.get('/v1/lpr/records', { params });
   } catch (error) {
@@ -112,7 +112,7 @@ export function listPassRecords(params?: PassRecordQueryParams) {
 }
 
 /** 获取通行记录详情 */
-export function getPassRecord(id: number) {
+export async function getPassRecord(id: number) {
   try {
     return await httpClient.get(`/v1/lpr/records/${id}`);
   } catch (error) {
@@ -122,7 +122,7 @@ export function getPassRecord(id: number) {
 }
 
 /** 查询车辆授权信息 */
-export function getVehicleAuth(plateNo: string, parkCode: string) {
+export async function getVehicleAuth(plateNo: string, parkCode: string) {
   try {
     return await httpClient.get('/lpr/vehicle/auth', {
     params: { plate_no: plateNo, park_code: parkCode },  });
@@ -133,7 +133,7 @@ export function getVehicleAuth(plateNo: string, parkCode: string) {
 }
 
 /** 获取通行统计 */
-export function getPassStats(params?: { park_code?: string; start_date?: string; end_date?: string }) {
+export async function getPassStats(params?: { park_code?: string; start_date?: string; end_date?: string }) {
   try {
     return await httpClient.get('/v1/lpr/stats', { params });
   } catch (error) {

@@ -72,3 +72,4 @@ dogfood-output/
 *.log
 .worktrees/
 /Backend/.sqlx
+/.hermes

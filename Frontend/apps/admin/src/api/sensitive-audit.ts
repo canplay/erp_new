@@ -81,7 +81,7 @@ export interface SubmitVerifyParams {
 /**
  * @brief 获取敏感操作记录列表
  */
-export function getSensitiveOperations(params?: SensitiveOperationQueryParams) {
+export async function getSensitiveOperations(params?: SensitiveOperationQueryParams) {
   try {
     return await httpClient.get('/security/sensitive-audit', { params });
   } catch (error) {
@@ -93,7 +93,7 @@ export function getSensitiveOperations(params?: SensitiveOperationQueryParams) {
 /**
  * @brief 获取敏感操作详情
  */
-export function getSensitiveOperationDetail(id: number) {
+export async function getSensitiveOperationDetail(id: number) {
   try {
     return await httpClient.get(`/security/sensitive-audit/${id}`);
   } catch (error) {
@@ -105,7 +105,7 @@ export function getSensitiveOperationDetail(id: number) {
 /**
  * @brief 获取当前用户待验证操作
  */
-export function getPendingVerifications() {
+export async function getPendingVerifications() {
   try {
     return await httpClient.get('/security/sensitive-audit/pending');
   } catch (error) {
@@ -117,7 +117,7 @@ export function getPendingVerifications() {
 /**
  * @brief 发起敏感操作验证
  */
-export function initiateVerification(data: InitiateVerifyParams) {
+export async function initiateVerification(data: InitiateVerifyParams) {
   try {
     return await httpClient.post('/security/sensitive-audit/initiate', data);
   } catch (error) {
@@ -129,7 +129,7 @@ export function initiateVerification(data: InitiateVerifyParams) {
 /**
  * @brief 提交验证
  */
-export function submitVerification(operationId: number, data: SubmitVerifyParams) {
+export async function submitVerification(operationId: number, data: SubmitVerifyParams) {
   try {
     return await httpClient.post(`/security/sensitive-audit/${operationId}/verify`, data);
   } catch (error) {
@@ -141,7 +141,7 @@ export function submitVerification(operationId: number, data: SubmitVerifyParams
 /**
  * @brief 取消验证
  */
-export function cancelVerification(operationId: number) {
+export async function cancelVerification(operationId: number) {
   try {
     return await httpClient.put(`/security/sensitive-audit/${operationId}/cancel`);
   } catch (error) {
@@ -153,7 +153,7 @@ export function cancelVerification(operationId: number) {
 /**
  * @brief 管理员审批（针对admin确认类型）
  */
-export function approveVerification(operationId: number, approved: boolean, reason?: string) {
+export async function approveVerification(operationId: number, approved: boolean, reason?: string) {
   try {
     return await httpClient.put(`/security/sensitive-audit/${operationId}/approve`, { approved, reason });
   } catch (error) {
@@ -165,7 +165,7 @@ export function approveVerification(operationId: number, approved: boolean, reas
 /**
  * @brief 重新发送验证码
  */
-export function resendVerifyCode(operationId: number) {
+export async function resendVerifyCode(operationId: number) {
   try {
     return await httpClient.post(`/security/sensitive-audit/${operationId}/resend`);
   } catch (error) {
@@ -177,7 +177,7 @@ export function resendVerifyCode(operationId: number) {
 /**
  * @brief 获取敏感操作统计
  */
-export function getSensitiveOperationStatistics(params?: { start_date?: string; end_date?: string }) {
+export async function getSensitiveOperationStatistics(params?: { start_date?: string; end_date?: string }) {
   try {
     return await httpClient.get('/security/sensitive-audit/statistics', { params });
   } catch (error) {
@@ -189,7 +189,7 @@ export function getSensitiveOperationStatistics(params?: { start_date?: string; 
 /**
  * @brief 获取操作类型列表
  */
-export function getOperationTypes() {
+export async function getOperationTypes() {
   try {
     return await httpClient.get('/security/sensitive-audit/types');
   } catch (error) {
@@ -201,7 +201,7 @@ export function getOperationTypes() {
 /**
  * @brief 获取验证码有效期配置
  */
-export function getVerifyCodeExpireTime() {
+export async function getVerifyCodeExpireTime() {
   try {
     return await httpClient.get('/security/sensitive-audit/expire-time');
   } catch (error) {
@@ -213,7 +213,7 @@ export function getVerifyCodeExpireTime() {
 /**
  * @brief 删除敏感操作记录
  */
-export function deleteSensitiveOperation(id: number) {
+export async function deleteSensitiveOperation(id: number) {
   try {
     return await httpClient.delete(`/security/sensitive-audit/${id}`);
   } catch (error) {
@@ -225,7 +225,7 @@ export function deleteSensitiveOperation(id: number) {
 /**
  * @brief 批量删除敏感操作记录
  */
-export function batchDeleteSensitiveOperations(ids: number[]) {
+export async function batchDeleteSensitiveOperations(ids: number[]) {
   try {
     return await httpClient.delete('/security/sensitive-audit/batch', { data: { ids } });
   } catch (error) {

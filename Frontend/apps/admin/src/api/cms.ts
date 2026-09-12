@@ -168,7 +168,7 @@ export interface CategoryUpdateParams extends CategoryCreateParams {
 /**
  * @brief 获取分类树
  */
-export function getCategoryTree(params?: CategoryQueryParams) {
+export async function getCategoryTree(params?: CategoryQueryParams) {
   try {
     return await httpClient.get('/cms/categories/tree', { params });
   } catch (error) {
@@ -180,7 +180,7 @@ export function getCategoryTree(params?: CategoryQueryParams) {
 /**
  * @brief 获取分类列表
  */
-export function getCategoryList(params?: CategoryQueryParams) {
+export async function getCategoryList(params?: CategoryQueryParams) {
   try {
     return await httpClient.get('/cms/categories', { params });
   } catch (error) {
@@ -192,7 +192,7 @@ export function getCategoryList(params?: CategoryQueryParams) {
 /**
  * @brief 获取分类详情
  */
-export function getCategoryDetail(id: number) {
+export async function getCategoryDetail(id: number) {
   try {
     return await httpClient.get(`/cms/categories/${id}`);
   } catch (error) {
@@ -204,7 +204,7 @@ export function getCategoryDetail(id: number) {
 /**
  * @brief 创建分类
  */
-export function createCategory(data: CategoryCreateParams) {
+export async function createCategory(data: CategoryCreateParams) {
   try {
     return await httpClient.post('/cms/categories', data);
   } catch (error) {
@@ -216,7 +216,7 @@ export function createCategory(data: CategoryCreateParams) {
 /**
  * @brief 更新分类
  */
-export function updateCategory(id: number, data: CategoryUpdateParams) {
+export async function updateCategory(id: number, data: CategoryUpdateParams) {
   try {
     return await httpClient.put(`/cms/categories/${id}`, data);
   } catch (error) {
@@ -228,7 +228,7 @@ export function updateCategory(id: number, data: CategoryUpdateParams) {
 /**
  * @brief 删除分类
  */
-export function deleteCategory(id: number) {
+export async function deleteCategory(id: number) {
   try {
     return await httpClient.delete(`/cms/categories/${id}`);
   } catch (error) {
@@ -240,7 +240,7 @@ export function deleteCategory(id: number) {
 /**
  * @brief 批量删除分类
  */
-export function batchDeleteCategories(ids: number[]) {
+export async function batchDeleteCategories(ids: number[]) {
   try {
     return await httpClient.delete('/cms/categories/batch', { data: { ids } });
   } catch (error) {
@@ -252,7 +252,7 @@ export function batchDeleteCategories(ids: number[]) {
 /**
  * @brief 调整分类排序
  */
-export function reorderCategories(orders: Array<{ id: number; sort_order: number }>) {
+export async function reorderCategories(orders: Array<{ id: number; sort_order: number }>) {
   try {
     return await httpClient.put('/cms/categories/reorder', { orders });
   } catch (error) {
@@ -266,7 +266,7 @@ export function reorderCategories(orders: Array<{ id: number; sort_order: number
 /**
  * @brief 获取文章列表
  */
-export function getArticleList(params?: ArticleQueryParams) {
+export async function getArticleList(params?: ArticleQueryParams) {
   try {
     return await httpClient.get('/cms/articles', { params });
   } catch (error) {
@@ -278,7 +278,7 @@ export function getArticleList(params?: ArticleQueryParams) {
 /**
  * @brief 获取文章详情
  */
-export function getArticleDetail(id: number) {
+export async function getArticleDetail(id: number) {
   try {
     return await httpClient.get(`/cms/articles/${id}`);
   } catch (error) {
@@ -290,7 +290,7 @@ export function getArticleDetail(id: number) {
 /**
  * @brief 获取文章详情（通过slug）
  */
-export function getArticleBySlug(slug: string) {
+export async function getArticleBySlug(slug: string) {
   try {
     return await httpClient.get('/cms/articles/slug/' + slug);
   } catch (error) {
@@ -302,7 +302,7 @@ export function getArticleBySlug(slug: string) {
 /**
  * @brief 创建文章
  */
-export function createArticle(data: ArticleCreateParams) {
+export async function createArticle(data: ArticleCreateParams) {
   try {
     return await httpClient.post('/cms/articles', data);
   } catch (error) {
@@ -314,7 +314,7 @@ export function createArticle(data: ArticleCreateParams) {
 /**
  * @brief 更新文章
  */
-export function updateArticle(id: number, data: ArticleUpdateParams) {
+export async function updateArticle(id: number, data: ArticleUpdateParams) {
   try {
     return await httpClient.put(`/cms/articles/${id}`, data);
   } catch (error) {
@@ -326,7 +326,7 @@ export function updateArticle(id: number, data: ArticleUpdateParams) {
 /**
  * @brief 删除文章
  */
-export function deleteArticle(id: number) {
+export async function deleteArticle(id: number) {
   try {
     return await httpClient.delete(`/cms/articles/${id}`);
   } catch (error) {
@@ -338,7 +338,7 @@ export function deleteArticle(id: number) {
 /**
  * @brief 批量删除文章
  */
-export function batchDeleteArticles(ids: number[]) {
+export async function batchDeleteArticles(ids: number[]) {
   try {
     return await httpClient.delete('/cms/articles/batch', { data: { ids } });
   } catch (error) {
@@ -350,7 +350,7 @@ export function batchDeleteArticles(ids: number[]) {
 /**
  * @brief 发布文章
  */
-export function publishArticle(id: number) {
+export async function publishArticle(id: number) {
   try {
     return await httpClient.put(`/cms/articles/${id}/publish`);
   } catch (error) {
@@ -362,7 +362,7 @@ export function publishArticle(id: number) {
 /**
  * @brief 下架文章
  */
-export function unpublishArticle(id: number) {
+export async function unpublishArticle(id: number) {
   try {
     return await httpClient.put(`/cms/articles/${id}/unpublish`);
   } catch (error) {
@@ -374,7 +374,7 @@ export function unpublishArticle(id: number) {
 /**
  * @brief 审核文章
  */
-export function reviewArticle(id: number, approved: boolean, reason?: string) {
+export async function reviewArticle(id: number, approved: boolean, reason?: string) {
   try {
     return await httpClient.put(`/cms/articles/${id}/review`, { approved, reason });
   } catch (error) {
@@ -386,7 +386,7 @@ export function reviewArticle(id: number, approved: boolean, reason?: string) {
 /**
  * @brief 置顶文章
  */
-export function topArticle(id: number, isTop: boolean) {
+export async function topArticle(id: number, isTop: boolean) {
   try {
     return await httpClient.put(`/cms/articles/${id}/top`, { isTop });
   } catch (error) {
@@ -398,7 +398,7 @@ export function topArticle(id: number, isTop: boolean) {
 /**
  * @brief 推荐文章
  */
-export function featureArticle(id: number, isFeatured: boolean) {
+export async function featureArticle(id: number, isFeatured: boolean) {
   try {
     return await httpClient.put(`/cms/articles/${id}/feature`, { isFeatured });
   } catch (error) {
@@ -410,7 +410,7 @@ export function featureArticle(id: number, isFeatured: boolean) {
 /**
  * @brief 获取我的文章草稿
  */
-export function getMyDrafts() {
+export async function getMyDrafts() {
   try {
     return await httpClient.get('/cms/articles/my-drafts');
   } catch (error) {
@@ -422,7 +422,7 @@ export function getMyDrafts() {
 /**
  * @brief 获取相关文章
  */
-export function getRelatedArticles(id: number, limit: number = 5) {
+export async function getRelatedArticles(id: number, limit: number = 5) {
   try {
     return await httpClient.get(`/cms/articles/${id}/related`, { params: { limit } });
   } catch (error) {
@@ -434,7 +434,7 @@ export function getRelatedArticles(id: number, limit: number = 5) {
 /**
  * @brief 增加浏览次数
  */
-export function incrementViewCount(id: number) {
+export async function incrementViewCount(id: number) {
   try {
     return await httpClient.put(`/cms/articles/${id}/view`);
   } catch (error) {
@@ -446,7 +446,7 @@ export function incrementViewCount(id: number) {
 /**
  * @brief 点赞文章
  */
-export function likeArticle(id: number) {
+export async function likeArticle(id: number) {
   try {
     return await httpClient.post(`/cms/articles/${id}/like`);
   } catch (error) {
@@ -458,7 +458,7 @@ export function likeArticle(id: number) {
 /**
  * @brief 获取文章统计
  */
-export function getArticleStatistics(params?: { categoryId?: number; start_date?: string; end_date?: string }) {
+export async function getArticleStatistics(params?: { categoryId?: number; start_date?: string; end_date?: string }) {
   try {
     return await httpClient.get('/cms/articles/statistics', { params });
   } catch (error) {
@@ -470,7 +470,7 @@ export function getArticleStatistics(params?: { categoryId?: number; start_date?
 /**
  * @brief 获取热门文章
  */
-export function getHotArticles(params?: { limit?: number; categoryId?: number }) {
+export async function getHotArticles(params?: { limit?: number; categoryId?: number }) {
   try {
     return await httpClient.get('/cms/articles/hot', { params });
   } catch (error) {
@@ -482,7 +482,7 @@ export function getHotArticles(params?: { limit?: number; categoryId?: number })
 /**
  * @brief 获取最新文章
  */
-export function getLatestArticles(params?: { limit?: number; categoryId?: number }) {
+export async function getLatestArticles(params?: { limit?: number; categoryId?: number }) {
   try {
     return await httpClient.get('/cms/articles/latest', { params });
   } catch (error) {

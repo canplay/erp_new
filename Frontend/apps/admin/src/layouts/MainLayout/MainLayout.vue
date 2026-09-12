@@ -23,7 +23,7 @@
       :user-avatar-text="userAvatarText"
       :username="authStore.userInfo?.username || ''"
       :role="String(authStore.userInfo?.role ?? '')"
-      :visible-categories="(visibleCategories as { path?: string; title?: string }[])"
+      :visible-categories="visibleCategories"
     />
 
     <!-- ============ 主内容区 ============ -->
@@ -68,6 +68,7 @@
  * @date 2026-04-03
  */
 
+/* eslint-disable @typescript-eslint/consistent-type-imports */
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';

@@ -14,6 +14,7 @@ pub mod services;
 // 重新导出常用类型
 pub use handlers::AppState;
 pub use services::pay::PayService;
+pub use services::subscription::{SubscriptionService, SubscriptionResult, CreateSubscriptionParams, PlanDefinition};
 
 use axum::{Router, routing::get, routing::post};
 

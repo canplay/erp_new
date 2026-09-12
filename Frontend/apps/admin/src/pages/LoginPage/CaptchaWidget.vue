@@ -8,7 +8,7 @@
   <div class="captcha-widget">
     <div class="row items-center q-gutter-md">
       <div class="captcha-image">
-        <img :src="captchaSrc" alt="验证码" @click="refreshCaptcha" />
+        <img :src="captchaSrc" :alt="$t('common.captcha')" @click="refreshCaptcha" />
       </div>
       <q-input
         v-model="captchaCode"
@@ -35,6 +35,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 
+import { useI18n } from 'vue-i18n'
+const { t: $t } = useI18n()
 const emit = defineEmits<{
   (e: 'verified'): void;
 }>();

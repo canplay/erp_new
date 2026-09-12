@@ -20,7 +20,7 @@ import type {
 /**
  * @brief 获取所有权限项列表
  */
-export function listPermissions() {
+export async function listPermissions() {
   try {
     return await httpClient.get('/admin/permissions');
   } catch (error) {
@@ -32,7 +32,7 @@ export function listPermissions() {
 /**
  * @brief 创建权限项
  */
-export function createPermission(
+export async function createPermission(
   data: Omit<PermissionDefinition, 'key'> & { key?: string }
 ) {
   try {
@@ -46,7 +46,7 @@ export function createPermission(
 /**
  * @brief 更新权限项
  */
-export function updatePermission(
+export async function updatePermission(
   key: string,
   data: Partial<Omit<PermissionDefinition, 'key'>>
 ) {
@@ -61,7 +61,7 @@ export function updatePermission(
 /**
  * @brief 删除权限项
  */
-export function deletePermission(key: string) {
+export async function deletePermission(key: string) {
   try {
     return await httpClient.delete(`/admin/permissions/${encodeURIComponent(key)}`);
   } catch (error) {
@@ -73,7 +73,7 @@ export function deletePermission(key: string) {
 /**
  * @brief 批量创建权限项
  */
-export function batchCreatePermissions(
+export async function batchCreatePermissions(
   permissions: Array<Omit<PermissionDefinition, 'key'>>
 ) {
   try {
@@ -89,7 +89,7 @@ export function batchCreatePermissions(
 /**
  * @brief 获取角色完整权限配置（包含功能、数据、字段权限）
  */
-export function getRolePermissionConfig(role_name: string) {
+export async function getRolePermissionConfig(role_name: string) {
   try {
     return await httpClient.get(`/admin/roles/${role_name}/permission-config`);
   } catch (error) {
@@ -102,7 +102,7 @@ export function getRolePermissionConfig(role_name: string) {
  * @brief 更新角色完整权限配置
  * @description 接受两种格式：RolePermissionConfig 或 PermissionMatrixConfig
  */
-export function updateRolePermissionConfig(
+export async function updateRolePermissionConfig(
   role_name: string,
   config: RolePermissionConfig | PermissionMatrixConfig
 ) {
@@ -117,7 +117,7 @@ export function updateRolePermissionConfig(
 /**
  * @brief 获取角色数据权限配置
  */
-export function getRoleDataPermissions(role_name: string) {
+export async function getRoleDataPermissions(role_name: string) {
   try {
     return await httpClient.get(`/admin/roles/${role_name}/data-permissions`);
   } catch (error) {
@@ -129,7 +129,7 @@ export function getRoleDataPermissions(role_name: string) {
 /**
  * @brief 更新角色数据权限配置
  */
-export function updateRoleDataPermissions(
+export async function updateRoleDataPermissions(
   role_name: string,
   dataPermissions: DataPermission[]
 ) {
@@ -145,7 +145,7 @@ export function updateRoleDataPermissions(
 /**
  * @brief 获取角色字段权限配置
  */
-export function getRoleFieldPermissions(role_name: string) {
+export async function getRoleFieldPermissions(role_name: string) {
   try {
     return await httpClient.get(`/admin/roles/${role_name}/field-permissions`);
   } catch (error) {
@@ -157,7 +157,7 @@ export function getRoleFieldPermissions(role_name: string) {
 /**
  * @brief 更新角色字段权限配置
  */
-export function updateRoleFieldPermissions(
+export async function updateRoleFieldPermissions(
   role_name: string,
   fieldPermissions: FieldPermission[]
 ) {
@@ -175,7 +175,7 @@ export function updateRoleFieldPermissions(
 /**
  * @brief 获取角色继承链
  */
-export function getRoleInheritChain(role_name: string) {
+export async function getRoleInheritChain(role_name: string) {
   try {
     return await httpClient.get(`/admin/roles/${role_name}/inherit`);
   } catch (error) {
@@ -187,7 +187,7 @@ export function getRoleInheritChain(role_name: string) {
 /**
  * @brief 设置角色继承
  */
-export function setRoleInherit(role_name: string, inherit_from: string[]) {
+export async function setRoleInherit(role_name: string, inherit_from: string[]) {
   try {
     return await httpClient.post(`/admin/roles/${role_name}/inherit`, {
     inherit_from: inherit_from,  });
@@ -200,7 +200,7 @@ export function setRoleInherit(role_name: string, inherit_from: string[]) {
 /**
  * @brief 移除角色继承
  */
-export function removeRoleInherit(role_name: string) {
+export async function removeRoleInherit(role_name: string) {
   try {
     return await httpClient.delete(`/admin/roles/${role_name}/inherit`);
   } catch (error) {
@@ -214,7 +214,7 @@ export function removeRoleInherit(role_name: string) {
 /**
  * @brief 批量为多个角色分配相同权限
  */
-export function batchAssignPermissions(
+export async function batchAssignPermissions(
   role_names: string[],
   permissions: string[],
   mode: 'add' | 'set' | 'remove'
@@ -233,7 +233,7 @@ export function batchAssignPermissions(
 /**
  * @brief 复制角色权限
  */
-export function copyRolePermissions(
+export async function copyRolePermissions(
   sourceRole: string,
   targetRoles: string[],
   options?: {
@@ -258,7 +258,7 @@ export function copyRolePermissions(
 /**
  * @brief 获取权限变更日志列表
  */
-export function listPermissionChangeLogs(params?: {
+export async function listPermissionChangeLogs(params?: {
   page?: number;
   page_size?: number;
   role_name?: string;
@@ -278,7 +278,7 @@ export function listPermissionChangeLogs(params?: {
 /**
  * @brief 获取权限变更详情
  */
-export function getPermissionChangeLogDetail(logId: number) {
+export async function getPermissionChangeLogDetail(logId: number) {
   try {
     return await httpClient.get(`/permission-change-logs/${logId}`);
   } catch (error) {
@@ -290,7 +290,7 @@ export function getPermissionChangeLogDetail(logId: number) {
 /**
  * @brief 导出权限变更日志
  */
-export function exportPermissionChangeLogs(params?: {
+export async function exportPermissionChangeLogs(params?: {
   role_name?: string;
   start_date?: string;
   end_date?: string;
@@ -311,7 +311,7 @@ export function exportPermissionChangeLogs(params?: {
 /**
  * @brief 验证用户数据权限
  */
-export function validateDataPermission(params: {
+export async function validateDataPermission(params: {
   permission: string;
   resource_type: string;
   resource_id: number | string;
@@ -327,7 +327,7 @@ export function validateDataPermission(params: {
 /**
  * @brief 获取用户可访问的部门列表
  */
-export function getAccessibleDepartments(role_name: string) {
+export async function getAccessibleDepartments(role_name: string) {
   try {
     return await httpClient.get(`/admin/roles/${role_name}/accessible-departments`);
   } catch (error) {
@@ -339,7 +339,7 @@ export function getAccessibleDepartments(role_name: string) {
 /**
  * @brief 获取用户可访问的租户列表
  */
-export function getAccessibleTenants(role_name: string) {
+export async function getAccessibleTenants(role_name: string) {
   try {
     return await httpClient.get(`/admin/roles/${role_name}/accessible-tenants`);
   } catch (error) {
@@ -353,7 +353,7 @@ export function getAccessibleTenants(role_name: string) {
 /**
  * @brief 刷新角色权限缓存
  */
-export function refreshPermissionCache(role_name?: string) {
+export async function refreshPermissionCache(role_name?: string) {
   try {
     return await httpClient.post('/permissions/refresh-cache', undefined, { params });
   } catch (error) {
@@ -367,7 +367,7 @@ export function refreshPermissionCache(role_name?: string) {
 /**
  * @brief 检查敏感权限操作是否需要二次确认
  */
-export function checkSensitivePermission(permission: string) {
+export async function checkSensitivePermission(permission: string) {
   try {
     return await httpClient.post('/permissions/check-sensitive', { permission });
   } catch (error) {

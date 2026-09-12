@@ -27,7 +27,7 @@ export type { RoleListResponse } from '../types/user';
 /**
  * @brief 获取角色列表
  */
-export function listRoles(params?: ListRolesParams) {
+export async function listRoles(params?: ListRolesParams) {
   try {
     return await httpClient.get('/roles', { params });
   } catch (error) {
@@ -39,7 +39,7 @@ export function listRoles(params?: ListRolesParams) {
 /**
  * @brief 获取角色详情
  */
-export function getRole(name: string) {
+export async function getRole(name: string) {
   try {
     return await httpClient.get(`/roles/${name}`);
   } catch (error) {
@@ -51,7 +51,7 @@ export function getRole(name: string) {
 /**
  * @brief 创建角色
  */
-export function createRole(data: RoleCreateForm) {
+export async function createRole(data: RoleCreateForm) {
   try {
     return await httpClient.post('/roles', data);
   } catch (error) {
@@ -63,7 +63,7 @@ export function createRole(data: RoleCreateForm) {
 /**
  * @brief 更新角色
  */
-export function updateRole(name: string, data: RoleUpdateForm) {
+export async function updateRole(name: string, data: RoleUpdateForm) {
   try {
     return await httpClient.put(`/roles/${name}`, data);
   } catch (error) {
@@ -75,7 +75,7 @@ export function updateRole(name: string, data: RoleUpdateForm) {
 /**
  * @brief 删除角色
  */
-export function deleteRole(name: string) {
+export async function deleteRole(name: string) {
   try {
     return await httpClient.delete(`/roles/${name}`);
   } catch (error) {
@@ -87,7 +87,7 @@ export function deleteRole(name: string) {
 /**
  * @brief 获取角色权限
  */
-export function getRolePermissions(name: string) {
+export async function getRolePermissions(name: string) {
   try {
     return await httpClient.get(`/roles/${name}/permissions`);
   } catch (error) {
@@ -99,7 +99,7 @@ export function getRolePermissions(name: string) {
 /**
  * @brief 设置角色权限
  */
-export function setRolePermissions(name: string, permissions: string[]) {
+export async function setRolePermissions(name: string, permissions: string[]) {
   try {
     return await httpClient.put(`/roles/${name}/permissions`, { permissions });
   } catch (error) {
@@ -111,7 +111,7 @@ export function setRolePermissions(name: string, permissions: string[]) {
 /**
  * @brief 获取角色下的用户列表
  */
-export function getRoleUsers(name: string, params?: PaginationParams) {
+export async function getRoleUsers(name: string, params?: PaginationParams) {
   try {
     return await httpClient.get(
     `/roles/${name}/users`,
@@ -125,7 +125,7 @@ export function getRoleUsers(name: string, params?: PaginationParams) {
 /**
  * @brief 复制角色权限
  */
-export function copyRolePermissions(
+export async function copyRolePermissions(
   sourceRole: string,
   targetRoles: string[],
   options?: {

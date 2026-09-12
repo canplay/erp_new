@@ -66,7 +66,7 @@ const baseUrl = '/scheduled-tasks';
 /**
  * @brief 获取定时任务列表
  */
-export function listScheduledTasks(params?: ScheduledTaskListParam) {
+export async function listScheduledTasks(params?: ScheduledTaskListParam) {
   try {
     return await httpClient.get(`${baseUrl}`, { params });
   } catch (error) {
@@ -78,7 +78,7 @@ export function listScheduledTasks(params?: ScheduledTaskListParam) {
 /**
  * @brief 获取定时任务详情
  */
-export function getScheduledTask(id: string) {
+export async function getScheduledTask(id: string) {
   try {
     return await httpClient.get(`${baseUrl}/${id}`);
   } catch (error) {
@@ -90,7 +90,7 @@ export function getScheduledTask(id: string) {
 /**
  * @brief 创建定时任务
  */
-export function createScheduledTask(data: CreateScheduledTaskParam) {
+export async function createScheduledTask(data: CreateScheduledTaskParam) {
   try {
     return await httpClient.post(`${baseUrl}`, data);
   } catch (error) {
@@ -102,7 +102,7 @@ export function createScheduledTask(data: CreateScheduledTaskParam) {
 /**
  * @brief 更新定时任务
  */
-export function updateScheduledTask(id: string, data: UpdateScheduledTaskParam) {
+export async function updateScheduledTask(id: string, data: UpdateScheduledTaskParam) {
   try {
     return await httpClient.put(`${baseUrl}/${id}`, data);
   } catch (error) {
@@ -114,7 +114,7 @@ export function updateScheduledTask(id: string, data: UpdateScheduledTaskParam) 
 /**
  * @brief 删除定时任务
  */
-export function deleteScheduledTask(id: string) {
+export async function deleteScheduledTask(id: string) {
   try {
     return await httpClient.delete(`${baseUrl}/${id}`);
   } catch (error) {
@@ -126,7 +126,7 @@ export function deleteScheduledTask(id: string) {
 /**
  * @brief 触发定时任务
  */
-export function triggerScheduledTask(id: string) {
+export async function triggerScheduledTask(id: string) {
   try {
     return await httpClient.post(`${baseUrl}/${id}/trigger`);
   } catch (error) {
@@ -138,7 +138,7 @@ export function triggerScheduledTask(id: string) {
 /**
  * @brief 暂停定时任务
  */
-export function pauseScheduledTask(id: string) {
+export async function pauseScheduledTask(id: string) {
   try {
     return await httpClient.put(`${baseUrl}/${id}/pause`);
   } catch (error) {
@@ -150,7 +150,7 @@ export function pauseScheduledTask(id: string) {
 /**
  * @brief 恢复定时任务
  */
-export function resumeScheduledTask(id: string) {
+export async function resumeScheduledTask(id: string) {
   try {
     return await httpClient.put(`${baseUrl}/${id}/resume`);
   } catch (error) {

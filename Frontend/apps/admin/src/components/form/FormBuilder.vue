@@ -4,7 +4,7 @@
     <div class="row items-center q-mb-lg">
       <div class="text-h5 text-weight-bold">
         <q-icon name="dynamic_form" class="q-mr-sm" />
-        表单生成器
+        {{ $t('common.formTitle') }}
       </div>
       <q-space />
       <q-btn flat color="grey" icon="save" :label="$t('common.save')" @click="handleSave" />
@@ -16,7 +16,7 @@
       <div class="col-12 col-md-3">
         <q-card flat bordered>
           <q-card-section>
-            <div class="text-subtitle1 q-mb-md">组件库</div>
+            <div class="text-subtitle1 q-mb-md">{{ $t('common.componentLibrary') }}</div>
             <q-input
               v-model="componentSearch"
               outlined
@@ -66,7 +66,7 @@
                 v-model="formConfig.name"
                 outlined
                 dense
-                placeholder="表单名称"
+                :placeholder="$t('common.formName')"
                 class="col"
               />
               <q-btn flat round icon="more_vert">
@@ -74,15 +74,15 @@
                   <q-list style="min-width: 150px">
                     <q-item clickable v-close-popup @click="handleCopyConfig">
                       <q-item-section avatar><q-icon name="content_copy" /></q-item-section>
-                      <q-item-section>复制表单</q-item-section>
+                      <q-item-section>{{ $t('common.copyForm') }}</q-item-section>
                     </q-item>
                     <q-item clickable v-close-popup @click="handleImportConfig">
                       <q-item-section avatar><q-icon name="upload" /></q-item-section>
-                      <q-item-section>导入配置</q-item-section>
+                      <q-item-section>{{ $t('common.importConfig') }}</q-item-section>
                     </q-item>
                     <q-item clickable v-close-popup @click="handleExportConfig">
                       <q-item-section avatar><q-icon name="download" /></q-item-section>
-                      <q-item-section>导出配置</q-item-section>
+                      <q-item-section>{{ $t('common.exportConfig') }}</q-item-section>
                     </q-item>
                   </q-list>
                 </q-menu>
@@ -106,7 +106,7 @@
               <!-- 空状态 -->
               <div v-if="formConfig.groups.length === 0" class="empty-state">
                 <q-icon name="dynamic_form" size="64px" color="grey-4" />
-                <div class="text-grey-6 q-mt-md">从左侧拖入组件或添加分组</div>
+                <div class="text-grey-6 q-mt-md">{{ $t('common.dragComponentsOrAddGroup') }}</div>
               </div>
 
               <!-- 分组列表 -->
@@ -122,13 +122,13 @@
                     <span class="text-subtitle2">{{ group.name }}</span>
                     <q-space />
                     <q-btn flat round icon="add_circle" size="sm" @click="handleAddField(groupIndex)">
-                      <q-tooltip>添加字段</q-tooltip>
+                      <q-tooltip>{{ $t('common.addField') }}</q-tooltip>
                     </q-btn>
                     <q-btn flat round icon="edit" size="sm" @click="handleEditGroup(groupIndex)">
-                      <q-tooltip>编辑分组</q-tooltip>
+                      <q-tooltip>{{ $t('common.editGroup') }}</q-tooltip>
                     </q-btn>
                     <q-btn flat round icon="delete" size="sm" @click="handleDeleteGroup(groupIndex)">
-                      <q-tooltip>删除分组</q-tooltip>
+                      <q-tooltip>{{ $t('common.deleteGroup') }}</q-tooltip>
                     </q-btn>
                   </div>
 
@@ -158,15 +158,15 @@
                         <div class="field-label">{{ field.label || field.name }}</div>
                         <div class="field-type">
                           <q-badge :color="getFieldColor(field.type)" :label="field.type" />
-                          <q-badge v-if="field.required" color="negative" label="必填" class="q-ml-xs" />
+                          <q-badge v-if="field.required" color="negative" :label="$t('common.required')" class="q-ml-xs" />
                         </div>
                       </div>
                       <div class="field-actions">
                         <q-btn flat round icon="content_copy" size="sm" @click.stop="handleCopyField(groupIndex, fieldIndex)">
-                          <q-tooltip>复制字段</q-tooltip>
+                          <q-tooltip>{{ $t('common.copyField') }}</q-tooltip>
                         </q-btn>
                         <q-btn flat round icon="delete" size="sm" color="negative" @click.stop="handleDeleteField(groupIndex, fieldIndex)">
-                          <q-tooltip>删除字段</q-tooltip>
+                          <q-tooltip>{{ $t('common.deleteField') }}</q-tooltip>
                         </q-btn>
                       </div>
                     </div>
@@ -182,7 +182,7 @@
       <div class="col-12 col-md-3">
         <q-card flat bordered>
           <q-card-section>
-            <div class="text-subtitle1 q-mb-md">属性配置</div>
+            <div class="text-subtitle1 q-mb-md">{{ $t('common.propertyConfig') }}</div>
 
             <!-- 未选中提示 -->
             <div v-if="!selectedField" class="text-grey-5 text-center q-pa-md">
@@ -191,14 +191,14 @@
 
             <!-- 字段配置表单 -->
             <div v-else class="field-config">
-              <q-input v-model="selectedField.name" label="字段名称" outlined dense class="q-mb-sm" />
-              <q-input v-model="selectedField.label" label="标签文本" outlined dense class="q-mb-sm" />
-              <q-input v-model="selectedField.placeholder" label="占位提示" outlined dense class="q-mb-sm" />
+              <q-input v-model="selectedField.name" :label="$t('common.fieldName')" outlined dense class="q-mb-sm" />
+              <q-input v-model="selectedField.label" :label="$t('common.labelText')" outlined dense class="q-mb-sm" />
+              <q-input v-model="selectedField.placeholder" :label="$t('common.placeholderText')" outlined dense class="q-mb-sm" />
 
               <q-select
                 v-model="selectedField.type"
                 :options="fieldTypeOptions"
-                label="字段类型"
+                :label="$t('common.fieldType')"
                 outlined
                 dense
                 class="q-mb-sm"
@@ -208,15 +208,15 @@
 
               <q-input
                 v-model.number="selectedField.span"
-                label="栅格宽度"
+                :label="$t('common.gridWidth')"
                 type="number"
                 outlined
                 dense
                 class="q-mb-sm"
               />
 
-              <q-toggle v-model="selectedField.required" label="必填" class="q-mb-sm" />
-              <q-toggle v-model="selectedField.disabled" label="禁用" />
+              <q-toggle v-model="selectedField.required" :label="$t('common.required')" class="q-mb-sm" />
+              <q-toggle v-model="selectedField.disabled" :label="$t('common.disabled')" />
             </div>
           </q-card-section>
         </q-card>
@@ -227,7 +227,7 @@
     <q-dialog v-model="showPreviewDialog" maximized>
       <q-card>
         <q-card-section class="row items-center">
-          <div class="text-h6">表单预览</div>
+          <div class="text-h6">{{ $t('common.formPreview') }}</div>
           <q-space />
           <q-btn flat round icon="close" v-close-popup />
         </q-card-section>
@@ -241,6 +241,8 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+const { t: $t } = useI18n()
 /**
  * @file FormBuilder.vue
  * @description 表单生成器组件

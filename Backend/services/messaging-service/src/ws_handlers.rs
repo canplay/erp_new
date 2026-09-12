@@ -23,9 +23,9 @@ impl WsSession {
     pub fn new(user_id: i64) -> Self {
         Self { user_id, active: RwLock::new(true), last_activity: RwLock::new(std::time::Instant::now()) }
     }
-    pub fn is_active(&self) -> bool { *self.active.read() }
-    pub fn update_activity(&self) { *self.last_activity.write() = std::time::Instant::now(); }
-    pub fn deactivate(&self) { *self.active.write() = false; }
+    pub async fn is_active(&self) -> bool { *self.active.read().await }
+    pub async fn update_activity(&self) { *self.last_activity.write().await = std::time::Instant::now(); }
+    pub async fn deactivate(&self) { *self.active.write().await = false; }
 }
 
 pub struct WsSessionManager { sessions: RwLock<Vec<Arc<WsSession>>> }
@@ -58,8 +58,8 @@ async fn handle_socket(socket: WebSocket, state: AppState) {
     let session = Arc::new(WsSession::new(user_id));
     loop {
         tokio::select! {
-            msg = receiver.next() => { if let Some(Ok(Message::Text(text))) = msg { session.update_activity(); let _ = handle_message(&text, &mut sender, &state, user_id).await; } }
-            _ = tokio::time::sleep(Duration::from_secs(60)) => { if !session.is_active() { break; } }
+            msg = receiver.next() => { if let Some(Ok(Message::Text(text))) = msg { session.update_activity().await; let _ = handle_message(&text, &mut sender, &state, user_id).await; } }
+            _ = tokio::time::sleep(Duration::from_secs(60)) => { if !session.is_active().await { break; } }
         }
     }
 }

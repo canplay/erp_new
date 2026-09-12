@@ -7,7 +7,7 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use std::collections::HashMap;
-use std::sync::RwLock;
+use parking_lot::RwLock;
 
 // ============================================================================
 // 数据模型
@@ -323,25 +323,25 @@ impl Default for InMemoryWorkflowRepository {
 impl WorkflowRepository for InMemoryWorkflowRepository {
     // 工作流基本操作
     async fn create(&self, wf: &Workflow) -> Result<(), sqlx::Error> {
-        let mut workflows = self.workflows.write().unwrap();
+        let mut workflows = self.workflows.write();
         workflows.insert(wf.id.clone(), wf.clone());
         Ok(())
     }
 
     async fn update(&self, wf: &Workflow) -> Result<(), sqlx::Error> {
-        let mut workflows = self.workflows.write().unwrap();
+        let mut workflows = self.workflows.write();
         workflows.insert(wf.id.clone(), wf.clone());
         Ok(())
     }
 
     async fn delete(&self, id: &str) -> Result<(), sqlx::Error> {
-        let mut workflows = self.workflows.write().unwrap();
+        let mut workflows = self.workflows.write();
         workflows.remove(id);
         Ok(())
     }
 
     async fn find_by_id(&self, id: &str) -> Result<Option<Workflow>, sqlx::Error> {
-        let workflows = self.workflows.read().unwrap();
+        let workflows = self.workflows.read();
         Ok(workflows.get(id).cloned())
     }
 
@@ -351,7 +351,7 @@ impl WorkflowRepository for InMemoryWorkflowRepository {
         page: i64,
         page_size: i64,
     ) -> Result<(Vec<Workflow>, i64), sqlx::Error> {
-        let workflows = self.workflows.read().unwrap();
+        let workflows = self.workflows.read();
         let mut filtered: Vec<_> = workflows.values().cloned().collect();
 
         if let Some(s) = status {
@@ -366,7 +366,7 @@ impl WorkflowRepository for InMemoryWorkflowRepository {
     }
 
     async fn publish(&self, id: &str) -> Result<(), sqlx::Error> {
-        let mut workflows = self.workflows.write().unwrap();
+        let mut workflows = self.workflows.write();
         if let Some(wf) = workflows.get_mut(id) {
             wf.status = "published".to_string();
         }
@@ -399,19 +399,19 @@ impl WorkflowRepository for InMemoryWorkflowRepository {
 
     // 实例操作
     async fn create_instance(&self, inst: &WorkflowInstance) -> Result<(), sqlx::Error> {
-        let mut instances = self.instances.write().unwrap();
+        let mut instances = self.instances.write();
         instances.insert(inst.id.clone(), inst.clone());
         Ok(())
     }
 
     async fn update_instance(&self, inst: &WorkflowInstance) -> Result<(), sqlx::Error> {
-        let mut instances = self.instances.write().unwrap();
+        let mut instances = self.instances.write();
         instances.insert(inst.id.clone(), inst.clone());
         Ok(())
     }
 
     async fn get_instance(&self, id: &str) -> Result<Option<WorkflowInstance>, sqlx::Error> {
-        let instances = self.instances.read().unwrap();
+        let instances = self.instances.read();
         Ok(instances.get(id).cloned())
     }
 
@@ -422,7 +422,7 @@ impl WorkflowRepository for InMemoryWorkflowRepository {
         page: i64,
         page_size: i64,
     ) -> Result<(Vec<WorkflowInstance>, i64), sqlx::Error> {
-        let instances = self.instances.read().unwrap();
+        let instances = self.instances.read();
         let mut filtered: Vec<_> = instances.values().cloned().collect();
 
         if let Some(wid) = workflow_id {
@@ -438,19 +438,19 @@ impl WorkflowRepository for InMemoryWorkflowRepository {
 
     // 任务操作
     async fn create_task(&self, task: &TaskRecord) -> Result<(), sqlx::Error> {
-        let mut tasks = self.tasks.write().unwrap();
+        let mut tasks = self.tasks.write();
         tasks.insert(task.id.clone(), task.clone());
         Ok(())
     }
 
     async fn update_task(&self, task: &TaskRecord) -> Result<(), sqlx::Error> {
-        let mut tasks = self.tasks.write().unwrap();
+        let mut tasks = self.tasks.write();
         tasks.insert(task.id.clone(), task.clone());
         Ok(())
     }
 
     async fn get_task(&self, id: &str) -> Result<Option<TaskRecord>, sqlx::Error> {
-        let tasks = self.tasks.read().unwrap();
+        let tasks = self.tasks.read();
         Ok(tasks.get(id).cloned())
     }
 
@@ -462,7 +462,7 @@ impl WorkflowRepository for InMemoryWorkflowRepository {
         page: i64,
         page_size: i64,
     ) -> Result<(Vec<TaskRecord>, i64), sqlx::Error> {
-        let tasks = self.tasks.read().unwrap();
+        let tasks = self.tasks.read();
         let mut filtered: Vec<_> = tasks.values().cloned().collect();
 
         if let Some(iid) = instance_id {
@@ -491,7 +491,7 @@ impl WorkflowRepository for InMemoryWorkflowRepository {
     }
 
     async fn get_task_history(&self, instance_id: &str) -> Result<Vec<TaskRecord>, sqlx::Error> {
-        let tasks = self.tasks.read().unwrap();
+        let tasks = self.tasks.read();
         let mut filtered: Vec<_> = tasks.values().cloned().collect();
         filtered.retain(|t| t.instance_id == instance_id);
         filtered.sort_by_key(|b| std::cmp::Reverse(b.started_at));
@@ -1249,24 +1249,24 @@ impl Default for InMemoryReportRepository {
 
 impl ReportRepository for InMemoryReportRepository {
     async fn create(&self, report: &Report) -> Result<(), sqlx::Error> {
-        let mut reports = self.reports.write().unwrap();
+        let mut reports = self.reports.write();
         reports.insert(report.id.clone(), report.clone());
         Ok(())
     }
 
     async fn update(&self, report: &Report) -> Result<(), sqlx::Error> {
-        let mut reports = self.reports.write().unwrap();
+        let mut reports = self.reports.write();
         reports.insert(report.id.clone(), report.clone());
         Ok(())
     }
 
     async fn find_by_id(&self, id: &str) -> Result<Option<Report>, sqlx::Error> {
-        let reports = self.reports.read().unwrap();
+        let reports = self.reports.read();
         Ok(reports.get(id).cloned())
     }
 
     async fn list(&self, page: i64, page_size: i64) -> Result<(Vec<Report>, i64), sqlx::Error> {
-        let reports = self.reports.read().unwrap();
+        let reports = self.reports.read();
         let mut all: Vec<_> = reports.values().cloned().collect();
         let total = all.len() as i64;
         all.sort_by_key(|b| std::cmp::Reverse(b.created_at));
@@ -1276,7 +1276,7 @@ impl ReportRepository for InMemoryReportRepository {
     }
 
     async fn delete(&self, id: &str) -> Result<(), sqlx::Error> {
-        let mut reports = self.reports.write().unwrap();
+        let mut reports = self.reports.write();
         reports.remove(id);
         Ok(())
     }
@@ -1329,19 +1329,19 @@ impl Default for InMemoryScheduledTaskRepository {
 
 impl ScheduledTaskRepository for InMemoryScheduledTaskRepository {
     async fn create(&self, task: &ScheduledTask) -> Result<(), sqlx::Error> {
-        let mut tasks = self.tasks.write().unwrap();
+        let mut tasks = self.tasks.write();
         tasks.insert(task.id.clone(), task.clone());
         Ok(())
     }
 
     async fn update(&self, task: &ScheduledTask) -> Result<(), sqlx::Error> {
-        let mut tasks = self.tasks.write().unwrap();
+        let mut tasks = self.tasks.write();
         tasks.insert(task.id.clone(), task.clone());
         Ok(())
     }
 
     async fn find_by_id(&self, id: &str) -> Result<Option<ScheduledTask>, sqlx::Error> {
-        let tasks = self.tasks.read().unwrap();
+        let tasks = self.tasks.read();
         Ok(tasks.get(id).cloned())
     }
 
@@ -1350,7 +1350,7 @@ impl ScheduledTaskRepository for InMemoryScheduledTaskRepository {
         page: i64,
         page_size: i64,
     ) -> Result<(Vec<ScheduledTask>, i64), sqlx::Error> {
-        let tasks = self.tasks.read().unwrap();
+        let tasks = self.tasks.read();
         let mut all: Vec<_> = tasks.values().cloned().collect();
         let total = all.len() as i64;
         all.sort_by_key(|b| std::cmp::Reverse(b.created_at));
@@ -1360,7 +1360,7 @@ impl ScheduledTaskRepository for InMemoryScheduledTaskRepository {
     }
 
     async fn delete(&self, id: &str) -> Result<(), sqlx::Error> {
-        let mut tasks = self.tasks.write().unwrap();
+        let mut tasks = self.tasks.write();
         tasks.remove(id);
         Ok(())
     }

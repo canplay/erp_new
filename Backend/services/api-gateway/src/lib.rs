@@ -15,8 +15,9 @@ use auth_core::JwtService;
 use circuit_breaker_core::{CircuitBreaker, CircuitBreakerConfig, CircuitBreakerResult, CircuitState};
 use grpc_core::ServiceDiscovery;
 use serde::{Deserialize, Serialize};
+use parking_lot::RwLock;
 use std::collections::HashMap;
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 use std::time::Duration;
 use tokio::sync::RwLock as AsyncRwLock;
 
@@ -66,7 +67,7 @@ pub use app::{
 /// 熔断器管理器 - 管理所有上游服务的熔断器
 pub struct CircuitBreakerManager {
     /// 每个服务的熔断器
-    breakers: RwLock<HashMap<String, Arc<CircuitBreaker>>>,
+    breakers: parking_lot::RwLock<HashMap<String, Arc<CircuitBreaker>>>,
     /// 熔断器配置
     config: CircuitBreakerConfig,
 }
@@ -92,7 +93,7 @@ impl CircuitBreakerManager {
 
     /// 获取或创建服务的熔断器
     pub fn get_breaker(&self, service_name: &str) -> Arc<CircuitBreaker> {
-        let breakers = self.breakers.read().unwrap();
+        let breakers = self.breakers.read();
         if let Some(breaker) = breakers.get(service_name) {
             return breaker.clone();
         }
@@ -100,7 +101,7 @@ impl CircuitBreakerManager {
 
         // 创建新的熔断器
         let breaker = Arc::new(CircuitBreaker::new(self.config.clone()));
-        let mut breakers = self.breakers.write().unwrap();
+        let mut breakers = self.breakers.write();
         breakers.insert(service_name.to_string(), breaker.clone());
         breaker
     }
@@ -137,7 +138,7 @@ impl CircuitBreakerManager {
 
     /// 获取所有服务状态
     pub fn get_all_states(&self) -> HashMap<String, CircuitState> {
-        let breakers = self.breakers.read().unwrap();
+        let breakers = self.breakers.read();
         breakers
             .iter()
             .map(|(name, breaker)| (name.clone(), breaker.state()))
@@ -153,7 +154,7 @@ impl CircuitBreakerManager {
 
     /// 重置所有熔断器
     pub fn reset_all(&self) {
-        let breakers = self.breakers.read().unwrap();
+        let breakers = self.breakers.read();
         for (name, breaker) in breakers.iter() {
             breaker.reset(name);
         }

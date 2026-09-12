@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 use sqlx::PgPool;
 use std::sync::Arc;
-use std::sync::RwLock;
+use parking_lot::RwLock;
 
 // ==================== LoginDevice (re-export from device_routes) ====================
 
@@ -141,19 +141,19 @@ impl DeviceRepository {
                 Vec::new()
             }
         };
-        let mut cache = self.cache.write().unwrap();
+        let mut cache = self.cache.write();
         *cache = devices;
     }
 
     #[must_use]
     pub fn entries(&self) -> Vec<LoginDevice> {
-        let cache = self.cache.read().unwrap();
+        let cache = self.cache.read();
         cache.clone()
     }
 
     /// 获取所有条目（可修改）
     pub fn entries_mut(&self) -> Vec<LoginDevice> {
-        let cache = self.cache.read().unwrap();
+        let cache = self.cache.read();
         cache.clone()
     }
 
@@ -186,7 +186,7 @@ impl DeviceRepository {
         .execute(&self.pool)
         .await?;
 
-        let mut cache = self.cache.write().unwrap();
+        let mut cache = self.cache.write();
         cache.push(entry);
         Ok(())
     }
@@ -232,19 +232,19 @@ impl IpWhitelistRepository {
                 Vec::new()
             }
         };
-        let mut cache = self.cache.write().unwrap();
+        let mut cache = self.cache.write();
         *cache = entries;
     }
 
     #[must_use]
     pub fn entries(&self) -> Vec<IpWhitelistEntry> {
-        let cache = self.cache.read().unwrap();
+        let cache = self.cache.read();
         cache.clone()
     }
 
     /// 获取所有条目（可修改）
     pub fn entries_mut(&self) -> Vec<IpWhitelistEntry> {
-        let cache = self.cache.read().unwrap();
+        let cache = self.cache.read();
         cache.clone()
     }
 
@@ -260,7 +260,7 @@ impl IpWhitelistRepository {
         .execute(&self.pool)
         .await?;
 
-        let mut cache = self.cache.write().unwrap();
+        let mut cache = self.cache.write();
         cache.push(entry);
         Ok(())
     }
@@ -306,19 +306,19 @@ impl SensitiveAuditRepository {
                 Vec::new()
             }
         };
-        let mut cache = self.cache.write().unwrap();
+        let mut cache = self.cache.write();
         *cache = entries;
     }
 
     #[must_use]
     pub fn entries(&self) -> Vec<SensitiveAuditEntry> {
-        let cache = self.cache.read().unwrap();
+        let cache = self.cache.read();
         cache.clone()
     }
 
     /// 获取所有条目（可修改）
     pub fn entries_mut(&self) -> Vec<SensitiveAuditEntry> {
-        let cache = self.cache.read().unwrap();
+        let cache = self.cache.read();
         cache.clone()
     }
 
@@ -335,7 +335,7 @@ impl SensitiveAuditRepository {
         .execute(&self.pool)
         .await?;
 
-        let mut cache = self.cache.write().unwrap();
+        let mut cache = self.cache.write();
         cache.push(entry);
         Ok(())
     }
@@ -381,19 +381,19 @@ impl ScheduledTaskRepository {
                 Vec::new()
             }
         };
-        let mut cache = self.cache.write().unwrap();
+        let mut cache = self.cache.write();
         *cache = entries;
     }
 
     #[must_use]
     pub fn entries(&self) -> Vec<ScheduledTaskEntry> {
-        let cache = self.cache.read().unwrap();
+        let cache = self.cache.read();
         cache.clone()
     }
 
     /// 获取所有条目（可修改）
     pub fn entries_mut(&self) -> Vec<ScheduledTaskEntry> {
-        let cache = self.cache.read().unwrap();
+        let cache = self.cache.read();
         cache.clone()
     }
 
@@ -410,7 +410,7 @@ impl ScheduledTaskRepository {
         .execute(&self.pool)
         .await?;
 
-        let mut cache = self.cache.write().unwrap();
+        let mut cache = self.cache.write();
         cache.push(entry);
         Ok(())
     }
@@ -456,19 +456,19 @@ impl ReportRepository {
                 Vec::new()
             }
         };
-        let mut cache = self.cache.write().unwrap();
+        let mut cache = self.cache.write();
         *cache = entries;
     }
 
     #[must_use]
     pub fn entries(&self) -> Vec<ReportEntry> {
-        let cache = self.cache.read().unwrap();
+        let cache = self.cache.read();
         cache.clone()
     }
 
     /// 获取所有条目（可修改）
     pub fn entries_mut(&self) -> Vec<ReportEntry> {
-        let cache = self.cache.read().unwrap();
+        let cache = self.cache.read();
         cache.clone()
     }
 
@@ -485,7 +485,7 @@ impl ReportRepository {
         .execute(&self.pool)
         .await?;
 
-        let mut cache = self.cache.write().unwrap();
+        let mut cache = self.cache.write();
         cache.push(entry);
         Ok(())
     }
@@ -531,19 +531,19 @@ impl DataSourceRepository {
                 Vec::new()
             }
         };
-        let mut cache = self.cache.write().unwrap();
+        let mut cache = self.cache.write();
         *cache = entries;
     }
 
     #[must_use]
     pub fn entries(&self) -> Vec<DataSourceEntry> {
-        let cache = self.cache.read().unwrap();
+        let cache = self.cache.read();
         cache.clone()
     }
 
     /// 获取所有条目（可修改）
     pub fn entries_mut(&self) -> Vec<DataSourceEntry> {
-        let cache = self.cache.read().unwrap();
+        let cache = self.cache.read();
         cache.clone()
     }
 
@@ -560,7 +560,7 @@ impl DataSourceRepository {
         .execute(&self.pool)
         .await?;
 
-        let mut cache = self.cache.write().unwrap();
+        let mut cache = self.cache.write();
         cache.push(entry);
         Ok(())
     }
@@ -606,19 +606,19 @@ impl ReportTemplateRepository {
                 Vec::new()
             }
         };
-        let mut cache = self.cache.write().unwrap();
+        let mut cache = self.cache.write();
         *cache = entries;
     }
 
     #[must_use]
     pub fn entries(&self) -> Vec<ReportTemplateEntry> {
-        let cache = self.cache.read().unwrap();
+        let cache = self.cache.read();
         cache.clone()
     }
 
     /// 获取所有条目（可修改）
     pub fn entries_mut(&self) -> Vec<ReportTemplateEntry> {
-        let cache = self.cache.read().unwrap();
+        let cache = self.cache.read();
         cache.clone()
     }
 
@@ -635,7 +635,7 @@ impl ReportTemplateRepository {
         .execute(&self.pool)
         .await?;
 
-        let mut cache = self.cache.write().unwrap();
+        let mut cache = self.cache.write();
         cache.push(entry);
         Ok(())
     }

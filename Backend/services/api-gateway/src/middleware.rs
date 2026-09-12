@@ -68,18 +68,9 @@ impl RateLimitState {
         let now = Instant::now();
         let window = std::time::Duration::from_secs(self.window_secs);
 
-        let mut attempts = 0;
-        let mut guard = loop {
-            if let Some(g) = self.requests.try_write() {
-                break g;
-            }
-            attempts += 1;
-            if attempts >= 3 {
-                tracing::warn!("限流锁获取超时: {key}");
-                return true;
-            }
-            std::thread::sleep(std::time::Duration::from_micros(100));
-        };
+        // 安全修复: 使用 parking_lot::RwLock 的阻塞写锁
+        // parking_lot 的锁实现非常高效（使用 futex），不会长时间阻塞线程
+        let mut guard = self.requests.write();
 
         let timestamps = guard.entry(key.to_string()).or_insert_with(Vec::new);
         timestamps.retain(|&t| now.duration_since(t) < window);

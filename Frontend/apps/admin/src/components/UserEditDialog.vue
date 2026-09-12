@@ -74,7 +74,7 @@
 
       <q-card-actions align="right">
         <q-btn flat :label="$t('common.cancel')" @click="$emit('update:modelValue', false)" />
-        <q-btn color="primary" :label="$t('common.save')" @click="$emit('save')" />
+        <q-btn color="primary" :label="$t('common.save')" @click="$emit('save')" data-testid="save-user-button" />
       </q-card-actions>
     </q-card>
   </q-dialog>

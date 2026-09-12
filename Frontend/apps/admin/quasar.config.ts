@@ -87,6 +87,7 @@ export default (ctx: {
 
     devServer: {
       open: true,
+      port: 9001,
     },
 
     framework: {

@@ -83,7 +83,7 @@
       </q-btn>
 
       <!-- 用户菜单（桌面端） -->
-      <q-btn v-if="!isMobile" flat dense no-caps class="user-menu">
+      <q-btn v-if="!isMobile" flat dense no-caps class="user-menu" data-testid="user-menu">
         <q-avatar size="32px" color="white" text-color="primary" class="q-mr-sm">
           {{ userAvatarText }}
         </q-avatar>
@@ -97,7 +97,7 @@
               <q-item-section>{{ $t('menu.personalCenter') }}</q-item-section>
             </q-item>
             <q-separator />
-            <q-item clickable v-close-popup @click="$emit('openLogoutDialog')">
+            <q-item clickable v-close-popup @click="$emit('openLogoutDialog')" data-testid="logout-button">
               <q-item-section avatar>
                 <q-icon name="logout" color="negative" />
               </q-item-section>
@@ -112,7 +112,7 @@
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
-import type { RouteLocationNormalized } from 'vue-router';
+import type { RouteLocationNormalizedLoaded } from 'vue-router';
 import NotificationPanel from '@/components/NotificationPanel.vue';
 
 const { t } = useI18n();
@@ -122,7 +122,7 @@ defineProps<{
   isFullscreen: boolean;
   themeIcon: string;
   userAvatarText: string;
-  currentRoute: RouteLocationNormalized;
+  currentRoute: RouteLocationNormalizedLoaded;
   searchText: string;
   leftDrawerOpen: boolean;
 }>();

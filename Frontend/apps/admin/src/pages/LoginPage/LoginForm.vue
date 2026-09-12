@@ -14,6 +14,7 @@
       outlined
       autofocus
       class="modern-input"
+      data-testid="username-input"
       :rules="[(val) => !!val || $t('login.validation.usernameRequired')]"
       @keydown.enter="passwordInputRef?.focus()"
     >
@@ -30,6 +31,7 @@
       :label="$t('login.password')"
       outlined
       class="modern-input"
+      data-testid="password-input"
       :rules="[(val) => !!val || $t('login.validation.passwordRequired')]"
       @keyup.enter="handleLogin"
     >
@@ -80,6 +82,7 @@
       size="large"
       :loading="isLoading"
       :disable="isLoading || !canSubmit"
+      data-testid="login-button"
     >
       <q-icon v-if="!isLoading" :name="showRegisterMode ? 'person_add' : 'login'" class="q-mr-sm" />
       {{ showRegisterMode ? $t('login.registerButton') : $t('login.loginButton') }}

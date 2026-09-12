@@ -59,7 +59,7 @@
     <q-card class="q-mb-md" bordered>
       <q-card-section class="row items-center justify-end">
         <q-btn flat color="grey" icon="view_column" :label="$t('table.selectColumns')" @click="columnSelectorRef?.open()" />
-        <q-btn color="positive" :label="$t('user.addUser')" icon="add" class="q-ml-sm" @click="openUserDialog()" />
+        <q-btn color="positive" :label="$t('user.addUser')" icon="add" class="q-ml-sm" @click="openUserDialog()" data-testid="create-user-button" />
       </q-card-section>
     </q-card>
 

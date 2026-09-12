@@ -20,7 +20,7 @@
         <q-btn flat dense icon="add" :label="$t('common.addCondition')" color="primary" class="add-condition-btn q-mt-sm" @click="addCondition" />
 
         <div class="search-actions q-mt-md">
-          <q-btn color="primary" icon="search" :label="$t('common.search')" @click="handleSearch" />
+          <q-btn color="primary" icon="search" :label="$t('common.search')" @click="handleSearch" data-testid="search-button" />
           <q-btn flat color="grey" :label="$t('common.reset')" @click="handleReset" />
         </div>
       </q-card-section>

@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 <template>
   <div class="row-permission-config">
     <div class="text-h6 q-mb-md">{{ $t('permission.rowLevel') }}</div>
@@ -187,7 +187,7 @@ const {
   saveConfig,
   resetConfig
 } = useRowPermission({
-  dataSources: (props.dataSources as any),
+  dataSources: props.dataSources as Array<{ path?: string; title?: string; icon?: string; children?: Array<unknown>; permissions?: string[] }>,
   conditionOptions: props.conditionOptions,
   operatorOptions: props.operatorOptions,
   userOptions: props.userOptions,

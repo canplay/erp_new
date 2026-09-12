@@ -1,4 +1,3 @@
-// @ts-nocheck
 <template>
   <q-page class="q-pa-md">
     <!-- 页面标题 -->

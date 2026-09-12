@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @file form/StepForm.vue
  * @description 多步骤表单组件 - 组合 StepHeader + StepContent + StepNavigation

@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 <template>
   <div class="field-mask-config">
     <q-card flat bordered>
@@ -77,7 +77,7 @@
 
     <FieldMaskPreviewDialog
       v-model="showPreviewDialog"
-      :preview-rule="(previewRule as any)" :strategy="(maskStrategyOptions[0] as any)"
+      :preview-rule="previewRule as LocalFieldMaskItem" :strategy="maskStrategyOptions[0]"
       :masked-value="maskedPreview"
     />
   </div>

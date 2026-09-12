@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 /**
  * @file LoginPage.vue
  * @description 登录页面 - 主文件（拆分后 行）
@@ -50,7 +50,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed, reactive } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { useI18n } from 'vue-i18n';
@@ -71,11 +71,17 @@ const errorMessage = ref('');
 
 const remainingAttempts = ref(0);
 
+const formData = reactive({
+  username: '',
+  password: '',
+  remember_me: false,
+});
+
 const canSubmit = computed(() => {
   if (showRegisterMode.value) {
-    return formData.value.username.length > 0 && formData.value.password.length >= 8;
+    return formData.username.length > 0 && formData.password.length >= 8;
   }
-  return formData.value.username.length > 0 && formData.value.password.length > 0;
+  return formData.username.length > 0 && formData.password.length > 0;
 });
 
 async function handleLogin(username: string, password: string, rememberMe: boolean) {

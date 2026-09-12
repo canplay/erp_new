@@ -1,24 +1,26 @@
 /**
- * @file ImageUploader.vue
- * @description 图片上传组件 - 支持压缩、裁剪、预览
+ * @file ImageUploader/ImageUploader.vue
+ * @description 图片上传组件 - 主入口，保持原有公共 API
  * @date 2026-04-03
- * @refactored 2026-09-12 - Split into composables and sub-components
  */
 
 <template>
   <div class="image-uploader">
-    <!-- Upload Zone -->
-    <UploadZone
+    <!-- 拖拽上传区域 -->
+    <DragDropZone
       :preview-url="previewUrl"
+      :is-drag-over="isDragOver"
       :show-edit="showEdit"
-      @click="triggerUpload"
+      :click-or-click-drag="clickOrDragText"
+      :supported-formats-text="supportedFormatsText"
+      @trigger-upload="triggerUpload"
+      @update:is-drag-over="isDragOver = $event"
       @drop="handleDrop"
       @remove="removeImage"
-      @edit="openCropDialog"
-      @preview="showPreviewDialog = true"
+      @open-crop="openCropDialog"
     />
 
-    <!-- Hidden file input -->
+    <!-- 隐藏的文件输入框 -->
     <input
       ref="fileInputRef"
       type="file"
@@ -27,29 +29,22 @@
       @change="handleFileChange"
     />
 
-    <!-- Image info -->
-    <div v-if="currentFile" class="image-info q-mt-sm">
-      <div class="text-caption text-grey-6">
-        {{ currentFile.name }} · {{ formatFileSize(currentFile.size) }}
-        <span v-if="compressedSize" class="text-positive q-ml-sm">
-          ({{ $t('uploader.compressed') }}: {{ formatFileSize(compressedSize) }})
-        </span>
-      </div>
-    </div>
+    <!-- 文件信息预览 -->
+    <FilePreview
+      v-if="currentFile"
+      :file="currentFile"
+      :compressed-size="compressedSize"
+      :compressed-label="compressedText"
+    />
 
-    <!-- Upload progress -->
-    <div v-if="uploading" class="q-mt-sm">
-      <q-linear-progress
-        :value="uploadProgress / 100"
-        color="primary"
-        track-color="grey-3"
-      />
-      <div class="text-caption text-grey-6 q-mt-xs">
-        {{ $t('uploader.uploading') }} {{ uploadProgress }}%
-      </div>
-    </div>
+    <!-- 上传进度 -->
+    <ProgressBar
+      v-if="uploading"
+      :progress="uploadProgress"
+      :uploading-text="uploadingText"
+    />
 
-    <!-- Crop dialog -->
+    <!-- 裁剪弹窗 -->
     <ImageCropDialog
       v-model="showCropDialog"
       :source-url="cropSourceUrl"
@@ -60,7 +55,7 @@
       @apply="applyCrop"
     />
 
-    <!-- Preview dialog -->
+    <!-- 图片预览弹窗 -->
     <ImagePreviewDialog
       v-model="showPreviewDialog"
       :image-url="previewUrl"
@@ -69,13 +64,22 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @file ImageUploader/ImageUploader.vue
+ * @description 图片上传组件 - 主入口，保持原有公共 API
+ * @date 2026-04-03
+ */
+
 import { ref } from 'vue';
+import { logger } from '@/utils/logger';
 import { useQuasar } from 'quasar';
 import { useI18n } from 'vue-i18n';
-import ImageCropDialog from './ImageCropDialog.vue';
-import ImagePreviewDialog from './ImagePreviewDialog.vue';
-import UploadZone from './UploadZone.vue';
-import { useImageUpload } from './composables/useImageUpload';
+import { httpClient } from '@/utils/alova';
+import ImageCropDialog from '../ImageCropDialog.vue';
+import ImagePreviewDialog from '../ImagePreviewDialog.vue';
+import DragDropZone from './DragDropZone.vue';
+import FilePreview from './FilePreview.vue';
+import ProgressBar from './ProgressBar.vue';
 
 const { t } = useI18n();
 const $q = useQuasar();
@@ -83,14 +87,23 @@ const $q = useQuasar();
 // ============ Props & Emits ============
 
 interface Props {
+  /** v-model 绑定值 */
   modelValue?: string;
+  /** 是否多选 */
   multiple?: boolean;
+  /** 最大文件大小（MB） */
   maxSize?: number;
+  /** 最大宽度 */
   maxWidth?: number;
+  /** 最大高度 */
   maxHeight?: number;
+  /** 是否显示编辑按钮 */
   showEdit?: boolean;
+  /** 上传 API 地址 */
   uploadUrl?: string;
+  /** 是否启用压缩 */
   enableCompress?: boolean;
+  /** 压缩质量 (0-1) */
   compressQuality?: number;
 }
 
@@ -113,42 +126,34 @@ const emit = defineEmits<{
   (e: 'progress', progress: number): void;
 }>();
 
-// ============ Composable ============
-
-const {
-  uploading,
-  uploadProgress,
-  compressedSize,
-  formatFileSize,
-  uploadImage,
-  validateFile,
-  notifyUploadResult,
-} = useImageUpload({
-  uploadUrl: props.uploadUrl,
-  maxSize: props.maxSize,
-  maxWidth: props.maxWidth,
-  maxHeight: props.maxHeight,
-  enableCompress: props.enableCompress,
-  compressQuality: props.compressQuality,
-});
-
-// ============ State ============
-
+// ============ 状态 ============
 const fileInputRef = ref<HTMLInputElement | null>(null);
+const isDragOver = ref(false);
+const uploading = ref(false);
+const uploadProgress = ref(0);
 const currentFile = ref<File | null>(null);
 const previewUrl = ref(props.modelValue || '');
+const compressedSize = ref<number | null>(null);
 
-// Crop state
+// 裁剪相关状态
 const showCropDialog = ref(false);
 const showPreviewDialog = ref(false);
 const cropSourceUrl = ref('');
 const cropScale = ref(1);
 const cropRotate = ref(0);
 
+// 支持的图片类型
 const acceptTypes = 'image/jpeg,image/png,image/webp,image/gif';
 
-// ============ Methods ============
+// 子组件文本
+const clickOrDragText = t('uploader.clickOrDrag');
+const supportedFormatsText = t('uploader.supportedFormats');
+const compressedText = t('uploader.compressed');
+const uploadingText = t('uploader.uploading');
 
+// ============ 方法 ============
+
+/** 触发上传 */
 function triggerUpload() {
   if (!previewUrl.value) {
     fileInputRef.value?.click();
@@ -157,6 +162,7 @@ function triggerUpload() {
   }
 }
 
+/** 处理文件选择 */
 function handleFileChange(event: Event) {
   const target = event.target as HTMLInputElement;
   const file = target.files?.[0];
@@ -166,8 +172,11 @@ function handleFileChange(event: Event) {
   target.value = '';
 }
 
-function handleDrop(file: File) {
-  if (file.type.startsWith('image/')) {
+/** 处理拖拽文件 */
+function handleDrop(event: DragEvent) {
+  isDragOver.value = false;
+  const file = event.dataTransfer?.files?.[0];
+  if (file && file.type.startsWith('image/')) {
     void processFile(file);
   } else {
     $q.notify({
@@ -177,35 +186,110 @@ function handleDrop(file: File) {
   }
 }
 
+/** 处理文件 */
 async function processFile(file: File) {
-  const validation = validateFile(file);
-  if (!validation.valid) {
+  if (!file.type.startsWith('image/')) {
     $q.notify({
-      type: 'negative',
-      message: validation.message,
+      type: 'warning',
+      message: t('uploader.imageOnly') || '请上传图片文件',
     });
     return;
   }
-
+  const maxSizeBytes = props.maxSize * 1024 * 1024;
+  if (file.size > maxSizeBytes) {
+    $q.notify({
+      type: 'negative',
+      message: `${file.name}: ${t('uploader.fileTooLarge')} (${props.maxSize}MB)`,
+    });
+    return;
+  }
   currentFile.value = file;
   previewUrl.value = URL.createObjectURL(file);
+  await uploadImage(file);
+}
 
+/** 压缩并上传图片 */
+async function uploadImage(file: File) {
+  uploading.value = true;
+  uploadProgress.value = 0;
   try {
-    const uploadedUrl = await uploadImage(file, (progress) => {
-      emit('progress', progress);
-    });
-    if (uploadedUrl) {
-      previewUrl.value = uploadedUrl;
-      emit('update:modelValue', uploadedUrl);
-      emit('upload', file);
-      emit('change', file);
-      notifyUploadResult(true);
+    let fileToUpload = file;
+    if (props.enableCompress) {
+      fileToUpload = await compressImage(file);
+      if (fileToUpload !== file) {
+        compressedSize.value = fileToUpload.size;
+      }
     }
-  } catch {
-    notifyUploadResult(false);
+    const formData = new FormData();
+    formData.append('file', fileToUpload);
+    const response = await httpClient.post(props.uploadUrl, formData, {
+      onUploadProgress: (progressEvent: { loaded: number; total?: number }) => {
+        if (progressEvent.total) {
+          uploadProgress.value = Math.round((progressEvent.loaded / progressEvent.total) * 100);
+          emit('progress', uploadProgress.value);
+        }
+      },
+    }) as { data?: { url?: string; data?: { url?: string } } };
+    const uploadedUrl = response.data?.data?.url || response.data?.url || previewUrl.value;
+    previewUrl.value = uploadedUrl;
+    emit('update:modelValue', uploadedUrl);
+    emit('upload', file);
+    emit('change', file);
+    $q.notify({
+      type: 'positive',
+      message: t('uploader.uploadSuccess'),
+    });
+  } catch (error) {
+    logger.error('【图片上传失败】', error);
+    $q.notify({
+      type: 'negative',
+      message: t('uploader.uploadFailed'),
+    });
+  } finally {
+    uploading.value = false;
   }
 }
 
+/** 压缩图片 */
+async function compressImage(file: File): Promise<File> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    img.onload = () => {
+      let { width, height } = img;
+      if (width > props.maxWidth || height > props.maxHeight) {
+        const ratio = Math.min(props.maxWidth / width, props.maxHeight / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+      }
+      canvas.width = width;
+      canvas.height = height;
+      ctx?.drawImage(img, 0, 0, width, height);
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            const compressedFile = new File([blob], file.name, { type: 'image/jpeg' });
+            logger.info(`【图片压缩】${file.name}: ${formatFileSize(file.size)} -> ${formatFileSize(blob.size)}`);
+            URL.revokeObjectURL(img.src);
+            resolve(compressedFile);
+          } else {
+            resolve(file);
+          }
+        },
+        'image/jpeg',
+        props.compressQuality,
+      );
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(img.src);
+      resolve(file);
+    };
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+/** 打开裁剪弹窗 */
 function openCropDialog() {
   cropSourceUrl.value = previewUrl.value;
   cropScale.value = 1;
@@ -213,17 +297,16 @@ function openCropDialog() {
   showCropDialog.value = true;
 }
 
+/** 应用裁剪 */
 function applyCrop() {
   if (!currentFile.value) {
     showCropDialog.value = false;
     return;
   }
-
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
   canvas.width = 1000;
   canvas.height = 1000;
-
   const img = new Image();
   img.src = cropSourceUrl.value;
   let resolved = false;
@@ -238,7 +321,6 @@ function applyCrop() {
     done();
   };
   img.onerror = () => done();
-
   canvas.toBlob(
     (blob) => {
       if (blob) {
@@ -252,15 +334,25 @@ function applyCrop() {
       showCropDialog.value = false;
     },
     'image/jpeg',
-    props.compressQuality
+    props.compressQuality,
   );
 }
 
+/** 移除图片 */
 function removeImage() {
   previewUrl.value = '';
   currentFile.value = null;
   compressedSize.value = null;
   emit('update:modelValue', '');
+}
+
+/** 格式化文件大小 */
+function formatFileSize(bytes: number): string {
+  if (bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
 }
 </script>
 
@@ -271,9 +363,5 @@ function removeImage() {
 
 .hidden-input {
   display: none;
-}
-
-.image-info {
-  word-break: break-all;
 }
 </style>

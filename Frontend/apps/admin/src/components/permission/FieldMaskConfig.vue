@@ -1,4 +1,4 @@
-// @ts-nocheck
+// @ts-nocheck // TODO: Complex template type issues with QTable and ref typing
 <template>
   <div class="field-mask-config">
     <q-card flat bordered>

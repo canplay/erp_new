@@ -1,5 +1,3 @@
-// @ts-nocheck
-<template>
   <q-layout view="lHh Lpr lFf">
     <!-- ============ 顶栏 ============ -->
     <MainHeader
@@ -24,7 +22,7 @@
       :is-mobile="isMobile"
       :user-avatar-text="userAvatarText"
       :username="authStore.userInfo?.username || ''"
-      :role="authStore.userInfo?.role ?? '' as string"
+      :role="String(authStore.userInfo?.role ?? '')"
       :visible-categories="(visibleCategories as { path?: string; title?: string }[])"
     />
 

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @file ImportDialog.vue
  * @description 数据导入对话框 - 主文件（拆分后）
@@ -54,8 +53,8 @@
               :current-step="currentStep"
               :max-file-size="options.maxFileSize"
               :accept-formats="options.accept"
-              :mapping-rows="(mappingRows as unknown as any) as any"
-              :mapping-columns="(mappingRows as unknown as any) as any as string[]"
+              :mapping-rows="mappingRows as unknown as Record<string, unknown>[]"
+              :mapping-columns="mappingRows.map((r: MappingRow) => r.excelColumn)"
               :target-fields="targetFields || []"
               :data-type-options="dataTypeOptions"
               :show-save-button="false"

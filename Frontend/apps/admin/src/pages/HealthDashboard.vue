@@ -1,4 +1,3 @@
-// @ts-nocheck
 <template>
   <div class="health-dashboard">
     <!-- 页面标题和操作 -->

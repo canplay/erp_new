@@ -1,4 +1,3 @@
-// @ts-nocheck
 <template>
   <q-page class="q-pa-md">
     <q-splitter

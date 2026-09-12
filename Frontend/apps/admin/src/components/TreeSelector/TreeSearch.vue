@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 /**
  * @file TreeSelector/TreeSearch.vue
  * @description 树形选择器 - 搜索和工具栏

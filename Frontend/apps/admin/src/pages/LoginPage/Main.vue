@@ -1,4 +1,3 @@
-// @ts-nocheck
 <template>
   <div class="login-page">
     <div class="login-page__header">

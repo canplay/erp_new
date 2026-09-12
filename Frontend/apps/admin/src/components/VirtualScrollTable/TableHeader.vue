@@ -46,11 +46,11 @@ const props = withDefaults(defineProps<{
   sortFieldDefault?: string;
   sortOrderDefault?: 'asc' | 'desc';
 }>(), {
-  columns: () => [] as any,
-  sortField: undefined as any,
-  sortOrder: undefined as any,
+  columns: () => [],
+  sortField: undefined,
+  sortOrder: undefined,
   sortFieldDefault: '',
-  sortOrderDefault: undefined as any,
+  sortOrderDefault: undefined,
 });
 
 const emit = defineEmits<{

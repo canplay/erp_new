@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @file system/AnnouncementList.vue
  * @description 公告列表 - 搜索、工具栏、表格

@@ -154,8 +154,18 @@ const tableRows = ref<Record<string, unknown>[]>([]);
 const tableColumns = ref<{ name: string; label: string; field: string; align: 'left' | 'right' | 'center' }[]>([]);
 const summary = ref<Record<string, unknown> | null>(null);
 
+interface ReportResponse {
+  data?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
 // 图表配置
-const reportChartConfig = ref<any>({
+interface ChartConfig {
+  type: string;
+  data: unknown[];
+}
+
+const reportChartConfig = ref<ChartConfig>({
   type: 'bar',
   data: [],
 });
@@ -185,7 +195,7 @@ async function loadReportData() {
   try {
     const response = await getReportData(id);
     // 类型断言：兼容新旧格式（已展开的字段）
-    const respData = (response as any) as { data?: Record<string, unknown>; [key: string]: unknown };
+    const respData = response as unknown as ReportResponse;
     const data = respData.data || respData;
     
     if (data) {

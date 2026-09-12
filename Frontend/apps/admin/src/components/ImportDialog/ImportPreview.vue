@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 /**
  * @file ImportPreview.vue
  * @description 导入预览组件 - 数据预览、字段映射、选择确认
@@ -42,7 +42,7 @@
       <div class="text-subtitle1 q-mb-md">{{ $t('importMod.mappingTitle') }}</div>
       <q-table
         :rows="mappingRows"
-        :columns="(mappingColumns as any) as Column[]"
+        :columns="mappingColumns"
         row-key="excelColumn"
         flat
         bordered
@@ -97,7 +97,7 @@
       </div>
       <q-table
         :rows="importRows"
-        :columns="(previewColumns as any) as Column[]"
+        :columns="previewColumns"
         row-key="rowIndex"
         flat
         bordered
@@ -145,11 +145,11 @@ const props = withDefaults(defineProps<{
   currentStep: number;
   maxFileSize: number;
   acceptFormats: string[];
-  mappingRows: Record<string, unknown>[];
-  mappingColumns: Record<string, unknown>[];
-  importRows: Record<string, unknown>[];
-  targetFields: Record<string, unknown>[];
-  selectedTableRows: unknown[];
+  mappingRows: Array<{ excelColumn?: string; targetField?: string; dataType?: string; required?: boolean }>;
+  mappingColumns: Column[];
+  importRows: Array<{ rowIndex: number; selected: boolean; errors: Array<{ message?: string }> }>;
+  targetFields: Array<{ label?: string; value?: string }>;
+  selectedTableRows: Array<{ rowIndex: number }>;
   selectedCount: number;
   totalRows: number;
   excelHeadersLength: number;

@@ -1,4 +1,3 @@
-// @ts-nocheck
 <template>
   <div class="virtual-scroll-table">
     <div class="virtual-scroll-table__header">
@@ -17,7 +16,7 @@
 
       <div class="virtual-scroll-table__body">
         <VirtualRow
-          :rows="visibleRows as any"
+          :rows="visibleRows"
           :row-height="rowHeight"
           :total-height="containerHeight"
           :render-row="renderRow"

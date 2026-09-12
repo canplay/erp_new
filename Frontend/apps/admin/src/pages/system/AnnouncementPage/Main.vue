@@ -1,4 +1,3 @@
-// @ts-nocheck
 <template>
   <div class="announcement-page">
     <div class="text-h5 q-mb-md">{{ $t('announcement.title') }}</div>

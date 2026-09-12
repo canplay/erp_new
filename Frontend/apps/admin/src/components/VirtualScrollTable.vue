@@ -199,9 +199,18 @@ function handleSort(field: string, order: 'asc' | 'desc') {
 
 // ============ 暴露方法给父组件 ============
 defineExpose({
-  scrollToRow: (index: number) => tableBodyRef.value && (tableBodyRef.value as any).scrollToRow?.(index),
-  clearSelection: () => tableBodyRef.value && (tableBodyRef.value as any).clearSelection?.(),
-  toggleSelectAll: () => tableBodyRef.value && (tableBodyRef.value as any).toggleSelectAll?.(),
+  scrollToRow: (index: number) => {
+    const body = tableBodyRef.value as unknown as { scrollToRow?: (index: number) => void } | null;
+    body?.scrollToRow?.(index);
+  },
+  clearSelection: () => {
+    const body = tableBodyRef.value as unknown as { clearSelection?: () => void } | null;
+    body?.clearSelection?.();
+  },
+  toggleSelectAll: () => {
+    const body = tableBodyRef.value as unknown as { toggleSelectAll?: () => void } | null;
+    body?.toggleSelectAll?.();
+  },
 });
 </script>
 

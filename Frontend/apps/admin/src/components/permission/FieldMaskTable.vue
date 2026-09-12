@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * @file FieldMaskTable.vue
  * @description 字段掩码表格
@@ -22,7 +21,7 @@
           size="xs"
           icon="visibility"
           color="primary"
-          @click="onPreview as any"
+          @click="onPreview(row)"
         />
       </q-td>
     </template>

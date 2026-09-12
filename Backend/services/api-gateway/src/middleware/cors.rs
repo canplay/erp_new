@@ -32,24 +32,25 @@ impl Default for CorsConfig {
 
 impl CorsConfig {
     /// 从环境变量创建 CORS 配置（启动时调用）
+    ///
+    /// 安全修复: 当 CORS_ALLOWED_ORIGINS 未设置时，默认拒绝所有跨域请求（返回空列表），
+    /// 而不是允许 localhost。这遵循最小权限原则。
     pub fn from_env() -> Self {
         let allowed_origins = std::env::var("CORS_ALLOWED_ORIGINS")
             .ok()
-            .map_or_else(|| {
-                vec![
-                    HeaderValue::from_static("http://localhost:3000"),
-                    HeaderValue::from_static("http://localhost:8090"),
-                ]
-            }, |s| {
+            .map(|s| {
                 s.split(',')
-                    .map(|origin| {
-                        origin
-                            .trim()
-                            .parse::<HeaderValue>()
-                            .unwrap_or_else(|_| HeaderValue::from_static("*"))
+                    .filter_map(|origin| {
+                        let trimmed = origin.trim();
+                        if trimmed.is_empty() {
+                            return None;
+                        }
+                        // 安全修复: 不再将解析失败回退到通配符 "*"，而是跳过无效源
+                        trimmed.parse::<HeaderValue>().ok()
                     })
                     .collect::<Vec<_>>()
-            });
+            })
+            .unwrap_or_default(); // 未设置环境变量时返回空列表（拒绝所有）
         Self { allowed_origins }
     }
 }

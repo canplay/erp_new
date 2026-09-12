@@ -4,6 +4,7 @@
  */
 
 import { httpClient } from '@/utils/alova';
+import { handleApiError } from '@/utils/apiErrorHandler';
 
 // ==================== 类型定义 ====================
 
@@ -82,32 +83,61 @@ export interface LprDevice {
 
 /** 获取设备列表 */
 export function listLprDevices(params?: { park_code?: string; status?: string }) {
-  return httpClient.get('/v1/lpr/devices', { params });
+  try {
+    return await httpClient.get('/v1/lpr/devices', { params });
+  } catch (error) {
+    handleApiError(error, '车牌识别');
+    throw error;
+  }
 }
 
 /** 获取设备详情 */
 export function getLprDevice(id: string) {
-  return httpClient.get(`/v1/lpr/devices/${id}`);
+  try {
+    return await httpClient.get(`/v1/lpr/devices/${id}`);
+  } catch (error) {
+    handleApiError(error, '车牌识别');
+    throw error;
+  }
 }
 
 /** 查询通行记录列表 */
 export function listPassRecords(params?: PassRecordQueryParams) {
-  return httpClient.get('/v1/lpr/records', { params });
+  try {
+    return await httpClient.get('/v1/lpr/records', { params });
+  } catch (error) {
+    handleApiError(error, '车牌识别');
+    throw error;
+  }
 }
 
 /** 获取通行记录详情 */
 export function getPassRecord(id: number) {
-  return httpClient.get(`/v1/lpr/records/${id}`);
+  try {
+    return await httpClient.get(`/v1/lpr/records/${id}`);
+  } catch (error) {
+    handleApiError(error, '车牌识别');
+    throw error;
+  }
 }
 
 /** 查询车辆授权信息 */
 export function getVehicleAuth(plateNo: string, parkCode: string) {
-  return httpClient.get('/lpr/vehicle/auth', {
-    params: { plate_no: plateNo, park_code: parkCode },
-  });
+  try {
+    return await httpClient.get('/lpr/vehicle/auth', {
+    params: { plate_no: plateNo, park_code: parkCode },  });
+  } catch (error) {
+    handleApiError(error, '车牌识别');
+    throw error;
+  }
 }
 
 /** 获取通行统计 */
 export function getPassStats(params?: { park_code?: string; start_date?: string; end_date?: string }) {
-  return httpClient.get('/v1/lpr/stats', { params });
+  try {
+    return await httpClient.get('/v1/lpr/stats', { params });
+  } catch (error) {
+    handleApiError(error, '车牌识别');
+    throw error;
+  }
 }

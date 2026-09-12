@@ -4,6 +4,7 @@
  */
 
 import { httpClient } from '@/utils/alova';
+import { handleApiError } from '@/utils/apiErrorHandler';
 
 // ==================== 类型定义 ====================
 
@@ -64,17 +65,32 @@ export interface TowTask {
 
 /** 查询车辆列表 */
 export function listTowCars(params?: TowCarQueryParams) {
-  return httpClient.get('/tow/cars', { params });
+  try {
+    return await httpClient.get('/tow/cars', { params });
+  } catch (error) {
+    handleApiError(error, '拖车服务');
+    throw error;
+  }
 }
 
 /** 获取车辆详情 */
 export function getTowCar(id: number) {
-  return httpClient.get(`/tow/cars/${id}`);
+  try {
+    return await httpClient.get(`/tow/cars/${id}`);
+  } catch (error) {
+    handleApiError(error, '拖车服务');
+    throw error;
+  }
 }
 
 /** 获取字典列表 */
 export function listDictItems(dictType: string) {
-  return httpClient.get('/tow/dict', { params: { dict_type: dictType } });
+  try {
+    return await httpClient.get('/tow/dict', { params: { dict_type: dictType } });
+  } catch (error) {
+    handleApiError(error, '拖车服务');
+    throw error;
+  }
 }
 
 /** 拖车类型字典 */

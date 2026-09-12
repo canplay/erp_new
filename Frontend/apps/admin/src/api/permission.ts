@@ -7,6 +7,7 @@
 
 import { httpClient } from '@/utils/alova';
 import type {
+import { handleApiError } from '@/utils/apiErrorHandler';
   DataPermission,
   FieldPermission,
   RolePermissionConfig,
@@ -20,7 +21,12 @@ import type {
  * @brief 获取所有权限项列表
  */
 export function listPermissions() {
-  return httpClient.get('/admin/permissions');
+  try {
+    return await httpClient.get('/admin/permissions');
+  } catch (error) {
+    handleApiError(error, '权限管理');
+    throw error;
+  }
 }
 
 /**
@@ -29,7 +35,12 @@ export function listPermissions() {
 export function createPermission(
   data: Omit<PermissionDefinition, 'key'> & { key?: string }
 ) {
-  return httpClient.post('/admin/permissions', data);
+  try {
+    return await httpClient.post('/admin/permissions', data);
+  } catch (error) {
+    handleApiError(error, '权限管理');
+    throw error;
+  }
 }
 
 /**
@@ -39,14 +50,24 @@ export function updatePermission(
   key: string,
   data: Partial<Omit<PermissionDefinition, 'key'>>
 ) {
-  return httpClient.put(`/admin/permissions/${encodeURIComponent(key)}`, data);
+  try {
+    return await httpClient.put(`/admin/permissions/${encodeURIComponent(key)}`, data);
+  } catch (error) {
+    handleApiError(error, '权限管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 删除权限项
  */
 export function deletePermission(key: string) {
-  return httpClient.delete(`/admin/permissions/${encodeURIComponent(key)}`);
+  try {
+    return await httpClient.delete(`/admin/permissions/${encodeURIComponent(key)}`);
+  } catch (error) {
+    handleApiError(error, '权限管理');
+    throw error;
+  }
 }
 
 /**
@@ -55,7 +76,12 @@ export function deletePermission(key: string) {
 export function batchCreatePermissions(
   permissions: Array<Omit<PermissionDefinition, 'key'>>
 ) {
-  return httpClient.post('/admin/permissions/batch', { permissions });
+  try {
+    return await httpClient.post('/admin/permissions/batch', { permissions });
+  } catch (error) {
+    handleApiError(error, '权限管理');
+    throw error;
+  }
 }
 
 // ============ 角色权限管理 ============
@@ -64,7 +90,12 @@ export function batchCreatePermissions(
  * @brief 获取角色完整权限配置（包含功能、数据、字段权限）
  */
 export function getRolePermissionConfig(role_name: string) {
-  return httpClient.get(`/admin/roles/${role_name}/permission-config`);
+  try {
+    return await httpClient.get(`/admin/roles/${role_name}/permission-config`);
+  } catch (error) {
+    handleApiError(error, '权限管理');
+    throw error;
+  }
 }
 
 /**
@@ -75,14 +106,24 @@ export function updateRolePermissionConfig(
   role_name: string,
   config: RolePermissionConfig | PermissionMatrixConfig
 ) {
-  return httpClient.put(`/admin/roles/${role_name}/permission-config`, config);
+  try {
+    return await httpClient.put(`/admin/roles/${role_name}/permission-config`, config);
+  } catch (error) {
+    handleApiError(error, '权限管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取角色数据权限配置
  */
 export function getRoleDataPermissions(role_name: string) {
-  return httpClient.get(`/admin/roles/${role_name}/data-permissions`);
+  try {
+    return await httpClient.get(`/admin/roles/${role_name}/data-permissions`);
+  } catch (error) {
+    handleApiError(error, '权限管理');
+    throw error;
+  }
 }
 
 /**
@@ -92,16 +133,25 @@ export function updateRoleDataPermissions(
   role_name: string,
   dataPermissions: DataPermission[]
 ) {
-  return httpClient.put(`/admin/roles/${role_name}/data-permissions`, {
-    data_permissions: dataPermissions,
-  });
+  try {
+    return await httpClient.put(`/admin/roles/${role_name}/data-permissions`, {
+    data_permissions: dataPermissions,  });
+  } catch (error) {
+    handleApiError(error, '权限管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取角色字段权限配置
  */
 export function getRoleFieldPermissions(role_name: string) {
-  return httpClient.get(`/admin/roles/${role_name}/field-permissions`);
+  try {
+    return await httpClient.get(`/admin/roles/${role_name}/field-permissions`);
+  } catch (error) {
+    handleApiError(error, '权限管理');
+    throw error;
+  }
 }
 
 /**
@@ -111,9 +161,13 @@ export function updateRoleFieldPermissions(
   role_name: string,
   fieldPermissions: FieldPermission[]
 ) {
-  return httpClient.put(`/admin/roles/${role_name}/field-permissions`, {
-    field_permissions: fieldPermissions,
-  });
+  try {
+    return await httpClient.put(`/admin/roles/${role_name}/field-permissions`, {
+    field_permissions: fieldPermissions,  });
+  } catch (error) {
+    handleApiError(error, '权限管理');
+    throw error;
+  }
 }
 
 // ============ 继承权限 ============
@@ -122,23 +176,37 @@ export function updateRoleFieldPermissions(
  * @brief 获取角色继承链
  */
 export function getRoleInheritChain(role_name: string) {
-  return httpClient.get(`/admin/roles/${role_name}/inherit`);
+  try {
+    return await httpClient.get(`/admin/roles/${role_name}/inherit`);
+  } catch (error) {
+    handleApiError(error, '权限管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 设置角色继承
  */
 export function setRoleInherit(role_name: string, inherit_from: string[]) {
-  return httpClient.post(`/admin/roles/${role_name}/inherit`, {
-    inherit_from: inherit_from,
-  });
+  try {
+    return await httpClient.post(`/admin/roles/${role_name}/inherit`, {
+    inherit_from: inherit_from,  });
+  } catch (error) {
+    handleApiError(error, '权限管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 移除角色继承
  */
 export function removeRoleInherit(role_name: string) {
-  return httpClient.delete(`/admin/roles/${role_name}/inherit`);
+  try {
+    return await httpClient.delete(`/admin/roles/${role_name}/inherit`);
+  } catch (error) {
+    handleApiError(error, '权限管理');
+    throw error;
+  }
 }
 
 // ============ 批量权限分配 ============
@@ -151,11 +219,15 @@ export function batchAssignPermissions(
   permissions: string[],
   mode: 'add' | 'set' | 'remove'
 ) {
-  return httpClient.post('/permissions/batch-assign', {
+  try {
+    return await httpClient.post('/permissions/batch-assign', {
     roles: role_names,
     permissions,
-    mode,
-  });
+    mode,  });
+  } catch (error) {
+    handleApiError(error, '权限管理');
+    throw error;
+  }
 }
 
 /**
@@ -169,12 +241,16 @@ export function copyRolePermissions(
     includeFieldPermission?: boolean;
   }
 ) {
-  return httpClient.post('/permissions/copy', {
+  try {
+    return await httpClient.post('/permissions/copy', {
     source_role: sourceRole,
     target_roles: targetRoles,
     include_data_permission: options?.includeDataPermission ?? true,
-    include_field_permission: options?.includeFieldPermission ?? true,
-  });
+    include_field_permission: options?.includeFieldPermission ?? true,  });
+  } catch (error) {
+    handleApiError(error, '权限管理');
+    throw error;
+  }
 }
 
 // ============ 权限变更日志 ============
@@ -191,14 +267,24 @@ export function listPermissionChangeLogs(params?: {
   start_date?: string;
   end_date?: string;
 }) {
-  return httpClient.get('/permission-change-logs', { params });
+  try {
+    return await httpClient.get('/permission-change-logs', { params });
+  } catch (error) {
+    handleApiError(error, '权限管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取权限变更详情
  */
 export function getPermissionChangeLogDetail(logId: number) {
-  return httpClient.get(`/permission-change-logs/${logId}`);
+  try {
+    return await httpClient.get(`/permission-change-logs/${logId}`);
+  } catch (error) {
+    handleApiError(error, '权限管理');
+    throw error;
+  }
 }
 
 /**
@@ -210,10 +296,14 @@ export function exportPermissionChangeLogs(params?: {
   end_date?: string;
   format?: 'csv' | 'excel';
 }) {
-  return httpClient.get('/permission-change-logs/export', {
+  try {
+    return await httpClient.get('/permission-change-logs/export', {
     params,
-    responseType: 'blob',
-  });
+    responseType: 'blob',  });
+  } catch (error) {
+    handleApiError(error, '权限管理');
+    throw error;
+  }
 }
 
 // ============ 权限验证 ============
@@ -226,21 +316,36 @@ export function validateDataPermission(params: {
   resource_type: string;
   resource_id: number | string;
 }) {
-  return httpClient.post('/permissions/validate-data', params);
+  try {
+    return await httpClient.post('/permissions/validate-data', params);
+  } catch (error) {
+    handleApiError(error, '权限管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取用户可访问的部门列表
  */
 export function getAccessibleDepartments(role_name: string) {
-  return httpClient.get(`/admin/roles/${role_name}/accessible-departments`);
+  try {
+    return await httpClient.get(`/admin/roles/${role_name}/accessible-departments`);
+  } catch (error) {
+    handleApiError(error, '权限管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取用户可访问的租户列表
  */
 export function getAccessibleTenants(role_name: string) {
-  return httpClient.get(`/admin/roles/${role_name}/accessible-tenants`);
+  try {
+    return await httpClient.get(`/admin/roles/${role_name}/accessible-tenants`);
+  } catch (error) {
+    handleApiError(error, '权限管理');
+    throw error;
+  }
 }
 
 // ============ 权限缓存管理 ============
@@ -249,8 +354,12 @@ export function getAccessibleTenants(role_name: string) {
  * @brief 刷新角色权限缓存
  */
 export function refreshPermissionCache(role_name?: string) {
-  const params = role_name ? { role: role_name } : {};
-  return httpClient.post('/permissions/refresh-cache', undefined, { params });
+  try {
+    return await httpClient.post('/permissions/refresh-cache', undefined, { params });
+  } catch (error) {
+    handleApiError(error, '权限管理');
+    throw error;
+  }
 }
 
 // ============ 权限预检 ============
@@ -259,5 +368,10 @@ export function refreshPermissionCache(role_name?: string) {
  * @brief 检查敏感权限操作是否需要二次确认
  */
 export function checkSensitivePermission(permission: string) {
-  return httpClient.post('/permissions/check-sensitive', { permission });
+  try {
+    return await httpClient.post('/permissions/check-sensitive', { permission });
+  } catch (error) {
+    handleApiError(error, '权限管理');
+    throw error;
+  }
 }

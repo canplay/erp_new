@@ -6,6 +6,7 @@
  */
 
 import { httpClient } from '@/utils/alova';
+import { handleApiError } from '@/utils/apiErrorHandler';
 
 /**
  * API Key 权限级别
@@ -110,64 +111,108 @@ export interface ApiKeyStats {
  * 获取 API Key 列表
  */
 export function listApiKeys(query: ApiKeyQuery) {
-  return httpClient.get<ApiKeyPageResult>('/apikeys', { params: query });
+  try {
+    return await httpClient.get('/apikeys', { params: query });
+  } catch (error) {
+    handleApiError(error, 'API密钥管理');
+    throw error;
+  }
 }
 
 /**
  * 获取 API Key 详情
  */
 export function getApiKey(id: string) {
-  return httpClient.get<ApiKey>(`/apikeys/${id}`);
+  try {
+    return await httpClient.get(`/apikeys/${id}`);
+  } catch (error) {
+    handleApiError(error, 'API密钥管理');
+    throw error;
+  }
 }
 
 /**
  * 创建 API Key
  */
 export function createApiKey(data: CreateApiKeyRequest) {
-  return httpClient.post<CreateApiKeyResponse>('/apikeys', data);
+  try {
+    return await httpClient.post('/apikeys', data);
+  } catch (error) {
+    handleApiError(error, 'API密钥管理');
+    throw error;
+  }
 }
 
 /**
  * 更新 API Key
  */
 export function updateApiKey(id: string, data: UpdateApiKeyRequest) {
-  return httpClient.put<ApiKey>(`/apikeys/${id}`, data);
+  try {
+    return await httpClient.put(`/apikeys/${id}`, data);
+  } catch (error) {
+    handleApiError(error, 'API密钥管理');
+    throw error;
+  }
 }
 
 /**
  * 删除 API Key
  */
 export function deleteApiKey(id: string) {
-  return httpClient.delete(`/apikeys/${id}`);
+  try {
+    return await httpClient.delete(`/apikeys/${id}`);
+  } catch (error) {
+    handleApiError(error, 'API密钥管理');
+    throw error;
+  }
 }
 
 /**
  * 禁用 API Key
  */
 export function disableApiKey(id: string) {
-  return httpClient.post(`/apikeys/${id}/disable`);
+  try {
+    return await httpClient.post(`/apikeys/${id}/disable`);
+  } catch (error) {
+    handleApiError(error, 'API密钥管理');
+    throw error;
+  }
 }
 
 /**
  * 启用 API Key
  */
 export function enableApiKey(id: string) {
-  return httpClient.post(`/apikeys/${id}/enable`);
+  try {
+    return await httpClient.post(`/apikeys/${id}/enable`);
+  } catch (error) {
+    handleApiError(error, 'API密钥管理');
+    throw error;
+  }
 }
 
 /**
  * 获取 API Key 统计
  */
 export function getApiKeyStats() {
-  return httpClient.get<ApiKeyStats>('/apikeys/stats');
+  try {
+    return await httpClient.get('/apikeys/stats');
+  } catch (error) {
+    handleApiError(error, 'API密钥管理');
+    throw error;
+  }
 }
 
 /**
  * 验证 API Key
  */
 export function validateApiKey(key: string, ip_address?: string) {
-  return httpClient.post<{ valid: boolean; error?: string; key_id?: string; permission_level?: string }>(
+  try {
+    return await httpClient.post(
     '/apikeys/validate',
-    { key, ip_address }
-  );
+    { key, ip_address }  );
+  } catch (error) {
+    handleApiError(error, 'API密钥管理');
+    throw error;
+  }
 }

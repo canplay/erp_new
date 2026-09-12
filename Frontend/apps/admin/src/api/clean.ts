@@ -6,6 +6,7 @@
 
 import { httpClient } from '@/utils/alova';
 import type { PaginationParams } from '@/utils/alova';
+import { handleApiError } from '@/utils/apiErrorHandler';
 
 // ============ 类型定义 ============
 
@@ -141,21 +142,36 @@ export interface PaymentWebStatisticsQuery {
  * 获取发票数量
  */
 export function countInvoices(params: InvoiceQuery) {
-  return httpClient.get('/clean/invoice/count', { params });
+  try {
+    return await httpClient.get('/clean/invoice/count', { params });
+  } catch (error) {
+    handleApiError(error, '清运服务');
+    throw error;
+  }
 }
 
 /**
  * 获取发票列表
  */
 export function listInvoices(params: InvoiceQuery) {
-  return httpClient.get('/clean/invoice/info', { params });
+  try {
+    return await httpClient.get('/clean/invoice/info', { params });
+  } catch (error) {
+    handleApiError(error, '清运服务');
+    throw error;
+  }
 }
 
 /**
  * 更新发票
  */
 export function updateInvoice(data: { id: string; invoice_no?: string; status?: string }) {
-  return httpClient.post('/clean/invoice/update', data);
+  try {
+    return await httpClient.post('/clean/invoice/update', data);
+  } catch (error) {
+    handleApiError(error, '清运服务');
+    throw error;
+  }
 }
 
 // ============ 订单管理 API ============
@@ -164,14 +180,24 @@ export function updateInvoice(data: { id: string; invoice_no?: string; status?: 
  * 获取订单数量
  */
 export function countOrders(params: OrderQuery) {
-  return httpClient.get('/clean/order/count', { params });
+  try {
+    return await httpClient.get('/clean/order/count', { params });
+  } catch (error) {
+    handleApiError(error, '清运服务');
+    throw error;
+  }
 }
 
 /**
  * 获取订单列表
  */
 export function listOrders(params: OrderQuery) {
-  return httpClient.get('/clean/order/info', { params });
+  try {
+    return await httpClient.get('/clean/order/info', { params });
+  } catch (error) {
+    handleApiError(error, '清运服务');
+    throw error;
+  }
 }
 
 // ============ 员工管理 API ============
@@ -180,7 +206,12 @@ export function listOrders(params: OrderQuery) {
  * 获取员工信息
  */
 export function getStaff(query: StaffQuery) {
-  return httpClient.post('/clean/staff/info', query);
+  try {
+    return await httpClient.post('/clean/staff/info', query);
+  } catch (error) {
+    handleApiError(error, '清运服务');
+    throw error;
+  }
 }
 
 // ============ 统计管理 API ============
@@ -189,63 +220,108 @@ export function getStaff(query: StaffQuery) {
  * 获取正式账单数量
  */
 export function countFormalBills(params: FormalBillQuery) {
-  return httpClient.get('/clean/formal/count', { params });
+  try {
+    return await httpClient.get('/clean/formal/count', { params });
+  } catch (error) {
+    handleApiError(error, '清运服务');
+    throw error;
+  }
 }
 
 /**
  * 获取正式账单列表
  */
 export function listFormalBills(params: FormalBillQuery) {
-  return httpClient.get('/clean/formal/info', { params });
+  try {
+    return await httpClient.get('/clean/formal/info', { params });
+  } catch (error) {
+    handleApiError(error, '清运服务');
+    throw error;
+  }
 }
 
 /**
  * 获取正式账单统计
  */
 export function getFormalBillTotal(params: FormalBillQuery) {
-  return httpClient.get('/clean/formal/total', { params });
+  try {
+    return await httpClient.get('/clean/formal/total', { params });
+  } catch (error) {
+    handleApiError(error, '清运服务');
+    throw error;
+  }
 }
 
 /**
  * 获取支付信息数量
  */
 export function countPaymentInfo(params: PaymentInfoQuery) {
-  return httpClient.get('/clean/payment/info/count', { params });
+  try {
+    return await httpClient.get('/clean/payment/info/count', { params });
+  } catch (error) {
+    handleApiError(error, '清运服务');
+    throw error;
+  }
 }
 
 /**
  * 获取支付信息列表
  */
 export function listPaymentInfo(params: PaymentInfoQuery) {
-  return httpClient.get('/clean/payment/info/info', { params });
+  try {
+    return await httpClient.get('/clean/payment/info/info', { params });
+  } catch (error) {
+    handleApiError(error, '清运服务');
+    throw error;
+  }
 }
 
 /**
  * 获取支付信息统计
  */
 export function getPaymentInfoTotal(params: PaymentStatisticsQuery) {
-  return httpClient.get('/clean/payment/info/total', { params });
+  try {
+    return await httpClient.get('/clean/payment/info/total', { params });
+  } catch (error) {
+    handleApiError(error, '清运服务');
+    throw error;
+  }
 }
 
 /**
  * 获取网络支付数量
  */
 export function countPaymentWeb(params: PaymentWebQuery) {
-  return httpClient.get('/clean/payment/web/count', { params });
+  try {
+    return await httpClient.get('/clean/payment/web/count', { params });
+  } catch (error) {
+    handleApiError(error, '清运服务');
+    throw error;
+  }
 }
 
 /**
  * 获取网络支付列表
  */
 export function listPaymentWeb(params: PaymentWebQuery) {
-  return httpClient.get('/clean/payment/web/info', { params });
+  try {
+    return await httpClient.get('/clean/payment/web/info', { params });
+  } catch (error) {
+    handleApiError(error, '清运服务');
+    throw error;
+  }
 }
 
 /**
  * 获取网络支付统计
  */
 export function getPaymentWebTotal(params: PaymentWebStatisticsQuery) {
-  return httpClient.get('/clean/payment/web/total', { params });
+  try {
+    return await httpClient.get('/clean/payment/web/total', { params });
+  } catch (error) {
+    handleApiError(error, '清运服务');
+    throw error;
+  }
 }
 
 // ============ 导出 ============

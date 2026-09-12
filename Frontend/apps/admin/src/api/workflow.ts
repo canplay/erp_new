@@ -7,6 +7,7 @@
 
 import { httpClient } from '@/utils/alova';
 import type { ApiResponse } from '@/types/api';
+import { handleApiError } from '@/utils/apiErrorHandler';
 
 // ============ 类型定义 ============
 
@@ -173,145 +174,250 @@ const baseUrl = '/workflows';
  * @brief 获取工作流列表
  */
 export function listWorkflows(params?: WorkflowListParam) {
-  return httpClient.get<ApiResponse<{ list: Workflow[]; total: number }>>(`${baseUrl}`, { params });
+  try {
+    return await httpClient.get(`${baseUrl}`, { params });
+  } catch (error) {
+    handleApiError(error, '工作流');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取工作流详情
  */
 export function getWorkflow(id: string) {
-  return httpClient.get<ApiResponse<Workflow>>(`${baseUrl}/${id}`);
+  try {
+    return await httpClient.get(`${baseUrl}/${id}`);
+  } catch (error) {
+    handleApiError(error, '工作流');
+    throw error;
+  }
 }
 
 /**
  * @brief 创建工作流
  */
 export function createWorkflow(data: CreateWorkflowParam) {
-  return httpClient.post<ApiResponse<{ id: string }>>(`${baseUrl}`, data);
+  try {
+    return await httpClient.post(`${baseUrl}`, data);
+  } catch (error) {
+    handleApiError(error, '工作流');
+    throw error;
+  }
 }
 
 /**
  * @brief 更新工作流
  */
 export function updateWorkflow(id: string, data: UpdateWorkflowParam) {
-  return httpClient.put<ApiResponse<void>>(`${baseUrl}/${id}`, data);
+  try {
+    return await httpClient.put(`${baseUrl}/${id}`, data);
+  } catch (error) {
+    handleApiError(error, '工作流');
+    throw error;
+  }
 }
 
 /**
  * @brief 删除工作流
  */
 export function deleteWorkflow(id: string) {
-  return httpClient.delete<ApiResponse<void>>(`${baseUrl}/${id}`);
+  try {
+    return await httpClient.delete(`${baseUrl}/${id}`);
+  } catch (error) {
+    handleApiError(error, '工作流');
+    throw error;
+  }
 }
 
 /**
  * @brief 发布工作流
  */
 export function publishWorkflow(id: string) {
-  return httpClient.put<ApiResponse<void>>(`${baseUrl}/${id}/publish`);
+  try {
+    return await httpClient.put(`${baseUrl}/${id}/publish`);
+  } catch (error) {
+    handleApiError(error, '工作流');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取工作流实例列表
  */
 export function listInstances(workflowId: string, params?: WorkflowListParam) {
-  return httpClient.get<ApiResponse<{ list: WorkflowInstance[]; total: number }>>(`${baseUrl}/${workflowId}/instances`, { params });
+  try {
+    return await httpClient.get(`${baseUrl}/${workflowId}/instances`, { params });
+  } catch (error) {
+    handleApiError(error, '工作流');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取实例详情
  */
 export function getInstance(instanceId: string) {
-  return httpClient.get<ApiResponse<WorkflowInstance>>(`${baseUrl}/instances/${instanceId}`);
+  try {
+    return await httpClient.get(`${baseUrl}/instances/${instanceId}`);
+  } catch (error) {
+    handleApiError(error, '工作流');
+    throw error;
+  }
 }
 
 /**
  * @brief 启动工作流实例
  */
 export function startInstance(workflowId: string, data?: StartInstanceParam) {
-  return httpClient.post<ApiResponse<{ id: string }>>(`${baseUrl}/${workflowId}/instances`, data);
+  try {
+    return await httpClient.post(`${baseUrl}/${workflowId}/instances`, data);
+  } catch (error) {
+    handleApiError(error, '工作流');
+    throw error;
+  }
 }
 
 /**
  * @brief 执行实例动作
  */
 export function executeAction(instanceId: string, data: ExecuteActionParam) {
-  return httpClient.post<ApiResponse<void>>(`${baseUrl}/instances/${instanceId}`, data);
+  try {
+    return await httpClient.post(`${baseUrl}/instances/${instanceId}`, data);
+  } catch (error) {
+    handleApiError(error, '工作流');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取实例任务列表
  */
 export function listTasks(instanceId: string) {
-  return httpClient.get<ApiResponse<TaskRecord[]>>(`${baseUrl}/instances/${instanceId}/tasks`);
+  try {
+    return await httpClient.get(`${baseUrl}/instances/${instanceId}/tasks`);
+  } catch (error) {
+    handleApiError(error, '工作流');
+    throw error;
+  }
 }
 
 /**
  * @brief 完成任务
  */
 export function completeTask(taskId: string) {
-  return httpClient.post<ApiResponse<void>>(`${baseUrl}/tasks/${taskId}/complete`);
+  try {
+    return await httpClient.post(`${baseUrl}/tasks/${taskId}/complete`);
+  } catch (error) {
+    handleApiError(error, '工作流');
+    throw error;
+  }
 }
 
 /**
  * @brief 拒绝任务
  */
 export function rejectTask(taskId: string, comment?: string) {
-  return httpClient.post<ApiResponse<void>>(`${baseUrl}/tasks/${taskId}/reject`, { comment });
+  try {
+    return await httpClient.post(`${baseUrl}/tasks/${taskId}/reject`, { comment });
+  } catch (error) {
+    handleApiError(error, '工作流');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取工作流节点
  */
 export function listNodes(workflowId: string) {
-  return httpClient.get<ApiResponse<WorkflowNode[]>>(`${baseUrl}/${workflowId}/nodes`);
+  try {
+    return await httpClient.get(`${baseUrl}/${workflowId}/nodes`);
+  } catch (error) {
+    handleApiError(error, '工作流');
+    throw error;
+  }
 }
 
 /**
  * @brief 创建节点
  */
 export function createNode(workflowId: string, data: CreateNodeParam) {
-  return httpClient.post<ApiResponse<{ id: string }>>(`${baseUrl}/${workflowId}/nodes`, data);
+  try {
+    return await httpClient.post(`${baseUrl}/${workflowId}/nodes`, data);
+  } catch (error) {
+    handleApiError(error, '工作流');
+    throw error;
+  }
 }
 
 /**
  * @brief 更新节点
  */
 export function updateNode(workflowId: string, nodeId: string, data: UpdateNodeParam) {
-  return httpClient.put<ApiResponse<void>>(`${baseUrl}/${workflowId}/nodes/${nodeId}`, data);
+  try {
+    return await httpClient.put(`${baseUrl}/${workflowId}/nodes/${nodeId}`, data);
+  } catch (error) {
+    handleApiError(error, '工作流');
+    throw error;
+  }
 }
 
 /**
  * @brief 删除节点
  */
 export function deleteNode(workflowId: string, nodeId: string) {
-  return httpClient.delete<ApiResponse<void>>(`${baseUrl}/${workflowId}/nodes/${nodeId}`);
+  try {
+    return await httpClient.delete(`${baseUrl}/${workflowId}/nodes/${nodeId}`);
+  } catch (error) {
+    handleApiError(error, '工作流');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取工作流边
  */
 export function listEdges(workflowId: string) {
-  return httpClient.get<ApiResponse<WorkflowEdge[]>>(`${baseUrl}/${workflowId}/edges`);
+  try {
+    return await httpClient.get(`${baseUrl}/${workflowId}/edges`);
+  } catch (error) {
+    handleApiError(error, '工作流');
+    throw error;
+  }
 }
 
 /**
  * @brief 创建边
  */
 export function createEdge(workflowId: string, data: CreateEdgeParam) {
-  return httpClient.post<ApiResponse<{ id: string }>>(`${baseUrl}/${workflowId}/edges`, data);
+  try {
+    return await httpClient.post(`${baseUrl}/${workflowId}/edges`, data);
+  } catch (error) {
+    handleApiError(error, '工作流');
+    throw error;
+  }
 }
 
 /**
  * @brief 更新边
  */
 export function updateEdge(workflowId: string, edgeId: string, data: Partial<CreateEdgeParam>) {
-  return httpClient.put<ApiResponse<void>>(`${baseUrl}/${workflowId}/edges/${edgeId}`, data);
+  try {
+    return await httpClient.put(`${baseUrl}/${workflowId}/edges/${edgeId}`, data);
+  } catch (error) {
+    handleApiError(error, '工作流');
+    throw error;
+  }
 }
 
 /**
  * @brief 删除边
  */
 export function deleteEdge(workflowId: string, edgeId: string) {
-  return httpClient.delete<ApiResponse<void>>(`${baseUrl}/${workflowId}/edges/${edgeId}`);
+  try {
+    return await httpClient.delete(`${baseUrl}/${workflowId}/edges/${edgeId}`);
+  } catch (error) {
+    handleApiError(error, '工作流');
+    throw error;
+  }
 }

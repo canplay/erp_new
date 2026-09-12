@@ -6,6 +6,7 @@
  */
 
 import { httpClient } from '@/utils/alova';
+import { handleApiError } from '@/utils/apiErrorHandler';
 
 /**
  * @brief 消息类型
@@ -95,103 +96,178 @@ export interface MessageCreateParams {
  * @brief 获取消息列表
  */
 export function getMessageList(params?: MessageQueryParams) {
-  return httpClient.get('/messages', { params });
+  try {
+    return await httpClient.get('/messages', { params });
+  } catch (error) {
+    handleApiError(error, '站内信');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取收件箱消息
  */
 export function getInboxMessages(params?: Omit<MessageQueryParams, 'type'>) {
-  return httpClient.get('/messages/inbox', { params });
+  try {
+    return await httpClient.get('/messages/inbox', { params });
+  } catch (error) {
+    handleApiError(error, '站内信');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取发件箱消息
  */
 export function getOutboxMessages(params?: Omit<MessageQueryParams, 'type'>) {
-  return httpClient.get('/messages/outbox', { params });
+  try {
+    return await httpClient.get('/messages/outbox', { params });
+  } catch (error) {
+    handleApiError(error, '站内信');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取系统公告
  */
 export function getAnnouncements(params?: Omit<MessageQueryParams, 'type'>) {
-  return httpClient.get('/messages/announcements', { params });
+  try {
+    return await httpClient.get('/messages/announcements', { params });
+  } catch (error) {
+    handleApiError(error, '站内信');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取消息详情
  */
 export function getMessageDetail(id: number) {
-  return httpClient.get(`/messages/${id}`);
+  try {
+    return await httpClient.get(`/messages/${id}`);
+  } catch (error) {
+    handleApiError(error, '站内信');
+    throw error;
+  }
 }
 
 /**
  * @brief 发送消息
  */
 export function sendMessage(data: MessageCreateParams) {
-  return httpClient.post('/messages', data);
+  try {
+    return await httpClient.post('/messages', data);
+  } catch (error) {
+    handleApiError(error, '站内信');
+    throw error;
+  }
 }
 
 /**
  * @brief 批量发送消息
  */
 export function batchSendMessages(messageIds: number[], user_ids: number[]) {
-  return httpClient.post('/messages/batch-send', { messageIds, user_ids });
+  try {
+    return await httpClient.post('/messages/batch-send', { messageIds, user_ids });
+  } catch (error) {
+    handleApiError(error, '站内信');
+    throw error;
+  }
 }
 
 /**
  * @brief 标记消息已读
  */
 export function markAsRead(messageId: number) {
-  return httpClient.put(`/messages/${messageId}/read`);
+  try {
+    return await httpClient.put(`/messages/${messageId}/read`);
+  } catch (error) {
+    handleApiError(error, '站内信');
+    throw error;
+  }
 }
 
 /**
  * @brief 批量标记已读
  */
 export function batchMarkAsRead(messageIds: number[]) {
-  return httpClient.put('/messages/read/batch', { messageIds });
+  try {
+    return await httpClient.put('/messages/read/batch', { messageIds });
+  } catch (error) {
+    handleApiError(error, '站内信');
+    throw error;
+  }
 }
 
 /**
  * @brief 标记所有消息已读
  */
 export function markAllAsRead() {
-  return httpClient.put('/messages/read/all');
+  try {
+    return await httpClient.put('/messages/read/all');
+  } catch (error) {
+    handleApiError(error, '站内信');
+    throw error;
+  }
 }
 
 /**
  * @brief 标记星标
  */
 export function markAsStarred(messageId: number, starred: boolean) {
-  return httpClient.put(`/messages/${messageId}/star`, { starred });
+  try {
+    return await httpClient.put(`/messages/${messageId}/star`, { starred });
+  } catch (error) {
+    handleApiError(error, '站内信');
+    throw error;
+  }
 }
 
 /**
  * @brief 删除消息（软删除）
  */
 export function deleteMessage(messageId: number) {
-  return httpClient.delete(`/messages/${messageId}`);
+  try {
+    return await httpClient.delete(`/messages/${messageId}`);
+  } catch (error) {
+    handleApiError(error, '站内信');
+    throw error;
+  }
 }
 
 /**
  * @brief 批量删除消息
  */
 export function batchDeleteMessages(messageIds: number[]) {
-  return httpClient.delete('/messages/batch', { data: { messageIds } });
+  try {
+    return await httpClient.delete('/messages/batch', { data: { messageIds } });
+  } catch (error) {
+    handleApiError(error, '站内信');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取未读消息数量
  */
 export function getUnreadCount() {
-  return httpClient.get('/messages/unread-count');
+  try {
+    return await httpClient.get('/messages/unread-count');
+  } catch (error) {
+    handleApiError(error, '站内信');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取未读公告数量
  */
 export function getUnreadAnnouncementCount() {
-  return httpClient.get('/messages/announcements/unread-count');
+  try {
+    return await httpClient.get('/messages/announcements/unread-count');
+  } catch (error) {
+    handleApiError(error, '站内信');
+    throw error;
+  }
 }

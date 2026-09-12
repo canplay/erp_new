@@ -4,6 +4,7 @@
  */
 
 import { httpClient } from '@/utils/alova';
+import { handleApiError } from '@/utils/apiErrorHandler';
 
 // ==================== 类型定义 ====================
 
@@ -74,40 +75,80 @@ export interface VehicleQueryParams {
 
 /** 车辆入场 */
 export function vehicleEntry(event: VehicleEvent) {
-  return httpClient.post('/v1/xlt/parking/entry', event);
+  try {
+    return await httpClient.post('/v1/xlt/parking/entry', event);
+  } catch (error) {
+    handleApiError(error, 'XLT停车管理');
+    throw error;
+  }
 }
 
 /** 车辆出场 */
 export function vehicleExit(event: VehicleEvent) {
-  return httpClient.post('/v1/xlt/parking/exit', event);
+  try {
+    return await httpClient.post('/v1/xlt/parking/exit', event);
+  } catch (error) {
+    handleApiError(error, 'XLT停车管理');
+    throw error;
+  }
 }
 
 /** 查询在场车辆 */
 export function getParkingVehicle(parkCode: string, plateNo: string) {
-  return httpClient.get(`/xlt/parking/vehicle/${parkCode}/${plateNo}`);
+  try {
+    return await httpClient.get(`/xlt/parking/vehicle/${parkCode}/${plateNo}`);
+  } catch (error) {
+    handleApiError(error, 'XLT停车管理');
+    throw error;
+  }
 }
 
 /** 计算停车费用 */
 export function calcBilling(req: BillingRequest) {
-  return httpClient.post('/v1/xlt/parking/billing', req);
+  try {
+    return await httpClient.post('/v1/xlt/parking/billing', req);
+  } catch (error) {
+    handleApiError(error, 'XLT停车管理');
+    throw error;
+  }
 }
 
 /** 查询进出记录列表 */
 export function listParkingRecords(params?: VehicleQueryParams) {
-  return httpClient.get('/v1/xlt/parking/records', { params });
+  try {
+    return await httpClient.get('/v1/xlt/parking/records', { params });
+  } catch (error) {
+    handleApiError(error, 'XLT停车管理');
+    throw error;
+  }
 }
 
 /** 获取设备列表 */
 export function listXltDevices() {
-  return httpClient.get('/v1/xlt/device/list');
+  try {
+    return await httpClient.get('/v1/xlt/device/list');
+  } catch (error) {
+    handleApiError(error, 'XLT停车管理');
+    throw error;
+  }
 }
 
 /** 开闸 */
 export function openBarrier(sn: string) {
-  return httpClient.post('/v1/xlt/device/open', { sn });
+  try {
+    return await httpClient.post('/v1/xlt/device/open', { sn });
+  } catch (error) {
+    handleApiError(error, 'XLT停车管理');
+    throw error;
+  }
 }
 
 /** 关闸 */
 export function closeBarrier(sn: string) {
-  return httpClient.post('/v1/xlt/device/close', { sn });
+  try {
+    return await httpClient.post('/v1/xlt/device/close', { sn });
+  } catch (error) {
+    handleApiError(error, 'XLT停车管理');
+    throw error;
+  }
 }

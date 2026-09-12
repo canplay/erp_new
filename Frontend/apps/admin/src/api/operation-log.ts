@@ -12,6 +12,7 @@ import type {
   OperationType,
 } from '@/types/log';
 import type { OperationStatsParams } from '@/types';
+import { handleApiError } from '@/utils/apiErrorHandler';
 
 // ============ API 函数 ============
 
@@ -29,21 +30,36 @@ export function listOperationLogs(params?: {
   start_date?: string;
   end_date?: string;
 }) {
-  return httpClient.get('/audit/operation-logs', { params });
+  try {
+    return await httpClient.get('/audit/operation-logs', { params });
+  } catch (error) {
+    handleApiError(error, '操作日志');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取单个操作日志详情
  */
 export function getOperationLog(id: number) {
-  return httpClient.get(`/audit/operation-logs/${id}`);
+  try {
+    return await httpClient.get(`/audit/operation-logs/${id}`);
+  } catch (error) {
+    handleApiError(error, '操作日志');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取操作统计
  */
 export function getOperationStats(params?: OperationStatsParams) {
-  return httpClient.get('/audit/operation-stats', { params });
+  try {
+    return await httpClient.get('/audit/operation-stats', { params });
+  } catch (error) {
+    handleApiError(error, '操作日志');
+    throw error;
+  }
 }
 
 /**
@@ -57,10 +73,14 @@ export function exportOperationLogs(params?: {
   start_date?: string;
   end_date?: string;
 }) {
-  return httpClient.get('/audit/operation-logs/export', {
+  try {
+    return await httpClient.get('/audit/operation-logs/export', {
     params,
-    responseType: 'blob',
-  });
+    responseType: 'blob',  });
+  } catch (error) {
+    handleApiError(error, '操作日志');
+    throw error;
+  }
 }
 
 /**
@@ -77,14 +97,24 @@ export function listAuditLogs(params?: {
   start_date?: string;
   end_date?: string;
 }) {
-  return httpClient.get('/audit/api-call-logs', { params });
+  try {
+    return await httpClient.get('/audit/api-call-logs', { params });
+  } catch (error) {
+    handleApiError(error, '操作日志');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取审计日志详情
  */
 export function getAuditLog(id: number) {
-  return httpClient.get(`/audit/api-call-logs/${id}`);
+  try {
+    return await httpClient.get(`/audit/api-call-logs/${id}`);
+  } catch (error) {
+    handleApiError(error, '操作日志');
+    throw error;
+  }
 }
 
 /**
@@ -96,10 +126,14 @@ export function exportAuditLogs(params?: {
   start_date?: string;
   end_date?: string;
 }) {
-  return httpClient.get('/audit/api-call-logs/export', {
+  try {
+    return await httpClient.get('/audit/api-call-logs/export', {
     params,
-    responseType: 'blob',
-  });
+    responseType: 'blob',  });
+  } catch (error) {
+    handleApiError(error, '操作日志');
+    throw error;
+  }
 }
 
 // ============ 类型导出 ============

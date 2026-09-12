@@ -8,6 +8,7 @@
 import { httpClient } from '@/utils/alova';
 import type { ApiResponse, PaginationParams, PaginationResponse } from '@/utils/alova';
 import type { User } from './user';
+import { handleApiError } from '@/utils/apiErrorHandler';
 
 export interface Department {
   id: number;
@@ -49,57 +50,96 @@ export interface ListDepartmentsParams extends PaginationParams {
  * @brief 获取部门列表（树形）
  */
 export function listDepartments(params?: ListDepartmentsParams) {
-  return httpClient.get<ApiResponse<Department[]>>('/admin/departments', { params });
+  try {
+    return await httpClient.get('/admin/departments', { params });
+  } catch (error) {
+    handleApiError(error, '部门管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取部门详情
  */
 export function getDepartment(id: number) {
-  return httpClient.get<ApiResponse<Department>>(`/admin/departments/${id}`);
+  try {
+    return await httpClient.get(`/admin/departments/${id}`);
+  } catch (error) {
+    handleApiError(error, '部门管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 创建部门
  */
 export function createDepartment(data: CreateDepartmentRequest) {
-  return httpClient.post<ApiResponse<Department>>('/admin/departments', data);
+  try {
+    return await httpClient.post('/admin/departments', data);
+  } catch (error) {
+    handleApiError(error, '部门管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 更新部门
  */
 export function updateDepartment(id: number, data: UpdateDepartmentRequest) {
-  return httpClient.put<ApiResponse<void>>(`/admin/departments/${id}`, data);
+  try {
+    return await httpClient.put(`/admin/departments/${id}`, data);
+  } catch (error) {
+    handleApiError(error, '部门管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 删除部门
  */
 export function deleteDepartment(id: number) {
-  return httpClient.delete<ApiResponse<void>>(`/admin/departments/${id}`);
+  try {
+    return await httpClient.delete(`/admin/departments/${id}`);
+  } catch (error) {
+    handleApiError(error, '部门管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取部门下的用户列表
  */
 export function getDepartmentUsers(id: number, params?: PaginationParams) {
-  return httpClient.get<ApiResponse<PaginationResponse<User>>>(
+  try {
+    return await httpClient.get(
     `/admin/departments/${id}/users`,
-    { params }
-  );
+    { params }  );
+  } catch (error) {
+    handleApiError(error, '部门管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 移动部门
  */
 export function moveDepartment(id: number, newParentId?: number) {
-  return httpClient.put<ApiResponse<void>>(`/admin/departments/${id}/move`, { parent_id: newParentId });
+  try {
+    return await httpClient.put(`/admin/departments/${id}/move`, { parent_id: newParentId });
+  } catch (error) {
+    handleApiError(error, '部门管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取部门树形结构
  */
 export function getDepartmentTree() {
-  return httpClient.get<ApiResponse<Department[]>>('/admin/departments/tree');
+  try {
+    return await httpClient.get('/admin/departments/tree');
+  } catch (error) {
+    handleApiError(error, '部门管理');
+    throw error;
+  }
 }

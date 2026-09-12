@@ -8,6 +8,7 @@
 import { httpClient } from '@/utils/alova';
 import type { UserQueryParams, UserCreateForm, UserUpdateForm, BatchUpdateRoleParams, BatchUpdateStatusParams, UserImportResult } from '@/types/user';
 import type { ApiResponse } from '@/types/api';
+import { handleApiError } from '@/utils/apiErrorHandler';
 
 // ============ 用户信息相关 ============
 
@@ -16,7 +17,12 @@ import type { ApiResponse } from '@/types/api';
  * @returns { id, username, nickname, avatar, phone, email, gender, address, role, status, created_at, updated_at }
  */
 export function getUserInfo() {
-  return httpClient.get('/user/info');
+  try {
+    return await httpClient.get('/user/info');
+  } catch (error) {
+    handleApiError(error, '用户管理');
+    throw error;
+  }
 }
 
 /**
@@ -32,7 +38,12 @@ export function updateUserInfo(data: {
   phone?: string;
   email?: string;
 }) {
-  return httpClient.put('/user/info', data);
+  try {
+    return await httpClient.put('/user/info', data);
+  } catch (error) {
+    handleApiError(error, '用户管理');
+    throw error;
+  }
 }
 
 /**
@@ -41,17 +52,26 @@ export function updateUserInfo(data: {
  * @param data.new_password - 新密码
  */
 export function changePassword(data: { old_password: string; new_password: string }) {
-  return httpClient.put('/user/password', {
+  try {
+    return await httpClient.put('/user/password', {
     old_password: data.old_password,
-    new_password: data.new_password,
-  });
+    new_password: data.new_password,  });
+  } catch (error) {
+    handleApiError(error, '用户管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 更新头像
  */
 export function updateAvatar(avatar: string) {
-  return httpClient.put('/user/avatar', { avatar });
+  try {
+    return await httpClient.put('/user/avatar', { avatar });
+  } catch (error) {
+    handleApiError(error, '用户管理');
+    throw error;
+  }
 }
 
 // ============ 管理员接口 - 用户管理 ============
@@ -60,28 +80,48 @@ export function updateAvatar(avatar: string) {
  * @brief 获取用户列表（分页）
  */
 export function listUsers(params?: UserQueryParams) {
-  return httpClient.get('/admin/users', { params });
+  try {
+    return await httpClient.get('/admin/users', { params });
+  } catch (error) {
+    handleApiError(error, '用户管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取单个用户详情
  */
 export function getUser(id: number) {
-  return httpClient.get(`/admin/users/${id}`);
+  try {
+    return await httpClient.get(`/admin/users/${id}`);
+  } catch (error) {
+    handleApiError(error, '用户管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 创建用户
  */
 export function createUser(data: UserCreateForm) {
-  return httpClient.post('/admin/users', data);
+  try {
+    return await httpClient.post('/admin/users', data);
+  } catch (error) {
+    handleApiError(error, '用户管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 更新用户
  */
 export function updateUser(id: number, data: UserUpdateForm) {
-  return httpClient.put(`/admin/users/${id}`, data);
+  try {
+    return await httpClient.put(`/admin/users/${id}`, data);
+  } catch (error) {
+    handleApiError(error, '用户管理');
+    throw error;
+  }
 }
 
 /**
@@ -90,11 +130,12 @@ export function updateUser(id: number, data: UserUpdateForm) {
  * @param lockHours - 锁定时长（小时），仅 status=2 时有效
  */
 export function updateUserStatus(id: number, status: number, lockHours?: number) {
-  const data: Record<string, unknown> = { status };
-  if (lockHours !== undefined) {
-    data.lock_hours = lockHours;
+  try {
+    return await httpClient.put(`/admin/users/${id}/status`, data);
+  } catch (error) {
+    handleApiError(error, '用户管理');
+    throw error;
   }
-  return httpClient.put(`/admin/users/${id}/status`, data);
 }
 
 /**
@@ -102,23 +143,37 @@ export function updateUserStatus(id: number, status: number, lockHours?: number)
  * @param role - 角色: user, admin, vip
  */
 export function updateUserRole(id: number, role: string) {
-  return httpClient.put(`/admin/users/${id}/role`, { role });
+  try {
+    return await httpClient.put(`/admin/users/${id}/role`, { role });
+  } catch (error) {
+    handleApiError(error, '用户管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 重置用户密码
  */
 export function resetUserPassword(id: number, password?: string) {
-  return httpClient.post(`/admin/users/${id}/reset-password`, {
-    password: password || '',
-  });
+  try {
+    return await httpClient.post(`/admin/users/${id}/reset-password`, {
+    password: password || '',  });
+  } catch (error) {
+    handleApiError(error, '用户管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 删除用户
  */
 export function deleteUser(id: number) {
-  return httpClient.delete(`/admin/users/${id}`);
+  try {
+    return await httpClient.delete(`/admin/users/${id}`);
+  } catch (error) {
+    handleApiError(error, '用户管理');
+    throw error;
+  }
 }
 
 // ============ 批量用户操作 ============
@@ -127,29 +182,41 @@ export function deleteUser(id: number) {
  * @brief 批量更新用户角色
  */
 export function batchUpdateUserRole(params: BatchUpdateRoleParams) {
-  return httpClient.put('/admin/users/batch-role', {
+  try {
+    return await httpClient.put('/admin/users/batch-role', {
     user_ids: params.user_ids,
-    role: params.role,
-  });
+    role: params.role,  });
+  } catch (error) {
+    handleApiError(error, '用户管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 批量更新用户状态
  */
 export function batchUpdateUserStatus(params: BatchUpdateStatusParams) {
-  return httpClient.put('/admin/users/batch-status', {
+  try {
+    return await httpClient.put('/admin/users/batch-status', {
     user_ids: params.user_ids,
-    status: params.status,
-  });
+    status: params.status,  });
+  } catch (error) {
+    handleApiError(error, '用户管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 批量删除用户
  */
 export function batchDeleteUsers(user_ids: number[]) {
-  return httpClient.post('/admin/users/batch-delete', {
-    user_ids: user_ids,
-  });
+  try {
+    return await httpClient.post('/admin/users/batch-delete', {
+    user_ids: user_ids,  });
+  } catch (error) {
+    handleApiError(error, '用户管理');
+    throw error;
+  }
 }
 
 // ============ 用户导入导出 ============
@@ -158,18 +225,25 @@ export function batchDeleteUsers(user_ids: number[]) {
  * @brief 获取用户导入模板
  */
 export function getUserImportTemplate() {
-  return httpClient.get('/admin/users/import-template');
+  try {
+    return await httpClient.get('/admin/users/import-template');
+  } catch (error) {
+    handleApiError(error, '用户管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 导入用户
  */
 export function importUsers(file: File) {
-  const formData = new FormData();
-  formData.append('file', file);
-  return httpClient.post<ApiResponse<UserImportResult>>('/admin/users/import', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  });
+  try {
+    return await httpClient.post('/admin/users/import', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },  });
+  } catch (error) {
+    handleApiError(error, '用户管理');
+    throw error;
+  }
 }
 
 /**
@@ -181,19 +255,27 @@ export function exportUsers(params?: {
   role?: string;
   format?: 'csv' | 'excel';
 }) {
-  return httpClient.get('/admin/users/export', {
+  try {
+    return await httpClient.get('/admin/users/export', {
     params,
-    responseType: 'blob',
-  });
+    responseType: 'blob',  });
+  } catch (error) {
+    handleApiError(error, '用户管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 下载用户导入模板
  */
 export function downloadUserImportTemplate() {
-  return httpClient.get('/admin/users/import-template/download', {
-    responseType: 'blob',
-  });
+  try {
+    return await httpClient.get('/admin/users/import-template/download', {
+    responseType: 'blob',  });
+  } catch (error) {
+    handleApiError(error, '用户管理');
+    throw error;
+  }
 }
 
 // ============ 部门管理（委托给 department.ts） ============
@@ -226,7 +308,12 @@ export { listLoginLogs } from './log';
  * @brief 获取系统统计信息
  */
 export function getStatistics() {
-  return httpClient.get('/admin/stats');
+  try {
+    return await httpClient.get('/admin/stats');
+  } catch (error) {
+    handleApiError(error, '用户管理');
+    throw error;
+  }
 }
 
 // ============ 类型导出 ============

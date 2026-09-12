@@ -6,6 +6,7 @@
  */
 
 import { httpClient } from '@/utils/alova';
+import { handleApiError } from '@/utils/apiErrorHandler';
 
 /**
  * @brief 文件信息接口
@@ -73,7 +74,12 @@ export function listFiles(params: {
   page?: number;
   page_size?: number;
 }) {
-  return httpClient.get('/files', { params });
+  try {
+    return await httpClient.get('/files', { params });
+  } catch (error) {
+    handleApiError(error, '文件管理');
+    throw error;
+  }
 }
 
 /**
@@ -83,14 +89,24 @@ export function listFolders(params: {
   parent_id?: number;
   keyword?: string;
 }) {
-  return httpClient.get('/files/folders', { params });
+  try {
+    return await httpClient.get('/files/folders', { params });
+  } catch (error) {
+    handleApiError(error, '文件管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取文件/文件夹详情
  */
 export function getFileInfo(id: number) {
-  return httpClient.get(`/files/${id}`);
+  try {
+    return await httpClient.get(`/files/${id}`);
+  } catch (error) {
+    handleApiError(error, '文件管理');
+    throw error;
+  }
 }
 
 /**
@@ -100,35 +116,60 @@ export function createFolder(data: {
   name: string;
   parent_id?: number;
 }) {
-  return httpClient.post('/files/folders', data);
+  try {
+    return await httpClient.post('/files/folders', data);
+  } catch (error) {
+    handleApiError(error, '文件管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 重命名文件/文件夹
  */
 export function renameFile(id: number, name: string) {
-  return httpClient.put(`/files/${id}/rename`, { name });
+  try {
+    return await httpClient.put(`/files/${id}/rename`, { name });
+  } catch (error) {
+    handleApiError(error, '文件管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 移动文件/文件夹
  */
 export function moveFile(id: number, targetFolderId?: number) {
-  return httpClient.put(`/files/${id}/move`, { folder_id: targetFolderId });
+  try {
+    return await httpClient.put(`/files/${id}/move`, { folder_id: targetFolderId });
+  } catch (error) {
+    handleApiError(error, '文件管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 删除文件/文件夹
  */
 export function deleteFile(id: number) {
-  return httpClient.delete(`/files/${id}`);
+  try {
+    return await httpClient.delete(`/files/${id}`);
+  } catch (error) {
+    handleApiError(error, '文件管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 批量删除文件
  */
 export function deleteFiles(ids: number[]) {
-  return httpClient.post('/files/batch-delete', { ids });
+  try {
+    return await httpClient.post('/files/batch-delete', { ids });
+  } catch (error) {
+    handleApiError(error, '文件管理');
+    throw error;
+  }
 }
 
 /**
@@ -140,7 +181,12 @@ export function getUploadSignature(data: {
   mimeType: string;
   folderId?: number;
 }) {
-  return httpClient.post('/files/upload/signature', data);
+  try {
+    return await httpClient.post('/files/upload/signature', data);
+  } catch (error) {
+    handleApiError(error, '文件管理');
+    throw error;
+  }
 }
 
 /**
@@ -148,22 +194,31 @@ export function getUploadSignature(data: {
  */
  
 export function uploadFile(formData: FormData, onProgress?: (percent: number) => void) {
-  return httpClient.post('/files/upload', formData, {
+  try {
+    return await httpClient.post('/files/upload', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
     onUploadProgress: (progressEvent: { loaded: number; total?: number }) => {
       if (onProgress && progressEvent.total) {
         const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
         onProgress(percent);
       }
-    },
-  });
+    },  });
+  } catch (error) {
+    handleApiError(error, '文件管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取文件下载链接
  */
 export function getDownloadUrl(id: number) {
-  return httpClient.get(`/files/${id}/download`);
+  try {
+    return await httpClient.get(`/files/${id}/download`);
+  } catch (error) {
+    handleApiError(error, '文件管理');
+    throw error;
+  }
 }
 
 /**
@@ -174,56 +229,88 @@ export function createShare(data: {
   password?: string;
   expiryDays?: number;
 }) {
-  return httpClient.post('/files/share', data);
+  try {
+    return await httpClient.post('/files/share', data);
+  } catch (error) {
+    handleApiError(error, '文件管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取分享信息
  */
 export function getShareInfo(token: string, password?: string) {
-  return httpClient.get(`/files/share/${token}`, {
-    params: password ? { password } : undefined,
-  });
+  try {
+    return await httpClient.get(`/files/share/${token}`, {
+    params: password ? { password } : undefined,  });
+  } catch (error) {
+    handleApiError(error, '文件管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 验证分享密码
  */
 export function verifySharePassword(token: string, password: string) {
-  return httpClient.post(`/files/share/${token}/verify`, { password });
+  try {
+    return await httpClient.post(`/files/share/${token}/verify`, { password });
+  } catch (error) {
+    handleApiError(error, '文件管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 下载分享文件
  */
 export function downloadSharedFile(token: string, fileId: number) {
-  return httpClient.get(`/files/share/${token}/download/${fileId}`, {
-    responseType: 'blob',
-  });
+  try {
+    return await httpClient.get(`/files/share/${token}/download/${fileId}`, {
+    responseType: 'blob',  });
+  } catch (error) {
+    handleApiError(error, '文件管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 取消分享
  */
 export function cancelShare(token: string) {
-  return httpClient.delete(`/files/share/${token}`);
+  try {
+    return await httpClient.delete(`/files/share/${token}`);
+  } catch (error) {
+    handleApiError(error, '文件管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取图片缩略图
  */
 export function getThumbnail(id: number, size: 'small' | 'medium' | 'large' = 'medium') {
-  return httpClient.get(`/files/${id}/thumbnail`, {
+  try {
+    return await httpClient.get(`/files/${id}/thumbnail`, {
     params: { size },
-    responseType: 'blob',
-  });
+    responseType: 'blob',  });
+  } catch (error) {
+    handleApiError(error, '文件管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 复制文件
  */
 export function copyFile(id: number, targetFolderId?: number) {
-  return httpClient.post(`/files/${id}/copy`, { folder_id: targetFolderId });
+  try {
+    return await httpClient.post(`/files/${id}/copy`, { folder_id: targetFolderId });
+  } catch (error) {
+    handleApiError(error, '文件管理');
+    throw error;
+  }
 }
 
 /**
@@ -237,79 +324,132 @@ export function searchFiles(params: {
   page?: number;
   page_size?: number;
 }) {
-  return httpClient.get('/files/search', { params });
+  try {
+    return await httpClient.get('/files/search', { params });
+  } catch (error) {
+    handleApiError(error, '文件管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取文件夹面包屑路径
  */
 export function getFolderPath(folderId?: number) {
-  return httpClient.get('/files/folders/path', {
-    params: folderId !== undefined ? { folder_id: folderId } : {},
-  });
+  try {
+    return await httpClient.get('/files/folders/path', {
+    params: folderId !== undefined ? { folder_id: folderId } : {},  });
+  } catch (error) {
+    handleApiError(error, '文件管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取存储使用统计
  */
 export function getStorageStats() {
-  return httpClient.get('/files/stats');
+  try {
+    return await httpClient.get('/files/stats');
+  } catch (error) {
+    handleApiError(error, '文件管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 下载文件
  */
 export function downloadFile(id: number) {
-  return httpClient.get(`/files/${id}/download`, {
-    responseType: 'blob',
-  });
+  try {
+    return await httpClient.get(`/files/${id}/download`, {
+    responseType: 'blob',  });
+  } catch (error) {
+    handleApiError(error, '文件管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取文件预览URL
  */
 export function getPreviewUrl(id: number) {
-  return httpClient.get(`/files/${id}/preview`);
+  try {
+    return await httpClient.get(`/files/${id}/preview`);
+  } catch (error) {
+    handleApiError(error, '文件管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 批量移动文件
  */
 export function batchMoveFiles(ids: number[], targetFolderId?: number) {
-  return httpClient.post('/files/batch-move', { ids, folder_id: targetFolderId });
+  try {
+    return await httpClient.post('/files/batch-move', { ids, folder_id: targetFolderId });
+  } catch (error) {
+    handleApiError(error, '文件管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 批量复制文件
  */
 export function batchCopyFiles(ids: number[], targetFolderId?: number) {
-  return httpClient.post('/files/batch-copy', { ids, folder_id: targetFolderId });
+  try {
+    return await httpClient.post('/files/batch-copy', { ids, folder_id: targetFolderId });
+  } catch (error) {
+    handleApiError(error, '文件管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取最近访问文件
  */
 export function getRecentFiles(limit: number = 10) {
-  return httpClient.get('/files/recent', { params: { limit } });
+  try {
+    return await httpClient.get('/files/recent', { params: { limit } });
+  } catch (error) {
+    handleApiError(error, '文件管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 收藏文件
  */
 export function favoriteFile(id: number) {
-  return httpClient.post(`/files/${id}/favorite`);
+  try {
+    return await httpClient.post(`/files/${id}/favorite`);
+  } catch (error) {
+    handleApiError(error, '文件管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 取消收藏文件
  */
 export function unfavoriteFile(id: number) {
-  return httpClient.delete(`/files/${id}/favorite`);
+  try {
+    return await httpClient.delete(`/files/${id}/favorite`);
+  } catch (error) {
+    handleApiError(error, '文件管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取收藏文件列表
  */
 export function getFavoriteFiles() {
-  return httpClient.get('/files/favorites');
+  try {
+    return await httpClient.get('/files/favorites');
+  } catch (error) {
+    handleApiError(error, '文件管理');
+    throw error;
+  }
 }

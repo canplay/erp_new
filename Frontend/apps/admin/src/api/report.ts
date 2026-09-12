@@ -7,6 +7,7 @@
 
 import { httpClient } from '@/utils/alova';
 import type { ApiResponse } from '@/types/api';
+import { handleApiError } from '@/utils/apiErrorHandler';
 
 // ============ 类型定义 ============
 
@@ -80,49 +81,84 @@ const baseUrl = '/reports';
  * @brief 获取报表列表
  */
 export function listReports(params?: ReportListParam) {
-  return httpClient.get<ApiResponse<{ list: Report[]; total: number }>>(`${baseUrl}`, { params });
+  try {
+    return await httpClient.get(`${baseUrl}`, { params });
+  } catch (error) {
+    handleApiError(error, '报表管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取报表详情
  */
 export function getReport(id: string) {
-  return httpClient.get<ApiResponse<Report>>(`${baseUrl}/${id}`);
+  try {
+    return await httpClient.get(`${baseUrl}/${id}`);
+  } catch (error) {
+    handleApiError(error, '报表管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 创建报表
  */
 export function createReport(data: CreateReportParam) {
-  return httpClient.post<ApiResponse<{ id: string }>>(`${baseUrl}`, data);
+  try {
+    return await httpClient.post(`${baseUrl}`, data);
+  } catch (error) {
+    handleApiError(error, '报表管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 更新报表
  */
 export function updateReport(id: string, data: UpdateReportParam) {
-  return httpClient.put<ApiResponse<void>>(`${baseUrl}/${id}`, data);
+  try {
+    return await httpClient.put(`${baseUrl}/${id}`, data);
+  } catch (error) {
+    handleApiError(error, '报表管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 删除报表
  */
 export function deleteReport(id: string) {
-  return httpClient.delete<ApiResponse<void>>(`${baseUrl}/${id}`);
+  try {
+    return await httpClient.delete(`${baseUrl}/${id}`);
+  } catch (error) {
+    handleApiError(error, '报表管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 生成报表
  */
 export function generateReport(id: string) {
-  return httpClient.post<ApiResponse<void>>(`${baseUrl}/${id}/generate`);
+  try {
+    return await httpClient.post(`${baseUrl}/${id}/generate`);
+  } catch (error) {
+    handleApiError(error, '报表管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 下载报表
  */
 export function downloadReport(id: string) {
-  return httpClient.get<ApiResponse<string>>(`${baseUrl}/${id}/download`);
+  try {
+    return await httpClient.get(`${baseUrl}/${id}/download`);
+  } catch (error) {
+    handleApiError(error, '报表管理');
+    throw error;
+  }
 }
 
 // ============ 数据源相关类型 ============
@@ -157,28 +193,48 @@ const dataSourceBaseUrl = '/data-sources';
  * @brief 获取数据源列表
  */
 export function listDataSources() {
-  return httpClient.get<ApiResponse<DataSource[]>>(`${dataSourceBaseUrl}`);
+  try {
+    return await httpClient.get(`${dataSourceBaseUrl}`);
+  } catch (error) {
+    handleApiError(error, '报表管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 创建数据源
  */
 export function createDataSource(data: Partial<DataSource>) {
-  return httpClient.post<ApiResponse<DataSource>>(`${dataSourceBaseUrl}`, data);
+  try {
+    return await httpClient.post(`${dataSourceBaseUrl}`, data);
+  } catch (error) {
+    handleApiError(error, '报表管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 更新数据源
  */
 export function updateDataSource(id: string, data: Partial<DataSource>) {
-  return httpClient.put<ApiResponse<void>>(`${dataSourceBaseUrl}/${id}`, data);
+  try {
+    return await httpClient.put(`${dataSourceBaseUrl}/${id}`, data);
+  } catch (error) {
+    handleApiError(error, '报表管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 删除数据源
  */
 export function deleteDataSource(id: string) {
-  return httpClient.delete<ApiResponse<void>>(`${dataSourceBaseUrl}/${id}`);
+  try {
+    return await httpClient.delete(`${dataSourceBaseUrl}/${id}`);
+  } catch (error) {
+    handleApiError(error, '报表管理');
+    throw error;
+  }
 }
 
 // ============ 报表模板 API ============
@@ -189,14 +245,24 @@ const templateBaseUrl = '/report-templates';
  * @brief 获取报表模板列表
  */
 export function listTemplates() {
-  return httpClient.get<ApiResponse<ReportTemplate[]>>(`${templateBaseUrl}`);
+  try {
+    return await httpClient.get(`${templateBaseUrl}`);
+  } catch (error) {
+    handleApiError(error, '报表管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 从模板创建报表
  */
 export function createFromTemplate(templateId: string, name: string) {
-  return httpClient.post<ApiResponse<{ id: string }>>(`${templateBaseUrl}/${templateId}/create`, { name });
+  try {
+    return await httpClient.post(`${templateBaseUrl}/${templateId}/create`, { name });
+  } catch (error) {
+    handleApiError(error, '报表管理');
+    throw error;
+  }
 }
 
 // ============ 报表执行 API ============
@@ -205,36 +271,60 @@ export function createFromTemplate(templateId: string, name: string) {
  * @brief 执行报表
  */
 export function executeReport(id: string) {
-  return httpClient.post<ApiResponse<void>>(`${baseUrl}/${id}/execute`);
+  try {
+    return await httpClient.post(`${baseUrl}/${id}/execute`);
+  } catch (error) {
+    handleApiError(error, '报表管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 导出报表
  */
 export function exportReport(id: string, format?: 'pdf' | 'excel' | 'csv') {
-  return httpClient.get(`${baseUrl}/${id}/export`, {
+  try {
+    return await httpClient.get(`${baseUrl}/${id}/export`, {
     responseType: 'blob',
-    params: format ? { format } : undefined,
-  });
+    params: format ? { format } : undefined,  });
+  } catch (error) {
+    handleApiError(error, '报表管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取报表数据
  */
 export function getReportData(id: string) {
-  return httpClient.get<ApiResponse<Record<string, unknown>>>(`${baseUrl}/${id}/data`);
+  try {
+    return await httpClient.get(`${baseUrl}/${id}/data`);
+  } catch (error) {
+    handleApiError(error, '报表管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取报表任务列表
  */
 export function listReportTasks(reportId: string) {
-  return httpClient.get<ApiResponse<ReportTask[]>>(`${baseUrl}/${reportId}/tasks`);
+  try {
+    return await httpClient.get(`${baseUrl}/${reportId}/tasks`);
+  } catch (error) {
+    handleApiError(error, '报表管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取报表历史记录
  */
 export function listReportHistory(reportId: string) {
-  return httpClient.get<ApiResponse<ReportTask[]>>(`${baseUrl}/${reportId}/history`);
+  try {
+    return await httpClient.get(`${baseUrl}/${reportId}/history`);
+  } catch (error) {
+    handleApiError(error, '报表管理');
+    throw error;
+  }
 }

@@ -6,6 +6,7 @@
  */
 
 import { httpClient } from '@/utils/alova';
+import { handleApiError } from '@/utils/apiErrorHandler';
 
 /**
  * @brief 反馈类型
@@ -100,82 +101,142 @@ export interface FeedbackHandleParams {
  * @brief 获取反馈列表（管理员）
  */
 export function getFeedbackList(params?: FeedbackQueryParams) {
-  return httpClient.get('/admin/feedback', { params });
+  try {
+    return await httpClient.get('/admin/feedback', { params });
+  } catch (error) {
+    handleApiError(error, '意见反馈');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取反馈详情
  */
 export function getFeedbackDetail(id: number) {
-  return httpClient.get(`/admin/feedback/${id}`);
+  try {
+    return await httpClient.get(`/admin/feedback/${id}`);
+  } catch (error) {
+    handleApiError(error, '意见反馈');
+    throw error;
+  }
 }
 
 /**
  * @brief 提交反馈（用户）
  */
 export function submitFeedback(data: FeedbackCreateParams) {
-  return httpClient.post('/feedback', data);
+  try {
+    return await httpClient.post('/feedback', data);
+  } catch (error) {
+    handleApiError(error, '意见反馈');
+    throw error;
+  }
 }
 
 /**
  * @brief 处理反馈（管理员）
  */
 export function handleFeedback(id: number, data: FeedbackHandleParams) {
-  return httpClient.put(`/admin/feedback/${id}/handle`, data);
+  try {
+    return await httpClient.put(`/admin/feedback/${id}/handle`, data);
+  } catch (error) {
+    handleApiError(error, '意见反馈');
+    throw error;
+  }
 }
 
 /**
  * @brief 转交反馈（更换处理人）
  */
 export function transferFeedback(id: number, handlerId: number) {
-  return httpClient.put(`/admin/feedback/${id}/transfer`, { handlerId });
+  try {
+    return await httpClient.put(`/admin/feedback/${id}/transfer`, { handlerId });
+  } catch (error) {
+    handleApiError(error, '意见反馈');
+    throw error;
+  }
 }
 
 /**
  * @brief 添加反馈回复
  */
 export function addFeedbackReply(id: number, reply: string) {
-  return httpClient.post(`/admin/feedback/${id}/reply`, { reply });
+  try {
+    return await httpClient.post(`/admin/feedback/${id}/reply`, { reply });
+  } catch (error) {
+    handleApiError(error, '意见反馈');
+    throw error;
+  }
 }
 
 /**
  * @brief 关闭反馈
  */
 export function closeFeedback(id: number) {
-  return httpClient.put(`/admin/feedback/${id}/close`);
+  try {
+    return await httpClient.put(`/admin/feedback/${id}/close`);
+  } catch (error) {
+    handleApiError(error, '意见反馈');
+    throw error;
+  }
 }
 
 /**
  * @brief 删除反馈
  */
 export function deleteFeedback(id: number) {
-  return httpClient.delete(`/admin/feedback/${id}`);
+  try {
+    return await httpClient.delete(`/admin/feedback/${id}`);
+  } catch (error) {
+    handleApiError(error, '意见反馈');
+    throw error;
+  }
 }
 
 /**
  * @brief 批量处理反馈
  */
 export function batchHandleFeedback(ids: number[], data: FeedbackHandleParams) {
-  return httpClient.put('/admin/feedback/batch-handle', { ids, ...data });
+  try {
+    return await httpClient.put('/admin/feedback/batch-handle', { ids, ...data });
+  } catch (error) {
+    handleApiError(error, '意见反馈');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取反馈统计数据
  */
 export function getFeedbackStatistics(params?: { start_date?: string; end_date?: string }) {
-  return httpClient.get('/admin/feedback/statistics', { params });
+  try {
+    return await httpClient.get('/admin/feedback/statistics', { params });
+  } catch (error) {
+    handleApiError(error, '意见反馈');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取反馈类型统计
  */
 export function getFeedbackTypeStatistics(params?: { start_date?: string; end_date?: string }) {
-  return httpClient.get('/admin/feedback/statistics/by-type', { params });
+  try {
+    return await httpClient.get('/admin/feedback/statistics/by-type', { params });
+  } catch (error) {
+    handleApiError(error, '意见反馈');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取处理人列表
  */
 export function getFeedbackHandlers() {
-  return httpClient.get('/admin/feedback/handlers');
+  try {
+    return await httpClient.get('/admin/feedback/handlers');
+  } catch (error) {
+    handleApiError(error, '意见反馈');
+    throw error;
+  }
 }

@@ -7,6 +7,7 @@
 
 import { httpClient } from '@/utils/alova';
 import type { PaginationParams } from '@/utils/alova';
+import { handleApiError } from '@/utils/apiErrorHandler';
 
 // ============ 类型定义 ============
 
@@ -78,58 +79,97 @@ export interface ExportTaskStats {
  * 获取导出任务数量
  */
 export function countExportTasks(params: ExportTaskQuery) {
-  return httpClient.get('/export/tasks/count', { params });
+  try {
+    return await httpClient.get('/export/tasks/count', { params });
+  } catch (error) {
+    handleApiError(error, '导出任务');
+    throw error;
+  }
 }
 
 /**
  * 获取导出任务列表
  */
 export function listExportTasks(params: ExportTaskQuery) {
-  return httpClient.get('/export/tasks/list', { params });
+  try {
+    return await httpClient.get('/export/tasks/list', { params });
+  } catch (error) {
+    handleApiError(error, '导出任务');
+    throw error;
+  }
 }
 
 /**
  * 获取导出任务详情
  */
 export function getExportTask(taskId: string) {
-  return httpClient.get(`/export/tasks/${taskId}`);
+  try {
+    return await httpClient.get(`/export/tasks/${taskId}`);
+  } catch (error) {
+    handleApiError(error, '导出任务');
+    throw error;
+  }
 }
 
 /**
  * 创建导出任务
  */
 export function createExportTask(data: ExportTaskCreateParams) {
-  return httpClient.post('/export/tasks/create', data);
+  try {
+    return await httpClient.post('/export/tasks/create', data);
+  } catch (error) {
+    handleApiError(error, '导出任务');
+    throw error;
+  }
 }
 
 /**
  * 批量创建导出任务
  */
 export function batchCreateExportTasks(data: BatchExportParams) {
-  return httpClient.post('/export/tasks/batch-create', data);
+  try {
+    return await httpClient.post('/export/tasks/batch-create', data);
+  } catch (error) {
+    handleApiError(error, '导出任务');
+    throw error;
+  }
 }
 
 /**
  * 取消导出任务
  */
 export function cancelExportTask(taskId: string) {
-  return httpClient.post(`/export/tasks/${taskId}/cancel`);
+  try {
+    return await httpClient.post(`/export/tasks/${taskId}/cancel`);
+  } catch (error) {
+    handleApiError(error, '导出任务');
+    throw error;
+  }
 }
 
 /**
  * 删除导出任务
  */
 export function deleteExportTask(taskId: string) {
-  return httpClient.delete(`/export/tasks/${taskId}`);
+  try {
+    return await httpClient.delete(`/export/tasks/${taskId}`);
+  } catch (error) {
+    handleApiError(error, '导出任务');
+    throw error;
+  }
 }
 
 /**
  * 下载导出文件
  */
 export function downloadExportFile(taskId: string) {
-  return httpClient.get(`/export/tasks/${taskId}/download`, {
-    responseType: 'blob',
-  });
+  try {
+    return await httpClient.get(`/export/tasks/${taskId}/download`, {
+    responseType: 'blob',  });
+  } catch (error) {
+    handleApiError(error, '导出任务');
+    throw error;
+  }
 }
 
 /**
@@ -140,21 +180,36 @@ export function getExportTaskStats(params?: {
   end_date?: string;
   task_type?: string;
 }) {
-  return httpClient.get('/export/tasks/stats', { params });
+  try {
+    return await httpClient.get('/export/tasks/stats', { params });
+  } catch (error) {
+    handleApiError(error, '导出任务');
+    throw error;
+  }
 }
 
 /**
  * 获取导出任务进度
  */
 export function getExportTaskProgress(taskId: string) {
-  return httpClient.get(`/export/tasks/${taskId}/progress`);
+  try {
+    return await httpClient.get(`/export/tasks/${taskId}/progress`);
+  } catch (error) {
+    handleApiError(error, '导出任务');
+    throw error;
+  }
 }
 
 /**
  * 重试导出任务
  */
 export function retryExportTask(taskId: string) {
-  return httpClient.post(`/export/tasks/${taskId}/retry`);
+  try {
+    return await httpClient.post(`/export/tasks/${taskId}/retry`);
+  } catch (error) {
+    handleApiError(error, '导出任务');
+    throw error;
+  }
 }
 
 // ============ 快捷导出 API ============
@@ -168,10 +223,14 @@ export function exportUsers(params?: {
   role?: string;
   format?: 'csv' | 'excel';
 }) {
-  return httpClient.get('/export/users', {
+  try {
+    return await httpClient.get('/export/users', {
     params,
-    responseType: 'blob',
-  });
+    responseType: 'blob',  });
+  } catch (error) {
+    handleApiError(error, '导出任务');
+    throw error;
+  }
 }
 
 /**
@@ -184,10 +243,14 @@ export function exportLoginLogs(params?: {
   end_date?: string;
   format?: 'csv' | 'excel';
 }) {
-  return httpClient.get('/export/login-logs', {
+  try {
+    return await httpClient.get('/export/login-logs', {
     params,
-    responseType: 'blob',
-  });
+    responseType: 'blob',  });
+  } catch (error) {
+    handleApiError(error, '导出任务');
+    throw error;
+  }
 }
 
 /**
@@ -202,10 +265,14 @@ export function exportOperationLogs(params?: {
   end_date?: string;
   format?: 'csv' | 'excel';
 }) {
-  return httpClient.get('/export/operation-logs', {
+  try {
+    return await httpClient.get('/export/operation-logs', {
     params,
-    responseType: 'blob',
-  });
+    responseType: 'blob',  });
+  } catch (error) {
+    handleApiError(error, '导出任务');
+    throw error;
+  }
 }
 
 /**
@@ -219,10 +286,14 @@ export function exportAuditLogs(params?: {
   end_date?: string;
   format?: 'csv' | 'excel';
 }) {
-  return httpClient.get('/export/audit-logs', {
+  try {
+    return await httpClient.get('/export/audit-logs', {
     params,
-    responseType: 'blob',
-  });
+    responseType: 'blob',  });
+  } catch (error) {
+    handleApiError(error, '导出任务');
+    throw error;
+  }
 }
 
 // ============ 导出 ============

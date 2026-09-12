@@ -6,6 +6,7 @@
  */
 
 import { httpClient } from '@/utils/alova';
+import { handleApiError } from '@/utils/apiErrorHandler';
 
 /**
  * @brief IP类型
@@ -80,96 +81,166 @@ export interface IpWhitelistUpdateParams extends IpWhitelistCreateParams {
  * @brief 获取IP白名单规则列表
  */
 export function getIpWhitelist(params?: IpWhitelistQueryParams) {
-  return httpClient.get('/security/ip-whitelist', { params });
+  try {
+    return await httpClient.get('/security/ip-whitelist', { params });
+  } catch (error) {
+    handleApiError(error, 'IP白名单');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取IP白名单规则详情
  */
 export function getIpWhitelistDetail(id: number) {
-  return httpClient.get(`/security/ip-whitelist/${id}`);
+  try {
+    return await httpClient.get(`/security/ip-whitelist/${id}`);
+  } catch (error) {
+    handleApiError(error, 'IP白名单');
+    throw error;
+  }
 }
 
 /**
  * @brief 创建IP白名单规则
  */
 export function createIpWhitelist(data: IpWhitelistCreateParams) {
-  return httpClient.post('/security/ip-whitelist', data);
+  try {
+    return await httpClient.post('/security/ip-whitelist', data);
+  } catch (error) {
+    handleApiError(error, 'IP白名单');
+    throw error;
+  }
 }
 
 /**
  * @brief 更新IP白名单规则
  */
 export function updateIpWhitelist(id: number, data: IpWhitelistUpdateParams) {
-  return httpClient.put(`/security/ip-whitelist/${id}`, data);
+  try {
+    return await httpClient.put(`/security/ip-whitelist/${id}`, data);
+  } catch (error) {
+    handleApiError(error, 'IP白名单');
+    throw error;
+  }
 }
 
 /**
  * @brief 删除IP白名单规则
  */
 export function deleteIpWhitelist(id: number) {
-  return httpClient.delete(`/security/ip-whitelist/${id}`);
+  try {
+    return await httpClient.delete(`/security/ip-whitelist/${id}`);
+  } catch (error) {
+    handleApiError(error, 'IP白名单');
+    throw error;
+  }
 }
 
 /**
  * @brief 批量删除IP白名单规则
  */
 export function batchDeleteIpWhitelist(ids: number[]) {
-  return httpClient.delete('/security/ip-whitelist/batch', { data: { ids } });
+  try {
+    return await httpClient.delete('/security/ip-whitelist/batch', { data: { ids } });
+  } catch (error) {
+    handleApiError(error, 'IP白名单');
+    throw error;
+  }
 }
 
 /**
  * @brief 启用IP白名单规则
  */
 export function enableIpWhitelist(id: number) {
-  return httpClient.put(`/security/ip-whitelist/${id}/enable`);
+  try {
+    return await httpClient.put(`/security/ip-whitelist/${id}/enable`);
+  } catch (error) {
+    handleApiError(error, 'IP白名单');
+    throw error;
+  }
 }
 
 /**
  * @brief 禁用IP白名单规则
  */
 export function disableIpWhitelist(id: number) {
-  return httpClient.put(`/security/ip-whitelist/${id}/disable`);
+  try {
+    return await httpClient.put(`/security/ip-whitelist/${id}/disable`);
+  } catch (error) {
+    handleApiError(error, 'IP白名单');
+    throw error;
+  }
 }
 
 /**
  * @brief 批量启用规则
  */
 export function batchEnableIpWhitelist(ids: number[]) {
-  return httpClient.put('/security/ip-whitelist/batch-enable', { ids });
+  try {
+    return await httpClient.put('/security/ip-whitelist/batch-enable', { ids });
+  } catch (error) {
+    handleApiError(error, 'IP白名单');
+    throw error;
+  }
 }
 
 /**
  * @brief 批量禁用规则
  */
 export function batchDisableIpWhitelist(ids: number[]) {
-  return httpClient.put('/security/ip-whitelist/batch-disable', { ids });
+  try {
+    return await httpClient.put('/security/ip-whitelist/batch-disable', { ids });
+  } catch (error) {
+    handleApiError(error, 'IP白名单');
+    throw error;
+  }
 }
 
 /**
  * @brief 调整规则优先级
  */
 export function reorderIpWhitelist(orders: Array<{ id: number; priority: number }>) {
-  return httpClient.put('/security/ip-whitelist/reorder', { orders });
+  try {
+    return await httpClient.put('/security/ip-whitelist/reorder', { orders });
+  } catch (error) {
+    handleApiError(error, 'IP白名单');
+    throw error;
+  }
 }
 
 /**
  * @brief 验证IP是否在白名单内
  */
 export function checkIpWhitelist(ip: string) {
-  return httpClient.get('/security/ip-whitelist/check', { params: { ip } });
+  try {
+    return await httpClient.get('/security/ip-whitelist/check', { params: { ip } });
+  } catch (error) {
+    handleApiError(error, 'IP白名单');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取IP白名单统计
  */
 export function getIpWhitelistStatistics() {
-  return httpClient.get('/security/ip-whitelist/statistics');
+  try {
+    return await httpClient.get('/security/ip-whitelist/statistics');
+  } catch (error) {
+    handleApiError(error, 'IP白名单');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取IP归属地信息
  */
 export function getIpLocation(ip: string) {
-  return httpClient.get('/security/ip-whitelist/location', { params: { ip } });
+  try {
+    return await httpClient.get('/security/ip-whitelist/location', { params: { ip } });
+  } catch (error) {
+    handleApiError(error, 'IP白名单');
+    throw error;
+  }
 }

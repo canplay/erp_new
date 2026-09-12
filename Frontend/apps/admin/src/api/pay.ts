@@ -6,6 +6,7 @@
 
 import { httpClient } from '@/utils/alova';
 import type { PaginationParams } from '@/utils/alova';
+import { handleApiError } from '@/utils/apiErrorHandler';
 
 // ============ 类型定义 ============
 
@@ -62,28 +63,48 @@ export interface UmsOrderParams {
  * 获取支付订单数量
  */
 export function countPayOrders(params: PayQuery) {
-  return httpClient.post('/v1/pay/count', { params });
+  try {
+    return await httpClient.post('/v1/pay/count', { params });
+  } catch (error) {
+    handleApiError(error, '支付服务');
+    throw error;
+  }
 }
 
 /**
  * 获取支付订单列表
  */
 export function listPayOrders(params: PayQuery) {
-  return httpClient.post('/v1/pay/list', { params });
+  try {
+    return await httpClient.post('/v1/pay/list', { params });
+  } catch (error) {
+    handleApiError(error, '支付服务');
+    throw error;
+  }
 }
 
 /**
  * 获取用户最近支付订单
  */
 export function getLatestPayOrder(user_id: string) {
-  return httpClient.get(`/v1/pay/latest/${user_id}`);
+  try {
+    return await httpClient.get(`/v1/pay/latest/${user_id}`);
+  } catch (error) {
+    handleApiError(error, '支付服务');
+    throw error;
+  }
 }
 
 /**
  * 创建支付订单
  */
 export function createPayOrder(data: PayCreateParams) {
-  return httpClient.post('/v1/pay/create', data);
+  try {
+    return await httpClient.post('/v1/pay/create', data);
+  } catch (error) {
+    handleApiError(error, '支付服务');
+    throw error;
+  }
 }
 
 // ============ CCB 支付接口 ============
@@ -92,28 +113,48 @@ export function createPayOrder(data: PayCreateParams) {
  * CCB 支付查询
  */
 export function ccbQuery(params: { merchant_order_id: string }) {
-  return httpClient.post('/v1/pay/ccb/query', { params });
+  try {
+    return await httpClient.post('/v1/pay/ccb/query', { params });
+  } catch (error) {
+    handleApiError(error, '支付服务');
+    throw error;
+  }
 }
 
 /**
  * CCB 创建支付订单
  */
 export function ccbCreate(data: CcbOrderParams) {
-  return httpClient.post('/v1/pay/ccb/create', data);
+  try {
+    return await httpClient.post('/v1/pay/ccb/create', data);
+  } catch (error) {
+    handleApiError(error, '支付服务');
+    throw error;
+  }
 }
 
 /**
  * CCB 验证支付结果
  */
 export function ccbVerify(orderId: string) {
-  return httpClient.get(`/v1/pay/ccb/verify/${orderId}`);
+  try {
+    return await httpClient.get(`/v1/pay/ccb/verify/${orderId}`);
+  } catch (error) {
+    handleApiError(error, '支付服务');
+    throw error;
+  }
 }
 
 /**
  * CCB 退款
  */
 export function ccbRefund(data: { order_id: string; amount: number }) {
-  return httpClient.post('/v1/pay/ccb/refund', data);
+  try {
+    return await httpClient.post('/v1/pay/ccb/refund', data);
+  } catch (error) {
+    handleApiError(error, '支付服务');
+    throw error;
+  }
 }
 
 // ============ UMS 支付接口 ============
@@ -122,35 +163,60 @@ export function ccbRefund(data: { order_id: string; amount: number }) {
  * UMS 支付查询
  */
 export function umsQuery(params: { order_id: string }) {
-  return httpClient.post('/v1/pay/ums/query', { params });
+  try {
+    return await httpClient.post('/v1/pay/ums/query', { params });
+  } catch (error) {
+    handleApiError(error, '支付服务');
+    throw error;
+  }
 }
 
 /**
  * UMS 创建支付订单
  */
 export function umsCreate(data: UmsOrderParams) {
-  return httpClient.post('/v1/pay/ums/create', data);
+  try {
+    return await httpClient.post('/v1/pay/ums/create', data);
+  } catch (error) {
+    handleApiError(error, '支付服务');
+    throw error;
+  }
 }
 
 /**
  * UMS 关闭支付订单
  */
 export function umsClose(data: { order_id: string }) {
-  return httpClient.post('/v1/pay/ums/close', data);
+  try {
+    return await httpClient.post('/v1/pay/ums/close', data);
+  } catch (error) {
+    handleApiError(error, '支付服务');
+    throw error;
+  }
 }
 
 /**
  * UMS 退款
  */
 export function umsRefund(data: { order_id: string; amount: number; reason?: string }) {
-  return httpClient.post('/v1/pay/ums/refund', data);
+  try {
+    return await httpClient.post('/v1/pay/ums/refund', data);
+  } catch (error) {
+    handleApiError(error, '支付服务');
+    throw error;
+  }
 }
 
 /**
  * UMS 获取订单信息
  */
 export function umsInfo(orderId: string) {
-  return httpClient.get(`/v1/pay/ums/info/${orderId}`);
+  try {
+    return await httpClient.get(`/v1/pay/ums/info/${orderId}`);
+  } catch (error) {
+    handleApiError(error, '支付服务');
+    throw error;
+  }
 }
 
 // ============ 导出 ============

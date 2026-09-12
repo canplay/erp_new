@@ -6,6 +6,7 @@
  */
 
 import { httpClient } from '@/utils/alova';
+import { handleApiError } from '@/utils/apiErrorHandler';
 
 /**
  * @brief 设备类型
@@ -63,96 +64,166 @@ export interface LoginDeviceQueryParams {
  * @brief 获取当前用户的登录设备列表
  */
 export function getMyDevices(params?: Omit<LoginDeviceQueryParams, 'user_id'>) {
-  return httpClient.get('/devices/my', { params });
+  try {
+    return await httpClient.get('/devices/my', { params });
+  } catch (error) {
+    handleApiError(error, '设备管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取指定用户的登录设备列表（管理员）
  */
 export function getUserDevices(user_id: number, params?: Omit<LoginDeviceQueryParams, 'user_id'>) {
-  return httpClient.get(`/admin/devices/user/${user_id}`, { params });
+  try {
+    return await httpClient.get(`/admin/devices/user/${user_id}`, { params });
+  } catch (error) {
+    handleApiError(error, '设备管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取所有用户的登录设备列表（管理员）
  */
 export function getAllDevices(params?: LoginDeviceQueryParams) {
-  return httpClient.get('/admin/devices', { params });
+  try {
+    return await httpClient.get('/admin/devices', { params });
+  } catch (error) {
+    handleApiError(error, '设备管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取设备详情
  */
 export function getDeviceDetail(id: number) {
-  return httpClient.get(`/devices/${id}`);
+  try {
+    return await httpClient.get(`/devices/${id}`);
+  } catch (error) {
+    handleApiError(error, '设备管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 标记设备为信任设备
  */
 export function trustDevice(id: number) {
-  return httpClient.put(`/devices/${id}/trust`);
+  try {
+    return await httpClient.put(`/devices/${id}/trust`);
+  } catch (error) {
+    handleApiError(error, '设备管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 取消设备信任
  */
 export function untrustDevice(id: number) {
-  return httpClient.put(`/devices/${id}/untrust`);
+  try {
+    return await httpClient.put(`/devices/${id}/untrust`);
+  } catch (error) {
+    handleApiError(error, '设备管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 踢出设备（强制下线）
  */
 export function kickDevice(id: number) {
-  return httpClient.put(`/devices/${id}/kick`);
+  try {
+    return await httpClient.put(`/devices/${id}/kick`);
+  } catch (error) {
+    handleApiError(error, '设备管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 踢出用户所有设备
  */
 export function kickAllUserDevices(user_id: number) {
-  return httpClient.put(`/admin/devices/user/${user_id}/kick-all`);
+  try {
+    return await httpClient.put(`/admin/devices/user/${user_id}/kick-all`);
+  } catch (error) {
+    handleApiError(error, '设备管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 踢出当前用户所有其他设备
  */
 export function kickOtherDevices() {
-  return httpClient.put('/devices/kick-other');
+  try {
+    return await httpClient.put('/devices/kick-other');
+  } catch (error) {
+    handleApiError(error, '设备管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 删除设备记录
  */
 export function deleteDevice(id: number) {
-  return httpClient.delete(`/devices/${id}`);
+  try {
+    return await httpClient.delete(`/devices/${id}`);
+  } catch (error) {
+    handleApiError(error, '设备管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 批量删除设备记录
  */
 export function batchDeleteDevices(ids: number[]) {
-  return httpClient.delete('/devices/batch', { data: { ids } });
+  try {
+    return await httpClient.delete('/devices/batch', { data: { ids } });
+  } catch (error) {
+    handleApiError(error, '设备管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取设备统计
  */
 export function getDeviceStatistics(params?: { user_id?: number }) {
-  return httpClient.get('/admin/devices/statistics', { params });
+  try {
+    return await httpClient.get('/admin/devices/statistics', { params });
+  } catch (error) {
+    handleApiError(error, '设备管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取登录概况（管理员）
  */
 export function getLoginOverview() {
-  return httpClient.get('/admin/devices/overview');
+  try {
+    return await httpClient.get('/admin/devices/overview');
+  } catch (error) {
+    handleApiError(error, '设备管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取异常登录记录
  */
 export function getAbnormalLogins(params?: { page?: number; page_size?: number }) {
-  return httpClient.get('/admin/devices/abnormal', { params });
+  try {
+    return await httpClient.get('/admin/devices/abnormal', { params });
+  } catch (error) {
+    handleApiError(error, '设备管理');
+    throw error;
+  }
 }

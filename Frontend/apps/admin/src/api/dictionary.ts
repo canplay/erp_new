@@ -6,6 +6,7 @@
  */
 
 import { httpClient } from '@/utils/alova';
+import { handleApiError } from '@/utils/apiErrorHandler';
 
 // ============ 类型定义 ============
 
@@ -57,14 +58,24 @@ export function listDictionaryTypes(params?: {
   keyword?: string;
   status?: number;
 }) {
-  return httpClient.get('/admin/dictionary/types', { params });
+  try {
+    return await httpClient.get('/admin/dictionary/types', { params });
+  } catch (error) {
+    handleApiError(error, '字典管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取单个字典类型
  */
 export function getDictionaryType(id: number) {
-  return httpClient.get(`/admin/dictionary/types/${id}`);
+  try {
+    return await httpClient.get(`/admin/dictionary/types/${id}`);
+  } catch (error) {
+    handleApiError(error, '字典管理');
+    throw error;
+  }
 }
 
 /**
@@ -76,7 +87,12 @@ export function createDictionaryType(data: {
   description?: string;
   sort?: number;
 }) {
-  return httpClient.post('/admin/dictionary/types', data);
+  try {
+    return await httpClient.post('/admin/dictionary/types', data);
+  } catch (error) {
+    handleApiError(error, '字典管理');
+    throw error;
+  }
 }
 
 /**
@@ -91,21 +107,36 @@ export function updateDictionaryType(
     status?: number;
   }
 ) {
-  return httpClient.put(`/admin/dictionary/types/${id}`, data);
+  try {
+    return await httpClient.put(`/admin/dictionary/types/${id}`, data);
+  } catch (error) {
+    handleApiError(error, '字典管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 删除字典类型
  */
 export function deleteDictionaryType(id: number) {
-  return httpClient.delete(`/admin/dictionary/types/${id}`);
+  try {
+    return await httpClient.delete(`/admin/dictionary/types/${id}`);
+  } catch (error) {
+    handleApiError(error, '字典管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 批量删除字典类型
  */
 export function batchDeleteDictionaryTypes(ids: number[]) {
-  return httpClient.post('/admin/dictionary/types/batch-delete', { ids });
+  try {
+    return await httpClient.post('/admin/dictionary/types/batch-delete', { ids });
+  } catch (error) {
+    handleApiError(error, '字典管理');
+    throw error;
+  }
 }
 
 // ============ 字典项 API ============
@@ -118,21 +149,36 @@ export function listDictionaryItems(params?: {
   keyword?: string;
   status?: number;
 }) {
-  return httpClient.get('/admin/dictionary/items', { params });
+  try {
+    return await httpClient.get('/admin/dictionary/items', { params });
+  } catch (error) {
+    handleApiError(error, '字典管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取字典类型下的所有字典项
  */
 export function getDictionaryItemsByType(typeCode: string) {
-  return httpClient.get(`/admin/dictionary/types/${typeCode}/items`);
+  try {
+    return await httpClient.get(`/admin/dictionary/types/${typeCode}/items`);
+  } catch (error) {
+    handleApiError(error, '字典管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取单个字典项
  */
 export function getDictionaryItem(id: number) {
-  return httpClient.get(`/admin/dictionary/items/${id}`);
+  try {
+    return await httpClient.get(`/admin/dictionary/items/${id}`);
+  } catch (error) {
+    handleApiError(error, '字典管理');
+    throw error;
+  }
 }
 
 /**
@@ -147,7 +193,12 @@ export function createDictionaryItem(data: {
   is_default?: boolean;
   remark?: string;
 }) {
-  return httpClient.post('/admin/dictionary/items', data);
+  try {
+    return await httpClient.post('/admin/dictionary/items', data);
+  } catch (error) {
+    handleApiError(error, '字典管理');
+    throw error;
+  }
 }
 
 /**
@@ -164,21 +215,36 @@ export function updateDictionaryItem(
     remark?: string;
   }
 ) {
-  return httpClient.put(`/admin/dictionary/items/${id}`, data);
+  try {
+    return await httpClient.put(`/admin/dictionary/items/${id}`, data);
+  } catch (error) {
+    handleApiError(error, '字典管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 删除字典项
  */
 export function deleteDictionaryItem(id: number) {
-  return httpClient.delete(`/admin/dictionary/items/${id}`);
+  try {
+    return await httpClient.delete(`/admin/dictionary/items/${id}`);
+  } catch (error) {
+    handleApiError(error, '字典管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 批量删除字典项
  */
 export function batchDeleteDictionaryItems(ids: number[]) {
-  return httpClient.post('/admin/dictionary/items/batch-delete', { ids });
+  try {
+    return await httpClient.post('/admin/dictionary/items/batch-delete', { ids });
+  } catch (error) {
+    handleApiError(error, '字典管理');
+    throw error;
+  }
 }
 
 /**
@@ -191,19 +257,34 @@ export function batchCreateDictionaryItems(type_id: number, items: Array<{
   is_default?: boolean;
   remark?: string;
 }>) {
-  return httpClient.post(`/admin/dictionary/types/${type_id}/items/batch`, { items });
+  try {
+    return await httpClient.post(`/admin/dictionary/types/${type_id}/items/batch`, { items });
+  } catch (error) {
+    handleApiError(error, '字典管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 调整字典项顺序
  */
 export function reorderDictionaryItems(type_id: number, itemIds: number[]) {
-  return httpClient.put(`/admin/dictionary/types/${type_id}/items/reorder`, { itemIds });
+  try {
+    return await httpClient.put(`/admin/dictionary/types/${type_id}/items/reorder`, { itemIds });
+  } catch (error) {
+    handleApiError(error, '字典管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取所有启用的字典（用于全局缓存）
  */
 export function getAllEnabledDictionaries() {
-  return httpClient.get('/admin/dictionary/all-enabled');
+  try {
+    return await httpClient.get('/admin/dictionary/all-enabled');
+  } catch (error) {
+    handleApiError(error, '字典管理');
+    throw error;
+  }
 }

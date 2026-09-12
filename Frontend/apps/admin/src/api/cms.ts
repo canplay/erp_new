@@ -6,6 +6,7 @@
  */
 
 import { httpClient } from '@/utils/alova';
+import { handleApiError } from '@/utils/apiErrorHandler';
 
 /**
  * @brief 文章状态
@@ -168,56 +169,96 @@ export interface CategoryUpdateParams extends CategoryCreateParams {
  * @brief 获取分类树
  */
 export function getCategoryTree(params?: CategoryQueryParams) {
-  return httpClient.get('/cms/categories/tree', { params });
+  try {
+    return await httpClient.get('/cms/categories/tree', { params });
+  } catch (error) {
+    handleApiError(error, 'CMS内容管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取分类列表
  */
 export function getCategoryList(params?: CategoryQueryParams) {
-  return httpClient.get('/cms/categories', { params });
+  try {
+    return await httpClient.get('/cms/categories', { params });
+  } catch (error) {
+    handleApiError(error, 'CMS内容管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取分类详情
  */
 export function getCategoryDetail(id: number) {
-  return httpClient.get(`/cms/categories/${id}`);
+  try {
+    return await httpClient.get(`/cms/categories/${id}`);
+  } catch (error) {
+    handleApiError(error, 'CMS内容管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 创建分类
  */
 export function createCategory(data: CategoryCreateParams) {
-  return httpClient.post('/cms/categories', data);
+  try {
+    return await httpClient.post('/cms/categories', data);
+  } catch (error) {
+    handleApiError(error, 'CMS内容管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 更新分类
  */
 export function updateCategory(id: number, data: CategoryUpdateParams) {
-  return httpClient.put(`/cms/categories/${id}`, data);
+  try {
+    return await httpClient.put(`/cms/categories/${id}`, data);
+  } catch (error) {
+    handleApiError(error, 'CMS内容管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 删除分类
  */
 export function deleteCategory(id: number) {
-  return httpClient.delete(`/cms/categories/${id}`);
+  try {
+    return await httpClient.delete(`/cms/categories/${id}`);
+  } catch (error) {
+    handleApiError(error, 'CMS内容管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 批量删除分类
  */
 export function batchDeleteCategories(ids: number[]) {
-  return httpClient.delete('/cms/categories/batch', { data: { ids } });
+  try {
+    return await httpClient.delete('/cms/categories/batch', { data: { ids } });
+  } catch (error) {
+    handleApiError(error, 'CMS内容管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 调整分类排序
  */
 export function reorderCategories(orders: Array<{ id: number; sort_order: number }>) {
-  return httpClient.put('/cms/categories/reorder', { orders });
+  try {
+    return await httpClient.put('/cms/categories/reorder', { orders });
+  } catch (error) {
+    handleApiError(error, 'CMS内容管理');
+    throw error;
+  }
 }
 
 // ==================== 文章 API ====================
@@ -226,131 +267,226 @@ export function reorderCategories(orders: Array<{ id: number; sort_order: number
  * @brief 获取文章列表
  */
 export function getArticleList(params?: ArticleQueryParams) {
-  return httpClient.get('/cms/articles', { params });
+  try {
+    return await httpClient.get('/cms/articles', { params });
+  } catch (error) {
+    handleApiError(error, 'CMS内容管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取文章详情
  */
 export function getArticleDetail(id: number) {
-  return httpClient.get(`/cms/articles/${id}`);
+  try {
+    return await httpClient.get(`/cms/articles/${id}`);
+  } catch (error) {
+    handleApiError(error, 'CMS内容管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取文章详情（通过slug）
  */
 export function getArticleBySlug(slug: string) {
-  return httpClient.get('/cms/articles/slug/' + slug);
+  try {
+    return await httpClient.get('/cms/articles/slug/' + slug);
+  } catch (error) {
+    handleApiError(error, 'CMS内容管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 创建文章
  */
 export function createArticle(data: ArticleCreateParams) {
-  return httpClient.post('/cms/articles', data);
+  try {
+    return await httpClient.post('/cms/articles', data);
+  } catch (error) {
+    handleApiError(error, 'CMS内容管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 更新文章
  */
 export function updateArticle(id: number, data: ArticleUpdateParams) {
-  return httpClient.put(`/cms/articles/${id}`, data);
+  try {
+    return await httpClient.put(`/cms/articles/${id}`, data);
+  } catch (error) {
+    handleApiError(error, 'CMS内容管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 删除文章
  */
 export function deleteArticle(id: number) {
-  return httpClient.delete(`/cms/articles/${id}`);
+  try {
+    return await httpClient.delete(`/cms/articles/${id}`);
+  } catch (error) {
+    handleApiError(error, 'CMS内容管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 批量删除文章
  */
 export function batchDeleteArticles(ids: number[]) {
-  return httpClient.delete('/cms/articles/batch', { data: { ids } });
+  try {
+    return await httpClient.delete('/cms/articles/batch', { data: { ids } });
+  } catch (error) {
+    handleApiError(error, 'CMS内容管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 发布文章
  */
 export function publishArticle(id: number) {
-  return httpClient.put(`/cms/articles/${id}/publish`);
+  try {
+    return await httpClient.put(`/cms/articles/${id}/publish`);
+  } catch (error) {
+    handleApiError(error, 'CMS内容管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 下架文章
  */
 export function unpublishArticle(id: number) {
-  return httpClient.put(`/cms/articles/${id}/unpublish`);
+  try {
+    return await httpClient.put(`/cms/articles/${id}/unpublish`);
+  } catch (error) {
+    handleApiError(error, 'CMS内容管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 审核文章
  */
 export function reviewArticle(id: number, approved: boolean, reason?: string) {
-  return httpClient.put(`/cms/articles/${id}/review`, { approved, reason });
+  try {
+    return await httpClient.put(`/cms/articles/${id}/review`, { approved, reason });
+  } catch (error) {
+    handleApiError(error, 'CMS内容管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 置顶文章
  */
 export function topArticle(id: number, isTop: boolean) {
-  return httpClient.put(`/cms/articles/${id}/top`, { isTop });
+  try {
+    return await httpClient.put(`/cms/articles/${id}/top`, { isTop });
+  } catch (error) {
+    handleApiError(error, 'CMS内容管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 推荐文章
  */
 export function featureArticle(id: number, isFeatured: boolean) {
-  return httpClient.put(`/cms/articles/${id}/feature`, { isFeatured });
+  try {
+    return await httpClient.put(`/cms/articles/${id}/feature`, { isFeatured });
+  } catch (error) {
+    handleApiError(error, 'CMS内容管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取我的文章草稿
  */
 export function getMyDrafts() {
-  return httpClient.get('/cms/articles/my-drafts');
+  try {
+    return await httpClient.get('/cms/articles/my-drafts');
+  } catch (error) {
+    handleApiError(error, 'CMS内容管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取相关文章
  */
 export function getRelatedArticles(id: number, limit: number = 5) {
-  return httpClient.get(`/cms/articles/${id}/related`, { params: { limit } });
+  try {
+    return await httpClient.get(`/cms/articles/${id}/related`, { params: { limit } });
+  } catch (error) {
+    handleApiError(error, 'CMS内容管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 增加浏览次数
  */
 export function incrementViewCount(id: number) {
-  return httpClient.put(`/cms/articles/${id}/view`);
+  try {
+    return await httpClient.put(`/cms/articles/${id}/view`);
+  } catch (error) {
+    handleApiError(error, 'CMS内容管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 点赞文章
  */
 export function likeArticle(id: number) {
-  return httpClient.post(`/cms/articles/${id}/like`);
+  try {
+    return await httpClient.post(`/cms/articles/${id}/like`);
+  } catch (error) {
+    handleApiError(error, 'CMS内容管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取文章统计
  */
 export function getArticleStatistics(params?: { categoryId?: number; start_date?: string; end_date?: string }) {
-  return httpClient.get('/cms/articles/statistics', { params });
+  try {
+    return await httpClient.get('/cms/articles/statistics', { params });
+  } catch (error) {
+    handleApiError(error, 'CMS内容管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取热门文章
  */
 export function getHotArticles(params?: { limit?: number; categoryId?: number }) {
-  return httpClient.get('/cms/articles/hot', { params });
+  try {
+    return await httpClient.get('/cms/articles/hot', { params });
+  } catch (error) {
+    handleApiError(error, 'CMS内容管理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取最新文章
  */
 export function getLatestArticles(params?: { limit?: number; categoryId?: number }) {
-  return httpClient.get('/cms/articles/latest', { params });
+  try {
+    return await httpClient.get('/cms/articles/latest', { params });
+  } catch (error) {
+    handleApiError(error, 'CMS内容管理');
+    throw error;
+  }
 }

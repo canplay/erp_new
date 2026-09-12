@@ -4,6 +4,7 @@
  */
 
 import { httpClient } from '@/utils/alova';
+import { handleApiError } from '@/utils/apiErrorHandler';
 
 // ==================== 类型定义 ====================
 
@@ -80,20 +81,40 @@ export interface DeviceQueryParams {
 
 /** 接收设备上报数据 */
 export function reportDeviceData(data: DeviceDataUpload) {
-  return httpClient.post('/v1/ctp/report', data);
+  try {
+    return await httpClient.post('/v1/ctp/report', data);
+  } catch (error) {
+    handleApiError(error, 'CTP设备管理');
+    throw error;
+  }
 }
 
 /** 发送锁控制命令 */
 export function controlLock(cmd: LockControlRequest) {
-  return httpClient.post('/v1/ctp/device/control', cmd);
+  try {
+    return await httpClient.post('/v1/ctp/device/control', cmd);
+  } catch (error) {
+    handleApiError(error, 'CTP设备管理');
+    throw error;
+  }
 }
 
 /** 查询单个设备状态 */
 export function getDevice(deviceNo: string) {
-  return httpClient.get(`/v1/ctp/device/${deviceNo}`);
+  try {
+    return await httpClient.get(`/v1/ctp/device/${deviceNo}`);
+  } catch (error) {
+    handleApiError(error, 'CTP设备管理');
+    throw error;
+  }
 }
 
 /** 分页获取设备列表 */
 export function listDevices(params?: DeviceQueryParams) {
-  return httpClient.post('/v1/ctp/device/list', { params });
+  try {
+    return await httpClient.post('/v1/ctp/device/list', { params });
+  } catch (error) {
+    handleApiError(error, 'CTP设备管理');
+    throw error;
+  }
 }

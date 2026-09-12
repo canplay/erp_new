@@ -7,6 +7,7 @@
 
 import { httpClient } from '@/utils/alova';
 import type { ApiResponse } from '@/types/api';
+import { handleApiError } from '@/utils/apiErrorHandler';
 
 // ============ 类型定义 ============
 
@@ -66,54 +67,94 @@ const baseUrl = '/scheduled-tasks';
  * @brief 获取定时任务列表
  */
 export function listScheduledTasks(params?: ScheduledTaskListParam) {
-  return httpClient.get<ApiResponse<{ list: ScheduledTask[]; total: number }>>(`${baseUrl}`, { params });
+  try {
+    return await httpClient.get(`${baseUrl}`, { params });
+  } catch (error) {
+    handleApiError(error, '定时任务');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取定时任务详情
  */
 export function getScheduledTask(id: string) {
-  return httpClient.get<ApiResponse<ScheduledTask>>(`${baseUrl}/${id}`);
+  try {
+    return await httpClient.get(`${baseUrl}/${id}`);
+  } catch (error) {
+    handleApiError(error, '定时任务');
+    throw error;
+  }
 }
 
 /**
  * @brief 创建定时任务
  */
 export function createScheduledTask(data: CreateScheduledTaskParam) {
-  return httpClient.post<ApiResponse<{ id: string }>>(`${baseUrl}`, data);
+  try {
+    return await httpClient.post(`${baseUrl}`, data);
+  } catch (error) {
+    handleApiError(error, '定时任务');
+    throw error;
+  }
 }
 
 /**
  * @brief 更新定时任务
  */
 export function updateScheduledTask(id: string, data: UpdateScheduledTaskParam) {
-  return httpClient.put<ApiResponse<void>>(`${baseUrl}/${id}`, data);
+  try {
+    return await httpClient.put(`${baseUrl}/${id}`, data);
+  } catch (error) {
+    handleApiError(error, '定时任务');
+    throw error;
+  }
 }
 
 /**
  * @brief 删除定时任务
  */
 export function deleteScheduledTask(id: string) {
-  return httpClient.delete<ApiResponse<void>>(`${baseUrl}/${id}`);
+  try {
+    return await httpClient.delete(`${baseUrl}/${id}`);
+  } catch (error) {
+    handleApiError(error, '定时任务');
+    throw error;
+  }
 }
 
 /**
  * @brief 触发定时任务
  */
 export function triggerScheduledTask(id: string) {
-  return httpClient.post<ApiResponse<void>>(`${baseUrl}/${id}/trigger`);
+  try {
+    return await httpClient.post(`${baseUrl}/${id}/trigger`);
+  } catch (error) {
+    handleApiError(error, '定时任务');
+    throw error;
+  }
 }
 
 /**
  * @brief 暂停定时任务
  */
 export function pauseScheduledTask(id: string) {
-  return httpClient.put<ApiResponse<void>>(`${baseUrl}/${id}/pause`);
+  try {
+    return await httpClient.put(`${baseUrl}/${id}/pause`);
+  } catch (error) {
+    handleApiError(error, '定时任务');
+    throw error;
+  }
 }
 
 /**
  * @brief 恢复定时任务
  */
 export function resumeScheduledTask(id: string) {
-  return httpClient.put<ApiResponse<void>>(`${baseUrl}/${id}/resume`);
+  try {
+    return await httpClient.put(`${baseUrl}/${id}/resume`);
+  } catch (error) {
+    handleApiError(error, '定时任务');
+    throw error;
+  }
 }

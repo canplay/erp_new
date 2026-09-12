@@ -6,6 +6,7 @@
  */
 
 import { httpClient } from '@/utils/alova';
+import { handleApiError } from '@/utils/apiErrorHandler';
 
 // ============ 类型定义 ============
 
@@ -42,7 +43,12 @@ export interface ConfigCategory {
  * @brief 获取所有系统配置（按分类）
  */
 export function getSystemConfigs() {
-  return httpClient.get('/config/system-configs');
+  try {
+    return await httpClient.get('/config/system-configs');
+  } catch (error) {
+    handleApiError(error, '系统配置');
+    throw error;
+  }
 }
 
 /**
@@ -63,28 +69,48 @@ export function getConfigCategories(): ConfigCategory[] {
  * @brief 获取单个配置
  */
 export function getConfig(key: string) {
-  return httpClient.get(`/config/system-configs/${key}`);
+  try {
+    return await httpClient.get(`/config/system-configs/${key}`);
+  } catch (error) {
+    handleApiError(error, '系统配置');
+    throw error;
+  }
 }
 
 /**
  * @brief 更新配置
  */
 export function updateConfig(key: string, value: string) {
-  return httpClient.put(`/config/system-configs/${key}`, { value });
+  try {
+    return await httpClient.put(`/config/system-configs/${key}`, { value });
+  } catch (error) {
+    handleApiError(error, '系统配置');
+    throw error;
+  }
 }
 
 /**
  * @brief 批量更新配置
  */
 export function batchUpdateConfigs(configs: Array<{ key: string; value: string }>) {
-  return httpClient.put('/config/system-configs/batch', { configs });
+  try {
+    return await httpClient.put('/config/system-configs/batch', { configs });
+  } catch (error) {
+    handleApiError(error, '系统配置');
+    throw error;
+  }
 }
 
 /**
  * @brief 重置配置到默认值
  */
 export function resetConfig(key: string) {
-  return httpClient.post(`/config/system-configs/${key}/reset`, {});
+  try {
+    return await httpClient.post(`/config/system-configs/${key}/reset`, {});
+  } catch (error) {
+    handleApiError(error, '系统配置');
+    throw error;
+  }
 }
 
 // ============ 公告管理 ============
@@ -115,14 +141,24 @@ export function listAnnouncements(params?: {
   page_size?: number;
   isActive?: boolean;
 }) {
-  return httpClient.get('/admin/announcements', { params });
+  try {
+    return await httpClient.get('/admin/announcements', { params });
+  } catch (error) {
+    handleApiError(error, '系统配置');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取单个公告
  */
 export function getAnnouncement(id: number) {
-  return httpClient.get(`/admin/announcements/${id}`);
+  try {
+    return await httpClient.get(`/admin/announcements/${id}`);
+  } catch (error) {
+    handleApiError(error, '系统配置');
+    throw error;
+  }
 }
 
 /**
@@ -138,7 +174,12 @@ export function createAnnouncement(data: {
   start_time?: string;
   end_time?: string;
 }) {
-  return httpClient.post('/admin/announcements', data);
+  try {
+    return await httpClient.post('/admin/announcements', data);
+  } catch (error) {
+    handleApiError(error, '系统配置');
+    throw error;
+  }
 }
 
 /**
@@ -157,19 +198,34 @@ export function updateAnnouncement(
     end_time?: string;
   }
 ) {
-  return httpClient.put(`/admin/announcements/${id}`, data);
+  try {
+    return await httpClient.put(`/admin/announcements/${id}`, data);
+  } catch (error) {
+    handleApiError(error, '系统配置');
+    throw error;
+  }
 }
 
 /**
  * @brief 删除公告
  */
 export function deleteAnnouncement(id: number) {
-  return httpClient.delete(`/admin/announcements/${id}`);
+  try {
+    return await httpClient.delete(`/admin/announcements/${id}`);
+  } catch (error) {
+    handleApiError(error, '系统配置');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取启用的公告（供前端展示）
  */
 export function getActiveAnnouncements() {
-  return httpClient.get('/announcements/active');
+  try {
+    return await httpClient.get('/announcements/active');
+  } catch (error) {
+    handleApiError(error, '系统配置');
+    throw error;
+  }
 }

@@ -6,6 +6,7 @@
 
 import { httpClient } from '@/utils/alova';
 import type {
+import { handleApiError } from '@/utils/apiErrorHandler';
   ApiLogEntry,
   ApiCallStatistics,
   ApiEndpointStatistics,
@@ -42,57 +43,94 @@ export interface GetApiStatisticsParams {
  * @brief 获取 API 调用日志列表
  */
 export async function listApiLogs(params?: ListApiLogsParams) {
-  return httpClient.get<{
-    list: ApiLogEntry[];
-    total: number;
-  }>('/audit/api-call-logs', { params });
+  try {
+    return await httpClient.get('/audit/api-call-logs', { params });
+  } catch (error) {
+    handleApiError(error, 'API治理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取 API 调用统计数据
  */
 export async function getApiCallStatistics(params?: GetApiStatisticsParams) {
-  return httpClient.get<ApiCallStatistics>('/audit/api-call-statistics', { params });
+  try {
+    return await httpClient.get('/audit/api-call-statistics', { params });
+  } catch (error) {
+    handleApiError(error, 'API治理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取 API 端点统计数据
  */
 export async function getApiEndpointStatistics(params?: GetApiStatisticsParams) {
-  return httpClient.get<ApiEndpointStatistics[]>('/audit/api-endpoint-statistics', { params });
+  try {
+    return await httpClient.get('/audit/api-endpoint-statistics', { params });
+  } catch (error) {
+    handleApiError(error, 'API治理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取 API 调用趋势数据
  */
 export async function getApiTrend(params?: GetApiStatisticsParams) {
-  return httpClient.get<ApiTrendPoint[]>('/audit/api-trend', { params });
+  try {
+    return await httpClient.get('/audit/api-trend', { params });
+  } catch (error) {
+    handleApiError(error, 'API治理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取响应时间分布
  */
 export async function getApiResponseDistribution(params?: GetApiStatisticsParams) {
-  return httpClient.get<ApiResponseTimeDistribution[]>('/audit/api-response-distribution', { params });
+  try {
+    return await httpClient.get('/audit/api-response-distribution', { params });
+  } catch (error) {
+    handleApiError(error, 'API治理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取 API 分类统计
  */
 export async function getApiCategoryStatistics(params?: GetApiStatisticsParams) {
-  return httpClient.get<ApiCategoryStatistics[]>('/audit/api-category-statistics', { params });
+  try {
+    return await httpClient.get('/audit/api-category-statistics', { params });
+  } catch (error) {
+    handleApiError(error, 'API治理');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取性能基线数据
  */
 export async function getApiPerformanceBaseline(params?: GetApiStatisticsParams) {
-  return httpClient.get<ApiPerformanceBaseline[]>('/audit/api-performance-baseline', { params });
+  try {
+    return await httpClient.get('/audit/api-performance-baseline', { params });
+  } catch (error) {
+    handleApiError(error, 'API治理');
+    throw error;
+  }
 }
 
 /**
  * @brief 导出 API 日志
  */
 export async function exportApiLogs(params?: ListApiLogsParams) {
-  return httpClient.get<Blob>('/audit/api-call-logs/export', { params });
+  try {
+    return await httpClient.get('/audit/api-call-logs/export', { params });
+  } catch (error) {
+    handleApiError(error, 'API治理');
+    throw error;
+  }
 }

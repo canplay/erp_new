@@ -6,6 +6,7 @@
  */
 
 import { httpClient } from '@/utils/alova';
+import { handleApiError } from '@/utils/apiErrorHandler';
 
 /**
  * @brief 验证方式
@@ -81,89 +82,154 @@ export interface SubmitVerifyParams {
  * @brief 获取敏感操作记录列表
  */
 export function getSensitiveOperations(params?: SensitiveOperationQueryParams) {
-  return httpClient.get('/security/sensitive-audit', { params });
+  try {
+    return await httpClient.get('/security/sensitive-audit', { params });
+  } catch (error) {
+    handleApiError(error, '敏感操作审计');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取敏感操作详情
  */
 export function getSensitiveOperationDetail(id: number) {
-  return httpClient.get(`/security/sensitive-audit/${id}`);
+  try {
+    return await httpClient.get(`/security/sensitive-audit/${id}`);
+  } catch (error) {
+    handleApiError(error, '敏感操作审计');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取当前用户待验证操作
  */
 export function getPendingVerifications() {
-  return httpClient.get('/security/sensitive-audit/pending');
+  try {
+    return await httpClient.get('/security/sensitive-audit/pending');
+  } catch (error) {
+    handleApiError(error, '敏感操作审计');
+    throw error;
+  }
 }
 
 /**
  * @brief 发起敏感操作验证
  */
 export function initiateVerification(data: InitiateVerifyParams) {
-  return httpClient.post('/security/sensitive-audit/initiate', data);
+  try {
+    return await httpClient.post('/security/sensitive-audit/initiate', data);
+  } catch (error) {
+    handleApiError(error, '敏感操作审计');
+    throw error;
+  }
 }
 
 /**
  * @brief 提交验证
  */
 export function submitVerification(operationId: number, data: SubmitVerifyParams) {
-  return httpClient.post(`/security/sensitive-audit/${operationId}/verify`, data);
+  try {
+    return await httpClient.post(`/security/sensitive-audit/${operationId}/verify`, data);
+  } catch (error) {
+    handleApiError(error, '敏感操作审计');
+    throw error;
+  }
 }
 
 /**
  * @brief 取消验证
  */
 export function cancelVerification(operationId: number) {
-  return httpClient.put(`/security/sensitive-audit/${operationId}/cancel`);
+  try {
+    return await httpClient.put(`/security/sensitive-audit/${operationId}/cancel`);
+  } catch (error) {
+    handleApiError(error, '敏感操作审计');
+    throw error;
+  }
 }
 
 /**
  * @brief 管理员审批（针对admin确认类型）
  */
 export function approveVerification(operationId: number, approved: boolean, reason?: string) {
-  return httpClient.put(`/security/sensitive-audit/${operationId}/approve`, { approved, reason });
+  try {
+    return await httpClient.put(`/security/sensitive-audit/${operationId}/approve`, { approved, reason });
+  } catch (error) {
+    handleApiError(error, '敏感操作审计');
+    throw error;
+  }
 }
 
 /**
  * @brief 重新发送验证码
  */
 export function resendVerifyCode(operationId: number) {
-  return httpClient.post(`/security/sensitive-audit/${operationId}/resend`);
+  try {
+    return await httpClient.post(`/security/sensitive-audit/${operationId}/resend`);
+  } catch (error) {
+    handleApiError(error, '敏感操作审计');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取敏感操作统计
  */
 export function getSensitiveOperationStatistics(params?: { start_date?: string; end_date?: string }) {
-  return httpClient.get('/security/sensitive-audit/statistics', { params });
+  try {
+    return await httpClient.get('/security/sensitive-audit/statistics', { params });
+  } catch (error) {
+    handleApiError(error, '敏感操作审计');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取操作类型列表
  */
 export function getOperationTypes() {
-  return httpClient.get('/security/sensitive-audit/types');
+  try {
+    return await httpClient.get('/security/sensitive-audit/types');
+  } catch (error) {
+    handleApiError(error, '敏感操作审计');
+    throw error;
+  }
 }
 
 /**
  * @brief 获取验证码有效期配置
  */
 export function getVerifyCodeExpireTime() {
-  return httpClient.get('/security/sensitive-audit/expire-time');
+  try {
+    return await httpClient.get('/security/sensitive-audit/expire-time');
+  } catch (error) {
+    handleApiError(error, '敏感操作审计');
+    throw error;
+  }
 }
 
 /**
  * @brief 删除敏感操作记录
  */
 export function deleteSensitiveOperation(id: number) {
-  return httpClient.delete(`/security/sensitive-audit/${id}`);
+  try {
+    return await httpClient.delete(`/security/sensitive-audit/${id}`);
+  } catch (error) {
+    handleApiError(error, '敏感操作审计');
+    throw error;
+  }
 }
 
 /**
  * @brief 批量删除敏感操作记录
  */
 export function batchDeleteSensitiveOperations(ids: number[]) {
-  return httpClient.delete('/security/sensitive-audit/batch', { data: { ids } });
+  try {
+    return await httpClient.delete('/security/sensitive-audit/batch', { data: { ids } });
+  } catch (error) {
+    handleApiError(error, '敏感操作审计');
+    throw error;
+  }
 }

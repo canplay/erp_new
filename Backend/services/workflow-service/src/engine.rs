@@ -4,10 +4,20 @@
 //! 工作流执行引擎 - 实现状态机、节点流转、定时任务触发
 
 use chrono::{DateTime, Duration, Utc};
+use hmac::{Hmac, Mac};
 use serde::{Deserialize, Serialize};
+use sha2::Sha256;
 use uuid::Uuid;
 
 use crate::models::WorkflowInstance;
+
+/// HMAC-SHA256 type alias for webhook signature
+type HmacSha256 = Hmac<Sha256>;
+
+/// Maximum number of webhook retry attempts
+const WEBHOOK_MAX_RETRIES: u32 = 3;
+/// Webhook request timeout in seconds
+const WEBHOOK_TIMEOUT_SECS: u32 = 10;
 
 /// 工作流引擎错误类型
 #[derive(Debug, thiserror::Error)]
@@ -825,49 +835,90 @@ impl TaskScheduler {
             .transpose()
             .map_err(|e| EngineError::ExecutionFailed(e.to_string()))?;
 
-        // 创建 HTTP 客户端
+        // 创建带超时的 HTTP 客户端
         let client = reqwest::Client::builder()
-            .timeout(std::time::Duration::from_secs(30))
+            .timeout(std::time::Duration::from_secs(WEBHOOK_TIMEOUT_SECS as u64))
             .build()
             .map_err(|e| EngineError::ExecutionFailed(format!("创建HTTP客户端失败: {e}")))?;
 
-        // 发送请求
-        let request_builder = match method.to_uppercase().as_str() {
-            "GET" => client.get(url),
-            "POST" => client.post(url),
-            "PUT" => client.put(url),
-            "DELETE" => client.delete(url),
-            "PATCH" => client.patch(url),
-            _ => {
-                return Err(EngineError::ExecutionFailed(format!(
-                    "不支持的HTTP方法: {method}"
-                )));
-            }
-        };
+        // 构建带签名的 payload
+        let timestamp = Utc::now().timestamp();
+        let payload = serde_json::json!({
+            "event": "workflow.webhook",
+            "timestamp": timestamp,
+            "data": params,
+        });
+        let signature = self.sign_payload(&payload);
 
-        let mut request = request_builder.headers(headers);
-        if let Some(body) = body {
-            request = request.body(body);
-        }
+        // 添加 HMAC 签名 header
+        headers.insert(
+            reqwest::header::HeaderName::from_bytes(b"X-Webhook-Signature")
+                .map_err(|e| EngineError::ExecutionFailed(e.to_string()))?,
+            format!("sha256={signature}").parse().map_err(|e| {
+                EngineError::ExecutionFailed(format!("签名解析失败: {e}"))
+            })?,
+        );
 
-        // 发送请求并记录结果
-        match request.send().await {
-            Ok(response) => {
-                let status = response.status();
-                let body_text = response.text().await.unwrap_or_default();
-                tracing::info!("Webhook 响应: {method} {url} - 状态: {status}");
-                if !status.is_success() {
-                    tracing::warn!("Webhook 返回非成功状态: {status} - body: {body_text}");
+        // 发送请求（带重试机制）
+        let mut last_error = None;
+        for attempt in 0..WEBHOOK_MAX_RETRIES {
+            let request_builder = match method.to_uppercase().as_str() {
+                "GET" => client.get(url),
+                "POST" => client.post(url),
+                "PUT" => client.put(url),
+                "DELETE" => client.delete(url),
+                "PATCH" => client.patch(url),
+                _ => {
+                    return Err(EngineError::ExecutionFailed(format!(
+                        "不支持的HTTP方法: {method}"
+                    )));
                 }
-                Ok(())
+            };
+
+            let mut request = request_builder.headers(headers.clone());
+            if let Some(body) = body.clone() {
+                request = request.body(body);
             }
-            Err(e) => {
-                tracing::error!("Webhook 请求失败: {method} {url} - 错误: {e}");
-                Err(EngineError::ExecutionFailed(format!(
-                    "Webhook 请求失败: {e}"
-                )))
+
+            match request.send().await {
+                Ok(response) => {
+                    let status = response.status();
+                    let body_text = response.text().await.unwrap_or_default();
+                    tracing::info!("Webhook 响应: {method} {url} - 状态: {status}");
+                    if status.is_success() {
+                        return Ok(());
+                    }
+                    tracing::warn!("Webhook 返回非成功状态: {status} - body: {body_text}");
+                    last_error = Some(format!("HTTP {status}: {body_text}"));
+                }
+                Err(e) => {
+                    tracing::warn!("Webhook 请求失败 (尝试 {}/{}): {method} {url} - 错误: {e}", attempt + 1, WEBHOOK_MAX_RETRIES);
+                    last_error = Some(e.to_string());
+                }
+            }
+
+            // 指数退避 (2^attempt 秒)
+            if attempt < WEBHOOK_MAX_RETRIES - 1 {
+                let backoff = 2u64.pow(attempt);
+                tokio::time::sleep(std::time::Duration::from_secs(backoff)).await;
             }
         }
+
+        Err(EngineError::ExecutionFailed(format!(
+            "Webhook 请求失败 (已重试 {} 次): {}",
+            WEBHOOK_MAX_RETRIES,
+            last_error.unwrap_or_default()
+        )))
+    }
+
+    /// 使用 HMAC-SHA256 对 payload 进行签名
+    fn sign_payload(&self, payload: &serde_json::Value) -> String {
+        let secret = std::env::var("WEBHOOK_SECRET").unwrap_or_default();
+        let mut mac = HmacSha256::new_from_slice(secret.as_bytes())
+            .expect("HMAC can take key of any size");
+        mac.update(payload.to_string().as_bytes());
+        let result = mac.finalize();
+        hex::encode(result.into_bytes())
     }
 
     /// 执行脚本动作

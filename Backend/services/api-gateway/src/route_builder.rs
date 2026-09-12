@@ -45,6 +45,8 @@ pub fn create_router(
     let router = crate::routes::all_routes()
         .route("/ws/status", axum::routing::get(crate::ws_routes::ws_status_handler))
         .route("/ws/messages", axum::routing::get(crate::ws_routes::ws_messages_handler))
+        // OpenAPI / Swagger UI
+        .merge(crate::openapi::routes())
         // 8. Innermost: gRPC error handler (catches handler/propagation errors)
         .layer(axum::middleware::from_fn(grpc_error_handler_middleware));
 

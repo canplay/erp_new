@@ -1,20 +1,22 @@
 //! `OpenAPI` 文档模块
 //!
 //! 提供 `OpenAPI` 3.0 规范的 JSON 文档以及 Swagger UI 界面。
-//! 文档自动包含所有已注册的 API 路由信息。
+//! 使用 utoipa-swagger-ui 提供交互式文档。
 
 use std::sync::Arc;
 use axum::{Router, routing::get, response::Html};
+use utoipa::openapi::OpenApi;
+use utoipa_swagger_ui::SwaggerUi;
 
 use crate::AppState;
 
 /// `OpenAPI` 3.0 规范定义（JSON）
-fn openapi_spec() -> serde_json::Value {
+fn openapi_spec_json() -> serde_json::Value {
     serde_json::json!({
         "openapi": "3.0.3",
         "info": {
             "title": "MyAI API Gateway",
-            "description": "API 网关 - 所有微服务的统一 HTTP 入口\n\n所有 API 路径均以 `/api/*` 为前缀。认证通过 JWT Bearer Token 实现。\n\n## 认证方式\n在请求头中添加 `Authorization: Bearer <token>`。\n\n## 响应格式\n所有 API 返回统一格式：\n```json\n{\n  \"code\": 0,\n  \"message\": \"success\",\n  \"data\": { ... }\n}\n```",
+            "description": "API 网关 - 所有微服务的统一 HTTP 入口\n\n所有 API 路径均以 `/api/*` 为前缀。认证通过 JWT Bearer Token 实现。\n\n## 认证方式\n在请求头中添加 `Authorization: Bearer <token>`\n\n## 响应格式\n所有 API 返回统一格式：\n```json\n{\n  \"code\": 0,\n  \"message\": \"success\",\n  \"data\": { ... }\n}\n```",
             "version": env!("CARGO_PKG_VERSION"),
             "contact": {
                 "name": "MyAI Team"
@@ -34,6 +36,12 @@ fn openapi_spec() -> serde_json::Value {
             },
             "/health/discovery": {
                 "get": { "summary": "服务发现状态", "description": "查看服务发现注册和连接状态", "tags": ["系统"], "responses": { "200": { "description": "服务发现状态" } } }
+            },
+            "/ready": {
+                "get": { "summary": "K8s Readiness", "description": "检查所有上游服务是否就绪", "tags": ["系统"], "responses": { "200": { "description": "OK" }, "503": { "description": "Not Ready" } } }
+            },
+            "/health/database": {
+                "get": { "summary": "数据库健康检查", "description": "检查所有上游服务的数据库连接状态", "tags": ["系统"], "responses": { "200": { "description": "数据库健康状态" } } }
             },
             "/api/admin/stats": {
                 "get": { "summary": "仪表盘统计", "description": "获取系统仪表盘统计数据", "tags": ["系统"], "security": [{ "bearerAuth": [] }], "responses": { "200": { "description": "统计数据" } } }
@@ -338,17 +346,57 @@ fn openapi_spec() -> serde_json::Value {
                     "bearerFormat": "JWT",
                     "description": "JWT 认证 Token，在请求头中添加 `Authorization: Bearer <token>`"
                 }
+            },
+            "schemas": {
+                "HealthStatus": {
+                    "type": "object",
+                    "properties": {
+                        "status": { "type": "string" },
+                        "version": { "type": "string" },
+                        "uptime_secs": { "type": "integer", "format": "int64" }
+                    }
+                },
+                "ServiceHealth": {
+                    "type": "object",
+                    "properties": {
+                        "service": { "type": "string" },
+                        "status": { "type": "string" },
+                        "latency_ms": { "type": ["integer", "null"], "format": "int64" }
+                    }
+                },
+                "DetailedHealth": {
+                    "type": "object",
+                    "properties": {
+                        "status": { "type": "string" },
+                        "version": { "type": "string" },
+                        "uptime_secs": { "type": "integer", "format": "int64" },
+                        "services": {
+                            "type": "array",
+                            "items": { "$ref": "#/components/schemas/ServiceHealth" }
+                        }
+                    }
+                }
             }
         }
     })
 }
 
-/// `OpenAPI` JSON 接口处理函数
+/// 获取 OpenAPI 规范（作为 serde_json::Value）
+pub fn openapi_spec() -> serde_json::Value {
+    openapi_spec_json()
+}
+
+/// 获取 OpenAPI 规范（作为 utoipa OpenApi 对象，供 Swagger UI 使用）
+pub fn openapi() -> OpenApi {
+    serde_json::from_value(openapi_spec_json()).expect("Failed to parse OpenAPI spec")
+}
+
+/// OpenAPI JSON 接口处理函数（兼容旧版）
 async fn openapi_json_handler() -> axum::Json<serde_json::Value> {
     axum::Json(openapi_spec())
 }
 
-/// Swagger UI 页面的 HTML
+/// Swagger UI 页面 HTML（备用，如果 utoipa-swagger-ui 不可用）
 const SWAGGER_UI_HTML: &str = r#"<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -362,7 +410,7 @@ const SWAGGER_UI_HTML: &str = r#"<!DOCTYPE html>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.17.14/swagger-ui-bundle.min.js"></script>
   <script>
     SwaggerUIBundle({
-      url: '/api/openapi.json',
+      url: '/api-docs/openapi.json',
       dom_id: '#swagger-ui',
       deepLinking: true,
       presets: [
@@ -378,14 +426,19 @@ const SWAGGER_UI_HTML: &str = r#"<!DOCTYPE html>
 </body>
 </html>"#;
 
-/// Swagger UI 页面处理函数
+/// Swagger UI 页面处理函数（备用）
 async fn swagger_ui_handler() -> Html<&'static str> {
     Html(SWAGGER_UI_HTML)
 }
 
-/// 创建 `OpenAPI` 和 Swagger UI 路由
+/// 创建 OpenAPI 和 Swagger UI 路由
 pub fn routes() -> Router<Arc<AppState>> {
-    Router::<Arc<AppState>>::new()
+    let swagger_ui = SwaggerUi::new("/swagger-ui")
+        .url("/api-docs/openapi.json", openapi());
+
+    let mut router: Router<Arc<AppState>> = swagger_ui.into();
+    router = router
         .route("/api/openapi.json", get(openapi_json_handler))
-        .route("/api/docs", get(swagger_ui_handler))
+        .route("/api/docs", get(swagger_ui_handler));
+    router
 }

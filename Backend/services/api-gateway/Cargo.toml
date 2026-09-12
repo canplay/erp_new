@@ -53,5 +53,9 @@ log-core.workspace = true
 # SQL 驱动（Repository 类型需要）
 sqlx = { workspace = true, features = ["runtime-tokio", "postgres", "tls-rustls", "chrono"] }
 
+# OpenAPI / Swagger UI
+utoipa = { workspace = true }
+utoipa-swagger-ui = { workspace = true }
+
 [dev-dependencies]
 http-body-util = "0.1"

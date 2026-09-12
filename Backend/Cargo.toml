@@ -152,7 +152,7 @@ mime = "0.3"
 
 # OpenAPI / Swagger UI
 utoipa = { version = "5", features = ["axum_extras", "chrono", "uuid"] }
-utoipa-swagger-ui = { version = "8", features = ["axum"] }
+utoipa-swagger-ui = { version = "9", features = ["axum"] }
 
 # 国密算法
 sm3 = "0.5"

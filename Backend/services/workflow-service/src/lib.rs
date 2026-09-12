@@ -3,6 +3,7 @@
 //! 合并工作流、报表和调度功能
 
 pub mod engine; // 工作流执行引擎
+pub mod events; // Workflow event emission module
 pub mod extension;
 pub mod grpc_handlers; // gRPC 服务处理器
 pub mod grpc_server; // gRPC 服务实现
@@ -33,6 +34,13 @@ pub use grpc_handlers::{WorkflowAppState, WorkflowGrpcService, WorkflowInfo};
 
 // 导出引擎类型
 pub use engine::{EngineError, EngineResult, TaskScheduler, WorkflowEngine};
+
+// 导出事件类型
+pub use events::{
+    EventFilter, EventPriority, TaskAssignedData, TaskCompletedData, WorkflowCompletedData,
+    WorkflowEvent, WorkflowEventEmitter, WorkflowEventError, WorkflowEventResult,
+    WorkflowEventType, WorkflowFailedData,
+};
 
 // 导出节点扩展类型（避免与 models 中的同名类型冲突）
 pub use extension::{

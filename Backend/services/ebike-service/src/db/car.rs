@@ -21,7 +21,7 @@ use serde_json::json;
 use sqlx::postgres::PgPool;
 use sqlx::Error;
 
-use crate::db::GenericRepository;
+use crate::db::{safe_table_name, GenericRepository};
 use crate::model::CarInfo;
 
 /// 违停记录
@@ -188,17 +188,16 @@ impl CarRepository {
     pub async fn history(&self, code: &str) -> Result<Vec<CarInfo>, Error> {
         let year = Local::now().year();
         let month = Local::now().month();
-        let table_name = format!("car_history_{year}_{month}");
-        let rows = sqlx::query_as::<_, CarInfo>(
-            &format!(
-                "SELECT code, status, provide, speed, gps, COALESCE(type, 0) AS type, time, alert, remark, delete, create_date, \
-                 update_date, gps_type FROM public.{} WHERE code = $1 AND delete = false",
-                table_name
-            )
-        )
-        .bind(code)
-        .fetch_all(&self.pool)
-        .await?;
+        let table_name = safe_table_name("car_history", year, month)
+            .map_err(|e| Error::Protocol(format!("Invalid table name: {e}").into()))?;
+        let query = format!(
+            "SELECT code, status, provide, speed, gps, COALESCE(type, 0) AS type, time, alert, remark, delete, create_date, \
+             update_date, gps_type FROM public.{table_name} WHERE code = $1 AND delete = false"
+        );
+        let rows = sqlx::query_as::<_, CarInfo>(&query)
+            .bind(code)
+            .fetch_all(&self.pool)
+            .await?;
 
         Ok(rows)
     }
@@ -214,29 +213,28 @@ impl CarRepository {
     ) -> Result<Vec<CarInfo>, Error> {
         let year = Local::now().year();
         let month = Local::now().month();
-        let table_name = format!("car_history_{year}_{month}");
-        let rows = sqlx::query_as::<_, CarInfo>(
-            &format!(
-                "SELECT code, status, provide, speed, gps, COALESCE(type, 0) AS type, time, alert, remark, delete, \
-                 create_date, update_date, gps_type FROM public.{} \
-                 WHERE delete = false \
-                 AND ($1 = '' OR code = $1) \
-                 AND ($2 = '' OR provide = $2) \
-                 AND ($3 = -1 OR status = $3) \
-                 AND ($4 = '' OR create_date::TEXT LIKE $4) \
-                 AND (($5 = '' AND alert != '') OR ($5 != '' AND alert LIKE $5)) \
-                 AND ($6 = '' OR remark LIKE $6)",
-                table_name
-            )
-        )
-        .bind(code)
-        .bind(provide)
-        .bind(status)
-        .bind(format!("%{time}%"))
-        .bind(format!("%{alert}%"))
-        .bind(format!("%{remark}%"))
-        .fetch_all(&self.pool)
-        .await?;
+        let table_name = safe_table_name("car_history", year, month)
+            .map_err(|e| Error::Protocol(format!("Invalid table name: {e}").into()))?;
+        let query = format!(
+            "SELECT code, status, provide, speed, gps, COALESCE(type, 0) AS type, time, alert, remark, delete, \
+             create_date, update_date, gps_type FROM public.{table_name} \
+             WHERE delete = false \
+             AND ($1 = '' OR code = $1) \
+             AND ($2 = '' OR provide = $2) \
+             AND ($3 = -1 OR status = $3) \
+             AND ($4 = '' OR create_date::TEXT LIKE $4) \
+             AND (($5 = '' AND alert != '') OR ($5 != '' AND alert LIKE $5)) \
+             AND ($6 = '' OR remark LIKE $6)"
+        );
+        let rows = sqlx::query_as::<_, CarInfo>(&query)
+            .bind(code)
+            .bind(provide)
+            .bind(status)
+            .bind(format!("%{time}%"))
+            .bind(format!("%{alert}%"))
+            .bind(format!("%{remark}%"))
+            .fetch_all(&self.pool)
+            .await?;
 
         Ok(rows)
     }
@@ -333,18 +331,17 @@ impl CarRepository {
     async fn add_history(&self, info: &CarInfo) -> Result<bool, Error> {
         let year = Local::now().year();
         let month = Local::now().month();
-        let table_name = format!("car_history_{year}_{month}");
-        // B11 豁免: 按月分表 car_history_{year}_{month}, 表名运行时动态
+        let table_name = safe_table_name("car_history", year, month)
+            .map_err(|e| Error::Protocol(format!("Invalid table name: {e}").into()))?;
+        // B11 豁免: 按月分表 car_history_{year}_{month}, 表名运行时动态（已验证安全）
         // 修复 (2026-08-10): 补 type 列——历史表 type 曾为 NULL 导致 query_as 解码失败
-        sqlx::query(
-            &format!(
-                "INSERT INTO public.{} (id, code, status, provide, speed, gps, type, time, create_date, \
-                 update_date, delete, alert, remark, gps_type) \
-                 VALUES (gen_random_uuid()::TEXT, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)",
-                table_name
-            )
-        )
-        .bind(&info.code)
+        let query = format!(
+            "INSERT INTO public.{table_name} (id, code, status, provide, speed, gps, type, time, create_date, \
+             update_date, delete, alert, remark, gps_type) \
+             VALUES (gen_random_uuid()::TEXT, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)"
+        );
+        sqlx::query(&query)
+            .bind(&info.code)
         .bind(info.status)
         .bind(&info.provide)
         .bind(info.speed)

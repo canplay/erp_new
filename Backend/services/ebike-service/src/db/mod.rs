@@ -11,6 +11,7 @@ pub mod user;
 
 pub use car::CarRepository;
 pub use common::GenericRepository;
+pub use common::safe_table_name;
 pub use options::OptionsRepository;
 pub use order::OrderRepository;
 pub use storage::StorageRepository;

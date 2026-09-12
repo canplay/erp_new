@@ -7,7 +7,7 @@ use serde_json::json;
 use sqlx::postgres::PgPool;
 use sqlx::Error;
 
-use crate::db::GenericRepository;
+use crate::db::{safe_table_name, GenericRepository};
 use crate::model::StorageInfo;
 
 pub struct StorageRepository {
@@ -136,17 +136,17 @@ impl StorageRepository {
     pub async fn history(&self, code: &str) -> Result<Vec<StorageInfo>, Error> {
         let year = Local::now().year();
         let month = Local::now().month();
-        let table_name = format!("storage_history_{year}_{month}");
-        let rows = sqlx::query_as::<_, StorageInfo>(
-            &format!(
-                "SELECT code, status, provide, gps, type, sum, cur, alert, remark, points, delete, \
-                 create_date, update_date, gps_type FROM public.{table_name} \
-                 WHERE code = $1 AND delete = false"
-            )
-        )
-        .bind(code)
-        .fetch_all(&self.pool)
-        .await?;
+        let table_name = safe_table_name("storage_history", year, month)
+            .map_err(|e| Error::Protocol(format!("Invalid table name: {e}").into()))?;
+        let query = format!(
+            "SELECT code, status, provide, gps, type, sum, cur, alert, remark, points, delete, \
+             create_date, update_date, gps_type FROM public.{table_name} \
+             WHERE code = $1 AND delete = false"
+        );
+        let rows = sqlx::query_as::<_, StorageInfo>(&query)
+            .bind(code)
+            .fetch_all(&self.pool)
+            .await?;
 
         Ok(rows)
     }
@@ -154,52 +154,50 @@ impl StorageRepository {
     async fn add_history(&self, info: &StorageInfo) -> Result<bool, Error> {
         let year = Local::now().year();
         let month = Local::now().month();
-        let table_name = format!("storage_history_{year}_{month}");
-        // B11 豁免: 按月分表 storage_history_{year}_{month}, 表名运行时动态
+        let table_name = safe_table_name("storage_history", year, month)
+            .map_err(|e| Error::Protocol(format!("Invalid table name: {e}").into()))?;
+        // B11 豁免: 按月分表 storage_history_{year}_{month}, 表名运行时动态（已验证安全）
         // O4 修复: 确保动态表存在（月初首次写入必炸）
-        let _ = sqlx::query(
-            &format!(
-                "CREATE TABLE IF NOT EXISTS public.{table_name} (
-                    id TEXT PRIMARY KEY,
-                    code TEXT,
-                    status BIGINT,
-                    provide TEXT,
-                    gps JSONB,
-                    create_date TIMESTAMP,
-                    update_date TIMESTAMP,
-                    delete BOOLEAN,
-                    alert TEXT,
-                    remark TEXT,
-                    sum NUMERIC,
-                    cur NUMERIC,
-                    points TEXT
-                )"
-            )
-        )
-        .execute(&self.pool)
-        .await;
+        let create_sql = format!(
+            "CREATE TABLE IF NOT EXISTS public.{table_name} (
+                id TEXT PRIMARY KEY,
+                code TEXT,
+                status BIGINT,
+                provide TEXT,
+                gps JSONB,
+                create_date TIMESTAMP,
+                update_date TIMESTAMP,
+                delete BOOLEAN,
+                alert TEXT,
+                remark TEXT,
+                sum NUMERIC,
+                cur NUMERIC,
+                points TEXT
+            )"
+        );
+        let _ = sqlx::query(&create_sql)
+            .execute(&self.pool)
+            .await;
 
-        sqlx::query(
-            &format!(
-                "INSERT INTO public.{} (id, code, status, provide, gps, create_date, update_date, \
-                 delete, alert, remark, sum, cur, points) \
-                 VALUES (gen_random_uuid()::TEXT, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)",
-                table_name
-            )
-        )
-        .bind(&info.code)
-        .bind(info.status)
-        .bind(&info.provide)
-        .bind(info.gps.as_ref().unwrap_or(&json!({ "lng": 0, "lat": 0 })))
-        .bind(Local::now().naive_local())
-        .bind(Local::now().naive_local())
-        .bind(false)
-        .bind(info.alert.as_ref().unwrap_or(&String::new()))
-        .bind(info.remark.as_ref().unwrap_or(&String::new()))
-        .bind(info.sum)
-        .bind(info.cur)
-        .bind(info.points.as_ref().unwrap_or(&String::new()))
-        .execute(&self.pool).await?;
+        let insert_sql = format!(
+            "INSERT INTO public.{table_name} (id, code, status, provide, gps, create_date, update_date, \
+             delete, alert, remark, sum, cur, points) \
+             VALUES (gen_random_uuid()::TEXT, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)"
+        );
+        sqlx::query(&insert_sql)
+            .bind(&info.code)
+            .bind(info.status)
+            .bind(&info.provide)
+            .bind(info.gps.as_ref().unwrap_or(&json!({ "lng": 0, "lat": 0 })))
+            .bind(Local::now().naive_local())
+            .bind(Local::now().naive_local())
+            .bind(false)
+            .bind(info.alert.as_ref().unwrap_or(&String::new()))
+            .bind(info.remark.as_ref().unwrap_or(&String::new()))
+            .bind(info.sum)
+            .bind(info.cur)
+            .bind(info.points.as_ref().unwrap_or(&String::new()))
+            .execute(&self.pool).await?;
         Ok(true)
     }
 }

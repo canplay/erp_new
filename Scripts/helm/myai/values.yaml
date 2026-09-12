@@ -208,8 +208,8 @@ services:
       enabled: true
     securityContext:
       readOnlyRootFilesystem: false
-      runAsNonRoot: false
-      runAsUser: 0
+      runAsNonRoot: true
+      runAsUser: 1000
       allowPrivilegeEscalation: false
       capabilities:
         drop:
@@ -220,9 +220,9 @@ services:
           - SETUID
           - SETGID
     podSecurityContext:
-      runAsNonRoot: false
-      runAsUser: 0
-      fsGroup: 0
+      runAsNonRoot: true
+      runAsUser: 1000
+      fsGroup: 1000
 
   cmsService:
     enabled: true
@@ -618,6 +618,12 @@ securityContext:
 nodeSelector: {}
 tolerations: []
 affinity: {}
+
+# Monitoring configuration
+monitoring:
+  enabled: true
+  scrapeInterval: "30s"
+  scrapeTimeout: "10s"
 
 # OpenTelemetry 配置
 otel:

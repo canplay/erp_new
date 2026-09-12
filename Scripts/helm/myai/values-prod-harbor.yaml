@@ -235,8 +235,8 @@ services:
       enabled: true
     securityContext:
       readOnlyRootFilesystem: false
-      runAsNonRoot: false
-      runAsUser: 0 # nginx 官方镜像模式: root master + worker 降权(审计修复 D5 复核: 非 root 无法写 /run/nginx.pid)
+      runAsNonRoot: true
+      runAsUser: 1000
       allowPrivilegeEscalation: false
       capabilities:
         drop:
@@ -247,9 +247,9 @@ services:
           - SETUID
           - SETGID
     podSecurityContext:
-      runAsNonRoot: false
-      runAsUser: 0
-      fsGroup: 0
+      runAsNonRoot: true
+      runAsUser: 1000
+      fsGroup: 1000
 
   # ===== 其余服务 =====
   cmsService:
@@ -733,3 +733,9 @@ securityContext:
   capabilities:
     drop:
       - ALL
+
+# Monitoring configuration
+monitoring:
+  enabled: true
+  scrapeInterval: "30s"
+  scrapeTimeout: "10s"

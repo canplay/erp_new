@@ -33,7 +33,7 @@ use common::middleware::csrf_protection_middleware;
 pub fn create_router(
     state: Arc<AppState>,
     rate_limit_state: RateLimitState,
-    auth_state: Option<AuthState>,
+    auth_state: AuthState,
 ) -> Router {
     // ================================================================
     // Middleware layers applied from innermost to outermost.
@@ -56,14 +56,12 @@ pub fn create_router(
     let router = router
         .layer(axum::middleware::from_fn(operation_log_middleware));
 
-    // 6. Auth middleware (conditional - only when JWT configured)
-    let router = if let Some(auth) = auth_state {
+    // 6. Auth middleware (always applied - JWT is required at startup)
+    let router = {
         tracing::info!("应用 JWT 鉴权中间件");
         router
             .layer(axum::middleware::from_fn(auth_middleware))
-            .layer(axum::extract::Extension(auth))
-    } else {
-        router
+            .layer(axum::extract::Extension(auth_state))
     };
 
     // Apply remaining middleware + state conversion.

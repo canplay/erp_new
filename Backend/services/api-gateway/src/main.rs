@@ -61,7 +61,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .expect("JWT_SECRET 环境变量必须配置(生产环境禁止无鉴权启动)");
     let jwt_issuer = std::env::var("JWT_ISSUER").unwrap_or_else(|_| "myai".to_string());
     let jwt_audience = std::env::var("JWT_AUDIENCE").unwrap_or_else(|_| "myai-users".to_string());
-    let auth_state = Some(AuthState::new(jwt_secret, jwt_issuer, jwt_audience));
+    let auth_state = AuthState::new(jwt_secret, jwt_issuer, jwt_audience);
     tracing::info!("JWT 鉴权已启用");
 
     // ========== CORS 配置 ==========

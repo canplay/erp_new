@@ -5,6 +5,8 @@
 pub mod grpc_handlers;
 pub mod handlers;
 pub mod isolation;
+pub mod offboarding;
+pub mod onboarding;
 pub mod repository;
 
 pub use handlers::*;
@@ -18,4 +20,15 @@ pub use grpc_handlers::{TenantAppState, TenantGrpcService, TenantInfo};
 pub use isolation::{
     DataFilter, IsolationLevel, IsolationPolicy, ResourceUsage, Tenant, TenantContext,
     TenantIsolationManager, TenantState, TenantStats,
+};
+
+// 导出 onboarding/offboarding 类型
+pub use onboarding::{
+    OnboardingError, OnboardingRequest, OnboardingResponse, OnboardingResult, OnboardingService,
+    OnboardingStatus, OnboardingStep,
+};
+pub use offboarding::{
+    DataExportFormat, OffboardingError, OffboardingRequest, OffboardingResponse,
+    OffboardingResult, OffboardingService, OffboardingStatus, OffboardingStep, TenantDataExport,
+    UserExport,
 };

@@ -30,6 +30,10 @@ spec:
     metadata:
       labels:
         {{- include "myai.selectorLabels" (dict "Values" $.Values "serviceName" $serviceName "Chart" $.Chart "Release" $.Release) | nindent 8 }}
+      annotations:
+        prometheus.io/scrape: {{ if $.Values.monitoring.enabled }}"true"{{ else }}"false"{{ end }}
+        prometheus.io/port: "{{ $serviceConfig.ports.http }}"
+        prometheus.io/path: "/metrics"
     spec:
       {{- if $.Values.global.imagePullSecrets }}
       imagePullSecrets:

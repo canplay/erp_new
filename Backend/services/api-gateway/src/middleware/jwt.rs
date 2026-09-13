@@ -38,6 +38,10 @@ pub struct JwtClaims {
     pub aud: Option<String>,    // 受众
     #[serde(default)]
     pub tenant_id: Option<String>, // 租户 ID (可选, 多租户场景)
+    #[serde(default)]
+    pub roles: Vec<String>,        // 用户角色列表
+    #[serde(default)]
+    pub permissions: Vec<String>,  // 用户权限列表
 }
 
 /// JWT 鉴权状态

@@ -398,16 +398,16 @@ pub async fn list_expiring_tenants(
 impl TenantAppState {
     /// 创建新的应用状态
     #[must_use]
-    pub const fn new(repository: TenantRepository) -> Self {
-        Self { repository }
-    }
-
-    /// 创建新的应用状态（含生命周期管理器）
-    pub fn new_with_lifecycle(repository: TenantRepository, pool: sqlx::PgPool) -> Self {
+    pub fn new(repository: TenantRepository, pool: sqlx::PgPool) -> Self {
         Self {
             repository,
             lifecycle: TenantLifecycleService::new(pool),
         }
+    }
+
+    /// 创建新的应用状态（含生命周期管理器）
+    pub fn new_with_lifecycle(repository: TenantRepository, pool: sqlx::PgPool) -> Self {
+        Self::new(repository, pool)
     }
 
     /// 获取仓储引用

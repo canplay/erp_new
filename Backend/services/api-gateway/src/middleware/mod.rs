@@ -15,7 +15,7 @@ pub use jwt::{AuthState, JwtClaims, auth_middleware};
 pub use tenant::tenant_extraction_middleware;
 pub use quota::{quota_enforcement_middleware, usage_recorder_middleware};
 pub use rate_limit::rate_limit_middleware;
-pub use cors::cors_layer;
+pub use cors::{CorsConfig, cors_layer};
 pub use logging::logging_middleware;
 pub use security_headers::security_headers_middleware;
 pub use operation_log::operation_log_middleware;
@@ -57,5 +57,15 @@ impl RateLimitState {
         }
         timestamps.push(now);
         true
+    }
+
+    /// 返回指定 key 的剩余请求次数
+    pub fn remaining(&self, key: &str) -> u32 {
+        let now = Instant::now();
+        let window = std::time::Duration::from_secs(self.window_secs);
+        let guard = self.requests.read();
+        let timestamps = guard.get(key).map(|v| v.as_slice()).unwrap_or(&[]);
+        let active = timestamps.iter().filter(|&t| now.duration_since(*t) < window).count();
+        self.max_requests.saturating_sub(active as u32)
     }
 }

@@ -19,6 +19,7 @@ use tenant_core::{
 };
 
 /// 租户生命周期服务
+#[derive(Clone)]
 pub struct TenantLifecycleService {
     pool: PgPool,
     lifecycle_manager: LifecycleManager,
@@ -33,6 +34,11 @@ impl TenantLifecycleService {
             lifecycle_manager: LifecycleManager::default(),
             provisioning_config: ProvisioningConfig::default(),
         }
+    }
+
+    /// 获取数据库连接池引用
+    pub fn pool(&self) -> &PgPool {
+        &self.pool
     }
 
     /// 创建租户

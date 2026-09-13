@@ -71,12 +71,13 @@ pub async fn usage_recorder_middleware(
     next: Next,
 ) -> Result<Response<Body>, StatusCode> {
     let start = std::time::Instant::now();
+    let path = request.uri().path().to_string();
     
     let response = next.run(request).await;
     
     let duration = start.elapsed();
     debug!(
-        path = %request.uri().path(),
+        path = %path,
         status = %response.status().as_u16(),
         duration_ms = %duration.as_millis(),
         "Request completed"

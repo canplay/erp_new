@@ -24,7 +24,8 @@ pub async fn tenant_extraction_middleware(
     let tenant_id = request
         .extensions()
         .get::<JwtClaims>()
-        .and_then(|claims| claims.tenant_id)
+        .and_then(|claims| claims.tenant_id.as_deref())
+        .and_then(|s| s.parse::<i64>().ok())
         .map(TenantId::new);
 
     // 如果没有从 JWT 获取到，尝试从 Header 获取
@@ -46,7 +47,7 @@ pub async fn tenant_extraction_middleware(
         let user_id = request
             .extensions()
             .get::<JwtClaims>()
-            .and_then(|claims| claims.sub.parse::<i64>().ok());
+            .and_then(|claims| Some(claims.sub));
 
         let roles = request
             .extensions()
@@ -86,7 +87,8 @@ pub fn current_tenant_id(request: &Request<Body>) -> Option<TenantId> {
         request
             .extensions()
             .get::<JwtClaims>()
-            .and_then(|claims| claims.tenant_id)
+            .and_then(|claims| claims.tenant_id.as_deref())
+            .and_then(|s| s.parse::<i64>().ok())
             .map(TenantId::new)
     })
 }

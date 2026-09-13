@@ -7,7 +7,6 @@ edition.workspace = true
 name = "log_core"
 path = "src/lib.rs"
 
-description = "统一日志库 - 提供结构化日志、日志格式化和日志级别控制"
 
 [features]
 default = []

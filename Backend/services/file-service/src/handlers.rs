@@ -175,6 +175,7 @@ struct FileUploadData {
 struct FileMetadata {
     name: Option<String>,
     description: Option<String>,
+    #[allow(dead_code)]
     category: Option<String>, // 预留字段，供前端扩展使用
     size: i64,
     mime_type: Option<String>,

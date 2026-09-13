@@ -214,8 +214,8 @@ async fn remove_tenant_user(
     }
 }
 
-async fn get_tenant_plans() -> Json<Value> { Json(json!({"success": true, "code": 200, "data": []})) }
-async fn get_current_plan() -> Json<Value> { Json(json!({"success": true, "code": 200, "data": null})) }
+async fn get_tenant_plans() -> Json<Value> { json_success(json!([])) }
+async fn get_current_plan() -> Json<Value> { json_success(json!(null)) }
 async fn upgrade_plan() -> Json<Value> { json_ok() }
 
 async fn get_usage(
@@ -271,8 +271,8 @@ async fn switch_tenant(
         Err(e) => json_error(&format!("切换租户失败: {e}")),
     }
 }
-async fn get_audit_logs() -> Json<Value> { Json(json!({"success": true, "code": 200, "data": {"list": [], "total": 0}})) }
-async fn export_audit_logs() -> Json<Value> { Json(json!({"success": false, "code": 501, "message": "导出待实现"})) }
+async fn get_audit_logs() -> Json<Value> { json_success(json!({"list": [], "total": 0})) }
+async fn export_audit_logs() -> Json<Value> { json_error("导出待实现") }
 
 pub fn routes() -> Router<Arc<AppState>> {
     Router::new()

@@ -10,7 +10,7 @@ use crate::routes::helpers::*;
 #[derive(Deserialize)]
 struct MsgQuery { page: Option<i32>, page_size: Option<i32>, r#type: Option<String> }
 #[derive(Deserialize)]
-struct TmplQuery { page: Option<i32>, page_size: Option<i32>, keyword: Option<String>, r#type: Option<String> }
+struct TmplQuery { page: Option<i32>, page_size: Option<i32> }
 
 /// 获取 messaging-service gRPC 客户端
 async fn get_msg_client(state: &Arc<AppState>) -> Result<crate::grpc_clients::MessageGrpcClient, Json<Value>> {
@@ -232,15 +232,15 @@ async fn delete_template(
 
 async fn toggle_template() -> Json<Value> { json_ok() }
 async fn test_template() -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"sent": true, "recipients": 0}}))
+    json_success(json!({"sent": true, "recipients": 0}))
 }
 
 // ==================== 公告/通知（user-service 公告表，待 proto 扩展 RPC） ====================
 
 async fn list_notifications(Query(q): Query<MsgQuery>) -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"list": [], "total": 0, "page": q.page.unwrap_or(1), "page_size": q.page_size.unwrap_or(20), "type": q.r#type}}))
+    json_success(json!({"list": [], "total": 0, "page": q.page.unwrap_or(1), "page_size": q.page_size.unwrap_or(20), "type": q.r#type}))
 }
-async fn send_notification() -> Json<Value> { Json(json!({"success": true, "code": 200, "data": {"id": 0}})) }
+async fn send_notification() -> Json<Value> { json_success(json!({"id": 0})) }
 async fn read_notification() -> Json<Value> { json_ok() }
 async fn read_all_notifications() -> Json<Value> { json_ok() }
 async fn batch_delete_notifications() -> Json<Value> { json_ok() }

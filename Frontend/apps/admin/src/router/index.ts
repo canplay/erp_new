@@ -1,157 +1,305 @@
-/**
- * @file index.ts
- * @description 路由配置和导航守卫
- * @date 2026-04-02
- */
+import { defineRouter } from '#q-app';
+import {
+  createMemoryHistory,
+  createRouter,
+  createWebHashHistory,
+  createWebHistory,
+} from 'vue-router';
+import { isAuthenticated } from '@erp-new-frontend-monorepo/boot/alova';
+import { hasCap } from '@erp-new-frontend-monorepo/capabilities';
 
-import type { RouteLocationNormalized } from 'vue-router';
-import { useAuthStore } from '@/stores/auth';
-import { usePermissionStore } from '@/stores/permission';
-import { logger } from '@/utils/logger';
-import { getStorageItem } from '@/utils/storage';
-import router from './routes';
+import MainLayout from '@/layouts/MainLayout.vue';
 
-declare module 'vue-router' {
-  interface RouteMeta {
-    // 是否需要登录
-    requiresAuth?: boolean;
-    // 需要的权限
-    permissions?: string[];
-    // 页面标题
-    title?: string;
-    // 菜单项（用于侧边栏渲染）
-    menuItem?: { name: string; label: string; path: string; icon: string; permission?: string[] };
-  }
-}
+export default defineRouter(() => {
+  const createHistory = import.meta.env.QUASAR_SERVER
+    ? createMemoryHistory
+    : import.meta.env.QUASAR_VUE_ROUTER_MODE === 'history'
+      ? createWebHistory
+      : createWebHashHistory;
 
-/**
- * @brief 路由预加载配置
- * @description 预加载常用页面组件，提升页面切换速度
- * @note 修复 fetchUserInfo 竞态条件：在 initAuth 中统一恢复 userInfo
- */
-function setupPreload() {
-  // 预加载关键页面
-  const preloadRoutes = ['Dashboard', 'Profile', 'UserList'];
+  const Router = createRouter({
+    scrollBehavior: () => ({ left: 0, top: 0 }),
+    routes: [
+      {
+        path: '/auth/login',
+        name: 'login',
+        component: () => import('@/pages/auth/login/index.vue'),
+      },
+      {
+        path: '/auth/forgot-password',
+        name: 'forgot-password',
+        component: () => import('@/pages/auth/forgot-password/index.vue'),
+      },
+      {
+        path: '/auth/reset-password',
+        name: 'reset-password',
+        component: () => import('@/pages/auth/reset-password/index.vue'),
+      },
+      {
+        path: '/auth/register',
+        name: 'register',
+        component: () => import('@/pages/auth/register/index.vue'),
+      },
+      {
+        path: '/auth/confirm-email',
+        name: 'confirm-email',
+        component: () => import('@/pages/auth/confirm-email/index.vue'),
+      },
+      {
+        path: '/',
+        component: MainLayout,
+        children: [
+          { path: '', name: 'index', component: () => import('@/pages/index.vue') },
+          {
+            path: 'equipment',
+            name: 'equipment',
+            component: () => import('@/pages/equipment/index.vue'),
+            meta: { cap: 'equipment' },
+          },
+          {
+            path: 'equipment/:id',
+            name: 'equipment-detail',
+            component: () => import('@/pages/equipment/detail/index.vue'),
+            meta: { cap: 'equipment' },
+          },
+          {
+            path: 'daily-control',
+            name: 'daily-control',
+            component: () => import('@/pages/daily-control/index.vue'),
+            meta: { cap: 'daily-control' },
+          },
+          {
+            path: 'weekly-check',
+            name: 'weekly-check',
+            component: () => import('@/pages/weekly-check/index.vue'),
+            meta: { cap: 'weekly-check' },
+          },
+          {
+            path: 'monthly-report',
+            name: 'monthly-report',
+            component: () => import('@/pages/monthly-report/index.vue'),
+            meta: { cap: 'monthly-report' },
+          },
+          {
+            path: 'analytics',
+            name: 'analytics',
+            component: () => import('@/pages/analytics/index.vue'),
+            meta: { cap: 'analytics' },
+          },
+          {
+            path: 'hidden-danger',
+            name: 'hidden-danger',
+            component: () => import('@/pages/hidden-danger/index.vue'),
+            meta: { cap: 'hidden-danger' },
+          },
+          {
+            path: 'personnel',
+            name: 'personnel',
+            component: () => import('@/pages/personnel/index.vue'),
+            meta: { cap: 'personnel' },
+          },
+          {
+            path: 'regulatory',
+            name: 'regulatory',
+            component: () => import('@/pages/regulatory/index.vue'),
+            meta: { cap: 'regulatory' },
+          },
+          {
+            path: 'knowledge-graph',
+            name: 'knowledge-graph',
+            component: () => import('@/pages/knowledge-graph/index.vue'),
+            meta: { cap: 'knowledge-graph' },
+          },
+          {
+            path: 'users',
+            name: 'users',
+            component: () => import('@/pages/users/index.vue'),
+            meta: { cap: 'users-platform' },
+          },
+          {
+            path: 'users/:id',
+            name: 'user-detail',
+            component: () => import('@/pages/users/detail/index.vue'),
+            meta: { cap: 'users-platform' },
+          },
+          {
+            path: 'roles',
+            name: 'roles',
+            component: () => import('@/pages/roles/index.vue'),
+            meta: { cap: 'roles' },
+          },
+          {
+            path: 'roles/:id',
+            name: 'role-detail',
+            component: () => import('@/pages/roles/detail/index.vue'),
+            meta: { cap: 'roles' },
+          },
+          {
+            path: 'tenants',
+            name: 'tenants',
+            component: () => import('@/pages/tenants/index.vue'),
+            meta: { cap: 'tenant-management' },
+          },
+          {
+            path: 'tenants/:id',
+            name: 'tenant-detail',
+            component: () => import('@/pages/tenants/detail/index.vue'),
+            meta: { cap: 'tenant-management' },
+          },
+          {
+            path: 'audits',
+            name: 'audits',
+            component: () => import('@/pages/audits/index.vue'),
+            meta: { cap: 'audit-platform' },
+          },
+          {
+            path: 'billing',
+            name: 'billing',
+            component: () => import('@/pages/billing/index.vue'),
+            meta: { cap: 'billing' },
+          },
+          {
+            path: 'billing/invoices',
+            name: 'billing-invoices',
+            component: () => import('@/pages/billing/invoices/index.vue'),
+            meta: { cap: 'billing' },
+          },
+          {
+            path: 'billing/invoices/:id',
+            name: 'invoice-detail',
+            component: () => import('@/pages/billing/invoice-detail/index.vue'),
+            meta: { cap: 'billing' },
+          },
+          {
+            path: 'sessions',
+            name: 'sessions',
+            component: () => import('@/pages/sessions/index.vue'),
+            meta: { cap: 'sessions-platform' },
+          },
+          {
+            path: 'webhooks',
+            name: 'webhooks',
+            component: () => import('@/pages/webhooks/index.vue'),
+            meta: { cap: 'webhooks' },
+          },
+          {
+            path: 'webhooks/:id',
+            name: 'webhook-detail',
+            component: () => import('@/pages/webhooks/detail/index.vue'),
+            meta: { cap: 'webhooks' },
+          },
+          {
+            path: 'messages',
+            name: 'messages',
+            component: () => import('@/pages/messages/index.vue'),
+            meta: { cap: 'messages' },
+          },
+          {
+            path: 'settings/security',
+            name: 'settings-security',
+            component: () => import('@/pages/settings/security/index.vue'),
+            meta: { cap: 'settings' },
+          },
+          {
+            path: 'settings/appearance',
+            name: 'settings-appearance',
+            component: () => import('@/pages/settings/appearance/index.vue'),
+            meta: { cap: 'settings' },
+          },
+          {
+            path: 'settings/sessions',
+            name: 'settings-sessions',
+            component: () => import('@/pages/settings/sessions/index.vue'),
+            meta: { cap: 'settings' },
+          },
+          {
+            path: 'impersonation',
+            name: 'impersonation',
+            component: () => import('@/pages/impersonation/index.vue'),
+            meta: { cap: 'impersonation' },
+          },
+          {
+            path: 'files',
+            name: 'files',
+            component: () => import('@/pages/files/index.vue'),
+            meta: { cap: 'files' },
+          },
+          {
+            path: 'ocr',
+            name: 'ocr',
+            component: () => import('@/pages/ocr/index.vue'),
+            meta: { cap: 'ocr' },
+          },
+          {
+            path: 'groups',
+            name: 'groups',
+            component: () => import('@/pages/groups/index.vue'),
+            meta: { cap: 'user-groups' },
+          },
+          {
+            path: 'catalog',
+            name: 'catalog',
+            component: () => import('@/pages/catalog/index.vue'),
+            meta: { cap: 'catalog' },
+          },
+          {
+            path: 'tickets',
+            name: 'tickets',
+            component: () => import('@/pages/tickets/index.vue'),
+            meta: { cap: 'tickets' },
+          },
+          {
+            path: 'chat',
+            name: 'chat',
+            component: () => import('@/pages/chat/index.vue'),
+            meta: { cap: 'chat' },
+          },
+          {
+            path: 'health',
+            name: 'health',
+            component: () => import('@/pages/health/index.vue'),
+            meta: { cap: 'health' },
+          },
+          {
+            path: 'profile',
+            name: 'profile',
+            component: () => import('@/pages/profile/index.vue'),
+            meta: { cap: 'profile' },
+          },
+        ],
+      },
+      {
+        path: '/:pathMatch(.*)*',
+        name: 'not-found',
+        component: () => import('@/pages/not-found/index.vue'),
+      },
+    ],
 
-  // 立即预加载，避免阻塞主线程
-  preloadRoutes.forEach((routeName) => {
-    const routes = router.getRoutes().filter((r) => r.name === routeName);
-    routes.forEach((r) => {
-      if (r.components?.default) {
-        const component = r.components.default as { preload?: () => void };
-        if (typeof component.preload === 'function') {
-          component.preload();
-        }
-      }
-    });
+    // Leave this as is and make changes in quasar.conf.js instead!
+    // quasar.conf.js -> build -> vueRouterMode
+    // quasar.conf.js -> build -> publicPath
+    history: createHistory(import.meta.env.QUASAR_VUE_ROUTER_BASE),
   });
-  logger.info('【路由预加载】关键页面组件已预加载');
-}
 
-/**
- * @brief 路由初始化配置
- */
-export function setupRouter() {
-  // 初始化路由预加载
-  setupPreload();
-
-  // 全局前置守卫 - 路由鉴权
-  router.beforeEach(async (
-    to: RouteLocationNormalized,
-    _from: RouteLocationNormalized,
-    next: (to?: string | { path: string; query?: Record<string, string> }) => void
-  ) => {
-    const authStore = useAuthStore();
-
-    // 更新页面标题
-    if (to.meta.title) {
-      document.title = `${to.meta.title} - 管理后台`;
-      // 使用 Quasar 的 title 管理：document.title 是最可靠的方案
-    } else {
-      document.title = '管理后台';
+  // 登录守卫：未登录访问非登录页 → /auth/login；已登录访问登录页 → /
+  const publicPaths = [
+    '/auth/login',
+    '/auth/forgot-password',
+    '/auth/reset-password',
+    '/auth/confirm-email',
+    '/auth/register',
+  ];
+  Router.beforeEach((to) => {
+    const authed = isAuthenticated();
+    if (publicPaths.some((p) => to.path.startsWith(p))) {
+      return authed ? '/' : true;
     }
-
-    // 需要登录的页面
-    if (to.meta.requiresAuth) {
-      if (!authStore.isLoggedIn) {
-        // 未登录，跳转登录页
-        next({
-          path: '/login',
-          query: { redirect: to.fullPath },
-        });
-        return;
-      }
-
-      // 初始化用户信息（如果还没有）
-      if (!authStore.userInfo) {
-        // 等待 permissionStore 加载完成，避免竞态条件
-        const permissionStore = usePermissionStore();
-        if (!permissionStore.isLoaded) {
-          await permissionStore.fetchPermissions();
-        }
-        try {
-          await authStore.fetchUserInfo();
-        } catch {
-          // 获取失败，可能是 token 过期
-          next({
-            path: '/login',
-            query: { redirect: to.fullPath },
-          });
-          return;
-        }
-      }
-
-      // 审计修复(C1-权限初始化): 登录后首次进入页面时预加载角色权限。
-      // 等待 isLoaded 标志避免竞态; 失败时静默降级, 不阻塞路由导航。
-      const permissionStore = usePermissionStore();
-      if (!permissionStore.isLoaded) {
-        try {
-          await permissionStore.fetchPermissions();
-        } catch (error) {
-          logger.warn('【权限预加载失败】已静默降级, 不阻塞路由', error);
-        }
-      }
-
-      // 首次登录需修改密码，跳转到个人中心
-      if (getStorageItem<string>('must_change_password', '') === 'true' && to.path !== '/profile') {
-        next({ path: '/profile' });
-        return;
-      }
-
-      // 检查权限
-      if (to.meta.permissions && to.meta.permissions.length > 0) {
-        const hasPermission = to.meta.permissions.some(
-          (perm: string) => authStore.hasPermission(perm)
-        );
-        if (!hasPermission) {
-          logger.warn('【权限不足】', to.path);
-          // 可以跳转到 403 页面
-          next({ path: '/403' });
-          return;
-        }
-      }
-    }
-
-    // 已登录访问登录页，跳转到首页
-    if (to.path === '/login' && authStore.isLoggedIn) {
-      next('/');
-      return;
-    }
-
-    next();
+    if (!authed) return '/auth/login';
+    // 能力门控：平台视角无该能力（tenant 专有路由）→ 回首页
+    const cap = (to.meta as { cap?: string })?.cap;
+    if (cap && !hasCap(cap, 'platform')) return '/';
+    return true;
   });
 
-  // 后置守卫 - 页面加载完成后
-  router.afterEach((to: RouteLocationNormalized) => {
-    // 可以在这里记录访问日志
-    if (to.meta.title) {
-      logger.info('【页面访问】', to.meta.title);
-    }
-  });
-
-  return router;
-}
-
-export { router };
-export default router;
-
+  return Router;
+});

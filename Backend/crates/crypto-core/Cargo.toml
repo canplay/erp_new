@@ -6,7 +6,6 @@ edition.workspace = true
 name = "crypto_core"
 path = "src/lib.rs"
 
-description = "核心加密功能 - 提供加密/解密、签名等工具"
 
 [dependencies]
 tracing = "0.1"

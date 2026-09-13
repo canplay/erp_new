@@ -1,21 +1,10 @@
-/**
- * @file index.ts
- * @description 国际化配置入口
- * @date 2026-04-02
- * @updated 2026-04-07 修复模块导入问题
- */
-
-import zhCN from './zh-CN';
 import enUS from './en-US';
+import zhCN from './zh-CN';
 
-export const messages = {
-  'zh-CN': zhCN,
-  'en-US': enUS,
+// 合并共享包领域术语 + 本应用词条
+import { sharedMessages } from '@erp-new-frontend-monorepo/i18n';
+
+export default {
+  'en-US': { ...sharedMessages['en-US'], ...enUS },
+  'zh-CN': { ...sharedMessages['zh-CN'], ...zhCN },
 };
-
-export const languages = [
-  { label: '中文', value: 'zh-CN' },
-  { label: 'English', value: 'en-US' },
-];
-
-export default messages;

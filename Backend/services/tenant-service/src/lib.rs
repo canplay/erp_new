@@ -5,6 +5,7 @@
 pub mod grpc_handlers;
 pub mod handlers;
 pub mod isolation;
+pub mod lifecycle;
 pub mod offboarding;
 pub mod onboarding;
 pub mod repository;
@@ -32,3 +33,6 @@ pub use offboarding::{
     OffboardingResult, OffboardingService, OffboardingStatus, OffboardingStep, TenantDataExport,
     UserExport,
 };
+
+// 导出生命周期管理类型
+pub use lifecycle::{TenantLifecycleService, TenantState as TenantLifecycleState};

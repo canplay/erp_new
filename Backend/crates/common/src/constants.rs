@@ -10,7 +10,11 @@ pub const MAX_PAGE_SIZE: i32 = 100;
 pub const MIN_PAGE: i32 = 1;
 
 /// 默认密码（用于新用户创建）
-pub const DEFAULT_PASSWORD: &str = "User@123456";
+/// 优先从环境变量读取，避免硬编码
+pub fn default_password() -> String {
+    std::env::var("MYAI_DEFAULT_PASSWORD")
+        .unwrap_or_else(|_| "ChangeMe@Install!".to_string())
+}
 
 /// 密码最小长度
 pub const MIN_PASSWORD_LENGTH: usize = 8;

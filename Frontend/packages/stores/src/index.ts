@@ -1,3 +1,3 @@
-// @myai-workspace/stores - shared stores
-// Placeholder - stores extracted from apps/admin
-export {};
+// @erp-new-frontend-monorepo/stores
+// This is a placeholder - will be populated during migration
+export const stores = "stores"

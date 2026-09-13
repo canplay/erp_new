@@ -16,6 +16,13 @@ service TenantService {
     rpc UpdateTenant(UpdateTenantRequest) returns (UpdateTenantResponse);           // 更新租户信息
     rpc DeleteTenant(DeleteTenantRequest) returns (DeleteTenantResponse);           // 删除租户
 
+    // 租户生命周期
+    rpc ActivateTenant(ActivateTenantRequest) returns (ActivateTenantResponse);     // 激活租户
+    rpc SuspendTenant(SuspendTenantRequest) returns (SuspendTenantResponse);        // 暂停租户
+    rpc RenewTenant(RenewTenantRequest) returns (RenewTenantResponse);              // 续期租户
+    rpc GetTenantState(GetTenantStateRequest) returns (GetTenantStateResponse);     // 获取租户状态
+    rpc ListExpiringTenants(ListExpiringTenantsRequest) returns (ListExpiringTenantsResponse); // 获取即将过期的租户
+
     // 租户用户
     rpc ListTenantUsers(ListTenantUsersRequest) returns (ListTenantUsersResponse);  // 查询租户成员列表
     rpc AddTenantUser(AddTenantUserRequest) returns (AddTenantUserResponse);        // 添加租户成员
@@ -24,9 +31,149 @@ service TenantService {
     // 租户配置
     rpc GetTenantConfig(GetTenantConfigRequest) returns (GetTenantConfigResponse);  // 获取租户配置
     rpc UpdateTenantConfig(UpdateTenantConfigRequest) returns (UpdateTenantConfigResponse); // 更新租户配置
+    rpc GetTenantTheme(GetTenantThemeRequest) returns (GetTenantThemeResponse);     // 获取租户主题
+    rpc UpdateTenantTheme(UpdateTenantThemeRequest) returns (UpdateTenantThemeResponse); // 更新租户主题
 
     // 使用量统计
     rpc GetUsageStats(GetUsageStatsRequest) returns (GetUsageStatsResponse);        // 获取租户使用量统计
+    rpc CheckQuota(CheckQuotaRequest) returns (CheckQuotaResponse);                 // 检查配额
+    rpc RecordUsage(RecordUsageRequest) returns (RecordUsageResponse);              // 记录用量
+}
+
+// ============== 租户生命周期 ==============
+
+// 激活租户请求
+message ActivateTenantRequest {
+    int64 tenant_id = 1;                     // 租户 ID
+    string operator_id = 2;                  // 操作人 ID
+}
+
+// 激活租户响应
+message ActivateTenantResponse {
+    bool success = 1;                        // 是否成功
+    string state = 2;                        // 新状态
+}
+
+// 暂停租户请求
+message SuspendTenantRequest {
+    int64 tenant_id = 1;                     // 租户 ID
+    string reason = 2;                       // 暂停原因
+    string operator_id = 3;                  // 操作人 ID
+}
+
+// 暂停租户响应
+message SuspendTenantResponse {
+    bool success = 1;                        // 是否成功
+    string state = 2;                        // 新状态
+}
+
+// 续期租户请求
+message RenewTenantRequest {
+    int64 tenant_id = 1;                     // 租户 ID
+    int32 days = 2;                          // 续期天数
+    string operator_id = 3;                  // 操作人 ID
+}
+
+// 续期租户响应
+message RenewTenantResponse {
+    bool success = 1;                        // 是否成功
+    int64 new_expires_at = 2;                // 新的过期时间
+}
+
+// 获取租户状态请求
+message GetTenantStateRequest {
+    int64 tenant_id = 1;                     // 租户 ID
+}
+
+// 获取租户状态响应
+message GetTenantStateResponse {
+    int64 tenant_id = 1;                     // 租户 ID
+    string state = 2;                        // 生命周期状态
+    int64 expires_at = 3;                    // 过期时间
+    bool is_operational = 4;                 // 是否可操作
+}
+
+// 获取即将过期的租户请求
+message ListExpiringTenantsRequest {
+    int32 within_days = 1;                   // 多少天内过期
+}
+
+// 获取即将过期的租户响应
+message ListExpiringTenantsResponse {
+    repeated TenantExpiring tenants = 1;      // 即将过期的租户列表
+}
+
+// 即将过期的租户信息
+message TenantExpiring {
+    int64 tenant_id = 1;                     // 租户 ID
+    string name = 2;                         // 租户名称
+    int64 expires_at = 3;                    // 过期时间
+    int32 days_remaining = 4;                // 剩余天数
+}
+
+// ============== 租户主题 ==============
+
+// 获取租户主题请求
+message GetTenantThemeRequest {
+    int64 tenant_id = 1;                     // 租户 ID
+}
+
+// 获取租户主题响应
+message GetTenantThemeResponse {
+    int64 tenant_id = 1;                     // 租户 ID
+    string primary_color = 2;                // 主色调
+    string secondary_color = 3;              // 次要色
+    string logo_url = 4;                     // Logo URL
+    string favicon_url = 5;                  // Favicon URL
+    bool dark_mode = 6;                      // 深色模式
+    string language = 7;                     // 语言
+    string timezone = 8;                     // 时区
+}
+
+// 更新租户主题请求
+message UpdateTenantThemeRequest {
+    int64 tenant_id = 1;                     // 租户 ID
+    string primary_color = 2;                // 主色调
+    string secondary_color = 3;              // 次要色
+    string logo_url = 4;                     // Logo URL
+    string favicon_url = 5;                  // Favicon URL
+    bool dark_mode = 6;                      // 深色模式
+    string language = 7;                     // 语言
+    string timezone = 8;                     // 时区
+}
+
+// 更新租户主题响应
+message UpdateTenantThemeResponse {
+    bool success = 1;                        // 是否成功
+}
+
+// ============== 配额与用量 ==============
+
+// 检查配额请求
+message CheckQuotaRequest {
+    int64 tenant_id = 1;                     // 租户 ID
+    string metric = 2;                       // 配额类型
+    int64 requested = 3;                     // 请求量
+}
+
+// 检查配额响应
+message CheckQuotaResponse {
+    bool available = 1;                      // 是否可用
+    int64 remaining = 2;                     // 剩余配额
+    int64 limit = 3;                         // 配额上限
+    int64 used = 4;                          // 已使用量
+}
+
+// 记录用量请求
+message RecordUsageRequest {
+    int64 tenant_id = 1;                     // 租户 ID
+    string metric = 2;                       // 用量类型
+    double quantity = 3;                     // 用量
+}
+
+// 记录用量响应
+message RecordUsageResponse {
+    bool success = 1;                        // 是否成功
 }
 
 // ============== 租户相关 ==============

@@ -121,13 +121,13 @@ async fn circuit_breaker_reset_all_handler(
 // ==================== 系统监控 ====================
 
 async fn monitor_handler() -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"cpu": 0.35, "memory": 0.62, "disk": 0.45}}))
+    json_success(json!({"cpu": 0.35, "memory": 0.62, "disk": 0.45}))
 }
 
 // ==================== 权限管理 ====================
 
 async fn list_permissions() -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"list": [], "total": 0}}))
+    json_success(json!({"list": [], "total": 0}))
 }
 
 async fn create_permission() -> Json<Value> {
@@ -135,7 +135,7 @@ async fn create_permission() -> Json<Value> {
 }
 
 async fn get_permission() -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": null}))
+    json_success(json!(null))
 }
 
 async fn update_permission() -> Json<Value> {
@@ -151,7 +151,7 @@ async fn batch_create_permissions() -> Json<Value> {
 }
 
 async fn get_role_perm_config() -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": null}))
+    json_success(json!(null))
 }
 
 async fn update_role_perm_config() -> Json<Value> {
@@ -159,7 +159,7 @@ async fn update_role_perm_config() -> Json<Value> {
 }
 
 async fn get_role_data_perms() -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": []}))
+    json_success(json!([]))
 }
 
 async fn set_role_data_perms() -> Json<Value> {
@@ -167,7 +167,7 @@ async fn set_role_data_perms() -> Json<Value> {
 }
 
 async fn get_role_field_perms() -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": []}))
+    json_success(json!([]))
 }
 
 async fn set_role_field_perms() -> Json<Value> {
@@ -175,7 +175,7 @@ async fn set_role_field_perms() -> Json<Value> {
 }
 
 async fn get_role_inherit() -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": null}))
+    json_success(json!(null))
 }
 
 async fn set_role_inherit() -> Json<Value> {
@@ -187,19 +187,19 @@ async fn remove_role_inherit() -> Json<Value> {
 }
 
 async fn get_accessible_depts() -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": []}))
+    json_success(json!([]))
 }
 
 async fn get_accessible_tenants() -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": []}))
+    json_success(json!([]))
 }
 
 async fn validate_data_perm() -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"valid": true}}))
+    json_success(json!({"valid": true}))
 }
 
 async fn check_sensitive_perm() -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"sensitive": false}}))
+    json_success(json!({"sensitive": false}))
 }
 
 async fn refresh_perm_cache() -> Json<Value> {
@@ -215,11 +215,11 @@ async fn copy_role_perms() -> Json<Value> {
 }
 
 async fn list_perm_change_logs() -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"list": [], "total": 0}}))
+    json_success(json!({"list": [], "total": 0}))
 }
 
 async fn export_perm_change_logs() -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": null}))
+    json_success(json!(null))
 }
 
 pub fn routes() -> Router<Arc<AppState>> {

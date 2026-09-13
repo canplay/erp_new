@@ -6,7 +6,6 @@ edition.workspace = true
 name = "grpc_core"
 path = "src/lib.rs"
 
-description = "gRPC 核心库 - 提供 gRPC 客户端工厂、连接池和服务发现"
 
 [features]
 default = ["telemetry"]

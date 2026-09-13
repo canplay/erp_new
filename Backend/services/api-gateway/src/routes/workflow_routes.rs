@@ -8,7 +8,7 @@ use crate::AppState;
 use crate::routes::helpers::*;
 
 #[derive(Deserialize)]
-struct WfQuery { page: Option<i32>, page_size: Option<i32>, keyword: Option<String>, status: Option<String> }
+struct WfQuery { page: Option<i32>, page_size: Option<i32>, keyword: Option<String> }
 
 /// 获取 workflow-service gRPC 客户端
 async fn get_wf_client(state: &Arc<AppState>) -> Result<crate::grpc_clients::WorkflowGrpcClient, Json<Value>> {
@@ -237,16 +237,16 @@ async fn reject_task(
 // ============ 工作流节点/连线（workflow.proto 暂未提供 RPC，保留占位） ============
 
 async fn list_workflow_nodes(Path(_wf_id): Path<String>) -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"list": [], "total": 0}}))
+    json_success(json!({"list": [], "total": 0}))
 }
-async fn create_workflow_node() -> Json<Value> { Json(json!({"success": true, "code": 200, "data": {"id": ""}})) }
+async fn create_workflow_node() -> Json<Value> { json_success(json!({"id": ""})) }
 async fn update_workflow_node(Path(_id): Path<String>) -> Json<Value> { json_ok() }
 async fn delete_workflow_node(Path(_id): Path<String>) -> Json<Value> { json_ok() }
 
 async fn list_workflow_edges(Path(_wf_id): Path<String>) -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"list": [], "total": 0}}))
+    json_success(json!({"list": [], "total": 0}))
 }
-async fn create_workflow_edge() -> Json<Value> { Json(json!({"success": true, "code": 200, "data": {"id": ""}})) }
+async fn create_workflow_edge() -> Json<Value> { json_success(json!({"id": ""})) }
 async fn update_workflow_edge(Path(_id): Path<String>) -> Json<Value> { json_ok() }
 async fn delete_workflow_edge(Path(_id): Path<String>) -> Json<Value> { json_ok() }
 

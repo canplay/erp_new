@@ -1,0 +1,18 @@
+[package]
+name = "billing-core"
+version.workspace = true
+edition.workspace = true
+description = "计费核心 - 计划、订阅、发票、用量"
+
+[dependencies]
+tokio.workspace = true
+chrono.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+async-trait.workspace = true
+uuid.workspace = true
+tenant-core = { path = "../tenant-core" }
+rust_decimal = "1.35"
+rust_decimal_macros = "1.35"

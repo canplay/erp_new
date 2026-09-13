@@ -1,0 +1,30 @@
+{
+  "name": "@erp-new-frontend-monorepo/pages",
+  "version": "1.0.0",
+  "private": true,
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "build": "echo 'Building pages'"
+  },
+  "peerDependencies": {
+    "vue": "^3.5.0",
+    "pinia": "^4.0.0",
+    "vue-router": "^5.0.0",
+    "alova": "^3.0.0"
+  },
+  "dependencies": {
+    "vue-i18n": "^11.3.0",
+    "echarts": "*",
+    "quasar": "*",
+    "vue": "*",
+    "vue-router": "*",
+    "pinia": "*",
+    "alova": "*",
+    "axios": "*",
+    "@alova/adapter-axios": "*",
+    "dompurify": "*",
+    "gcoord": "*",
+    "matrix-js-sdk": "*"
+  }
+}

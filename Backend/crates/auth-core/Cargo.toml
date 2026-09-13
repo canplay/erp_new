@@ -6,7 +6,6 @@ edition.workspace = true
 name = "auth_core"
 path = "src/lib.rs"
 
-description = "核心认证功能 - JWT 和密码服务"
 
 [dependencies]
 tracing = "0.1"

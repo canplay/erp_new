@@ -7,9 +7,10 @@ use std::sync::Arc;
 use axum::{Router, extract::State, routing::post, Json};
 use serde::Deserialize;
 use common::AppError;
-use serde_json::json;
+#[allow(unused_imports)]
 
 use crate::AppState;
+use crate::routes::helpers::json_error;
 
 /// 车牌识别回调请求体
 #[derive(Debug, Deserialize)]
@@ -109,7 +110,7 @@ async fn vehicle_auth_handler(
         }))),
         Err(e) => {
             tracing::error!("gRPC LPR 车辆授权转发失败: {e}");
-            Ok(Json(json!({"success": false, "code": 502, "message": format!("lpr-service 调用失败: {e}")})))
+            Ok(json_error(&format!("lpr-service 调用失败: {e}")))
         }
     }
 }

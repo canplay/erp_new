@@ -1,204 +1,153 @@
-/**
- * @file index.ts
- * @brief API 统一导出（规范化版本 - 避免命名冲突）
- * @date 2026-04-06
- * @note 所有导出均使用明确命名，避免 export * 导致的命名冲突
- */
-
-// 用户管理 API（不重新导出 role/department/log，避免命名冲突）
+// admin 业务 API 封装
+// 共享 API 来自 @erp-new-frontend-monorepo/api；本文件保留 admin 平台视角独有 API
 export {
-  getUserInfo,
-  updateUserInfo,
-  changePassword,
-  updateAvatar,
-  listUsers,
-  getUser,
-  createUser,
-  updateUser,
-  updateUserStatus,
-  updateUserRole,
-  resetUserPassword,
-  deleteUser,
-  batchUpdateUserRole,
-  batchUpdateUserStatus,
-  batchDeleteUsers,
-  getUserImportTemplate,
-  importUsers,
-  exportUsers,
-  downloadUserImportTemplate,
-  getStatistics,
-  listDepartments,
-  getDepartmentTree,
-  createDepartment,
-  updateDepartment,
-  deleteDepartment,
-} from './user';
-export type { UserStatus, RoleType } from './user';
-
-// 角色管理 API - 使用别名避免冲突
-export {
-  listRoles as listAdminRoles,
-  getRole as getAdminRole,
-  createRole as createAdminRole,
-  updateRole as updateAdminRole,
-  deleteRole as deleteAdminRole,
-  getRolePermissions as getAdminRolePermissions,
-  setRolePermissions as updateAdminRolePermissions,
-  getRoleUsers as getAdminRoleUsers,
-} from './role';
-
-// 部门管理 API - 使用别名避免冲突（user.ts 已导出基础接口）
-export {
-  getDepartment as getAdminDepartment,
-  getDepartmentUsers as getAdminDepartmentUsers,
-  moveDepartment as moveAdminDepartment,
-} from './department';
-
-// 日志管理 API - 使用别名避免冲突
-export {
-  listLoginLogs as listAdminLoginLogs,
-  getLoginLog as getAdminLoginLog,
-  exportLoginLogs,
-  listOperationLogs as listAdminOperationLogs,
-  getOperationLog as getAdminOperationLog,
-  exportOperationLogs,
-  clearLoginLogs,
-  clearOperationLogs,
-} from './log';
-
-// 类型导出
-export type { LoginLog, OperationLog } from './log';
-// 类型导出（Department 和 User 统一从 user.ts 导出，避免与 department.ts 冲突）
-export type { Department, User } from './user';
-
-// 工作流 API - 函数
-export {
-  listWorkflows,
-  getWorkflow,
-  createWorkflow,
-  updateWorkflow,
-  deleteWorkflow,
-  publishWorkflow,
-  listInstances,
-  getInstance,
-  startInstance,
-  executeAction,
-  listTasks,
-  completeTask,
-  rejectTask,
-  listNodes,
-  createNode,
-  updateNode,
-  deleteNode,
-  listEdges,
-  createEdge,
-  updateEdge,
-  deleteEdge,
-} from './workflow';
-
-// 工作流 API - 类型/枚举
+  deviceApi,
+  dailyApi,
+  weeklyApi,
+  monthlyApi,
+  dangerApi,
+  personnelApi,
+  currentUserApi,
+  identityApi,
+  notificationsApi,
+  forgotPasswordApi,
+  filesApi,
+} from '@erp-new-frontend-monorepo/api';
 export type {
-  WorkflowStatus,
-  NodeType,
-  NodeStatus,
-  InstanceStatus,
-  WorkflowAction,
-  Position,
-  Workflow,
-  WorkflowNode,
-  WorkflowEdge,
-  WorkflowInstance,
-  TaskRecord,
-  CreateWorkflowParam,
-  UpdateWorkflowParam,
-  CreateNodeParam,
-  UpdateNodeParam,
-  CreateEdgeParam,
-  StartInstanceParam,
-  ExecuteActionParam,
-  WorkflowListParam,
-} from './workflow';
-
-// 报表 API
+  CurrentUserDto,
+  IdentityUser,
+  IdentityRole,
+  PermissionCatalogEntry,
+} from '@erp-new-frontend-monorepo/api';
+export { getAlova } from '@erp-new-frontend-monorepo/boot/alova';
 export {
-  listReports,
-  getReport,
-  createReport,
-  updateReport,
-  deleteReport,
-  generateReport,
-  downloadReport,
-  listDataSources,
-  createDataSource,
-  updateDataSource,
-  deleteDataSource,
-  listTemplates,
-  createFromTemplate,
-  executeReport,
-  exportReport,
-  getReportData,
-  listReportTasks,
-  listReportHistory,
-} from './report';
-export type {
-  ReportStatus,
-  ReportTaskStatus,
-  ReportType,
-  DataSourceType,
-  Report,
-  ReportTask,
-  DataSource,
-  ReportTemplate,
-  CreateReportParam,
-  UpdateReportParam,
-  ReportListParam,
-} from './report';
+  auditsApi,
+  type AuditSummaryDto,
+  type AuditDetailDto,
+  type AuditSummaryAggregateDto,
+} from '@erp-new-frontend-monorepo/api';
 
-// 定时任务 API
+// admin 平台视角特有 API（按领域子模块）
 export {
-  listScheduledTasks,
-  getScheduledTask,
-  createScheduledTask,
-  updateScheduledTask,
-  deleteScheduledTask,
-  triggerScheduledTask,
-  pauseScheduledTask,
-  resumeScheduledTask,
-} from './scheduled-task';
-export type {
-  ScheduledTaskStatus,
-  ActionType,
-  ScheduledTask,
-  CreateScheduledTaskParam,
-  UpdateScheduledTaskParam,
-  ScheduledTaskListParam,
-} from './scheduled-task';
+  regulatoryApi,
+  type RegulatoryReceivePayload,
+  type RegulatoryFeedbackPayload,
+  type RegulatoryReceiveRecordItem,
+  type RegulatoryFeedbackRecordItem,
+  type RegulatoryExportRecordItem,
+  type RegulatoryExportRecordsResult,
+} from './regulatory';
+export { impersonationApi } from './identity';
+export {
+  tenantsApi,
+  billingApi,
+  sessionsApi,
+  webhooksApi,
+  healthApi,
+  type HealthResult,
+  type HealthEntry,
+} from './platform';
+export {
+  catalogApi,
+  type BrandDto,
+  type CategoryDto,
+  type ProductDto,
+  type CreateProductDto,
+  type UpdateProductDto,
+} from './catalog';
+export {
+  ticketsApi,
+  type TicketDto,
+  type CommentDto,
+  type CreateTicketDto,
+  type UpdateTicketDto,
+} from './tickets';
 
-// 导出任务 API - 函数
-export {
-  countExportTasks,
-  listExportTasks,
-  getExportTask,
-  createExportTask,
-  batchCreateExportTasks,
-  cancelExportTask,
-  deleteExportTask,
-  downloadExportFile,
-  getExportTaskStats,
-  getExportTaskProgress,
-  retryExportTask,
-  exportUsers as exportUsersTask,
-  exportLoginLogs as exportLoginLogsTask,
-  exportOperationLogs as exportOperationLogsTask,
-  exportAuditLogs,
-  exportTaskApi,
-} from './exportTask';
-export type {
-  ExportTaskStatus,
-  ExportTaskFormat,
-  ExportTask,
-  ExportTaskQuery,
-  ExportTaskCreateParams,
-  BatchExportParams,
-  ExportTaskStats,
-} from './exportTask';
+// 复用共享 alova 封装（packages/api），不再重复定义 class M
+import { api, normalize, unwrapArray } from '@erp-new-frontend-monorepo/api';
+
+export interface GroupItem {
+  id: string;
+  name: string;
+  description?: string | null;
+  isDefault: boolean;
+  isSystemGroup: boolean;
+  memberCount: number;
+  roleIds?: string[] | null;
+  roleNames?: string[] | null;
+  createdAt: string;
+}
+
+export interface GroupMemberDto {
+  id: string;
+  userId: string;
+  userName: string;
+  email: string;
+  fullName: string;
+  roleNames: string[];
+  joinedAt: string;
+}
+
+export interface CreateGroupResponse {
+  id: string;
+  name: string;
+  description?: string | null;
+  isDefault: boolean;
+  isSystemGroup: boolean;
+  memberCount: number;
+  roleIds?: string[] | null;
+  createdAt: string;
+}
+
+export interface DeleteResponse {
+  success: boolean;
+}
+
+export interface AddMemberResponse {
+  groupId: string;
+  userId: string;
+  joinedAt: string;
+}
+
+export interface RemoveMemberResponse {
+  success: boolean;
+}
+
+export const groupsApi = {
+  list: (page = 1, size = 20) =>
+    api
+      .Get<GroupItem[]>('/api/v1/identity/groups', { page, size })
+      .then((r) => normalize<GroupItem>(r, page, size)),
+  get: (id: string) => api.Get<GroupItem>(`/api/v1/identity/groups/${id}`),
+  members: (groupId: string) =>
+    api
+      .Get<GroupMemberDto[]>(`/api/v1/identity/groups/${groupId}/members`)
+      .then((r) => unwrapArray<GroupMemberDto>(r)),
+  create: (data: { name: string; description?: string }) =>
+    api.Post<CreateGroupResponse>('/api/v1/identity/groups', data),
+  remove: (id: string) => api.Delete<DeleteResponse>(`/api/v1/identity/groups/${id}`),
+  addMember: (groupId: string, userId: string) =>
+    api.Post<AddMemberResponse>(`/api/v1/identity/groups/${groupId}/members`, { userId }),
+  removeMember: (groupId: string, userId: string) =>
+    api.Delete<RemoveMemberResponse>(`/api/v1/identity/groups/${groupId}/members/${userId}`),
+};
+
+// admin 平台视角特有类型（原 index.ts 中定义，保持兼容）
+export interface AdminNotification {
+  id: string;
+  type: string;
+  title: string;
+  body?: string | null;
+  link?: string | null;
+  source: string;
+  metadataJson: string;
+  readAtUtc?: string | null;
+  createdAtUtc: string;
+}
+
+export interface AdminRole {
+  id: string;
+  name: string;
+  description?: string;
+  permissions?: string[];
+}

@@ -25,25 +25,34 @@ importers:
       '@alova/adapter-axios':
         specifier: ^2.0.18
         version: 2.0.18(alova@3.5.1)(axios@1.18.1(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1))
-      '@myai-workspace/api':
+      '@erp-new-frontend-monorepo/api':
         specifier: workspace:*
         version: link:../../packages/api
-      '@myai-workspace/boot':
+      '@erp-new-frontend-monorepo/boot':
         specifier: workspace:*
         version: link:../../packages/boot
-      '@myai-workspace/components':
+      '@erp-new-frontend-monorepo/capabilities':
+        specifier: workspace:*
+        version: link:../../packages/capabilities
+      '@erp-new-frontend-monorepo/components':
         specifier: workspace:*
         version: link:../../packages/components
-      '@myai-workspace/composables':
+      '@erp-new-frontend-monorepo/composables':
         specifier: workspace:*
         version: link:../../packages/composables
-      '@myai-workspace/stores':
+      '@erp-new-frontend-monorepo/i18n':
+        specifier: workspace:*
+        version: link:../../packages/i18n
+      '@erp-new-frontend-monorepo/pages':
+        specifier: workspace:*
+        version: link:../../packages/pages
+      '@erp-new-frontend-monorepo/stores':
         specifier: workspace:*
         version: link:../../packages/stores
-      '@myai-workspace/types':
+      '@erp-new-frontend-monorepo/types':
         specifier: workspace:*
         version: link:../../packages/types
-      '@myai-workspace/utils':
+      '@erp-new-frontend-monorepo/utils':
         specifier: workspace:*
         version: link:../../packages/utils
       '@quasar/extras':
@@ -149,25 +158,34 @@ importers:
       '@alova/adapter-axios':
         specifier: 2.0.18
         version: 2.0.18(alova@3.5.1)(axios@1.18.1(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1))
-      '@myai-workspace/api':
+      '@erp-new-frontend-monorepo/api':
         specifier: workspace:*
         version: link:../../packages/api
-      '@myai-workspace/boot':
+      '@erp-new-frontend-monorepo/boot':
         specifier: workspace:*
         version: link:../../packages/boot
-      '@myai-workspace/components':
+      '@erp-new-frontend-monorepo/capabilities':
+        specifier: workspace:*
+        version: link:../../packages/capabilities
+      '@erp-new-frontend-monorepo/components':
         specifier: workspace:*
         version: link:../../packages/components
-      '@myai-workspace/composables':
+      '@erp-new-frontend-monorepo/composables':
         specifier: workspace:*
         version: link:../../packages/composables
-      '@myai-workspace/stores':
+      '@erp-new-frontend-monorepo/i18n':
+        specifier: workspace:*
+        version: link:../../packages/i18n
+      '@erp-new-frontend-monorepo/pages':
+        specifier: workspace:*
+        version: link:../../packages/pages
+      '@erp-new-frontend-monorepo/stores':
         specifier: workspace:*
         version: link:../../packages/stores
-      '@myai-workspace/types':
+      '@erp-new-frontend-monorepo/types':
         specifier: workspace:*
         version: link:../../packages/types
-      '@myai-workspace/utils':
+      '@erp-new-frontend-monorepo/utils':
         specifier: workspace:*
         version: link:../../packages/utils
       '@quasar/extras':
@@ -249,25 +267,34 @@ importers:
 
   apps/social:
     dependencies:
-      '@myai-workspace/api':
+      '@erp-new-frontend-monorepo/api':
         specifier: workspace:*
         version: link:../../packages/api
-      '@myai-workspace/boot':
+      '@erp-new-frontend-monorepo/boot':
         specifier: workspace:*
         version: link:../../packages/boot
-      '@myai-workspace/components':
+      '@erp-new-frontend-monorepo/capabilities':
+        specifier: workspace:*
+        version: link:../../packages/capabilities
+      '@erp-new-frontend-monorepo/components':
         specifier: workspace:*
         version: link:../../packages/components
-      '@myai-workspace/composables':
+      '@erp-new-frontend-monorepo/composables':
         specifier: workspace:*
         version: link:../../packages/composables
-      '@myai-workspace/stores':
+      '@erp-new-frontend-monorepo/i18n':
+        specifier: workspace:*
+        version: link:../../packages/i18n
+      '@erp-new-frontend-monorepo/pages':
+        specifier: workspace:*
+        version: link:../../packages/pages
+      '@erp-new-frontend-monorepo/stores':
         specifier: workspace:*
         version: link:../../packages/stores
-      '@myai-workspace/types':
+      '@erp-new-frontend-monorepo/types':
         specifier: workspace:*
         version: link:../../packages/types
-      '@myai-workspace/utils':
+      '@erp-new-frontend-monorepo/utils':
         specifier: workspace:*
         version: link:../../packages/utils
       '@quasar/extras':
@@ -340,57 +367,18 @@ importers:
 
   packages/api:
     dependencies:
-      '@myai-workspace/boot':
-        specifier: workspace:*
-        version: link:../boot
-      '@myai-workspace/types':
-        specifier: workspace:*
-        version: link:../types
-    devDependencies:
-      typescript:
-        specifier: ^6.0.3
-        version: 6.0.3
-      vue:
-        specifier: ^3.5.39
-        version: 3.5.39(typescript@6.0.3)
-
-  packages/boot:
-    dependencies:
-      '@myai-workspace/stores':
-        specifier: workspace:*
-        version: link:../stores
-      '@myai-workspace/utils':
-        specifier: workspace:*
-        version: link:../utils
-    devDependencies:
-      typescript:
-        specifier: ^6.0.3
-        version: 6.0.3
-      vue:
-        specifier: ^3.5.39
-        version: 3.5.39(typescript@6.0.3)
-
-  packages/components:
-    dependencies:
-      '@myai-workspace/composables':
-        specifier: workspace:*
-        version: link:../composables
-      '@myai-workspace/types':
-        specifier: workspace:*
-        version: link:../types
-      '@myai-workspace/utils':
-        specifier: workspace:*
-        version: link:../utils
-    devDependencies:
+      '@alova/adapter-axios':
+        specifier: '*'
+        version: 2.0.18(alova@3.5.1)(axios@1.18.1(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1))
+      alova:
+        specifier: '*'
+        version: 3.5.1
+      axios:
+        specifier: '*'
+        version: 1.18.1(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
       pinia:
         specifier: ^4.0.2
         version: 4.0.2(@vue/devtools-api@8.1.5)(typescript@6.0.3)(vue@3.5.39(typescript@6.0.3))
-      quasar:
-        specifier: ^2.20.3
-        version: 2.23.1
-      typescript:
-        specifier: ^6.0.3
-        version: 6.0.3
       vue:
         specifier: ^3.5.39
         version: 3.5.39(typescript@6.0.3)
@@ -398,62 +386,182 @@ importers:
         specifier: ^5.1.0
         version: 5.1.0(@vue/compiler-sfc@3.5.39)(esbuild@0.25.12)(pinia@4.0.2(@vue/devtools-api@8.1.5)(typescript@6.0.3)(vue@3.5.39(typescript@6.0.3)))(rolldown@1.2.0)(vite@8.1.5(@types/node@26.1.1)(esbuild@0.25.12)(jiti@2.7.0)(sass-embedded@1.100.0)(sass@1.100.0)(terser@5.48.0)(yaml@2.9.0))(vue@3.5.39(typescript@6.0.3))
 
-  packages/composables:
+  packages/boot:
     dependencies:
-      '@myai-workspace/stores':
-        specifier: workspace:*
-        version: link:../stores
-      '@myai-workspace/types':
-        specifier: workspace:*
-        version: link:../types
-      '@myai-workspace/utils':
-        specifier: workspace:*
-        version: link:../utils
-    devDependencies:
+      alova:
+        specifier: ^3.0.0
+        version: 3.5.1
       pinia:
         specifier: ^4.0.2
         version: 4.0.2(@vue/devtools-api@8.1.5)(typescript@6.0.3)(vue@3.5.39(typescript@6.0.3))
-      typescript:
-        specifier: ^6.0.3
-        version: 6.0.3
       vue:
         specifier: ^3.5.39
         version: 3.5.39(typescript@6.0.3)
+      vue-router:
+        specifier: ^5.1.0
+        version: 5.1.0(@vue/compiler-sfc@3.5.39)(esbuild@0.25.12)(pinia@4.0.2(@vue/devtools-api@8.1.5)(typescript@6.0.3)(vue@3.5.39(typescript@6.0.3)))(rolldown@1.2.0)(vite@8.1.5(@types/node@26.1.1)(esbuild@0.25.12)(jiti@2.7.0)(sass-embedded@1.100.0)(sass@1.100.0)(terser@5.48.0)(yaml@2.9.0))(vue@3.5.39(typescript@6.0.3))
+
+  packages/capabilities:
+    dependencies:
+      alova:
+        specifier: ^3.0.0
+        version: 3.5.1
+      pinia:
+        specifier: ^4.0.2
+        version: 4.0.2(@vue/devtools-api@8.1.5)(typescript@6.0.3)(vue@3.5.39(typescript@6.0.3))
+      vue:
+        specifier: ^3.5.39
+        version: 3.5.39(typescript@6.0.3)
+      vue-router:
+        specifier: ^5.1.0
+        version: 5.1.0(@vue/compiler-sfc@3.5.39)(esbuild@0.25.12)(pinia@4.0.2(@vue/devtools-api@8.1.5)(typescript@6.0.3)(vue@3.5.39(typescript@6.0.3)))(rolldown@1.2.0)(vite@8.1.5(@types/node@26.1.1)(esbuild@0.25.12)(jiti@2.7.0)(sass-embedded@1.100.0)(sass@1.100.0)(terser@5.48.0)(yaml@2.9.0))(vue@3.5.39(typescript@6.0.3))
+
+  packages/components:
+    dependencies:
+      alova:
+        specifier: ^3.0.0
+        version: 3.5.1
+      pinia:
+        specifier: ^4.0.2
+        version: 4.0.2(@vue/devtools-api@8.1.5)(typescript@6.0.3)(vue@3.5.39(typescript@6.0.3))
+      quasar:
+        specifier: '*'
+        version: 2.23.1
+      vue:
+        specifier: ^3.5.39
+        version: 3.5.39(typescript@6.0.3)
+      vue-i18n:
+        specifier: ^11.3.0
+        version: 11.4.6(vue@3.5.39(typescript@6.0.3))
+      vue-router:
+        specifier: ^5.1.0
+        version: 5.1.0(@vue/compiler-sfc@3.5.39)(esbuild@0.25.12)(pinia@4.0.2(@vue/devtools-api@8.1.5)(typescript@6.0.3)(vue@3.5.39(typescript@6.0.3)))(rolldown@1.2.0)(vite@8.1.5(@types/node@26.1.1)(esbuild@0.25.12)(jiti@2.7.0)(sass-embedded@1.100.0)(sass@1.100.0)(terser@5.48.0)(yaml@2.9.0))(vue@3.5.39(typescript@6.0.3))
+
+  packages/composables:
+    dependencies:
+      alova:
+        specifier: '*'
+        version: 3.5.1
+      pinia:
+        specifier: ^4.0.2
+        version: 4.0.2(@vue/devtools-api@8.1.5)(typescript@6.0.3)(vue@3.5.39(typescript@6.0.3))
+      quasar:
+        specifier: '*'
+        version: 2.23.1
+      vue:
+        specifier: ^3.5.39
+        version: 3.5.39(typescript@6.0.3)
+      vue-i18n:
+        specifier: ^11.3.0
+        version: 11.4.6(vue@3.5.39(typescript@6.0.3))
+      vue-router:
+        specifier: ^5.1.0
+        version: 5.1.0(@vue/compiler-sfc@3.5.39)(esbuild@0.25.12)(pinia@4.0.2(@vue/devtools-api@8.1.5)(typescript@6.0.3)(vue@3.5.39(typescript@6.0.3)))(rolldown@1.2.0)(vite@8.1.5(@types/node@26.1.1)(esbuild@0.25.12)(jiti@2.7.0)(sass-embedded@1.100.0)(sass@1.100.0)(terser@5.48.0)(yaml@2.9.0))(vue@3.5.39(typescript@6.0.3))
+
+  packages/i18n:
+    dependencies:
+      alova:
+        specifier: ^3.0.0
+        version: 3.5.1
+      pinia:
+        specifier: ^4.0.2
+        version: 4.0.2(@vue/devtools-api@8.1.5)(typescript@6.0.3)(vue@3.5.39(typescript@6.0.3))
+      vue:
+        specifier: ^3.5.39
+        version: 3.5.39(typescript@6.0.3)
+      vue-i18n:
+        specifier: '*'
+        version: 11.4.6(vue@3.5.39(typescript@6.0.3))
+      vue-router:
+        specifier: ^5.1.0
+        version: 5.1.0(@vue/compiler-sfc@3.5.39)(esbuild@0.25.12)(pinia@4.0.2(@vue/devtools-api@8.1.5)(typescript@6.0.3)(vue@3.5.39(typescript@6.0.3)))(rolldown@1.2.0)(vite@8.1.5(@types/node@26.1.1)(esbuild@0.25.12)(jiti@2.7.0)(sass-embedded@1.100.0)(sass@1.100.0)(terser@5.48.0)(yaml@2.9.0))(vue@3.5.39(typescript@6.0.3))
+
+  packages/pages:
+    dependencies:
+      '@alova/adapter-axios':
+        specifier: '*'
+        version: 2.0.18(alova@3.5.1)(axios@1.18.1(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1))
+      alova:
+        specifier: '*'
+        version: 3.5.1
+      axios:
+        specifier: '*'
+        version: 1.18.1(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
+      dompurify:
+        specifier: '*'
+        version: 3.4.11
+      echarts:
+        specifier: '*'
+        version: 6.1.0
+      gcoord:
+        specifier: '*'
+        version: 1.0.7
+      matrix-js-sdk:
+        specifier: '*'
+        version: 41.9.0
+      pinia:
+        specifier: ^4.0.2
+        version: 4.0.2(@vue/devtools-api@8.1.5)(typescript@6.0.3)(vue@3.5.39(typescript@6.0.3))
+      quasar:
+        specifier: '*'
+        version: 2.23.1
+      vue:
+        specifier: ^3.5.39
+        version: 3.5.39(typescript@6.0.3)
+      vue-i18n:
+        specifier: ^11.3.0
+        version: 11.4.6(vue@3.5.39(typescript@6.0.3))
+      vue-router:
+        specifier: ^5.1.0
+        version: 5.1.0(@vue/compiler-sfc@3.5.39)(esbuild@0.25.12)(pinia@4.0.2(@vue/devtools-api@8.1.5)(typescript@6.0.3)(vue@3.5.39(typescript@6.0.3)))(rolldown@1.2.0)(vite@8.1.5(@types/node@26.1.1)(esbuild@0.25.12)(jiti@2.7.0)(sass-embedded@1.100.0)(sass@1.100.0)(terser@5.48.0)(yaml@2.9.0))(vue@3.5.39(typescript@6.0.3))
 
   packages/stores:
     dependencies:
-      '@myai-workspace/types':
-        specifier: workspace:*
-        version: link:../types
-      '@myai-workspace/utils':
-        specifier: workspace:*
-        version: link:../utils
-    devDependencies:
+      alova:
+        specifier: ^3.0.0
+        version: 3.5.1
       pinia:
         specifier: ^4.0.2
         version: 4.0.2(@vue/devtools-api@8.1.5)(typescript@6.0.3)(vue@3.5.39(typescript@6.0.3))
-      typescript:
-        specifier: ^6.0.3
-        version: 6.0.3
-
-  packages/types:
-    devDependencies:
-      typescript:
-        specifier: ^6.0.3
-        version: 6.0.3
-
-  packages/utils:
-    dependencies:
-      exceljs:
-        specifier: ^4.4.0
-        version: 4.4.0
-    devDependencies:
-      typescript:
-        specifier: ^6.0.3
-        version: 6.0.3
       vue:
         specifier: ^3.5.39
         version: 3.5.39(typescript@6.0.3)
+      vue-router:
+        specifier: ^5.1.0
+        version: 5.1.0(@vue/compiler-sfc@3.5.39)(esbuild@0.25.12)(pinia@4.0.2(@vue/devtools-api@8.1.5)(typescript@6.0.3)(vue@3.5.39(typescript@6.0.3)))(rolldown@1.2.0)(vite@8.1.5(@types/node@26.1.1)(esbuild@0.25.12)(jiti@2.7.0)(sass-embedded@1.100.0)(sass@1.100.0)(terser@5.48.0)(yaml@2.9.0))(vue@3.5.39(typescript@6.0.3))
+
+  packages/types:
+    dependencies:
+      alova:
+        specifier: ^3.0.0
+        version: 3.5.1
+      pinia:
+        specifier: ^4.0.2
+        version: 4.0.2(@vue/devtools-api@8.1.5)(typescript@6.0.3)(vue@3.5.39(typescript@6.0.3))
+      vue:
+        specifier: ^3.5.39
+        version: 3.5.39(typescript@6.0.3)
+      vue-router:
+        specifier: ^5.1.0
+        version: 5.1.0(@vue/compiler-sfc@3.5.39)(esbuild@0.25.12)(pinia@4.0.2(@vue/devtools-api@8.1.5)(typescript@6.0.3)(vue@3.5.39(typescript@6.0.3)))(rolldown@1.2.0)(vite@8.1.5(@types/node@26.1.1)(esbuild@0.25.12)(jiti@2.7.0)(sass-embedded@1.100.0)(sass@1.100.0)(terser@5.48.0)(yaml@2.9.0))(vue@3.5.39(typescript@6.0.3))
+
+  packages/utils:
+    dependencies:
+      alova:
+        specifier: ^3.0.0
+        version: 3.5.1
+      pinia:
+        specifier: ^4.0.2
+        version: 4.0.2(@vue/devtools-api@8.1.5)(typescript@6.0.3)(vue@3.5.39(typescript@6.0.3))
+      quasar:
+        specifier: '*'
+        version: 2.23.1
+      vue:
+        specifier: ^3.5.39
+        version: 3.5.39(typescript@6.0.3)
+      vue-router:
+        specifier: ^5.1.0
+        version: 5.1.0(@vue/compiler-sfc@3.5.39)(esbuild@0.25.12)(pinia@4.0.2(@vue/devtools-api@8.1.5)(typescript@6.0.3)(vue@3.5.39(typescript@6.0.3)))(rolldown@1.2.0)(vite@8.1.5(@types/node@26.1.1)(esbuild@0.25.12)(jiti@2.7.0)(sass-embedded@1.100.0)(sass@1.100.0)(terser@5.48.0)(yaml@2.9.0))(vue@3.5.39(typescript@6.0.3))
 
 packages:
 

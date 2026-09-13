@@ -597,6 +597,7 @@ impl RewriteService for GrpcRewriteService {
 // ===== StatsService =====
 
 pub struct GrpcStatsService {
+    #[allow(dead_code)]
     state: Arc<AppState>,
 }
 
@@ -640,6 +641,7 @@ impl StatsService for GrpcStatsService {
 // ===== InsightService =====
 
 pub struct GrpcInsightService {
+    #[allow(dead_code)]
     state: Arc<AppState>,
 }
 

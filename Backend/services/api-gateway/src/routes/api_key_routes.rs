@@ -5,7 +5,7 @@ use axum::{Router, extract::{Query, Path, State}, routing::{get, post}, Json};
 use serde::Deserialize;
 use serde_json::{json, Value};
 use crate::AppState;
-use crate::routes::helpers::{json_error, json_ok};
+use crate::routes::helpers::{json_error, json_ok, json_success};
 
 #[derive(Deserialize)]
 struct KeyQuery { page: Option<i32>, page_size: Option<i32>, status: Option<String> }
@@ -42,9 +42,8 @@ async fn list_api_keys(
         0, 0,
         q.status.clone().unwrap_or_default(),
     ).await {
-        Ok(resp) => Json(json!({
-            "success": true, "code": 200,
-            "data": {"list": resp.keys.iter().map(key_info_to_json).collect::<Vec<_>>(), "total": resp.total, "page": q.page.unwrap_or(1), "page_size": q.page_size.unwrap_or(20), "status": q.status}
+        Ok(resp) => json_success(json!({
+            "list": resp.keys.iter().map(key_info_to_json).collect::<Vec<_>>(), "total": resp.total, "page": q.page.unwrap_or(1), "page_size": q.page_size.unwrap_or(20), "status": q.status
         })),
         Err(e) => json_error(&format!("查询失败: {e}")),
     }
@@ -64,7 +63,7 @@ async fn create_api_key(
         0, 0,
         body["expires_at"].as_i64().unwrap_or(0),
     ).await {
-        Ok(resp) => Json(json!({"success": true, "code": 200, "data": {"id": resp.id, "key_id": resp.key_id, "key_secret": resp.secret_key}})),
+        Ok(resp) => json_success(json!({"id": resp.id, "key_id": resp.key_id, "key_secret": resp.secret_key})),
         Err(e) => json_error(&format!("创建失败: {e}")),
     }
 }
@@ -74,7 +73,7 @@ async fn get_api_key_stats(
 ) -> Json<Value> {
     let mut client = match get_key_client(&state).await { Ok(c) => c, Err(r) => return r };
     match client.list_api_keys(1, 1000, 0, 0, String::new()).await {
-        Ok(resp) => Json(json!({"success": true, "code": 200, "data": {"total": resp.total, "active": resp.keys.iter().filter(|k| k.status == "active").count()}})),
+        Ok(resp) => json_success(json!({"total": resp.total, "active": resp.keys.iter().filter(|k| k.status == "active").count()})),
         Err(e) => json_error(&format!("查询失败: {e}")),
     }
 }
@@ -89,7 +88,7 @@ async fn get_api_key(
     match client.list_api_keys(1, 1000, 0, 0, String::new()).await {
         Ok(resp) => {
             if let Some(k) = resp.keys.iter().find(|k| k.key_id == id || k.id.to_string() == id) {
-                Json(json!({"success": true, "code": 200, "data": key_info_to_json(k)}))
+                json_success(key_info_to_json(k))
             } else {
                 json_error("API Key 不存在")
             }
@@ -163,8 +162,8 @@ async fn validate_api_key(
         body["key_secret"].as_str().unwrap_or("").to_string(),
         body["ip_address"].as_str().unwrap_or("").to_string(),
     ).await {
-        Ok(resp) => Json(json!({"success": true, "code": 200, "data": {"valid": resp.valid, "user_id": resp.user_id, "tenant_id": resp.tenant_id}})),
-        Err(e) => Json(json!({"success": false, "code": 401, "data": {"valid": false, "error": format!("{e}")}})),
+        Ok(resp) => json_success(json!({"valid": resp.valid, "user_id": resp.user_id, "tenant_id": resp.tenant_id})),
+        Err(e) => json_error(&format!("{e}")),
     }
 }
 

@@ -4,6 +4,7 @@
 //! 避免在各路由文件中重复定义。
 
 use axum::Json;
+use axum::http::StatusCode;
 use serde_json::{json, Value};
 
 /// 成功响应（带 data）
@@ -24,6 +25,23 @@ pub fn json_error(msg: &str) -> Json<Value> {
 /// 错误响应（带 error Display）— 双参数版本，接受任意 Display 类型
 pub fn json_error_fmt(msg: &str, e: &impl std::fmt::Display) -> Json<Value> {
     Json(json!({"success": false, "code": 500, "message": format!("{}: {}", msg, e)}))
+}
+
+/// 错误响应（带 StatusCode）— 用于 map_err 场景，返回 (StatusCode, Json<Value>) 元组
+pub fn json_error_response(status: StatusCode, msg: &str) -> (StatusCode, Json<Value>) {
+    (status, Json(json!({"success": false, "code": status.as_u16(), "message": msg})))
+}
+
+/// 错误响应（带 StatusCode）— 用于 map_err 场景，接受任意 Display 类型
+pub fn json_error_response_fmt(
+    status: StatusCode,
+    msg: &str,
+    e: &impl std::fmt::Display,
+) -> (StatusCode, Json<Value>) {
+    (
+        status,
+        Json(json!({"success": false, "code": status.as_u16(), "message": format!("{}: {}", msg, e)})),
+    )
 }
 
 /// Deprecated: 空列表 — 使用 `json_success(Vec::new())` 替代

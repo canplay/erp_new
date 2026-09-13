@@ -183,7 +183,9 @@ pub struct AlertManager {
     /// 异常访问历史
     abnormal_access: Arc<RwLock<HashMap<String, Vec<AbnormalAccessEvent>>>>,
     /// 告警历史
+    #[allow(dead_code)]
     alert_history: Arc<RwLock<HashMap<String, AlertHistory>>>,
+    // NOTE: kept for future use (querying/alert details)
     /// 配置
     config: AlertConfig,
 }

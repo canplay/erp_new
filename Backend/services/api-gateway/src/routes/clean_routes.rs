@@ -186,45 +186,45 @@ async fn get_statistics_handler(
 // ============ 明细查询 Handler ============
 
 async fn clean_invoice_count() -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"count": 0}}))
+    json_success(json!({"count": 0}))
 }
 async fn clean_invoice_info() -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"list": [], "total": 0}}))
+    json_success(json!({"list": [], "total": 0}))
 }
 async fn clean_invoice_update() -> Json<Value> { json_ok() }
 async fn clean_order_count() -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"count": 0}}))
+    json_success(json!({"count": 0}))
 }
 async fn clean_order_info() -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"list": [], "total": 0}}))
+    json_success(json!({"list": [], "total": 0}))
 }
 async fn clean_staff_info() -> Json<Value> { json_ok() }
 async fn clean_formal_count() -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"count": 0}}))
+    json_success(json!({"count": 0}))
 }
 async fn clean_formal_info() -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"list": [], "total": 0}}))
+    json_success(json!({"list": [], "total": 0}))
 }
 async fn clean_formal_total() -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"total": 0}}))
+    json_success(json!({"total": 0}))
 }
 async fn clean_payment_info_count() -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"count": 0}}))
+    json_success(json!({"count": 0}))
 }
 async fn clean_payment_info_info() -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"list": [], "total": 0}}))
+    json_success(json!({"list": [], "total": 0}))
 }
 async fn clean_payment_info_total() -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"total": 0}}))
+    json_success(json!({"total": 0}))
 }
 async fn clean_payment_web_count() -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"count": 0}}))
+    json_success(json!({"count": 0}))
 }
 async fn clean_payment_web_info() -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"list": [], "total": 0}}))
+    json_success(json!({"list": [], "total": 0}))
 }
 async fn clean_payment_web_total() -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"total": 0}}))
+    json_success(json!({"total": 0}))
 }
 
 // ============ 路由定义 ============

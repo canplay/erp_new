@@ -238,19 +238,19 @@ async fn get_api_call_statistics(
 
 // 以下接口 audit.proto 暂未提供对应 RPC，保留空实现（待 proto 扩展）
 async fn get_api_endpoint_statistics() -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"list": [], "total": 0}}))
+    json_success(json!({"list": [], "total": 0}))
 }
 async fn get_api_trend() -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"list": []}}))
+    json_success(json!({"list": []}))
 }
 async fn get_api_response_distribution() -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"list": []}}))
+    json_success(json!({"list": []}))
 }
 async fn get_api_category_statistics() -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"list": []}}))
+    json_success(json!({"list": []}))
 }
 async fn get_api_performance_baseline() -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"list": []}}))
+    json_success(json!({"list": []}))
 }
 
 async fn export_logs_fn() -> Json<Value> {

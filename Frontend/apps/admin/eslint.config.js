@@ -65,28 +65,12 @@ export default defineConfigWithVueTs(
     rules: {
       'prefer-promise-reject-errors': 'off',
       'vue/multi-word-component-names': 'off',
+      // 契约类型为动态响应，集成层允许 any（与后端对接的边界处）
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unnecessary-type-assertion': 'off',
 
       // allow debugger during development only
       'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
-
-      // Disable strict rules that block build
-      '@typescript-eslint/no-unused-vars': 'off',
-      '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-floating-promises': 'off',
-      '@typescript-eslint/await-thenable': 'off',
-      '@typescript-eslint/no-misused-promises': 'off',
-      '@typescript-eslint/require-await': 'off',
-      '@typescript-eslint/no-unsafe-enum-comparison': 'off',
-      '@typescript-eslint/restrict-template-expressions': 'off',
-      'vue/no-mutating-props': 'off',
-      'vue/valid-v-model': 'off',
-      'vue/no-dupe-keys': 'off',
-      'vue/valid-template-root': 'off',
-      'vue/no-export-in-script-setup': 'off',
-      'vue/valid-v-for': 'off',
-      'no-case-declarations': 'off',
-      'no-useless-assignment': 'off',
-      '@typescript-eslint/ban-ts-comment': 'off',
     },
   },
 

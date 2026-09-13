@@ -197,8 +197,8 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { useRoomList } from '@/composables/useRoomList';
-import { usePublicRooms } from '@/composables/usePublicRooms';
+import { useRoomList } from '@erp-new-frontend-monorepo/composables/src/useRoomList';;
+import { usePublicRooms } from '@erp-new-frontend-monorepo/composables/src/usePublicRooms';;
 
 const {
   auth,

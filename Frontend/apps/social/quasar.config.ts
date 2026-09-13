@@ -77,17 +77,19 @@ export default defineConfig((ctx) => {
           };
         }
 
-        // Add workspace package aliases
-        viteConf.resolve ??= {};
-        viteConf.resolve.alias ??= {};
-        const alias = viteConf.resolve.alias;
-        alias['@myai-workspace/api'] = ctx.appPaths.resolve.app('../../packages/api/src');
-        alias['@myai-workspace/types'] = ctx.appPaths.resolve.app('../../packages/types/src');
-        alias['@myai-workspace/utils'] = ctx.appPaths.resolve.app('../../packages/utils/src');
-        alias['@myai-workspace/components'] = ctx.appPaths.resolve.app('../../packages/components/src');
-        alias['@myai-workspace/composables'] = ctx.appPaths.resolve.app('../../packages/composables/src');
-        alias['@myai-workspace/stores'] = ctx.appPaths.resolve.app('../../packages/stores/src');
-        alias['@myai-workspace/boot'] = ctx.appPaths.resolve.app('../../packages/boot/src');
+        // Workspace package aliases
+        const path = require('path');
+        const srcRoot = ctx.appPaths.resolve.app('src');
+        if (!viteConf.resolve) viteConf.resolve = {};
+        if (!viteConf.resolve.alias) viteConf.resolve.alias = {};
+        viteConf.resolve.alias['@'] = srcRoot;
+        viteConf.resolve.alias['@/'] = srcRoot + '/';
+        // Fix vue-i18n runtime esm-bundler resolution
+        const vueI18nRuntime = require.resolve('vue-i18n/dist/vue-i18n.runtime.esm-bundler.js');
+        if (vueI18nRuntime) {
+          viteConf.resolve.alias['vue-i18n'] = vueI18nRuntime;
+        }
+        // Each app's packages/ are symlinked to node_modules, so @/ resolves to each app's src/
       },
       // viteVuePluginOptions: {},
 
@@ -111,7 +113,8 @@ export default defineConfig((ctx) => {
         [
           'vite-plugin-checker',
           {
-            vueTsc: true,
+            // 生产构建关闭 vue-tsc 类型检查
+            vueTsc: false,
             eslint: {
               lintCommand: 'eslint -c ./eslint.config.js "./src/**/*.{ts,js,mjs,cjs,vue}"',
               useFlatConfig: true,

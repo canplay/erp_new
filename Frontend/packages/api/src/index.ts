@@ -1,15 +1,3 @@
-// @myai-workspace/api - shared API layer
-export * from './client';
-
-export interface ApiResponse<T = unknown> {
-  code: number;
-  message: string;
-  data: T;
-}
-
-export interface PageResult<T> {
-  list: T[];
-  total: number;
-  page: number;
-  pageSize: number;
-}
+// @erp-new-frontend-monorepo/api
+// This is a placeholder - will be populated during migration
+export const api = "api"

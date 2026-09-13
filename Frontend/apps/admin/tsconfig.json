@@ -1,13 +1,6 @@
 {
   "extends": "./.quasar/tsconfig.json",
   "compilerOptions": {
-    "noEmit": false,
-    "noEmitOnError": false,
-    "baseUrl": ".",
-    "paths": {
-      "@": ["./src"],
-      "@/*": ["./src/*"],
-      "@myai-workspace/*": ["../../packages/*/src"]
-    }
+    "rootDir": "."
   }
 }

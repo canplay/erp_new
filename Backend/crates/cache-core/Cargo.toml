@@ -6,7 +6,6 @@ edition.workspace = true
 name = "cache_core"
 path = "src/lib.rs"
 
-description = "缓存核心库 - 提供 Redis 缓存、本地 LRU 缓存和多级缓存"
 
 [features]
 default = ["redis-cache"]

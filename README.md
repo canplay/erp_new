@@ -10,7 +10,7 @@ MyAI 是一套面向多业务场景的全栈微服务管理平台，采用 Rust 
 
 ```
 myai/
-├── Backend/                        # 后端（21 个微服务 + API Gateway + 9 个共享 Crates）
+├── Backend/                        # 后端（22 个微服务 + API Gateway + 11 个共享 Crates）
 │   ├── services/                   # 各微服务源码（21 个）
 │   │   ├── api-gateway/            # HTTP 网关（统一 REST + WS 入口）
 │   │   ├── auth-service/           # 认证服务
@@ -32,29 +32,48 @@ myai/
 │   │   ├── tow-service/            # 拖车
 │   │   ├── browser-service/        # 浏览器服务
 │   │   ├── clean-service/          # 清洁服务
-│   │   └── xlt-service/            # XLT 服务
-│   ├── crates/                     # 共享 Crates（9 个）
+│   │   ├── xlt-service/            # XLT 服务
+│   │   └── billing-service/        # 计费服务（计划/订阅/发票/用量）
+│   ├── crates/                     # 共享 Crates（11 个）
 │   │   ├── auth-core/              # 认证核心
 │   │   ├── cache-core/             # 缓存核心
 │   │   ├── circuit-breaker-core/   # 熔断核心
 │   │   ├── common/                 # 公共库
 │   │   ├── crypto-core/            # 加密核心
+│   │   ├── billing-core/           # 计费核心（计划/订阅/发票/用量）
 │   │   ├── grpc-core/              # gRPC 核心
 │   │   ├── grpc-proto/             # gRPC Proto 生成
 │   │   ├── log-core/               # 日志核心
 │   │   └── tenant-core/            # 租户核心（多租户隔离）
 │   ├── protos/                     # gRPC Proto 定义（20 个 .proto）
 │   ├── sql/
-│   │   └── 000_init.sql            # 数据库 schema（103 表）
+│   │   ├── 000_init.sql            # 数据库 schema（103 表）
+│   │   ├── 001_saas_core.up.sql    # SaaS 核心表（租户/订阅/计费）
+│   │   ├── 001_tenant_id_columns.sql  # tenant_id 字段补充
+│   │   ├── 002_missing_indexes.sql    # 缺失索引补充
+│   │   ├── 003_subscription_tables.sql # 订阅计费表（5 表）
+│   │   ├── gw_tables.sql              # Gateway 专属表（7 表）
+│   │   ├── 999_reset.sql              # 数据库重置（开发用）
+│   │   └── schema.sql                 # Schema 版本追踪
 │   ├── Cargo.toml                  # 工作区配置
 │   └── Dockerfile.*                # 多阶段构建
 │
 ├── Frontend/                       # 前端（pnpm + Turborepo）
-│   ├── admin/                      # 管理后台（Vue3 + Quasar）
+│   ├── admin/                      # 管理后台（平台运营视角）
+│   ├── tenant/                     # 单位业务视角
 │   ├── ops/                        # 运营面板
 │   ├── social/                     # 社交端
 │   ├── packages/
-│   │   └── shared/                 # 共享包
+│   │   ├── api/                    # API 封装（alova）
+│   │   ├── boot/                   # 启动引导（alova 实例）
+│   │   ├── capabilities/           # 能力开关
+│   │   ├── components/             # 共享组件
+│   │   ├── composables/            # 组合式函数
+│   │   ├── i18n/                   # 国际化
+│   │   ├── pages/                  # 共享页面
+│   │   ├── stores/                 # 共享状态
+│   │   ├── types/                  # 类型定义
+│   │   └── utils/                  # 工具函数
 │   ├── package.json                # 工作区配置
 │   └── Dockerfile.*                # 前端镜像
 │
@@ -68,17 +87,15 @@ myai/
 │   ├── lib/                        # 共享函数库
 │   └── verify-deployment.sh        # 部署验证
 │
-├── tools/                          # 开发辅助工具
-│   ├── gen_demo_pages.py           # 演示页面生成
-│   └── gen_report_docx.py          # 报告文档生成
-│
 ├── Docs/                           # 文档
-│   ├── build-deploy-guide.md       # 构建部署全流程
-│   ├── ebike-api-guide.md          # 电单车 API
-│   ├── backend-rust-reference.md   # 后端架构参考
+│   ├── 设计文档.md                  # 架构设计
+│   ├── 部署文档.md                  # 部署指南
+│   ├── 后端待办.md                  # 后端待办
+│   ├── 前端待办.md                  # 前端待办
 │   └── ...
 │
-├── .env.example                    # 环境变量模板
+├── .env.example                    # 后端运行时环境变量（30+ 变量）
+├── Scripts/.env.example            # 构建部署环境变量（Harbor/Rancher/NAMESPACE）
 └── LICENSE                         # MIT 许可证
 ```
 
@@ -87,8 +104,8 @@ myai/
 | 层 | 技术 |
 |---|---|
 | 后端框架 | Rust (Axum) + gRPC (Tonic) |
-| 前端框架 | Vue 3.5 + Quasar 2 + Pinia + Vite（admin 216 / ops 23 / social 21） |
-| 数据库 | PostgreSQL（103 表） |
+|| 前端框架 | Vue 3.5 + Quasar 2 + Pinia + Vite（admin 平台 / tenant 单位 / ops 运营 / social 社交） |
+|| 数据库 | PostgreSQL（127 表：000_init 103 + 001_saas + 001_tenant_id + 002_index + 003_subscription 5 + gw_tables 7 + 999_reset + schema） |
 | 缓存 / 任务 | Redis |
 | 认证 | JWT Bearer |
 | 容器化 | Docker / Podman / Kubernetes |
@@ -100,27 +117,39 @@ myai/
 ### 前置条件
 
 - Rust 1.85+
-- Node.js 20+ / pnpm 9+
+- Node.js 20+ / pnpm 11+
 - Docker/Podman（PostgreSQL + Redis）
+- （可选）sqlx-cli：`cargo install sqlx-cli --no-default-features --features postgres`
 
 ### 本地启动
 
 ```bash
 # 1. 配置环境变量
 cp .env.example .env
+cp Scripts/.env.example Scripts/.env
 
-# 2. 初始化数据库
+# 2. 初始化数据库（共 127 表）
 psql -h <host> -U postgres -d myai -f Backend/sql/000_init.sql
+psql -h <host> -U postgres -d myai -f Backend/sql/001_saas_core.up.sql
+psql -h <host> -U postgres -d myai -f Backend/sql/001_tenant_id_columns.sql
+psql -h <host> -U postgres -d myai -f Backend/sql/002_missing_indexes.sql
+psql -h <host> -U postgres -d myai -f Backend/sql/003_subscription_tables.sql
+psql -h <host> -U postgres -d myai -f Backend/sql/gw_tables.sql
 
-# 3. 启动后端（按需启动服务）
+# 3. 编译时 SQL 验证（离线模式，无需数据库连接）
 cd Backend
-cargo run --package api-gateway     # HTTP 8090
-cargo run --package user-service    # gRPC 9090
+cargo sqlx prepare --workspace
 
-# 4. 启动前端
-cd Frontend/admin
+# 4. 启动后端（按需启动服务）
+cargo run --package api-gateway     # HTTP 8090
+cargo run --package user-service    # HTTP 8080 / gRPC 9090
+cargo run --package auth-service    # HTTP 8081 / gRPC 9091
+cargo run --package billing-service # HTTP 8088 / gRPC 9101
+
+# 5. 启动前端
+cd Frontend
 pnpm install
-npx quasar dev    # http://localhost:9000
+pnpm dev:admin    # http://localhost:9000
 ```
 
 ## 生产部署（K8s）

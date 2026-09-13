@@ -51,11 +51,11 @@ async fn get_stats(State(state): State<Arc<AppState>>, Query(q): Query<RecordQue
 // ============ LPR 设备管理 (内存实现，待接入 gRPC) ============
 
 async fn list_lpr_devices() -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"list": [], "total": 0}}))
+    json_success(json!({"list": [], "total": 0}))
 }
 
 async fn get_lpr_device(axum::extract::Path(id): axum::extract::Path<String>) -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"id": id}}))
+    json_success(json!({"id": id}))
 }
 
 /// GET /api/lpr/records/{id} — LPR记录详情
@@ -71,16 +71,13 @@ async fn get_lpr_record_detail(
 }
 
 async fn get_vehicle_auth(Query(_q): Query<RecordQuery>) -> Json<Value> {
-    Json(json!({
-        "success": true, "code": 200,
-        "data": {
+    json_success(json!({
             "is_authorized": false,
             "auth_type": "",
             "driver_name": "",
             "driver_phone": "",
             "valid_until": null
-        }
-    }))
+        }))
 }
 
 pub fn routes() -> Router<Arc<AppState>> {

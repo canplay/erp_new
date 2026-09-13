@@ -80,7 +80,7 @@ async fn get_device(
     let devices = state.device_store.read().await;
     match devices.devices().iter().find(|d| d.id == id && d.user_id == claims.sub) {
         Some(d) => json_success(json!(d)),
-        None => Json(json!({"success": false, "code": 404, "message": "设备不存在"})),
+        None => json_error("设备不存在"),
     }
 }
 
@@ -95,7 +95,7 @@ async fn trust_device(
         d.is_trusted = true;
         json_ok()
     } else {
-        Json(json!({"success": false, "code": 404, "message": "设备不存在"}))
+        json_error("设备不存在")
     }
 }
 
@@ -110,7 +110,7 @@ async fn untrust_device(
         d.is_trusted = false;
         json_ok()
     } else {
-        Json(json!({"success": false, "code": 404, "message": "设备不存在"}))
+        json_error("设备不存在")
     }
 }
 
@@ -125,7 +125,7 @@ async fn kick_device(
         d.is_active = false;
         json_ok()
     } else {
-        Json(json!({"success": false, "code": 404, "message": "设备不存在"}))
+        json_error("设备不存在")
     }
 }
 
@@ -154,7 +154,7 @@ async fn delete_device(
     if devices.devices().len() < len_before {
         json_ok()
     } else {
-        Json(json!({"success": false, "code": 404, "message": "设备不存在"}))
+        json_error("设备不存在")
     }
 }
 
@@ -198,21 +198,21 @@ async fn batch_delete_devices() -> Json<Value> {
 }
 
 async fn device_statistics() -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"total": 0, "online": 0, "abnormal": 0}}))
+    json_success(json!({"total": 0, "online": 0, "abnormal": 0}))
 }
 
 async fn device_overview() -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"total": 0, "today_new": 0, "active": 0}}))
+    json_success(json!({"total": 0, "today_new": 0, "active": 0}))
 }
 
 async fn device_abnormal() -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"list": [], "total": 0}}))
+    json_success(json!({"list": [], "total": 0}))
 }
 
 // ============ 用户设备查询/踢下线 ============
 
 async fn list_user_devices(Path(_user_id): Path<i64>) -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"list": [], "total": 0}}))
+    json_success(json!({"list": [], "total": 0}))
 }
 
 async fn kick_all_user_devices(Path(_user_id): Path<i64>) -> Json<Value> { json_ok() }

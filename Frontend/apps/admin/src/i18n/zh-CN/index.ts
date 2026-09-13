@@ -1,135 +1,32 @@
-import advancedSearch from './advancedSearch';
-import apiLog from './apiLog';
-import apiStatistics from './apiStatistics';
-import announcement from './announcement';
-import apiKey from './apiKey';
-import batchActions from './batchActions';
-import cmd from './cmd';
-import cms from './cms';
-import ctp from './ctp';
-import common from './common';
-import confirmDialog from './confirmDialog';
-import dashboard from './dashboard';
-import department from './department';
-import device from './device';
-import dictionary from './dictionary';
-import dictionaryType from './dictionaryType';
-import echarts from './echarts';
-import editor from './editor';
-import empty from './empty';
-import error from './error';
-import errorBoundary from './errorBoundary';
-import exportMod from './export';
-import feedback from './feedback';
-import file from './file';
-import importMod from './import';
-import reportDesigner from './reportDesigner';
-import report from './report';
-import batchPermission from './batchPermission';
-import ipWhitelist from './ipWhitelist';
-import login from './login';
-import loginLog from './loginLog';
-import loginLogPage from './loginLogPage';
-import loginPage from './loginPage';
-import menu from './menu';
-import message from './message';
-import monitor from './monitor';
-import notification from './notification';
-import notificationList from './notificationList';
-import notificationTemplate from './notificationTemplate';
-import operationLog from './operationLog';
-import operationLogPage from './operationLogPage';
-import parking from './parking';
-import passwordStrength from './passwordStrength';
-import permission from './permission';
-import profile from './profile';
-import pwa from './pwa';
-import role from './role';
-import sensitiveAudit from './sensitiveAudit';
-import ebike from './ebike';
-import tow from './tow';
-import shortcuts from './shortcuts';
-import skeleton from './skeleton';
-import step from './step';
-import system from './system';
-import systemConfig from './systemConfig';
-import table from './table';
-import taskSchedule from './taskSchedule';
-import tenant from './tenant';
-import theme from './theme';
-import tree from './tree';
-import uploader from './uploader';
-import user from './user';
-import userDetail from './userDetail';
-import validation from './validation';
-import workflowZh from './workflow';
-import log from './log';
-
 export default {
-  advancedSearch,
-  apiLog,
-  apiStatistics,
-  announcement,
-  apiKey,
-  batchActions,
-  cmd,
-  cms,
-  ctp,
-  common,
-  confirmDialog,
-  dashboard,
-  department,
-  device,
-  dictionary,
-  dictionaryType,
-  echarts,
-  editor,
-  empty,
-  error,
-  errorBoundary,
-  exportMod,
-  feedback,
-  file,
-  importMod,
-  reportDesigner,
-  report,
-  batchPermission,
-  ipWhitelist,
-  login,
-  loginLog,
-  loginLogPage,
-  loginPage,
-  menu,
-  message,
-  monitor,
-  notification,
-  notificationList,
-  notificationTemplate,
-  operationLog,
-  operationLogPage,
-  parking,
-  passwordStrength,
-  permission,
-  profile,
-  pwa,
-  role,
-  sensitiveAudit,
-  ebike,
-  tow,
-  shortcuts,
-  skeleton,
-  step,
-  system,
-  systemConfig,
-  table,
-  taskSchedule,
-  tenant,
-  theme,
-  tree,
-  uploader,
-  user,
-  userDetail,
-  validation,
-  workflow: workflowZh,
-  log,
-}
+  failed: '操作失败',
+  success: '操作成功',
+  kg_title: '知识图谱',
+  kg_back_list: '返回列表',
+  kg_search_placeholder: '搜索知识节点（标题/内容/分类）',
+  kg_count_hint: '共 {count} 个知识节点 · 点击任意一行穿透查看其关联图谱',
+  kg_penetrate: '穿透查看关联',
+  kg_no_relation: '暂无关联',
+  kg_no_relation_hint: '该节点没有关联的其他节点',
+  kg_close_detail: '关闭详情',
+  kg_no_node: '暂无节点',
+  kg_list_col_type: '类型',
+  kg_list_col_title: '标题',
+  kg_list_col_category: '分类',
+  kg_list_col_actions: '操作',
+  kg_click_penetrate: '点击图中节点或下方列表继续穿透',
+  kg_category: '分类',
+  kg_relation_count: '关联关系（{count}）',
+  kg_related_nodes: '关联节点（{count}）',
+  kg_click_continue: '点击继续穿透',
+  breadcrumb_roles: '角色管理',
+  breadcrumb_role_detail: '角色详情',
+  breadcrumb_tenants: '租户管理',
+  breadcrumb_tenant_detail: '租户详情',
+  breadcrumb_users: '用户管理',
+  breadcrumb_user_detail: '用户详情',
+  breadcrumb_billing: '账单管理',
+  breadcrumb_invoice_detail: '发票详情',
+  nav_logout: '退出登录',
+  nav_download_center: '下载中心',
+};

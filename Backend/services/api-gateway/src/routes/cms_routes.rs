@@ -14,6 +14,7 @@ use serde::Deserialize;
 use serde_json::{json, Value};
 
 use crate::AppState;
+use crate::routes::helpers::{json_error_response_fmt, json_success};
 
 #[derive(Debug, Deserialize)]
 pub struct ArticleListQuery {
@@ -37,14 +38,10 @@ async fn list_categories(
 ) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
     let mut client = state.grpc_clients.read().await
         .cms_client().await
-        .map_err(|e| (StatusCode::SERVICE_UNAVAILABLE, Json(json!({
-            "success": false, "code": 503, "message": format!("CMS服务不可用: {e}")
-        }))))?;
+        .map_err(|e| json_error_response_fmt(StatusCode::SERVICE_UNAVAILABLE, "CMS服务不可用: {e}", &format!("CMS服务不可用: {e}")))?;
 
     let resp = client.list_categories(q.parent_id.unwrap_or(0), true).await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({
-            "success": false, "code": 500, "message": format!("获取分类失败: {e}")
-        }))))?;
+        .map_err(|e| json_error_response_fmt(StatusCode::INTERNAL_SERVER_ERROR, "获取分类失败: {e}", &format!("获取分类失败: {e}")))?;
 
     let categories: Vec<Value> = resp.categories.into_iter().map(|c| json!({
         "id": c.id,
@@ -58,10 +55,7 @@ async fn list_categories(
         "updated_at": c.updated_at,
     })).collect();
 
-    Ok(Json(json!({
-        "success": true, "code": 200,
-        "data": categories
-    })))
+    Ok(json_success(json!({"data": categories})))
 }
 
 async fn get_category_tree(
@@ -69,14 +63,10 @@ async fn get_category_tree(
 ) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
     let mut client = state.grpc_clients.read().await
         .cms_client().await
-        .map_err(|e| (StatusCode::SERVICE_UNAVAILABLE, Json(json!({
-            "success": false, "code": 503, "message": format!("CMS服务不可用: {e}")
-        }))))?;
+        .map_err(|e| json_error_response_fmt(StatusCode::SERVICE_UNAVAILABLE, "CMS服务不可用: {e}", &format!("CMS服务不可用: {e}")))?;
 
     let resp = client.list_categories(0, true).await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({
-            "success": false, "code": 500, "message": format!("获取分类树失败: {e}")
-        }))))?;
+        .map_err(|e| json_error_response_fmt(StatusCode::INTERNAL_SERVER_ERROR, "获取分类树失败: {e}", &format!("获取分类树失败: {e}")))?;
 
     let cats: Vec<Value> = resp.categories.into_iter().map(|c| json!({
         "id": c.id, "name": c.name, "slug": c.slug,
@@ -84,10 +74,7 @@ async fn get_category_tree(
         "sort_order": c.sort_order, "icon": c.icon,
         "created_at": c.created_at, "updated_at": c.updated_at,
     })).collect();
-    Ok(Json(json!({
-        "success": true, "code": 200,
-        "data": cats
-    })))
+    Ok(json_success(json!({"data": cats})))
 }
 
 async fn create_category(
@@ -96,9 +83,7 @@ async fn create_category(
 ) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
     let mut client = state.grpc_clients.read().await
         .cms_client().await
-        .map_err(|e| (StatusCode::SERVICE_UNAVAILABLE, Json(json!({
-            "success": false, "code": 503, "message": format!("CMS服务不可用: {e}")
-        }))))?;
+        .map_err(|e| json_error_response_fmt(StatusCode::SERVICE_UNAVAILABLE, "CMS服务不可用: {e}", &format!("CMS服务不可用: {e}")))?;
 
     let resp = client.create_category(
         body.get("name").and_then(|v| v.as_str()).unwrap_or("").to_string(),
@@ -107,14 +92,9 @@ async fn create_category(
         body.get("parent_id").and_then(|v| v.as_i64()).unwrap_or(0),
         body.get("sort_order").and_then(|v| v.as_i64()).unwrap_or(0) as i32,
         body.get("icon").and_then(|v| v.as_str()).unwrap_or("").to_string(),
-    ).await.map_err(|e| (StatusCode::BAD_REQUEST, Json(json!({
-        "success": false, "code": 400, "message": format!("创建分类失败: {e}")
-    }))))?;
+    ).await.map_err(|e| json_error_response_fmt(StatusCode::BAD_REQUEST, "创建分类失败: {e}", &format!("创建分类失败: {e}")))?;
 
-    Ok(Json(json!({
-        "success": true, "code": 200,
-        "data": { "id": resp.id, "name": resp.name }
-    })))
+    Ok(json_success(json!({"id": resp.id, "name": resp.name})))
 }
 
 async fn update_category(
@@ -124,9 +104,7 @@ async fn update_category(
 ) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
     let mut client = state.grpc_clients.read().await
         .cms_client().await
-        .map_err(|e| (StatusCode::SERVICE_UNAVAILABLE, Json(json!({
-            "success": false, "code": 503, "message": format!("CMS服务不可用: {e}")
-        }))))?;
+        .map_err(|e| json_error_response_fmt(StatusCode::SERVICE_UNAVAILABLE, "CMS服务不可用: {e}", &format!("CMS服务不可用: {e}")))?;
 
     let resp = client.update_category(
         id,
@@ -136,14 +114,9 @@ async fn update_category(
         body.get("parent_id").and_then(|v| v.as_i64()).unwrap_or(0),
         body.get("sort_order").and_then(|v| v.as_i64()).unwrap_or(0) as i32,
         body.get("icon").and_then(|v| v.as_str()).unwrap_or("").to_string(),
-    ).await.map_err(|e| (StatusCode::BAD_REQUEST, Json(json!({
-        "success": false, "code": 400, "message": format!("更新分类失败: {e}")
-    }))))?;
+    ).await.map_err(|e| json_error_response_fmt(StatusCode::BAD_REQUEST, "更新分类失败: {e}", &format!("更新分类失败: {e}")))?;
 
-    Ok(Json(json!({
-        "success": true, "code": 200,
-        "data": { "id": resp.id, "name": resp.name }
-    })))
+    Ok(json_success(json!({"id": resp.id, "name": resp.name})))
 }
 
 async fn delete_category(
@@ -152,16 +125,12 @@ async fn delete_category(
 ) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
     let mut client = state.grpc_clients.read().await
         .cms_client().await
-        .map_err(|e| (StatusCode::SERVICE_UNAVAILABLE, Json(json!({
-            "success": false, "code": 503, "message": format!("CMS服务不可用: {e}")
-        }))))?;
+        .map_err(|e| json_error_response_fmt(StatusCode::SERVICE_UNAVAILABLE, "CMS服务不可用: {e}", &format!("CMS服务不可用: {e}")))?;
 
     client.delete_category(id, false).await
-        .map_err(|e| (StatusCode::BAD_REQUEST, Json(json!({
-            "success": false, "code": 400, "message": format!("删除分类失败: {e}")
-        }))))?;
+.map_err(|e| json_error_response_fmt(StatusCode::BAD_REQUEST, "删除分类失败: {e}", &format!("删除分类失败: {e}")))?;
 
-    Ok(Json(json!({"success": true, "code": 200, "message": "删除成功"})))
+    Ok(json_success(json!({"message": "删除成功"})))
 }
 
 // ============ Article Handlers ============
@@ -172,16 +141,12 @@ async fn list_articles(
 ) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
     let mut client = state.grpc_clients.read().await
         .cms_client().await
-        .map_err(|e| (StatusCode::SERVICE_UNAVAILABLE, Json(json!({
-            "success": false, "code": 503, "message": format!("CMS服务不可用: {e}")
-        }))))?;
+        .map_err(|e| json_error_response_fmt(StatusCode::SERVICE_UNAVAILABLE, "CMS服务不可用: {e}", &format!("CMS服务不可用: {e}")))?;
 
     let resp = client.list_articles(
         q.page.unwrap_or(1), q.page_size.unwrap_or(20),
         q.category_id.unwrap_or(0), q.keyword.unwrap_or_default(), q.status.unwrap_or_default(),
-    ).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({
-        "success": false, "code": 500, "message": format!("获取文章列表失败: {e}")
-    }))))?;
+    ).await.map_err(|e| json_error_response_fmt(StatusCode::INTERNAL_SERVER_ERROR, "获取文章列表失败: {e}", &format!("获取文章列表失败: {e}")))?;
 
     let arts: Vec<Value> = resp.articles.into_iter().map(|a| json!({
         "id": a.id, "title": a.title, "summary": a.summary,
@@ -191,10 +156,7 @@ async fn list_articles(
         "view_count": a.view_count,
         "created_at": a.created_at, "updated_at": a.updated_at,
     })).collect();
-    Ok(Json(json!({
-        "success": true, "code": 200,
-        "data": { "list": arts, "total": resp.total }
-    })))
+    Ok(json_success(json!({"list": arts, "total": resp.total})))
 }
 
 async fn get_article(
@@ -203,19 +165,13 @@ async fn get_article(
 ) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
     let mut client = state.grpc_clients.read().await
         .cms_client().await
-        .map_err(|e| (StatusCode::SERVICE_UNAVAILABLE, Json(json!({
-            "success": false, "code": 503, "message": format!("CMS服务不可用: {e}")
-        }))))?;
+        .map_err(|e| json_error_response_fmt(StatusCode::SERVICE_UNAVAILABLE, "CMS服务不可用: {e}", &format!("CMS服务不可用: {e}")))?;
 
     let resp = client.get_article(id).await
-        .map_err(|e| (StatusCode::NOT_FOUND, Json(json!({
-            "success": false, "code": 404, "message": format!("获取文章失败: {e}")
-        }))))?;
+        .map_err(|e| json_error_response_fmt(StatusCode::NOT_FOUND, "获取文章失败: {e}", &format!("获取文章失败: {e}")))?;
 
     let article = resp.article.unwrap_or_default();
-    Ok(Json(json!({
-        "success": true, "code": 200,
-        "data": {
+    Ok(json_success(json!({
             "id": article.id,
             "title": article.title,
             "summary": article.summary,
@@ -228,8 +184,7 @@ async fn get_article(
             "view_count": article.view_count,
             "created_at": article.created_at,
             "updated_at": article.updated_at,
-        }
-    })))
+        })))
 }
 
 async fn create_article(
@@ -238,9 +193,7 @@ async fn create_article(
 ) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
     let mut client = state.grpc_clients.read().await
         .cms_client().await
-        .map_err(|e| (StatusCode::SERVICE_UNAVAILABLE, Json(json!({
-            "success": false, "code": 503, "message": format!("CMS服务不可用: {e}")
-        }))))?;
+        .map_err(|e| json_error_response_fmt(StatusCode::SERVICE_UNAVAILABLE, "CMS服务不可用: {e}", &format!("CMS服务不可用: {e}")))?;
 
     let params = crate::grpc_clients::CreateArticleParams {
         title: body.get("title").and_then(|v| v.as_str()).unwrap_or("").to_string(),
@@ -256,11 +209,9 @@ async fn create_article(
     };
 
     let resp = client.create_article(params).await
-        .map_err(|e| (StatusCode::BAD_REQUEST, Json(json!({
-            "success": false, "code": 400, "message": format!("创建文章失败: {e}")
-        }))))?;
+.map_err(|e| json_error_response_fmt(StatusCode::BAD_REQUEST, "创建文章失败: {e}", &format!("创建文章失败: {e}")))?;
 
-    Ok(Json(json!({"success": true, "code": 200, "data": {"id": resp.id}})))
+    Ok(json_success(json!({"id": resp.id})))
 }
 
 async fn update_article(
@@ -270,9 +221,7 @@ async fn update_article(
 ) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
     let mut client = state.grpc_clients.read().await
         .cms_client().await
-        .map_err(|e| (StatusCode::SERVICE_UNAVAILABLE, Json(json!({
-            "success": false, "code": 503, "message": format!("CMS服务不可用: {e}")
-        }))))?;
+        .map_err(|e| json_error_response_fmt(StatusCode::SERVICE_UNAVAILABLE, "CMS服务不可用: {e}", &format!("CMS服务不可用: {e}")))?;
 
     let params = crate::grpc_clients::UpdateArticleParams {
         id,
@@ -288,11 +237,9 @@ async fn update_article(
     };
 
     let resp = client.update_article(params).await
-        .map_err(|e| (StatusCode::BAD_REQUEST, Json(json!({
-            "success": false, "code": 400, "message": format!("更新文章失败: {e}")
-        }))))?;
+.map_err(|e| json_error_response_fmt(StatusCode::BAD_REQUEST, "更新文章失败: {e}", &format!("更新文章失败: {e}")))?;
 
-    Ok(Json(json!({"success": true, "code": 200, "data": {"id": resp.id}})))
+    Ok(json_success(json!({"id": resp.id})))
 }
 
 async fn delete_article(
@@ -301,16 +248,12 @@ async fn delete_article(
 ) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
     let mut client = state.grpc_clients.read().await
         .cms_client().await
-        .map_err(|e| (StatusCode::SERVICE_UNAVAILABLE, Json(json!({
-            "success": false, "code": 503, "message": format!("CMS服务不可用: {e}")
-        }))))?;
+        .map_err(|e| json_error_response_fmt(StatusCode::SERVICE_UNAVAILABLE, "CMS服务不可用: {e}", &format!("CMS服务不可用: {e}")))?;
 
     client.delete_article(id).await
-        .map_err(|e| (StatusCode::BAD_REQUEST, Json(json!({
-            "success": false, "code": 400, "message": format!("删除文章失败: {e}")
-        }))))?;
+        .map_err(|e| json_error_response_fmt(StatusCode::BAD_REQUEST, "删除文章失败: {e}", &format!("删除文章失败: {e}")))?;
 
-    Ok(Json(json!({"success": true, "code": 200, "message": "删除成功"})))
+    Ok(json_success(json!({"message": "删除成功"})))
 }
 
 pub fn routes() -> Router<Arc<AppState>> {
@@ -319,48 +262,48 @@ pub fn routes() -> Router<Arc<AppState>> {
         .route("/api/cms/categories", get(list_categories).post(create_category))
         .route("/api/cms/categories/tree", get(get_category_tree))
         .route("/api/cms/categories/batch", delete(|_: State<Arc<AppState>>| async {
-            Json(json!({"success": true, "code": 200, "message": "批量删除暂未实现"}))
+            json_success(json!({"message": "批量删除暂未实现"}))
         }))
         .route("/api/cms/categories/reorder", put(|_: State<Arc<AppState>>| async {
-            Json(json!({"success": true, "code": 200, "message": "排序暂未实现"}))
+            json_success(json!({"message": "排序暂未实现"}))
         }))
         .route("/api/cms/categories/{id}", put(update_category).delete(delete_category))
         // 文章
         .route("/api/cms/articles", get(list_articles).post(create_article))
         .route("/api/cms/articles/{id}", get(get_article).put(update_article).delete(delete_article))
         .route("/api/cms/articles/batch", delete(|_: State<Arc<AppState>>| async {
-            Json(json!({"success": true, "code": 200, "message": "批量删除暂未实现"}))
+            json_success(json!({"message": "批量删除暂未实现"}))
         }))
         .route("/api/cms/articles/{id}/publish", put(|_: State<Arc<AppState>>, _: Path<i64>| async {
-            Json(json!({"success": true, "code": 200, "message": "发布功能暂未实现"}))
+            json_success(json!({"message": "发布功能暂未实现"}))
         }))
         .route("/api/cms/articles/{id}/unpublish", put(|_: State<Arc<AppState>>, _: Path<i64>| async {
-            Json(json!({"success": true, "code": 200, "message": "下架功能暂未实现"}))
+            json_success(json!({"message": "下架功能暂未实现"}))
         }))
         .route("/api/cms/articles/{id}/review", put(|_: State<Arc<AppState>>| async {
-            Json(json!({"success": true, "code": 200, "message": "审核功能暂未实现"}))
+            json_success(json!({"message": "审核功能暂未实现"}))
         }))
         .route("/api/cms/articles/{id}/top", put(|_: State<Arc<AppState>>| async {
-            Json(json!({"success": true, "code": 200, "message": "置顶功能暂未实现"}))
+            json_success(json!({"message": "置顶功能暂未实现"}))
         }))
         .route("/api/cms/articles/{id}/feature", put(|_: State<Arc<AppState>>| async {
-            Json(json!({"success": true, "code": 200, "message": "推荐功能暂未实现"}))
+            json_success(json!({"message": "推荐功能暂未实现"}))
         }))
         .route("/api/cms/articles/{id}/view", put(|_: State<Arc<AppState>>| async {
-            Json(json!({"success": true, "code": 200, "message": "浏览量统计暂未实现"}))
+            json_success(json!({"message": "浏览量统计暂未实现"}))
         }))
         .route("/api/cms/articles/{id}/like", post(|_: State<Arc<AppState>>| async {
-            Json(json!({"success": true, "code": 200, "message": "点赞功能暂未实现"}))
+            json_success(json!({"message": "点赞功能暂未实现"}))
         }))
         .route("/api/cms/articles/{id}/favorite", post(|_: State<Arc<AppState>>| async {
-            Json(json!({"success": true, "code": 200, "message": "收藏功能暂未实现"}))
+            json_success(json!({"message": "收藏功能暂未实现"}))
         }))
         .route("/api/cms/articles/slug/{slug}", get(|_: State<Arc<AppState>>, _: Path<String>| async {
-            Json(json!({"success": true, "code": 200, "message": "暂不支持slug查询"}))
+            json_success(json!({"message": "暂不支持slug查询"}))
         }))
         // 其他 CMS 辅助接口
         .route("/api/cms/articles/statistics", get(|_: State<Arc<AppState>>| async {
-            Json(json!({"success": true, "code": 200, "data": {"total": 0, "published": 0, "draft": 0}}))
+            json_success(json!({"total": 0, "published": 0, "draft": 0}))
         }))
         .route("/api/cms/articles/hot", get(list_articles))
         .route("/api/cms/articles/latest", get(list_articles))

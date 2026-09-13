@@ -1,0 +1,40 @@
+[package]
+name = "billing-service"
+version.workspace = true
+edition.workspace = true
+description = "计费服务 - 计划、订阅、发票、用量"
+
+[[bin]]
+name = "billing-service"
+path = "src/main.rs"
+
+[dependencies]
+tracing = "0.1"
+tokio.workspace = true
+futures-util = "0.3"
+common.workspace = true
+sqlx.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+log.workspace = true
+base64 = "0.22"
+
+thiserror.workspace = true
+chrono.workspace = true
+uuid.workspace = true
+axum.workspace = true
+
+# Billing
+billing-core.workspace = true
+tenant-core.workspace = true
+
+# gRPC
+tonic.workspace = true
+grpc-proto.workspace = true
+
+# Decimal for money
+rust_decimal = "1.35"
+rust_decimal_macros = "1.35"
+
+[dev-dependencies]
+tokio-test = "0.4"

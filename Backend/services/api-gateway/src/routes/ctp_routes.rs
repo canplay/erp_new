@@ -21,7 +21,7 @@ async fn receive_data(State(state): State<Arc<AppState>>, Json(body): Json<Value
         body["status_two"].as_str().map(|s| s.to_string()),
         body["data_time"].as_str().map(|s| s.to_string()),
     ).await {
-        Ok(resp) => Json(json!({"success": true, "error_code": resp.error_code, "error_msg": resp.error_msg})),
+        Ok(resp) => json_success(json!({"error_code": resp.error_code, "error_msg": resp.error_msg})),
         Err(e) => json_error(&format!("上报失败: {e}")),
     }
 }
@@ -34,7 +34,7 @@ async fn control(State(state): State<Arc<AppState>>, Json(body): Json<Value>) ->
         body["cmd_type"].as_str().unwrap_or("").to_string(),
         body["data"].as_str().map(|s| s.to_string()),
     ).await {
-        Ok(resp) => Json(json!({"success": resp.success, "message": resp.message})),
+        Ok(resp) => json_success(json!({"success": resp.success, "message": resp.message})),
         Err(e) => json_error(&format!("控制失败: {e}")),
     }
 }

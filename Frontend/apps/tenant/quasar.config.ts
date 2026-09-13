@@ -1,0 +1,124 @@
+export default (ctx: {
+  dev: boolean;
+  mode: { name: string };
+  modeName: string;
+  appPaths: { resolve: { app: (p: string) => string } };
+}) => {
+  return {
+    boot: ['auth', 'i18n', 'permission'],
+
+    css: ['app.scss'],
+
+    extras: [
+      'roboto-font',
+      'material-icons',
+    ],
+
+    build: {
+      target: {
+        browser: 'baseline-widely-available',
+        node: 'node22',
+      },
+
+      typescript: {
+        strict: true,
+        vueShim: true,
+      },
+
+      vueRouterMode: 'hash',
+
+      extendViteConf(viteConf: Record<string, unknown>) {
+        if (!ctx.dev) {
+          viteConf.build ??= {};
+          const buildConf = viteConf.build as Record<string, unknown>;
+          buildConf.chunkSizeWarningLimit ??= 3000;
+          buildConf.cssMinify ??= 'esbuild';
+          buildConf.minify ??= 'esbuild';
+          buildConf.rollupOptions ??= {};
+          const rollupOptions = buildConf.rollupOptions as Record<string, unknown>;
+          rollupOptions.output ??= {};
+          const output = rollupOptions.output as Record<string, unknown>;
+          output.manualChunks ??= (id: string) => {
+            if (id.includes('node_modules/quasar')) return 'quasar';
+            if (id.includes('node_modules/vue')) return 'vue';
+            if (id.includes('node_modules/pinia')) return 'pinia';
+            if (id.includes('node_modules/echarts')) return 'echarts';
+            if (id.includes('node_modules/exceljs')) return 'exceljs';
+            if (id.includes('node_modules')) return 'vendor';
+          };
+        }
+
+        // Workspace package aliases
+        const path = require('path');
+        const srcRoot = ctx.appPaths.resolve.app('src');
+        if (!viteConf.resolve) viteConf.resolve = {};
+        if (!viteConf.resolve.alias) viteConf.resolve.alias = {};
+        viteConf.resolve.alias['@'] = srcRoot;
+        viteConf.resolve.alias['@/'] = srcRoot + '/';
+        // Each app's packages/ are symlinked to node_modules, so @/ resolves to each app's src/
+      },
+
+      vitePlugins: [
+        [
+          '@intlify/unplugin-vue-i18n/vite',
+          {
+            ssr: ctx.modeName === 'ssr',
+            include: [ctx.appPaths.resolve.app('src/i18n')],
+          },
+        ],
+        [
+          'vite-plugin-checker',
+          {
+            // 生产构建关闭 vue-tsc 类型检查
+            vueTsc: false,
+            eslint: {
+              lintCommand: 'eslint -c ./eslint.config.js "./src*/**/*.{ts,js,mjs,cjs,vue}"',
+              useFlatConfig: true,
+            },
+          },
+          { server: false },
+        ],
+      ],
+    },
+
+    devServer: {
+      open: true,
+      port: 9001,
+    },
+
+    framework: {
+      config: {},
+      lang: 'zh-CN',
+      plugins: ['Notify', 'Loading', 'Dialog', 'AppFullscreen'],
+    },
+
+    animations: [],
+
+    ssr: {
+      prodPort: 3000,
+      middlewares: ['render'],
+      pwa: false,
+    },
+
+    pwa: {
+      workboxMode: 'GenerateSW',
+    },
+
+    cordova: {},
+
+    capacitor: {
+      hideSplashscreen: true,
+    },
+
+    electron: {
+      extendElectronMainConf: {},
+      extendElectronPreloadConf: {},
+      inspectPort: 5858,
+      bundler: 'packager',
+      packager: {},
+      builder: {
+        appId: 'admin',
+      },
+    },
+  };
+};

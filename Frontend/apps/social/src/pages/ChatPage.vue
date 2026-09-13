@@ -251,12 +251,12 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import { useRoomStore } from '@/stores/room';
 import { useMessageStore } from '@/stores/message';
-import QuasarChatMessage from '@/components/QuasarChatMessage.vue';
-import { useChatSend } from '@/composables/useChatSend';
-import { useChatScroll } from '@/composables/useChatScroll';
-import { useChatEvents } from '@/composables/useChatEvents';
-import { useChatMessageOps } from '@/composables/useChatMessageOps';
-import { useChatActions } from '@/composables/useChatActions';
+import QuasarChatMessage from '@erp-new-frontend-monorepo/components/src/QuasarChatMessage.vue';
+import { useChatSend } from '@erp-new-frontend-monorepo/composables/src/useChatSend';;
+import { useChatScroll } from '@erp-new-frontend-monorepo/composables/src/useChatScroll';;
+import { useChatEvents } from '@erp-new-frontend-monorepo/composables/src/useChatEvents';;
+import { useChatMessageOps } from '@erp-new-frontend-monorepo/composables/src/useChatMessageOps';;
+import { useChatActions } from '@erp-new-frontend-monorepo/composables/src/useChatActions';;
 
 const router = useRouter();
 const auth = useAuthStore();

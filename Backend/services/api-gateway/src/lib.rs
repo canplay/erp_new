@@ -11,15 +11,12 @@
 //! @date 2026-05-20
 //! @note 实现限流、熔断、路由等功能
 
-use auth_core::JwtService;
 use circuit_breaker_core::{CircuitBreaker, CircuitBreakerConfig, CircuitBreakerResult, CircuitState};
 use grpc_core::ServiceDiscovery;
 use serde::{Deserialize, Serialize};
 use parking_lot::RwLock;
 use std::collections::HashMap;
 use std::sync::Arc;
-use std::time::Duration;
-use tokio::sync::RwLock as AsyncRwLock;
 
 // 主要中间件模块
 pub mod enhanced_logging;

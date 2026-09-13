@@ -38,6 +38,7 @@ replicaCount:
   ctpService: 1
   xltService: 1
   ebikeService: 1
+  billingService: 1
   admin: 1
 
 # 资源限制配置
@@ -77,6 +78,14 @@ resources:
     limits:
       cpu: 200m
       memory: 256Mi
+
+  billingService:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
 
 # 健康检查配置
 healthCheck:
@@ -476,6 +485,22 @@ services:
     env:
       SERVICE_PORT: 8098
       GRPC_PORT: 9100
+
+  billingService:
+    enabled: true
+    name: billing-service
+    containerName: myai-billing-service
+    imageName: myai-billing-service
+    ports:
+      grpc: 9101
+      http: 8088
+    service:
+      type: ClusterIP
+    healthCheck:
+      enabled: true
+    env:
+      SERVICE_PORT: 8088
+      GRPC_PORT: 9101
 
 # Ingress 配置
 ingress:

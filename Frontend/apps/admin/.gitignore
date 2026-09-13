@@ -2,11 +2,8 @@
 .thumbs.db
 node_modules
 
-# .env files — 只忽略本地覆盖文件，保留模板
-.env
-.env.local
-.env.development.local
-.env.production.local
+# .env files
+.env*
 
 # Quasar core related directories
 .quasar

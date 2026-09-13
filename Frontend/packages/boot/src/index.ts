@@ -1,3 +1,3 @@
-// @myai-workspace/boot - shared boot files
-// Placeholder - boot files extracted from apps/admin
-export {};
+// @erp-new-frontend-monorepo/boot
+// This is a placeholder - will be populated during migration
+export const boot = "boot"

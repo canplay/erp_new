@@ -61,7 +61,7 @@ pub async fn options_update(
     };
 
     match client.options_update(req).await {
-        Ok(resp) => Ok(Json(json!({"success": true, "code": resp.code, "message": resp.message}))),
+        Ok(resp) => Ok(json_success(json!({"code": resp.code, "message": resp.message}))),
         Err(e) => Ok(json_error(&format!("更新失败：{e}"))),
     }
 }

@@ -7,6 +7,7 @@ use common::AppError;
 use serde_json::json;
 
 use crate::AppState;
+use crate::routes::helpers::{json_error, json_success};
 
 #[derive(Debug, Deserialize)]
 pub struct CarQuery {
@@ -32,7 +33,7 @@ pub async fn list_cars(
         "car_color": c.car_color, "dc_date": c.dc_date, "dc_address": c.dc_address,
         "dc_party_name": c.dc_party_name, "dc_type": c.dc_type, "dc_causes": c.dc_causes, "delete": c.delete,
     })).collect();
-    Ok(Json(json!({ "cars": cars, "total": resp.total, "page": resp.page, "page_size": resp.page_size })))
+    Ok(json_success(json!({ "cars": cars, "total": resp.total, "page": resp.page, "page_size": resp.page_size })))
 }
 
 pub async fn get_car(
@@ -42,7 +43,7 @@ pub async fn get_car(
     let mut client = state.grpc_clients.read().await.tow_client().await
         .map_err(|e| AppError::ServiceUnavailable(format!("tow-service: {e}")))?;
     let c = client.get_tow_car(id).await.map_err(|e| AppError::ServiceUnavailable(format!("调用失败: {e}")))?;
-    Ok(Json(json!({ "id": c.id, "license": c.license, "car_type": c.car_type, "car_color": c.car_color,
+    Ok(json_success(json!({ "id": c.id, "license": c.license, "car_type": c.car_type, "car_color": c.car_color,
         "engine": c.engine, "dc_type": c.dc_type, "dc_causes": c.dc_causes, "dc_date": c.dc_date,
         "dc_address": c.dc_address, "dc_key": c.dc_key,
         "dc_party_name": c.dc_party_name, "dc_party_cardid": c.dc_party_cardid, "dc_party_tel": c.dc_party_tel,
@@ -59,7 +60,7 @@ pub async fn list_dict(
     let resp = client.list_dict_items(&q.dict_type).await
         .map_err(|e| AppError::ServiceUnavailable(format!("调用失败: {e}")))?;
     let items: Vec<serde_json::Value> = resp.items.into_iter().map(|d| json!({ "id": d.id, "name": d.name, "value": d.value })).collect();
-    Ok(Json(json!({ "items": items })))
+    Ok(json_success(json!({ "items": items })))
 }
 
 /// POST /api/tow/cars/{id}/status — 更新拖车状态（内存实现）
@@ -69,9 +70,9 @@ pub async fn update_tow_car_status(
 ) -> Json<serde_json::Value> {
     let status = body.get("status").and_then(|v| v.as_str()).unwrap_or("");
     if !status.is_empty() {
-        Json(json!({ "success": true, "code": 200, "message": format!("状态已更新为: {}", status) }))
+        json_success(json!({ "message": format!("状态已更新为: {}", status) }))
     } else {
-        Json(json!({ "success": false, "code": 400, "message": "状态参数不能为空" }))
+        json_error("状态参数不能为空")
     }
 }
 

@@ -44,6 +44,9 @@ grpc-core.workspace = true
 # JWT 服务
 auth-core.workspace = true
 
+# 多租户
+tenant-core.workspace = true
+
 # 错误处理
 anyhow.workspace = true
 

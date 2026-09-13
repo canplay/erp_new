@@ -1,11 +1,11 @@
 {
   "extends": "./.quasar/tsconfig.json",
   "compilerOptions": {
-    "baseUrl": ".",
     "paths": {
       "@": ["./src"],
       "@/*": ["./src/*"],
-      "@myai-workspace/*": ["../../packages/*/src"]
+      "@myai-workspace/*": ["../../packages/*/src"],
+      "@erp-new-frontend-monorepo/*": ["../../packages/*/src"]
     }
   }
 }

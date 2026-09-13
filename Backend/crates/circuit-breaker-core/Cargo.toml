@@ -7,7 +7,6 @@ edition.workspace = true
 name = "circuit_breaker_core"
 path = "src/lib.rs"
 
-description = "熔断器核心库 - 提供基于失败率的熔断、自动恢复和状态监控"
 
 [dependencies]
 tracing = "0.1"

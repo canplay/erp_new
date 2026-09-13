@@ -120,11 +120,11 @@ async fn get_file_stats(
 
 // ============ 无 file.proto RPC 的接口（保留占位） ============
 
-async fn get_recent_files() -> Json<Value> { Json(json!({"success": true, "code": 200, "data": {"list": [], "total": 0}})) }
-async fn get_favorites() -> Json<Value> { Json(json!({"success": true, "code": 200, "data": {"list": [], "total": 0}})) }
-async fn upload_file() -> Json<Value> { Json(json!({"success": true, "code": 200, "data": {"id": 0, "url": ""}})) }
-async fn upload_signature() -> Json<Value> { Json(json!({"success": true, "code": 200, "data": {"upload_url": "", "upload_method": "PUT"}})) }
-async fn share_file() -> Json<Value> { Json(json!({"success": true, "code": 200, "data": {"token": "", "url": ""}})) }
+async fn get_recent_files() -> Json<Value> { json_success(json!({"list": [], "total": 0})) }
+async fn get_favorites() -> Json<Value> { json_success(json!({"list": [], "total": 0})) }
+async fn upload_file() -> Json<Value> { json_success(json!({"id": 0, "url": ""})) }
+async fn upload_signature() -> Json<Value> { json_success(json!({"upload_url": "", "upload_method": "PUT"})) }
+async fn share_file() -> Json<Value> { json_success(json!({"token": "", "url": ""})) }
 async fn batch_delete_files() -> Json<Value> { json_ok() }
 async fn batch_move_files() -> Json<Value> { json_ok() }
 async fn batch_copy_files() -> Json<Value> { json_ok() }
@@ -149,25 +149,25 @@ async fn rename_file(Path(_id): Path<i64>) -> Json<Value> { json_ok() }
 async fn move_file(Path(_id): Path<i64>) -> Json<Value> { json_ok() }
 async fn copy_file(Path(_id): Path<i64>) -> Json<Value> { json_ok() }
 async fn download_file(Path(_id): Path<i64>) -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"url": "", "filename": ""}}))
+    json_success(json!({"url": "", "filename": ""}))
 }
 async fn preview_file(Path(_id): Path<i64>) -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"type": "unknown", "url": ""}}))
+    json_success(json!({"type": "unknown", "url": ""}))
 }
 async fn thumbnail_file(Path(_id): Path<i64>) -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"url": ""}}))
+    json_success(json!({"url": ""}))
 }
 async fn favorite_file(Path(_id): Path<i64>) -> Json<Value> { json_ok() }
 async fn unfavorite_file(Path(_id): Path<i64>) -> Json<Value> { json_ok() }
-async fn get_folder_path() -> Json<Value> { Json(json!({"success": true, "code": 200, "data": []})) }
+async fn get_folder_path() -> Json<Value> { json_success(json!([])) }
 async fn get_share(Path(token): Path<String>) -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"token": token, "expires_at": null}}))
+    json_success(json!({"token": token, "expires_at": null}))
 }
 async fn verify_share(Path(_token): Path<String>) -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"valid": true}}))
+    json_success(json!({"valid": true}))
 }
 async fn download_share(Path((_token, _file_id)): Path<(String, i64)>) -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"url": "", "filename": ""}}))
+    json_success(json!({"url": "", "filename": ""}))
 }
 async fn delete_share(Path(_token): Path<String>) -> Json<Value> { json_ok() }
 

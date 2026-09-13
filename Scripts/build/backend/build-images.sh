@@ -241,6 +241,7 @@ podman rmi -f "${HARBOR_HOST}/myai-ebike-service:${TAG}" 2>/dev/null || true
 podman rmi -f "${HARBOR_HOST}/myai-lpr-service:${TAG}" 2>/dev/null || true
 podman rmi -f "${HARBOR_HOST}/myai-social-ops-service:${TAG}" 2>/dev/null || true
 podman rmi -f "${HARBOR_HOST}/myai-browser-service:${TAG}" 2>/dev/null || true
+podman rmi -f "${HARBOR_HOST}/myai-billing-service:${TAG}" 2>/dev/null || true
 log INFO "  ✓ 清理完成"
 
 # =============================================================================
@@ -292,6 +293,7 @@ declare -a SERVICES=(
     "lpr-service"
     "social-ops-service"
     "browser-service"
+    "billing-service"
 )
 
 # 并行构建（最多 4 个并发）

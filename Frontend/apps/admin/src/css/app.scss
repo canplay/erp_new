@@ -1,848 +1,459 @@
-// app global css in SCSS form
-// 活泼现代风格 - 全局样式
-// @date 2026-04-04
-
-// ============ CSS 自定义属性 (不会与 Quasar 冲突) ============
-:root {
-  --primary-color: #667eea;
-  --secondary-color: #764ba2;
-  --success-color: #51cf66;
-  --danger-color: #ff6b6b;
-  --info-color: #339af0;
-  --warning-color: #ffc107;
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.08);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.16);
+// 全局字体：阿里妈妈方圆体（可变字体 VF，woff2 覆盖 2016+ 现代浏览器，app 本地自备）
+@font-face {
+  font-family: '阿里妈妈方圆体 VF Thin';
+  src: url('./fonts/AlimamaFangYuanTiVF-Thin.woff2') format('woff2');
+  font-display: swap;
 }
 
-// ============ 响应式断点 ============
-// xs: 0-599px (手机)
-// sm: 600-1023px (平板竖屏)
-// md: 1024-1439px (平板横屏/小桌面)
-// lg: 1440-1919px (桌面)
-// xl: 1920px+ (大桌面)
-
-// ============ 通用响应式工具类 ============
-
-// 隐藏类
-.hide-on-xs-only { @media (max-width: 599px) { display: none !important; } }
-.hide-on-sm-only { @media (min-width: 600px) and (max-width: 1023px) { display: none !important; } }
-.hide-on-md-only { @media (min-width: 1024px) and (max-width: 1439px) { display: none !important; } }
-.hide-on-lg-only { @media (min-width: 1440px) and (max-width: 1919px) { display: none !important; } }
-.hide-on-xl-only { @media (min-width: 1920px) { display: none !important; } }
-
-// 移动端显示
-.show-on-xs-only { display: none !important; @media (max-width: 599px) { display: block !important; } }
-.show-on-sm-only { display: none !important; @media (min-width: 600px) and (max-width: 1023px) { display: block !important; } }
-
-// ============ 布局响应式 ============
-
-// 顶栏适配
-.q-header {
-  .q-toolbar {
-    padding: 0 8px;
-    
-    @media (max-width: 599px) {
-      padding: 0 4px;
-    }
-  }
-  
-  // 搜索框响应式
-  .search-input {
-    width: 150px !important;
-    max-width: 25vw !important;
-    
-    @media (max-width: 767px) {
-      display: none !important;
-    }
-  }
-}
-
-// 侧边栏适配
-.q-drawer {
-  @media (max-width: 767px) {
-    width: 240px !important;
-  }
-}
-
-// 页面容器
-.q-page-container {
-  padding: 16px;
-  
-  @media (max-width: 599px) {
-    padding: 8px;
-  }
-}
-
-// ============ 卡片响应式 ============
-
-.q-card {
-  @media (max-width: 599px) {
-    border-radius: 8px;
-  }
-}
-
-// ============ 表格响应式 ============
-
-.q-table {
-  @media (max-width: 599px) {
-    font-size: 12px;
-    
-    th {
-      font-size: 11px;
-      padding: 4px 8px !important;
-    }
-    
-    td {
-      padding: 8px !important;
-      font-size: 12px;
-    }
-    
-    .q-table__top,
-    .q-table__bottom {
-      padding: 8px;
-    }
-  }
-  
-  // 移动端水平滚动
-  @media (max-width: 767px) {
-    .q-table__container {
-      overflow-x: auto;
-    }
-  }
-}
-
-// ============ 按钮响应式 ============
-
-.q-btn {
-  @media (max-width: 599px) {
-    font-size: 12px;
-    padding: 4px 8px;
-    
-    .q-btn__content {
-      .q-icon {
-        font-size: 18px;
-      }
-    }
-  }
-  
-  // 仅图标模式（小屏幕）
-  &.btn-icon-only {
-    @media (max-width: 599px) {
-      min-width: 32px;
-      min-height: 32px;
-      
-      .q-btn__content {
-        .q-icon {
-          font-size: 20px;
-        }
-        span {
-          display: none;
-        }
-      }
-    }
-  }
-}
-
-// ============ 表单响应式 ============
-
-.q-input,
-.q-select {
-  @media (max-width: 599px) {
-    .q-field__control {
-      height: 40px;
-    }
-    
-    .q-field__label {
-      font-size: 14px;
-    }
-  }
-}
-
-// ============ 筛选表单响应式 ============
-
-.filter-form {
-  .q-card__section {
-    @media (max-width: 767px) {
-      padding: 12px;
-    }
-  }
-  
-  .col-12 {
-    @media (max-width: 599px) {
-      margin-bottom: 8px;
-    }
-  }
-}
-
-// ============ 弹窗响应式 ============
-
-.q-dialog {
-  .q-card {
-    @media (max-width: 599px) {
-      min-width: 95vw !important;
-      margin: 10px;
-    }
-  }
-  
-  .q-card__section {
-    @media (max-width: 599px) {
-      padding: 12px;
-    }
-  }
-}
-
-// ============ 页面标题响应式 ============
-
-.text-h5 {
-  @media (max-width: 599px) {
-    font-size: 1.2rem;
-    margin-bottom: 8px !important;
-  }
-}
-
-// ============ 栅格响应式优化 ============
-
-.row {
-  > .col-12 {
-    @media (max-width: 599px) {
-      margin-bottom: 8px;
-    }
-  }
-}
-
-// ============ 移动端底部导航 ============
-
-// 移动端隐藏某些次要元素
-@media (max-width: 767px) {
-  .desktop-only {
-    display: none !important;
-  }
-  
-  // 侧边栏用户信息卡片简化
-  .drawer-header {
-    padding: 12px !important;
-    
-    .q-avatar {
-      width: 48px !important;
-      height: 48px !important;
-    }
-    
-    .text-subtitle1 {
-      font-size: 14px;
-    }
-  }
-}
-
-// ============ 触摸友好 ============
-
-// 增大触摸目标
-@media (max-width: 767px) {
-  .q-item {
-    min-height: 48px;
-    padding: 8px 16px;
-  }
-  
-  .q-table tbody td {
-    min-height: 44px;
-  }
-  
-  // 按钮间距
-  .q-gutter-x-sm,
-  .q-gutter-y-sm {
-    > * {
-      margin: 4px;
-    }
-  }
-}
-
-// ============ 安全区域适配 ============
-
-// iOS 刘海屏等
-.body-safe-area {
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
-  padding-left: env(safe-area-inset-left);
-  padding-right: env(safe-area-inset-right);
-}
-
-// ============ 暗黑模式增强 ============
-
-.body--dark {
-  .q-card {
-    background: #1d1d1d;
-  }
-  
-  .q-drawer {
-    background: #1d1d1d;
-  }
-  
-  .drawer-header {
-    background: linear-gradient(135deg, #2d2d2d 0%, #1d1d1d 100%) !important;
-  }
-  
-  // 暗色主题通用卡片
-  .q-table {
-    background: #1e1e1e;
-    color: #ffffff;
-    
-    thead tr {
-      background: #252525;
-    }
-    
-    th {
-      color: #ffffff;
-    }
-    
-    tbody tr:hover {
-      background: rgba(255, 255, 255, 0.03);
-    }
-    
-    td {
-      color: #b0b0b0;
-    }
-  }
-  
-  // 暗色主题输入框
-  .q-field__control {
-    background: #2d2d2d;
-  }
-  
-  .q-field__native {
-    color: #ffffff;
-  }
-  
-  .q-field__label {
-    color: #b0b0b0;
-  }
-  
-  // 暗色主题对话框
-  .q-dialog__inner {
-    .q-card {
-      background: #1e1e1e;
-    }
-  }
-}
-
-// ============ 新增组件全局样式 ============
-
-// 密码强度组件
-.password-strength {
-  .strength-bar {
-    height: 4px;
-    background: #e0e0e0;
-    border-radius: 2px;
-    overflow: hidden;
-  }
-  
-  .strength-fill {
-    height: 100%;
-    border-radius: 2px;
-    transition: width 0.3s ease;
-  }
-}
-
-.body--dark .password-strength {
-  .strength-bar {
-    background: #2d2d2d;
-  }
-}
-
-// 批量操作栏
-.batch-actions {
-  display: flex;
-  align-items: center;
-  padding: 12px 16px;
-  background: rgba(102, 126, 234, 0.08);
-  border-radius: 8px;
-  margin-bottom: 16px;
-}
-
-.body--dark .batch-actions {
-  background: rgba(102, 126, 234, 0.15);
-}
-
-// 高级搜索面板
-.advanced-search-card {
-  margin-bottom: 16px;
-}
-
-// 数据图表
-.data-chart {
-  .chart-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-  }
-  
-  .chart-title {
-    font-size: 16px;
-    font-weight: 600;
-  }
-}
-
-// 通知面板
-.notification-panel {
-  width: 380px;
-  max-width: 100vw;
-}
-
-// 滚动条美化
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
-}
-
-.body--dark {
-  ::-webkit-scrollbar-track {
-    background: #2d2d2d;
-  }
-  
-  ::-webkit-scrollbar-thumb {
-    background: #555;
-  }
-  
-  ::-webkit-scrollbar-thumb:hover {
-    background: #666;
-  }
-}
-
-// 过渡动画
+// 页面切换过渡动画
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.2s ease;
+  transition: opacity 0.18s ease;
 }
-
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
 }
 
-.slide-fade-enter-active {
-  transition: all 0.3s ease;
-}
+// ===== sesms 设计 token（全局） =====
+// admin 平台监管方 · 监管蓝主题
+// 统一间距/圆角/阴影/卡片/统计卡样式，供全局复用
 
-.slide-fade-leave-active {
-  transition: all 0.2s ease;
-}
+// 圆角
+$radius-sm: 6px;
+$radius-md: 10px;
+$radius-lg: 16px;
 
-.slide-fade-enter-from,
-.slide-fade-leave-to {
-  transform: translateX(-10px);
-  opacity: 0;
-}
+// 阴影
+$shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+$shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+$shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.14);
 
-// ============ 动画优化 ============
+// 统一卡片
+.sesms-card {
+  border-radius: $radius-md;
+  box-shadow: $shadow-sm;
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 
-// 减少移动端动画以提升性能
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-
-// ============ 活泼现代风格全局样式 ============
-
-// --- 通用卡片样式 ---
-.modern-card {
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-  
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
+    box-shadow: $shadow-md;
   }
 }
 
-// --- 渐变按钮 ---
-.gradient-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-  color: white !important;
-  border: none !important;
-  transition: all 0.25s ease !important;
-  
-  &:hover {
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-    transform: translateY(-1px);
-  }
-  
-  &:active {
-    transform: translateY(0);
-  }
+// 统一页面容器
+.sesms-page {
+  padding: 20px;
 }
 
-// --- 悬浮效果 ---
-.hover-lift {
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-  
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-lg);
-  }
+// 统计卡数值排版
+.sesms-kpi-value {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
 }
 
-// --- 脉冲动画 ---
-@keyframes pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.4);
-  }
-  70% {
-    box-shadow: 0 0 0 10px rgba(102, 126, 234, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(102, 126, 234, 0);
-  }
+// 焦点可见性（可访问性）
+:focus-visible {
+  outline: 2px solid $primary;
+  outline-offset: 2px;
 }
 
-.pulse-animation {
-  animation: pulse 2s infinite;
+// ===== CSS 工具类系统（原子化） =====
+
+// ── Flex 布局 ──
+.flex {
+  display: flex;
 }
-
-// --- 淡入上滑动画 ---
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.fade-in-up {
-  animation: fadeInUp 0.5s ease forwards;
-}
-
-// --- 交错淡入动画 ---
-.stagger-fade-in {
-  opacity: 0;
-  animation: fadeInUp 0.5s ease forwards;
-}
-
-// --- 弹跳动画 ---
-@keyframes bounce {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-.bounce-animation {
-  animation: bounce 1s ease-in-out infinite;
-}
-
-// --- 旋转加载动画 ---
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.spin-animation {
-  animation: spin 1s linear infinite;
-}
-
-// --- 加载骨架屏动画 ---
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-.skeleton {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-}
-
-.body--dark .skeleton {
-  background: linear-gradient(90deg, #2d2d2d 25%, #3d3d3d 50%, #2d2d2d 75%);
-  background-size: 200% 100%;
-}
-
-// --- 成功动画 ---
-@keyframes successPop {
-  0% {
-    transform: scale(0);
-  }
-  50% {
-    transform: scale(1.2);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-.success-pop {
-  animation: successPop 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
-
-// --- 模态框缩放动画 ---
-@keyframes modalScale {
-  from {
-    transform: scale(0.9);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-.modal-scale-in {
-  animation: modalScale 0.25s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
-
-// ============ 状态样式增强 ============
-
-// 成功状态
-.status-success {
-  color: var(--success-color) !important;
-  
-  .q-icon {
-    color: var(--success-color);
-  }
-}
-
-// 警告状态
-.status-warning {
-  color: var(--warning-color) !important;
-  
-  .q-icon {
-    color: var(--warning-color);
-  }
-}
-
-// 错误状态
-.status-danger {
-  color: var(--danger-color) !important;
-  
-  .q-icon {
-    color: var(--danger-color);
-  }
-}
-
-// 信息状态
-.status-info {
-  color: var(--info-color) !important;
-  
-  .q-icon {
-    color: var(--info-color);
-  }
-}
-
-// ============ 空状态样式 ============
-
-.empty-state {
+.flex-col {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 48px 24px;
-  text-align: center;
-  
-  &__icon {
-    font-size: 64px;
-    color: #c0c0c0;
-    margin-bottom: 16px;
-  }
-  
-  &__title {
-    font-size: 18px;
-    font-weight: 600;
-    color: #666;
-    margin-bottom: 8px;
-  }
-  
-  &__description {
-    font-size: 14px;
-    color: #999;
-  }
 }
-
-.body--dark .empty-state {
-  &__icon {
-    color: #555;
-  }
-  
-  &__title {
-    color: #b0b0b0;
-  }
-  
-  &__description {
-    color: #757575;
-  }
-}
-
-// ============ 页面标题栏样式 ============
-
-.page-header {
+.flex-row {
   display: flex;
+  flex-direction: row;
+}
+.flex-1 {
+  flex: 1;
+}
+.flex-wrap {
+  flex-wrap: wrap;
+}
+.items-start {
+  align-items: flex-start;
+}
+.items-center {
   align-items: center;
+}
+.items-end {
+  align-items: flex-end;
+}
+.justify-start {
+  justify-content: flex-start;
+}
+.justify-center {
+  justify-content: center;
+}
+.justify-end {
+  justify-content: flex-end;
+}
+.justify-between {
   justify-content: space-between;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #e0e0e0;
-  
-  &__title {
-    font-size: 24px;
-    font-weight: 600;
-    color: #333;
+}
+.justify-around {
+  justify-content: space-around;
+}
+
+// ── 间距（padding + margin）──
+$spacer: 4px;
+@for $i from 0 through 8 {
+  .p-#{$i} {
+    padding: $spacer * $i;
   }
-  
-  &__actions {
-    display: flex;
-    gap: 8px;
+  .px-#{$i} {
+    padding-left: $spacer * $i;
+    padding-right: $spacer * $i;
+  }
+  .py-#{$i} {
+    padding-top: $spacer * $i;
+    padding-bottom: $spacer * $i;
+  }
+  .pt-#{$i} {
+    padding-top: $spacer * $i;
+  }
+  .pb-#{$i} {
+    padding-bottom: $spacer * $i;
+  }
+  .pl-#{$i} {
+    padding-left: $spacer * $i;
+  }
+  .pr-#{$i} {
+    padding-right: $spacer * $i;
+  }
+  .m-#{$i} {
+    margin: $spacer * $i;
+  }
+  .mx-#{$i} {
+    margin-left: $spacer * $i;
+    margin-right: $spacer * $i;
+  }
+  .my-#{$i} {
+    margin-top: $spacer * $i;
+    margin-bottom: $spacer * $i;
+  }
+  .mt-#{$i} {
+    margin-top: $spacer * $i;
+  }
+  .mb-#{$i} {
+    margin-bottom: $spacer * $i;
+  }
+  .ml-#{$i} {
+    margin-left: $spacer * $i;
+  }
+  .mr-#{$i} {
+    margin-right: $spacer * $i;
+  }
+  .-ml-#{$i} {
+    margin-left: -$spacer * $i;
+  }
+  .-mr-#{$i} {
+    margin-right: -$spacer * $i;
   }
 }
 
-.body--dark .page-header {
-  border-bottom-color: #2d2d2d;
-  
-  &__title {
-    color: #ffffff;
+// ── Gap ──
+@for $i from 0 through 8 {
+  .gap-#{$i} {
+    gap: $spacer * $i;
+  }
+  .gap-x-#{$i} {
+    column-gap: $spacer * $i;
+  }
+  .gap-y-#{$i} {
+    row-gap: $spacer * $i;
   }
 }
 
-// ============ q-table 全局样式统一 ============
-
-// 通用表格容器
-.q-table {
-  // 统一圆角
-  border-radius: var(--radius-md);
-  
-  // 统一边框
-  &--bordered {
-    border: 1px solid #e0e0e0;
-  }
-  
-  // 表头样式
-  thead tr {
-    background: #f8f9fa;
-    
-    th {
-      font-weight: 600;
-      color: #333;
-      border-bottom: 2px solid #e0e0e0;
-    }
-  }
-  
-  // 单元格样式
-  tbody {
-    td {
-      border-bottom: 1px solid #f0f0f0;
-    }
-    
-    // 悬停效果
-    tr:hover {
-      background: rgba(102, 126, 234, 0.04);
-    }
-  }
-  
-  // 选中行效果
-  tbody tr.selected {
-    background: rgba(102, 126, 234, 0.08);
-    
-    &:hover {
-      background: rgba(102, 126, 234, 0.12);
-    }
-  }
+// ── 圆角 ──
+.rounded-sm {
+  border-radius: $radius-sm;
+}
+.rounded {
+  border-radius: $radius-md;
+}
+.rounded-lg {
+  border-radius: $radius-lg;
+}
+.rounded-full {
+  border-radius: 9999px;
+}
+.rounded-none {
+  border-radius: 0;
 }
 
-// ============ q-table 空状态统一样式 ============
-
-// 表格无数据时的空状态插槽
-.q-table__no-data {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 48px 24px;
-  min-height: 200px;
-  background: transparent;
+// ── 文字排版 ──
+.text-left {
+  text-align: left;
+}
+.text-center {
+  text-align: center;
+}
+.text-right {
+  text-align: right;
+}
+.font-bold {
+  font-weight: 700;
+}
+.font-semibold {
+  font-weight: 600;
+}
+.font-medium {
+  font-weight: 500;
+}
+.font-normal {
+  font-weight: 400;
+}
+.text-xs {
+  font-size: 12px;
+}
+.text-sm {
+  font-size: 14px;
+}
+.text-base {
+  font-size: 16px;
+}
+.text-lg {
+  font-size: 18px;
+}
+.text-xl {
+  font-size: 20px;
+}
+.text-2xl {
+  font-size: 24px;
+}
+.text-3xl {
+  font-size: 30px;
+}
+.leading-none {
+  line-height: 1;
+}
+.leading-tight {
+  line-height: 1.25;
+}
+.leading-normal {
+  line-height: 1.5;
+}
+.leading-relaxed {
+  line-height: 1.75;
+}
+.tracking-tight {
+  letter-spacing: -0.025em;
+}
+.tracking-wide {
+  letter-spacing: 0.025em;
+}
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.text-nowrap {
+  white-space: nowrap;
 }
 
-// 全局空状态样式类（可在任意位置使用）
-.table-empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 48px 24px;
-  min-height: 200px;
+// ── 文字颜色（使用 Quasar 主题变量） ──
+.text-primary {
+  color: var(--q-primary);
+}
+.text-secondary {
+  color: var(--q-secondary);
+}
+.text-positive {
+  color: var(--q-positive);
+}
+.text-negative {
+  color: var(--q-negative);
+}
+.text-warning {
+  color: var(--q-warning);
+}
+.text-info {
+  color: var(--q-info);
+}
+.text-muted {
+  color: #9e9e9e;
+}
+.text-grey-7 {
+  color: #616161;
+}
+.text-white {
+  color: #fff;
+}
+
+// ── 背景颜色 ──
+.bg-primary {
+  background-color: var(--q-primary);
+}
+.bg-secondary {
+  background-color: var(--q-secondary);
+}
+.bg-positive {
+  background-color: var(--q-positive);
+}
+.bg-negative {
+  background-color: var(--q-negative);
+}
+.bg-warning {
+  background-color: var(--q-warning);
+}
+.bg-info {
+  background-color: var(--q-info);
+}
+.bg-white {
+  background-color: #fff;
+}
+.bg-transparent {
+  background-color: transparent;
+}
+.bg-grey-1 {
+  background-color: #fafafa;
+}
+.bg-grey-2 {
+  background-color: #f5f5f5;
+}
+
+// ── 显示与定位 ──
+.block {
+  display: block;
+}
+.inline-block {
+  display: inline-block;
+}
+.inline {
+  display: inline;
+}
+.hidden {
+  display: none;
+}
+.relative {
+  position: relative;
+}
+.absolute {
+  position: absolute;
+}
+.fixed {
+  position: fixed;
+}
+.sticky {
+  position: sticky;
+}
+.inset-0 {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+.z-0 {
+  z-index: 0;
+}
+.z-10 {
+  z-index: 10;
+}
+.z-20 {
+  z-index: 20;
+}
+.z-50 {
+  z-index: 50;
+}
+
+// ── 尺寸 ──
+.w-full {
   width: 100%;
-  
-  &__icon {
-    font-size: 64px;
-    color: #c0c0c0;
-    margin-bottom: 16px;
-  }
-  
-  &__message {
-    font-size: 14px;
-    color: #999;
-    text-align: center;
-  }
+}
+.h-full {
+  height: 100%;
+}
+.min-h-full {
+  min-height: 100%;
+}
+.min-h-screen {
+  min-height: 100vh;
+}
+.max-w-full {
+  max-width: 100%;
 }
 
-.body--dark {
-  .q-table {
-    border-color: #333;
-    
-    thead tr {
-      background: #252525;
-      
-      th {
-        color: #ffffff;
-        border-bottom-color: #333;
-      }
-    }
-    
-    tbody tr {
-      &:hover {
-        background: rgba(255, 255, 255, 0.03);
-      }
-    }
-  }
-  
-  .table-empty-state {
-    &__icon {
-      color: #555;
-    }
-    
-    &__message {
-      color: #757575;
-    }
-  }
+// ── 边框 ──
+.border {
+  border: 1px solid #e0e0e0;
+}
+.border-0 {
+  border: 0;
+}
+.border-t {
+  border-top: 1px solid #e0e0e0;
+}
+.border-b {
+  border-bottom: 1px solid #e0e0e0;
+}
+.border-l {
+  border-left: 1px solid #e0e0e0;
+}
+.border-r {
+  border-right: 1px solid #e0e0e0;
+}
+
+// ── 阴影 ──
+.shadow-sm {
+  box-shadow: $shadow-sm;
+}
+.shadow {
+  box-shadow: $shadow-md;
+}
+.shadow-lg {
+  box-shadow: $shadow-lg;
+}
+.shadow-none {
+  box-shadow: none;
+}
+
+// ── 光标与交互 ──
+.cursor-pointer {
+  cursor: pointer;
+}
+.cursor-default {
+  cursor: default;
+}
+.select-none {
+  user-select: none;
+}
+.pointer-events-none {
+  pointer-events: none;
+}
+.overflow-hidden {
+  overflow: hidden;
+}
+.overflow-auto {
+  overflow: auto;
+}
+.overflow-x-auto {
+  overflow-x: auto;
+}
+.overflow-y-auto {
+  overflow-y: auto;
+}
+
+// ── 透明度 ──
+.opacity-0 {
+  opacity: 0;
+}
+.opacity-50 {
+  opacity: 0.5;
+}
+.opacity-75 {
+  opacity: 0.75;
+}
+.opacity-100 {
+  opacity: 1;
 }

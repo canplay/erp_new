@@ -1,21 +1,30 @@
 import { defineBoot } from '#q-app';
 import { createI18n } from 'vue-i18n';
 
-import messages from '@/i18n';
+import { messages as sharedMessagesRaw } from '@erp-new-frontend-monorepo/i18n';
+import appMessages from '@/i18n';
 
-export type MessageLanguages = keyof typeof messages;
-// Type-define 'en-US' as the master schema for the resource
-export type MessageSchema = (typeof messages)['en-US'];
+// Merge shared messages with app-specific messages
+function mergeMessages(shared: Record<string, Record<string, string>>, app: Record<string, Record<string, string>>): Record<string, Record<string, string>> {
+  const result: Record<string, Record<string, string>> = {};
+  for (const locale of Object.keys(shared)) {
+    result[locale] = { ...shared[locale], ...(app[locale] || {}) };
+  }
+  return result;
+}
 
-// See https://vue-i18n.intlify.dev/guide/advanced/typescript.html#global-resource-schema-type-definition
+const sharedMessages = sharedMessagesRaw as unknown as Record<string, Record<string, string>>;
+
+export type MessageLanguages = keyof typeof sharedMessages;
+export type MessageSchema = (typeof sharedMessages)['en-US'];
 
 export default defineBoot(({ app }) => {
+  const merged = mergeMessages(sharedMessages, appMessages);
   const i18n = createI18n<{ message: MessageSchema }, MessageLanguages>({
     locale: 'en-US',
     legacy: false,
-    messages,
+    messages: merged,
   });
 
-  // Set i18n instance on app
   app.use(i18n);
 });

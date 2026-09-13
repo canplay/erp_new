@@ -204,7 +204,7 @@
 </template>
 
 <script setup lang="ts">
-import { useAuthLogin } from '@/composables/useAuthLogin';
+import { useAuthLogin } from '@erp-new-frontend-monorepo/composables/src/useAuthLogin';;
 
 const {
   tab,

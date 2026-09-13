@@ -35,7 +35,7 @@ async fn hik_exec(State(state): State<Arc<AppState>>, Json(body): Json<Value>) -
         body["appeal_source"].as_str().map(|s| s.to_string()),
         body["arrears_ids"].as_str().map(|s| s.to_string()),
     ).await {
-        Ok(resp) => Json(json!({"success": true, "code": resp.code, "message": resp.message, "data": resp.data})),
+        Ok(resp) => json_success(json!({"code": resp.code, "message": resp.message, "data": resp.data})),
         Err(e) => json_error(&format!("hik exec 失败: {e}")),
     }
 }
@@ -52,7 +52,7 @@ pub fn routes() -> Router<Arc<AppState>> {
                 body["end"].as_str().unwrap_or("").to_string(),
                 body["type"].as_str().unwrap_or("").to_string(),
             ).await {
-                Ok(resp) => Json(json!({"success": true, "code": resp.code, "message": resp.message})),
+                Ok(resp) => json_success(json!({"code": resp.code, "message": resp.message})),
                 Err(e) => json_error(&format!("coupon 失败: {e}")),
             }
         }))
@@ -62,7 +62,7 @@ pub fn routes() -> Router<Arc<AppState>> {
                 body["place"].as_str().unwrap_or("").to_string(),
                 body["name"].as_str().unwrap_or("").to_string(),
             ).await {
-                Ok(resp) => Json(json!({"success": true, "message": resp.message, "status": resp.status})),
+                Ok(resp) => json_success(json!({"message": resp.message, "status": resp.status})),
                 Err(e) => json_error(&format!("signo_open 失败: {e}")),
             }
         }))

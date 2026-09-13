@@ -105,7 +105,7 @@ async fn create_user_handler(
         body["phone"].as_str().unwrap_or("").to_string(),
         body["gender"].as_i64().unwrap_or(0) as i32,
     ).await {
-        Ok(resp) => Json(json!({"success": true, "code": 200, "data": {"id": resp.id, "username": resp.username, "nickname": resp.nickname}})),
+        Ok(resp) => json_success(json!({"id": resp.id, "username": resp.username, "nickname": resp.nickname})),
         Err(e) => json_error(&format!("创建失败: {e}")),
     }
 }
@@ -134,7 +134,7 @@ async fn update_user_handler(
         body["gender"].as_i64().unwrap_or(0) as i32,
         body["address"].as_str().unwrap_or("").to_string(),
     ).await {
-        Ok(resp) => Json(json!({"success": true, "code": 200, "data": {"id": resp.id, "username": resp.username, "nickname": resp.nickname}})),
+        Ok(resp) => json_success(json!({"id": resp.id, "username": resp.username, "nickname": resp.nickname})),
         Err(e) => json_error(&format!("更新失败: {e}")),
     }
 }
@@ -214,7 +214,7 @@ async fn batch_update_role_handler(
     let role = body["role"].as_str().unwrap_or("").to_string();
     let mut client = match get_user_client(&state).await { Ok(c) => c, Err(r) => return r };
     match client.batch_update_user_role(user_ids, role).await {
-        Ok(resp) => Json(json!({"success": true, "code": 200, "data": {"affected": resp.affected}})),
+        Ok(resp) => json_success(json!({"affected": resp.affected})),
         Err(e) => json_error(&format!("批量更新失败: {e}")),
     }
 }
@@ -227,7 +227,7 @@ async fn batch_update_status_handler(
     let status = body["status"].as_i64().unwrap_or(0) as i32;
     let mut client = match get_user_client(&state).await { Ok(c) => c, Err(r) => return r };
     match client.batch_update_user_status(user_ids, status).await {
-        Ok(resp) => Json(json!({"success": true, "code": 200, "data": {"affected": resp.affected}})),
+        Ok(resp) => json_success(json!({"affected": resp.affected})),
         Err(e) => json_error(&format!("批量更新失败: {e}")),
     }
 }
@@ -239,20 +239,20 @@ async fn batch_delete_users_handler(
     let user_ids: Vec<i64> = body["user_ids"].as_array().map(|arr| arr.iter().filter_map(|v| v.as_i64()).collect()).unwrap_or_default();
     let mut client = match get_user_client(&state).await { Ok(c) => c, Err(r) => return r };
     match client.batch_delete_users(user_ids).await {
-        Ok(resp) => Json(json!({"success": true, "code": 200, "data": {"deleted": resp.deleted}})),
+        Ok(resp) => json_success(json!({"deleted": resp.deleted})),
         Err(e) => json_error(&format!("批量删除失败: {e}")),
     }
 }
 
 async fn not_implemented_handler() -> Json<Value> {
-    Json(json!({"success": false, "code": 501, "message": "导入导出待实现"}))
+    json_error("导入导出待实现")
 }
 
 /// POST /api/admin/users/import — 导入用户
 /// 审计修复 (C3): 原实现返回假成功({"imported":0}); 前端已改逐行调用创建接口,
 /// 此统一导入接口未实现, 明确返回 501 而非假装成功(诚实降级)
 async fn import_users_handler() -> Json<Value> {
-    Json(json!({"success": false, "code": 501, "message": "导入待实现"}))
+    json_error("导入待实现")
 }
 
 // ==================== 角色 Handler（真实 gRPC） ====================
@@ -550,7 +550,7 @@ async fn delete_department_handler(
 
 /// GET /api/admin/departments/{id}/users — 部门用户列表（当前返回空，user-service 暂未提供部门用户 RPC）
 async fn get_department_users(Path(_id): Path<i64>) -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"list": [], "total": 0}}))
+    json_success(json!({"list": [], "total": 0}))
 }
 
 /// GET /api/admin/departments/{id}/move — 部门移动
@@ -563,15 +563,15 @@ async fn move_department_down(Path(_id): Path<i64>) -> Json<Value> { json_ok() }
 async fn list_announcements_handler(
     Query(q): Query<PageQuery>,
 ) -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"list": [], "total": 0, "page": q.page.unwrap_or(1), "page_size": q.page_size.unwrap_or(20)}}))
+    json_success(json!({"list": [], "total": 0, "page": q.page.unwrap_or(1), "page_size": q.page_size.unwrap_or(20)}))
 }
 
 async fn create_announcement_handler() -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"id": 0}}))
+    json_success(json!({"id": 0}))
 }
 
 async fn get_active_announcements_handler() -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"list": [], "total": 0}}))
+    json_success(json!({"list": [], "total": 0}))
 }
 
 async fn pin_announcement_handler() -> Json<Value> { json_ok() }
@@ -579,7 +579,7 @@ async fn unpin_announcement_handler() -> Json<Value> { json_ok() }
 async fn set_announcement_active_handler() -> Json<Value> { json_ok() }
 
 async fn get_announcement_detail(Path(id): Path<i64>) -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"id": id}}))
+    json_success(json!({"id": id}))
 }
 
 async fn update_announcement_detail() -> Json<Value> { json_ok() }
@@ -591,7 +591,7 @@ async fn delete_announcement_detail() -> Json<Value> { json_ok() }
 async fn list_system_configs_handler(
     Query(_q): Query<PageQuery>,
 ) -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": []}))
+    json_success(json!([]))
 }
 
 async fn batch_update_system_configs_handler() -> Json<Value> { json_ok() }
@@ -600,7 +600,7 @@ async fn update_system_config_handler(
     Path(key): Path<String>,
     Json(_body): Json<Value>,
 ) -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"key": key}}))
+    json_success(json!({"key": key}))
 }
 
 // ==================== 字典 Handler ====================

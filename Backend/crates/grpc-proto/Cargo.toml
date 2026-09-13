@@ -6,7 +6,6 @@ edition.workspace = true
 name = "grpc_proto"
 path = "src/lib.rs"
 
-description = "gRPC 协议定义 - 提供 Proto 文件生成的 Rust 代码"
 
 [dependencies]
 tracing = "0.1"

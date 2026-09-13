@@ -28,6 +28,7 @@ replicaCount:
   ctpService: 1
   xltService: 1
   ebikeService: 1
+  billingService: 2
 
 # 资源限制配置（生产环境资源限制严格）
 resources:

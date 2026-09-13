@@ -186,7 +186,7 @@ async fn car_add(
         remark: body["remark"].as_str().unwrap_or("").to_string(),
     };
     match client.car_add(req).await {
-        Ok(resp) => Json(json!({"success": true, "code": resp.code, "message": resp.message})),
+        Ok(resp) => json_success(json!({"code": resp.code, "message": resp.message})),
         Err(e) => json_error(&format!("新增失败：{e}")),
     }
 }
@@ -206,7 +206,7 @@ async fn car_delete(
         Err(r) => return r,
     };
     match client.car_delete(body["code"].as_str().unwrap_or("").to_string(), provide.to_string()).await {
-        Ok(resp) => Json(json!({"success": true, "code": resp.code})),
+        Ok(resp) => json_success(json!({"code": resp.code})),
         Err(e) => json_error(&format!("删除失败：{e}")),
     }
 }
@@ -299,7 +299,7 @@ async fn storage_add(
         points: body["points"].as_str().unwrap_or("").to_string(),
     };
     match client.storage_add(req).await {
-        Ok(resp) => Json(json!({"success": true, "code": resp.code, "message": resp.message})),
+        Ok(resp) => json_success(json!({"code": resp.code, "message": resp.message})),
         Err(e) => json_error(&format!("新增失败：{e}")),
     }
 }
@@ -320,7 +320,7 @@ async fn storage_delete(
         Err(r) => return r,
     };
     match client.storage_delete(body["code"].as_str().unwrap_or("").to_string()).await {
-        Ok(resp) => Json(json!({"success": true, "code": resp.code})),
+        Ok(resp) => json_success(json!({"code": resp.code})),
         Err(e) => json_error(&format!("删除失败：{e}")),
     }
 }
@@ -417,7 +417,7 @@ async fn car_dispatch(
                 }).collect()).unwrap_or_default();
             let req = ebike::CarBatchAddRequest { items };
             match client.car_batch_add(req).await {
-                Ok(resp) => Json(json!({"success": true, "code": resp.code, "message": resp.message})),
+                Ok(resp) => json_success(json!({"code": resp.code, "message": resp.message})),
                 Err(e) => json_error(&format!("批量新增失败：{e}")),
             }
         }
@@ -507,7 +507,7 @@ async fn options_dispatch(
                 level: body["level"].as_i64().unwrap_or(0),
             };
             match client.options_update(req).await {
-                Ok(resp) => Json(json!({"success": true, "code": resp.code, "message": resp.message})),
+                Ok(resp) => json_success(json!({"code": resp.code, "message": resp.message})),
                 Err(e) => json_error(&format!("更新失败：{e}")),
             }
         }
@@ -532,10 +532,7 @@ async fn delegated_login(
         .map_err(|e| json_error(&format!("auth-service 不可用：{e}")))?;
 
     match client.login(username, password).await {
-        Ok(resp) => Ok(Json(json!({
-            "success": true,
-            "code": 200,
-            "message": "登录成功",
+        Ok(resp) => Ok(json_success(json!({
             "username": resp.username,
             "role": resp.role,
             "must_change_password": resp.must_change_password

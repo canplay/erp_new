@@ -1,18 +1,29 @@
-// Quasar SCSS Variables Override
-// 活泼现代风格配色
-// @date 2026-04-04
+// Quasar Sass (& SCSS) Variables
+// --------------------------------------------------
+// To customize the look and feel of this app, you can override
+// the Sass/SCSS variables found in Quasar's source Sass/SCSS files.
 
-// 主色调覆盖
-$primary: #667eea;
-$secondary: #764ba2;
-$accent: #9c27b0;
+// Check documentation for full list of Quasar variables
 
-// 状态色 - 活泼现代风格
-$positive: #51cf66;
-$negative: #ff6b6b;
-$info: #339af0;
-$warning: #ffc107;
+// Your own variables (that are declared here) and Quasar's own
+// ones will be available out of the box in your .vue/.scss/.sass files
 
-// 暗色主题
-$dark: #1a1a2e;
-$dark-page: #16213e;
+// It's highly recommended to change the default colors
+// to match your app's branding.
+// Tip: Use the "Theme Builder" on Quasar's documentation website.
+
+// ===== sesms · admin 平台监管方 · 监管蓝主题 =====
+$typography-font-family:
+  '阿里妈妈方圆体 VF Thin', 'Roboto', '-apple-system', 'PingFang SC', 'Microsoft YaHei', sans-serif !default;
+
+$primary: #1565c0; // 主色：深监管蓝
+$secondary: #0d47a1; // 次色：更深的蓝（标题/强调）
+$accent: #ff7043; // 强调色：警示橙（监管告警语义）
+
+$dark: #1a2332; // 深色：顶栏/深底
+$dark-page: #0f1622;
+
+$positive: #2e7d32; // 通过绿
+$negative: #c62828; // 违规红
+$info: #0277bd; // 信息蓝
+$warning: #f9a825; // 预警黄

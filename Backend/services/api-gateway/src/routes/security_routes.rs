@@ -304,7 +304,7 @@ async fn get_ip_whitelist(
     let store = read_store!(state, ip_whitelist_store);
     match store.entries().iter().find(|r| r.id == id) {
         Some(rule) => json_success(json!(rule)),
-        None => Json(json!({"success": false, "code": 404, "message": "规则不存在"})),
+        None => json_error("规则不存在"),
     }
 }
 
@@ -321,7 +321,7 @@ async fn update_ip_whitelist(
         entry.created_at = now_str();
         json_success(json!(entry))
     } else {
-        Json(json!({"success": false, "code": 404, "message": "规则不存在"}))
+        json_error("规则不存在")
     }
 }
 
@@ -336,7 +336,7 @@ async fn delete_ip_whitelist(
     if store.entries().len() < len {
         json_success(json!({"deleted": true}))
     } else {
-        Json(json!({"success": false, "code": 404, "message": "规则不存在"}))
+        json_error("规则不存在")
     }
 }
 
@@ -348,7 +348,7 @@ async fn enable_ip_whitelist(
     let store = write_store!(state, ip_whitelist_store);
     match store.entries_mut().iter_mut().find(|r| r.id == id) {
         Some(entry) => { entry.is_active = true; entry.created_at = now_str(); json_success(json!(entry)) }
-        None => Json(json!({"success": false, "code": 404, "message": "规则不存在"})),
+        None => json_error("规则不存在"),
     }
 }
 
@@ -360,7 +360,7 @@ async fn disable_ip_whitelist(
     let store = write_store!(state, ip_whitelist_store);
     match store.entries_mut().iter_mut().find(|r| r.id == id) {
         Some(entry) => { entry.is_active = false; entry.created_at = now_str(); json_success(json!(entry)) }
-        None => Json(json!({"success": false, "code": 404, "message": "规则不存在"})),
+        None => json_error("规则不存在"),
     }
 }
 
@@ -414,7 +414,7 @@ async fn approve_sensitive_audit(
             audit.created_at = now_str();
             json_success(json!(audit))
         }
-        None => Json(json!({"success": false, "code": 404, "message": "审计记录不存在"})),
+        None => json_error("审计记录不存在"),
     }
 }
 
@@ -431,7 +431,7 @@ async fn cancel_sensitive_audit(
             audit.created_at = now_str();
             json_success(json!(audit))
         }
-        None => Json(json!({"success": false, "code": 404, "message": "审计记录不存在"})),
+        None => json_error("审计记录不存在"),
     }
 }
 
@@ -445,7 +445,7 @@ async fn verify_sensitive_audit(
             let verified = audit.action == "approved";
             json_success(json!({"operation_id": id, "verified": verified, "action": &audit.action}))
         }
-        None => Json(json!({"success": false, "code": 404, "message": "审计记录不存在"})),
+        None => json_error("审计记录不存在"),
     }
 }
 
@@ -459,7 +459,7 @@ async fn resend_sensitive_audit(
             audit.created_at = now_str();
             json_success(json!({"operation_id": id, "resent": true, "action": &audit.action}))
         }
-        None => Json(json!({"success": false, "code": 404, "message": "审计记录不存在"})),
+        None => json_error("审计记录不存在"),
     }
 }
 
@@ -473,7 +473,7 @@ async fn delete_sensitive_audit(
     if store.entries().len() < len {
         json_success(json!({"deleted": true}))
     } else {
-        Json(json!({"success": false, "code": 404, "message": "记录不存在"}))
+        json_error("记录不存在")
     }
 }
 
@@ -522,7 +522,7 @@ async fn get_scheduled_task(
     let store = read_store!(state, scheduled_task_store);
     match store.entries().iter().find(|t| t.id == id) {
         Some(task) => json_success(json!(task)),
-        None => Json(json!({"success": false, "code": 404, "message": "任务不存在"})),
+        None => json_error("任务不存在"),
     }
 }
 
@@ -540,7 +540,7 @@ async fn update_scheduled_task(
         task.created_at = now_str();
         json_success(json!(task))
     } else {
-        Json(json!({"success": false, "code": 404, "message": "任务不存在"}))
+        json_error("任务不存在")
     }
 }
 
@@ -554,7 +554,7 @@ async fn delete_scheduled_task(
     if store.entries().len() < len {
         json_success(json!({"deleted": true}))
     } else {
-        Json(json!({"success": false, "code": 404, "message": "任务不存在"}))
+        json_error("任务不存在")
     }
 }
 
@@ -565,7 +565,7 @@ async fn enable_scheduled_task(
     let store = write_store!(state, scheduled_task_store);
     match store.entries_mut().iter_mut().find(|t| t.id == id) {
         Some(task) => { task.is_active = true; task.created_at = now_str(); json_success(json!(task)) }
-        None => Json(json!({"success": false, "code": 404, "message": "任务不存在"})),
+        None => json_error("任务不存在"),
     }
 }
 
@@ -576,7 +576,7 @@ async fn disable_scheduled_task(
     let store = write_store!(state, scheduled_task_store);
     match store.entries_mut().iter_mut().find(|t| t.id == id) {
         Some(task) => { task.is_active = false; task.created_at = now_str(); json_success(json!(task)) }
-        None => Json(json!({"success": false, "code": 404, "message": "任务不存在"})),
+        None => json_error("任务不存在"),
     }
 }
 
@@ -596,7 +596,7 @@ async fn pause_scheduled_task(
     let store = write_store!(state, scheduled_task_store);
     match store.entries_mut().iter_mut().find(|t| t.id == id) {
         Some(task) => { task.is_active = false; task.created_at = now_str(); json_success(json!(task)) }
-        None => Json(json!({"success": false, "code": 404, "message": "任务不存在"})),
+        None => json_error("任务不存在"),
     }
 }
 
@@ -607,7 +607,7 @@ async fn resume_scheduled_task(
     let store = write_store!(state, scheduled_task_store);
     match store.entries_mut().iter_mut().find(|t| t.id == id) {
         Some(task) => { task.is_active = true; task.created_at = now_str(); json_success(json!(task)) }
-        None => Json(json!({"success": false, "code": 404, "message": "任务不存在"})),
+        None => json_error("任务不存在"),
     }
 }
 
@@ -754,7 +754,7 @@ async fn check_ip_whitelist(
     let ip = q.get("ip").cloned().unwrap_or_default();
     let store = read_store!(state, ip_whitelist_store);
     let found = store.entries().iter().any(|r| r.ip.as_str() == ip.as_str() && r.is_active);
-    Json(json!({"success": true, "code": 200, "data": {"allowed": found, "ip": ip}}))
+    json_success(json!({"allowed": found, "ip": ip}))
 }
 
 async fn ip_whitelist_statistics(
@@ -763,11 +763,11 @@ async fn ip_whitelist_statistics(
     let store = read_store!(state, ip_whitelist_store);
     let total = store.entries().len();
     let enabled = store.entries().iter().filter(|r| r.is_active).count();
-    Json(json!({"success": true, "code": 200, "data": {"total": total, "enabled": enabled, "disabled": total - enabled}}))
+    json_success(json!({"total": total, "enabled": enabled, "disabled": total - enabled}))
 }
 
 async fn ip_whitelist_location() -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"country": "", "city": "", "isp": ""}}))
+    json_success(json!({"country": "", "city": "", "isp": ""}))
 }
 
 // ==================== 敏感审计扩展 Handler ====================
@@ -790,13 +790,9 @@ async fn pending_sensitive_audits(
     let entries = store.entries();
     let total = entries.len();
     let pending: Vec<&RepoSensitiveAuditEntry> = entries.iter().filter(|s| s.action == "pending").collect();
-    Json(json!({
-        "success": true,
-        "code": 200,
-        "data": {
-            "list": pending,
-            "total": total
-        }
+    json_success(json!({
+        "list": pending,
+        "total": total
     }))
 }
 
@@ -808,61 +804,61 @@ async fn sensitive_audit_statistics(
     let pending = store.entries().iter().filter(|s| s.action == "pending").count();
     let approved = store.entries().iter().filter(|s| s.action == "approved").count();
     let cancelled = store.entries().iter().filter(|s| s.action == "cancelled").count();
-    Json(json!({"success": true, "code": 200, "data": {"total": total, "pending": pending, "approved": approved, "cancelled": cancelled}}))
+    json_success(json!({"total": total, "pending": pending, "approved": approved, "cancelled": cancelled}))
 }
 
 async fn sensitive_audit_types() -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": ["login", "operation", "data_access", "permission_change", "config_change"]}))
+    json_success(json!(["login", "operation", "data_access", "permission_change", "config_change"]))
 }
 
 async fn sensitive_audit_expire_time() -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"expire_seconds": 86400}}))
+    json_success(json!({"expire_seconds": 86400}))
 }
 
 // ==================== 导出任务 Handler ====================
 
 async fn list_export_tasks() -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"list": [], "total": 0}}))
+    json_success(json!({"list": [], "total": 0}))
 }
 async fn create_export_task() -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"id": 0}}))
+    json_success(json!({"id": 0}))
 }
 async fn get_export_task(axum::extract::Path(id): axum::extract::Path<i64>) -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"id": id, "status": "pending", "progress": 0}}))
+    json_success(json!({"id": id, "status": "pending", "progress": 0}))
 }
 async fn cancel_export_task(axum::extract::Path(_id): axum::extract::Path<i64>) -> Json<Value> { json_ok() }
 async fn retry_export_task(axum::extract::Path(_id): axum::extract::Path<i64>) -> Json<Value> { json_ok() }
 async fn export_task_progress(axum::extract::Path(id): axum::extract::Path<i64>) -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"id": id, "progress": 0, "status": "pending"}}))
+    json_success(json!({"id": id, "progress": 0, "status": "pending"}))
 }
 async fn download_export_task(axum::extract::Path(_id): axum::extract::Path<i64>) -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"url": ""}}))
+    json_success(json!({"url": ""}))
 }
 async fn batch_create_export_task() -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"ids": []}}))
+    json_success(json!({"ids": []}))
 }
 async fn cleanup_export_tasks() -> Json<Value> { json_ok() }
 
 // 导出任务统计
 async fn count_export_tasks_handler() -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"count": 0}}))
+    json_success(json!({"count": 0}))
 }
 
 async fn export_tasks_stats_handler() -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"total": 0, "pending": 0, "running": 0, "completed": 0, "failed": 0}}))
+    json_success(json!({"total": 0, "pending": 0, "running": 0, "completed": 0, "failed": 0}))
 }
 
 async fn export_users_file() -> Json<Value> {
-    Json(json!({"success": false, "code": 501, "message": "导出待实现"}))
+    json_error("导出待实现")
 }
 async fn export_login_logs_file() -> Json<Value> {
-    Json(json!({"success": false, "code": 501, "message": "导出待实现"}))
+    json_error("导出待实现")
 }
 async fn export_operation_logs_file() -> Json<Value> {
-    Json(json!({"success": false, "code": 501, "message": "导出待实现"}))
+    json_error("导出待实现")
 }
 async fn export_audit_logs_file() -> Json<Value> {
-    Json(json!({"success": false, "code": 501, "message": "导出待实现"}))
+    json_error("导出待实现")
 }
 
 // ==================== 路由定义 ====================

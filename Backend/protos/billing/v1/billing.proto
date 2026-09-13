@@ -1,0 +1,315 @@
+syntax = "proto3";
+
+package erp.billing.v1;
+
+option csharp_namespace = "Erp.Billing.V1";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+// 计费计划服务
+service BillingPlanService {
+  // 创建计费计划
+  rpc CreatePlan(CreatePlanRequest) returns (BillingPlan);
+  // 获取计费计划
+  rpc GetPlan(GetPlanRequest) returns (BillingPlan);
+  // 列出计费计划
+  rpc ListPlans(ListPlansRequest) returns (ListPlansResponse);
+  // 更新计费计划
+  rpc UpdatePlan(UpdatePlanRequest) returns (BillingPlan);
+  // 删除计费计划
+  rpc DeletePlan(DeletePlanRequest) returns (google.protobuf.Empty);
+  // 归档计费计划
+  rpc ArchivePlan(ArchivePlanRequest) returns (BillingPlan);
+}
+
+// 订阅服务
+service SubscriptionService {
+  // 创建订阅
+  rpc CreateSubscription(CreateSubscriptionRequest) returns (Subscription);
+  // 获取订阅
+  rpc GetSubscription(GetSubscriptionRequest) returns (Subscription);
+  // 获取租户的订阅
+  rpc GetTenantSubscription(GetTenantSubscriptionRequest) returns (Subscription);
+  // 列出订阅
+  rpc ListSubscriptions(ListSubscriptionsRequest) returns (ListSubscriptionsResponse);
+  // 取消订阅
+  rpc CancelSubscription(CancelSubscriptionRequest) returns (Subscription);
+  // 续订
+  rpc RenewSubscription(RenewSubscriptionRequest) returns (Subscription);
+  // 变更计划
+  rpc ChangePlan(ChangePlanRequest) returns (Subscription);
+}
+
+// 发票服务
+service InvoiceService {
+  // 生成发票
+  rpc GenerateInvoice(GenerateInvoiceRequest) returns (Invoice);
+  // 获取发票
+  rpc GetInvoice(GetInvoiceRequest) returns (Invoice);
+  // 列出发票
+  rpc ListInvoices(ListInvoicesRequest) returns (ListInvoicesResponse);
+  // 支付发票
+  rpc PayInvoice(PayInvoiceRequest) returns (Invoice);
+  // 作废发票
+  rpc VoidInvoice(VoidInvoiceRequest) returns (Invoice);
+}
+
+// 用量服务
+service UsageService {
+  // 记录用量
+  rpc RecordUsage(RecordUsageRequest) returns (google.protobuf.Empty);
+  // 获取用量
+  rpc GetUsage(GetUsageRequest) returns (UsageResponse);
+  // 检查配额
+  rpc CheckQuota(CheckQuotaRequest) returns (QuotaResponse);
+}
+
+// ============================================
+// 计费计划消息
+// ============================================
+
+message BillingPlan {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string plan_type = 4;
+  string status = 5;
+  double price_monthly = 6;
+  double price_yearly = 7;
+  string currency = 8;
+  repeated PlanFeature features = 9;
+  map<string, int64> quotas = 10;
+  int32 sort_order = 11;
+  bool is_public = 12;
+  google.protobuf.Timestamp created_at = 13;
+  google.protobuf.Timestamp updated_at = 14;
+}
+
+message PlanFeature {
+  string name = 1;
+  string description = 2;
+  bool enabled = 3;
+  string value = 4;
+}
+
+message CreatePlanRequest {
+  string name = 1;
+  string description = 2;
+  string plan_type = 3;
+  double price_monthly = 4;
+  double price_yearly = 5;
+  string currency = 6;
+  repeated PlanFeature features = 7;
+  map<string, int64> quotas = 8;
+  int32 sort_order = 9;
+  bool is_public = 10;
+}
+
+message GetPlanRequest {
+  string id = 1;
+}
+
+message ListPlansRequest {
+  bool include_archived = 1;
+  int32 page = 2;
+  int32 page_size = 3;
+}
+
+message ListPlansResponse {
+  repeated BillingPlan plans = 1;
+  int32 total = 2;
+}
+
+message UpdatePlanRequest {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  double price_monthly = 4;
+  double price_yearly = 5;
+  repeated PlanFeature features = 6;
+  map<string, int64> quotas = 7;
+  int32 sort_order = 8;
+  bool is_public = 9;
+}
+
+message DeletePlanRequest {
+  string id = 1;
+}
+
+message ArchivePlanRequest {
+  string id = 1;
+}
+
+// ============================================
+// 订阅消息
+// ============================================
+
+message Subscription {
+  string id = 1;
+  string tenant_id = 2;
+  string plan_id = 3;
+  string status = 4;
+  google.protobuf.Timestamp current_period_start = 5;
+  google.protobuf.Timestamp current_period_end = 6;
+  bool cancel_at_period_end = 7;
+  google.protobuf.Timestamp canceled_at = 8;
+  google.protobuf.Timestamp trial_end = 9;
+  int32 quantity = 10;
+  double unit_price = 11;
+  string currency = 12;
+  google.protobuf.Timestamp next_billing_date = 13;
+  google.protobuf.Timestamp created_at = 14;
+  google.protobuf.Timestamp updated_at = 15;
+}
+
+message CreateSubscriptionRequest {
+  string tenant_id = 1;
+  string plan_id = 2;
+  int32 quantity = 3;
+}
+
+message GetSubscriptionRequest {
+  string id = 1;
+}
+
+message GetTenantSubscriptionRequest {
+  string tenant_id = 1;
+}
+
+message ListSubscriptionsRequest {
+  string tenant_id = 1;
+  string status = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+}
+
+message ListSubscriptionsResponse {
+  repeated Subscription subscriptions = 1;
+  int32 total = 2;
+}
+
+message CancelSubscriptionRequest {
+  string id = 1;
+  bool at_period_end = 2;
+}
+
+message RenewSubscriptionRequest {
+  string id = 1;
+  int32 period_months = 2;
+}
+
+message ChangePlanRequest {
+  string id = 1;
+  string new_plan_id = 2;
+}
+
+// ============================================
+// 发票消息
+// ============================================
+
+message Invoice {
+  string id = 1;
+  string invoice_number = 2;
+  string subscription_id = 3;
+  string tenant_id = 4;
+  string status = 5;
+  double subtotal = 6;
+  double tax_amount = 7;
+  double total = 8;
+  string currency = 9;
+  google.protobuf.Timestamp period_start = 10;
+  google.protobuf.Timestamp period_end = 11;
+  google.protobuf.Timestamp issued_at = 12;
+  google.protobuf.Timestamp due_at = 13;
+  google.protobuf.Timestamp paid_at = 14;
+  repeated InvoiceLineItem line_items = 15;
+  string notes = 16;
+  google.protobuf.Timestamp created_at = 17;
+  google.protobuf.Timestamp updated_at = 18;
+}
+
+message InvoiceLineItem {
+  string description = 1;
+  int32 quantity = 2;
+  double unit_price = 3;
+  double amount = 4;
+}
+
+message GenerateInvoiceRequest {
+  string subscription_id = 1;
+  string tenant_id = 2;
+  google.protobuf.Timestamp period_start = 3;
+  google.protobuf.Timestamp period_end = 4;
+  repeated InvoiceLineItem line_items = 5;
+}
+
+message GetInvoiceRequest {
+  string id = 1;
+}
+
+message ListInvoicesRequest {
+  string tenant_id = 1;
+  string status = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+}
+
+message ListInvoicesResponse {
+  repeated Invoice invoices = 1;
+  int32 total = 2;
+}
+
+message PayInvoiceRequest {
+  string id = 1;
+}
+
+message VoidInvoiceRequest {
+  string id = 1;
+}
+
+// ============================================
+// 用量消息
+// ============================================
+
+message RecordUsageRequest {
+  string tenant_id = 1;
+  string metric = 2;
+  double quantity = 3;
+}
+
+message GetUsageRequest {
+  string tenant_id = 1;
+  string metric = 2;
+  google.protobuf.Timestamp start_time = 3;
+  google.protobuf.Timestamp end_time = 4;
+}
+
+message UsageResponse {
+  string tenant_id = 1;
+  string metric = 2;
+  double total = 3;
+  double average = 4;
+  double peak = 5;
+  repeated UsageRecord records = 6;
+}
+
+message UsageRecord {
+  string tenant_id = 1;
+  string metric = 2;
+  double quantity = 3;
+  google.protobuf.Timestamp recorded_at = 4;
+}
+
+message CheckQuotaRequest {
+  string tenant_id = 1;
+  string metric = 2;
+  int64 requested = 3;
+}
+
+message QuotaResponse {
+  bool available = 1;
+  int64 remaining = 2;
+  int64 limit = 3;
+  int64 used = 4;
+}

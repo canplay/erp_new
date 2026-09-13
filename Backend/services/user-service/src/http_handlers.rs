@@ -15,8 +15,8 @@ use axum::{
 use serde::{Deserialize, Serialize};
 
 use common::{
-    DEFAULT_PAGE_SIZE, DEFAULT_PASSWORD, MAX_PAGE_SIZE, MAX_USERNAME_LENGTH, MIN_PAGE,
-    MIN_USERNAME_LENGTH, VALID_ROLES, VALID_STATUSES,
+    DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE, MAX_USERNAME_LENGTH, MIN_PAGE,
+    MIN_USERNAME_LENGTH, VALID_ROLES, VALID_STATUSES, default_password,
 };
 
 /// 密码哈希（使用 argon2）
@@ -279,8 +279,8 @@ pub async fn create_user(
     }
 
     // 密码处理：使用 argon2 哈希
-    let password_to_hash = req.password.as_deref().unwrap_or(DEFAULT_PASSWORD);
-    let password_hash = match hash_password(password_to_hash) {
+    let password_to_hash = req.password.as_deref().unwrap_or(&default_password()).to_string();
+    let password_hash = match hash_password(&password_to_hash) {
         Ok(h) => h,
         Err(e) => {
             tracing::error!("密码哈希失败: {e}");
@@ -549,8 +549,8 @@ pub async fn reset_user_password(
     Json(req): Json<ResetPasswordRequest>,
 ) -> impl IntoResponse {
     // 生成或使用提供的密码
-    let password_to_hash = req.new_password.as_deref().unwrap_or(DEFAULT_PASSWORD);
-    let password_hash = match hash_password(password_to_hash) {
+    let password_to_hash = req.new_password.as_deref().unwrap_or(&default_password()).to_string();
+    let password_hash = match hash_password(&password_to_hash) {
         Ok(h) => h,
         Err(e) => {
             tracing::error!("密码哈希失败: {e}");
@@ -695,11 +695,11 @@ pub async fn import_users(
 
                 // 密码哈希
                 let password_to_hash = if password.is_empty() {
-                    DEFAULT_PASSWORD
+                    default_password()
                 } else {
-                    password
+                    password.to_string()
                 };
-                let password_hash = match hash_password(password_to_hash) {
+                let password_hash = match hash_password(&password_to_hash) {
                     Ok(h) => h,
                     Err(e) => {
                         fail_count += 1;

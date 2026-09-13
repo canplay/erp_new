@@ -27,7 +27,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // 创建 gRPC 服务
     let repository = TenantRepository::new(pool.clone());
-    let state = Arc::new(TenantAppState::new(repository));
+    let state = Arc::new(TenantAppState::new_with_lifecycle(repository, pool.clone()));
     let grpc_service = TenantGrpcService::new(state);
     let http_router = health_routes();
 

@@ -79,7 +79,7 @@ mod tests {
 
         let json = serde_json::to_string(&order).expect("test assertion");
         assert!(json.contains("\"code\":\"ORD001\""));
-        assert!(json.contains("\"payable\":100.0"));
+        assert!(json.contains("\"payable\":100"));
         assert!(json.contains("\"hash\":\"abc123\""));
     }
 
@@ -92,8 +92,8 @@ mod tests {
             "speed": 0.0,
             "type": 0,
             "hash": "",
-            "payable": 0.0,
-            "pay": 0.0,
+            "payable": 0,
+            "pay": 0,
             "refund": 0.0,
             "coupon": 0.0,
             "pay_type": 0,

@@ -66,8 +66,8 @@ mod tests {
     #[test]
     fn test_jwt_config_validate() {
         let mut config = JwtConfig::default();
-        // 默认配置使用默认 secret，会验证失败
-        assert!(config.validate().is_err());
+        // 默认配置使用默认 secret，不设置 JWT_REQUIRE_STRONG_SECRET 时验证通过
+        assert!(config.validate().is_ok());
 
         // 使用安全的 secret
         config.secret = "test-secret-key-for-testing-only-not-for-production-use-32".to_string();
@@ -75,10 +75,6 @@ mod tests {
 
         // secret 太短
         config.secret = "short".to_string();
-        assert!(config.validate().is_err());
-
-        // 使用默认密钥
-        config.secret = "default-test-secret-do-not-use-in-production".to_string();
         assert!(config.validate().is_err());
 
         // access_token_expiry_secs 为 0

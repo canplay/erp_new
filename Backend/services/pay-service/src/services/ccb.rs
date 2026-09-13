@@ -180,7 +180,7 @@ mod tests {
 
     #[test]
     fn test_ccb_order_params_deserialize() {
-        let json = r#"{"order": "ORDER001", "amount": 100.50, "goods": "test goods"}"#;
+        let json = r#"{"order": "ORDER001", "amount": 10050, "goods": "test goods"}"#;
         let params: CcbOrderParams = serde_json::from_str(json).expect("test assertion");
         assert_eq!(params.order, "ORDER001");
         assert!((params.amount - 10050).abs() < 1);

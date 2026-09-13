@@ -221,7 +221,7 @@ mod tests {
 
         let ctx = TenantContext::new(TenantId::new(42))
             .with_user_id(100)
-            .with_roles(vec!["admin".to_string()]);
+            .with_roles(vec!["platform_admin".to_string()]);
         set_tenant_context(ctx);
 
         assert_eq!(current_tenant_id(), Some(TenantId::new(42)));

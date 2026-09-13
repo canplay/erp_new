@@ -594,7 +594,7 @@ mod tests {
 
     #[test]
     fn test_ums_order_params_with_optional_fields() {
-        let json = r#"{"time": "2026-06-18", "no": "ORDER001", "amount": 50.0, "desc": "test order", "zone": "ysjc"}"#;
+        let json = r#"{"time": "2026-06-18", "no": "ORDER001", "amount": 50, "desc": "test order", "zone": "ysjc"}"#;
         let params: UmsOrderParams = serde_json::from_str(json).expect("test assertion");
         assert_eq!(params.desc, Some("test order".to_string()));
         assert_eq!(params.zone, Some("ysjc".to_string()));
@@ -610,7 +610,7 @@ mod tests {
 
     #[test]
     fn test_ums_refund_params_deserialize() {
-        let json = r#"{"time": "2026-06-18", "no": "ORDER001", "amount": 50.0, "refundno": "REF001"}"#;
+        let json = r#"{"time": "2026-06-18", "no": "ORDER001", "amount": 50, "refundno": "REF001"}"#;
         let params: UmsRefundParams = serde_json::from_str(json).expect("test assertion");
         assert_eq!(params.time, "2026-06-18");
         assert_eq!(params.no, "ORDER001");

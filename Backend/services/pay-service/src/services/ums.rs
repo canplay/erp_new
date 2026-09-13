@@ -585,11 +585,11 @@ mod tests {
 
     #[test]
     fn test_ums_order_params_deserialize() {
-        let json = r#"{"time": "2026-06-18", "no": "ORDER001", "amount": 100.50}"#;
+        let json = r#"{"time": "2026-06-18", "no": "ORDER001", "amount": 100}"#;
         let params: UmsOrderParams = serde_json::from_str(json).expect("test assertion");
         assert_eq!(params.time, "2026-06-18");
         assert_eq!(params.no, "ORDER001");
-        assert!((params.amount - 100.50).abs() < f64::EPSILON);
+        assert_eq!(params.amount, 100i64);
     }
 
     #[test]

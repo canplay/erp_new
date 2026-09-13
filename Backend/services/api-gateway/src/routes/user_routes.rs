@@ -245,14 +245,14 @@ async fn batch_delete_users_handler(
 }
 
 async fn not_implemented_handler() -> Json<Value> {
-    json_error("导入导出待实现")
+    json_not_implemented("导入导出待实现")
 }
 
 /// POST /api/admin/users/import — 导入用户
 /// 审计修复 (C3): 原实现返回假成功({"imported":0}); 前端已改逐行调用创建接口,
 /// 此统一导入接口未实现, 明确返回 501 而非假装成功(诚实降级)
 async fn import_users_handler() -> Json<Value> {
-    json_error("导入待实现")
+    json_not_implemented("导入待实现")
 }
 
 // ==================== 角色 Handler（真实 gRPC） ====================

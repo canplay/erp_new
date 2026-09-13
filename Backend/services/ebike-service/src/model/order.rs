@@ -64,8 +64,8 @@ mod tests {
             alert: None,
             remark: None,
             hash: "abc123".to_string(),
-            payable: 100.0,
-            pay: 100.0,
+            payable: 100,
+            pay: 100,
             refund: 0.0,
             coupon: 0.0,
             order: Some("PAY001".to_string()),
@@ -111,6 +111,6 @@ mod tests {
         assert!(order.code.is_none());
         assert_eq!(order.status, 0);
         assert_eq!(order.hash, "");
-        assert_eq!(order.payable, 0.0);
+        assert_eq!(order.payable, 0);
     }
 }

@@ -17,9 +17,14 @@ pub fn json_ok() -> Json<Value> {
     Json(json!({"success": true, "code": 200}))
 }
 
-/// 错误响应（无 Display）
+/// 错误响应（500）
 pub fn json_error(msg: &str) -> Json<Value> {
     Json(json!({"success": false, "code": 500, "message": msg}))
+}
+
+/// 未实现响应（501）
+pub fn json_not_implemented(msg: &str) -> Json<Value> {
+    Json(json!({"success": false, "code": 501, "message": msg}))
 }
 
 /// 错误响应（带 error Display）— 双参数版本，接受任意 Display 类型

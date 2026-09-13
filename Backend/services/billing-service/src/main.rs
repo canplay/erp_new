@@ -25,14 +25,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let pool = sqlx::PgPool::connect(&database_url).await?;
 
     // 创建应用状态
-    let state = Arc::new(BillingAppState::new(pool.clone()));
-    let http_router = health_routes();
+    let _state = Arc::new(BillingAppState::new(pool.clone()));
+    let _http_router = health_routes();
 
-    bootstrap.start_with_fns(
-        || Ok(pool.clone()),
-        |_p| Ok(Box::new(state.clone())),
-        || Ok(http_router),
-    ).await?;
+    // billing-service 目前只有 HTTP 端点，gRPC 使用 no-op
+    bootstrap.start_with_grpc_fn(move |_addr| {
+        Box::pin(tokio::spawn(async move {
+            tracing::info!("billing-service gRPC no-op (HTTP only)");
+        }))
+    }).await?;
 
     Ok(())
 }

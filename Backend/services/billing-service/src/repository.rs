@@ -53,15 +53,14 @@ impl BillingRepository {
 
     /// 获取计划
     pub async fn get_plan(&self, id: Uuid) -> Result<Option<PlanRow>, sqlx::Error> {
-        sqlx::query_as!(
-            PlanRow,
+        sqlx::query_as::<_, PlanRow>(
             r#"
             SELECT id, name, description, plan_type, status, price_monthly, price_yearly, 
                    currency, features, quotas, sort_order, is_public, created_at, updated_at
             FROM plans WHERE id = $1
             "#,
-            id
         )
+        .bind(id)
         .fetch_optional(&self.pool)
         .await
     }
@@ -69,24 +68,22 @@ impl BillingRepository {
     /// 列出计划
     pub async fn list_plans(&self, include_archived: bool) -> Result<Vec<PlanRow>, sqlx::Error> {
         if include_archived {
-            sqlx::query_as!(
-                PlanRow,
+            sqlx::query_as::<_, PlanRow>(
                 r#"
                 SELECT id, name, description, plan_type, status, price_monthly, price_yearly, 
                        currency, features, quotas, sort_order, is_public, created_at, updated_at
                 FROM plans ORDER BY sort_order
-                "#
+                "#,
             )
             .fetch_all(&self.pool)
             .await
         } else {
-            sqlx::query_as!(
-                PlanRow,
+            sqlx::query_as::<_, PlanRow>(
                 r#"
                 SELECT id, name, description, plan_type, status, price_monthly, price_yearly, 
                        currency, features, quotas, sort_order, is_public, created_at, updated_at
                 FROM plans WHERE status = 'active' AND is_public = true ORDER BY sort_order
-                "#
+                "#,
             )
             .fetch_all(&self.pool)
             .await
@@ -129,16 +126,15 @@ impl BillingRepository {
 
     /// 获取订阅
     pub async fn get_subscription(&self, id: Uuid) -> Result<Option<SubscriptionRow>, sqlx::Error> {
-        sqlx::query_as!(
-            SubscriptionRow,
+        sqlx::query_as::<_, SubscriptionRow>(
             r#"
             SELECT id, tenant_id, plan_id, status, current_period_start, current_period_end,
                    cancel_at_period_end, canceled_at, trial_end, quantity, unit_price, currency,
                    next_billing_date, metadata, created_at, updated_at
             FROM subscriptions WHERE id = $1
             "#,
-            id
         )
+        .bind(id)
         .fetch_optional(&self.pool)
         .await
     }
@@ -148,8 +144,7 @@ impl BillingRepository {
         &self,
         tenant_id: Uuid,
     ) -> Result<Option<SubscriptionRow>, sqlx::Error> {
-        sqlx::query_as!(
-            SubscriptionRow,
+        sqlx::query_as::<_, SubscriptionRow>(
             r#"
             SELECT id, tenant_id, plan_id, status, current_period_start, current_period_end,
                    cancel_at_period_end, canceled_at, trial_end, quantity, unit_price, currency,
@@ -157,8 +152,8 @@ impl BillingRepository {
             FROM subscriptions WHERE tenant_id = $1 AND status IN ('active', 'trialing')
             ORDER BY created_at DESC LIMIT 1
             "#,
-            tenant_id
         )
+        .bind(tenant_id)
         .fetch_optional(&self.pool)
         .await
     }
@@ -205,15 +200,14 @@ impl BillingRepository {
 
     /// 获取发票
     pub async fn get_invoice(&self, id: Uuid) -> Result<Option<InvoiceRow>, sqlx::Error> {
-        sqlx::query_as!(
-            InvoiceRow,
+        sqlx::query_as::<_, InvoiceRow>(
             r#"
             SELECT id, invoice_number, subscription_id, tenant_id, status, subtotal, tax_amount, total,
                    currency, period_start, period_end, issued_at, due_at, paid_at, line_items, notes, created_at, updated_at
             FROM invoices WHERE id = $1
             "#,
-            id
         )
+        .bind(id)
         .fetch_optional(&self.pool)
         .await
     }
@@ -230,30 +224,28 @@ impl BillingRepository {
 
         let status_filter = status.map(|s| format!("AND status = '{}'", s)).unwrap_or_default();
 
-        let invoices = sqlx::query_as!(
-            InvoiceRow,
+        let invoices = sqlx::query_as::<_, InvoiceRow>(
             r#"
             SELECT id, invoice_number, subscription_id, tenant_id, status, subtotal, tax_amount, total,
                    currency, period_start, period_end, issued_at, due_at, paid_at, line_items, notes, created_at, updated_at
             FROM invoices WHERE tenant_id = $1
             ORDER BY created_at DESC LIMIT $2 OFFSET $3
             "#,
-            tenant_id,
-            page_size,
-            offset
         )
+        .bind(tenant_id)
+        .bind(page_size)
+        .bind(offset)
         .fetch_all(&self.pool)
         .await?;
 
-        let total: i64 = sqlx::query_scalar!(
+        let total: i64 = sqlx::query_scalar::<_, i64>(
             r#"
             SELECT COUNT(*) as count FROM invoices WHERE tenant_id = $1
             "#,
-            tenant_id
         )
+        .bind(tenant_id)
         .fetch_one(&self.pool)
-        .await?
-        .unwrap_or(0);
+        .await?;
 
         Ok((invoices, total))
     }
@@ -290,20 +282,19 @@ impl BillingRepository {
         start_time: chrono::DateTime<chrono::Utc>,
         end_time: chrono::DateTime<chrono::Utc>,
     ) -> Result<f64, sqlx::Error> {
-        let total: f64 = sqlx::query_scalar!(
+        let total: f64 = sqlx::query_scalar::<_, f64>(
             r#"
             SELECT COALESCE(SUM(quantity), 0.0) as total
             FROM usage_records
             WHERE tenant_id = $1 AND metric = $2 AND recorded_at >= $3 AND recorded_at <= $4
             "#,
-            tenant_id,
-            metric,
-            start_time,
-            end_time
         )
+        .bind(tenant_id)
+        .bind(metric)
+        .bind(start_time)
+        .bind(end_time)
         .fetch_one(&self.pool)
-        .await?
-        .unwrap_or(0.0);
+        .await?;
 
         Ok(total)
     }

@@ -88,13 +88,12 @@ pub async fn create_plan(
 pub async fn list_plans(
     State(state): State<Arc<BillingAppState>>,
 ) -> Result<impl IntoResponse, BillingError> {
-    let plans: Vec<serde_json::Value> = sqlx::query_as!(
-        PlanRow,
+    let plans: Vec<serde_json::Value> = sqlx::query_as::<_, PlanRow>(
         r#"
         SELECT id, name, description, plan_type, status, price_monthly, price_yearly, 
                currency, features, quotas, sort_order, is_public, created_at, updated_at
         FROM plans WHERE is_public = true ORDER BY sort_order
-        "#
+        "#,
     )
     .fetch_all(&state.pool)
     .await
@@ -132,11 +131,10 @@ pub async fn create_subscription(
     Json(request): Json<CreateSubscriptionRequest>,
 ) -> Result<impl IntoResponse, BillingError> {
     // 获取计划价格
-    let plan: PlanRow = sqlx::query_as!(
-        PlanRow,
+    let plan: PlanRow = sqlx::query_as::<_, PlanRow>(
         "SELECT * FROM plans WHERE id = $1",
-        request.plan_id
     )
+    .bind(request.plan_id)
     .fetch_optional(&state.pool)
     .await
     .map_err(|e| BillingError::DatabaseError(e.to_string()))?

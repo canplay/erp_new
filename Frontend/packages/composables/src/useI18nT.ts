@@ -29,12 +29,15 @@ export function useI18nT(this: void) {
    * @param key - i18n key (e.g. 'common.save')
    * @param vars - optional variables for interpolation
    */
-  function i18nT(key: string, vars?: Record<string, unknown>): string {
+  function i18nT(key: string, fallbackOrVars?: string | Record<string, unknown>): string {
     if (te(key)) {
-      return t(key, vars as Record<string, string | number>)
+      const vars = typeof fallbackOrVars === 'object' ? fallbackOrVars as Record<string, string | number> : undefined;
+      return t(key, vars)
     }
-    // Key doesn't exist - return key itself as fallback
-    // In dev mode, warn in console
+    // Key doesn't exist - return fallback string or key itself
+    if (typeof fallbackOrVars === 'string') {
+      return fallbackOrVars
+    }
     if (import.meta.env?.DEV) {
       console.warn(`[i18n] Missing key: "${key}" (locale: ${i18n.locale.value})`)
     }
@@ -57,9 +60,13 @@ export function createI18nTInstance(this: void) {
   }
 
   return {
-    i18nT: (key: string, vars?: Record<string, unknown>): string => {
+    i18nT: (key: string, fallbackOrVars?: string | Record<string, unknown>): string => {
       if (i18nGlobal.te(key)) {
-        return t(key, vars as Record<string, string | number>)
+        const vars = typeof fallbackOrVars === 'object' ? fallbackOrVars as Record<string, string | number> : undefined;
+        return t(key, vars)
+      }
+      if (typeof fallbackOrVars === 'string') {
+        return fallbackOrVars
       }
       if (import.meta.env?.DEV) {
         console.warn(`[i18n] Missing key: "${key}" (locale: ${i18nGlobal.locale.value})`)

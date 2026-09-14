@@ -5,38 +5,36 @@
  */
 import { useI18n } from 'vue-i18n'
 
+export interface UseI18nTReturn {
+  i18nT: (key: string, fallback?: string) => string
+  t: (key: string, vars?: Record<string, unknown>) => string
+  te: (key: string) => boolean
+  locale: { value: string }
+}
+
 /**
  * Translation function that never crashes.
  * - If key exists: returns translated string
- * - If key missing: returns the key itself (for debugging)
- * - Supports {param} interpolation via second argument
+ * - If key missing with string fallback: returns fallback
+ * - If key missing without fallback: returns key itself (for debugging)
  */
-export function useI18nT(this: void) {
+export function useI18nT(this: void): UseI18nTReturn {
   const i18n = useI18n()
 
-  /** @this: void */
-  function t(key: string, vars?: Record<string, string | number>): string {
-    return i18n.t(key, vars)
+  function t(key: string, vars?: Record<string, unknown>): string {
+    return i18n.t(key, vars as Record<string, string | number>)
   }
 
-  /** @this: void */
   function te(key: string): boolean {
     return i18n.te(key)
   }
 
-  /**
-   * Safe translate function
-   * @param key - i18n key (e.g. 'common.save')
-   * @param vars - optional variables for interpolation
-   */
-  function i18nT(key: string, fallbackOrVars?: string | Record<string, unknown>): string {
+  function i18nT(key: string, fallback?: string): string {
     if (te(key)) {
-      const vars = typeof fallbackOrVars === 'object' ? fallbackOrVars as Record<string, string | number> : undefined;
-      return t(key, vars)
+      return t(key)
     }
-    // Key doesn't exist - return fallback string or key itself
-    if (typeof fallbackOrVars === 'string') {
-      return fallbackOrVars
+    if (fallback !== undefined) {
+      return fallback
     }
     if (import.meta.env?.DEV) {
       console.warn(`[i18n] Missing key: "${key}" (locale: ${i18n.locale.value})`)
@@ -49,30 +47,26 @@ export function useI18nT(this: void) {
 
 /**
  * Standalone version for use outside <script setup>
- * Import this if you need to use i18nT in templates without useI18n
  */
-export function createI18nTInstance(this: void) {
+export function createI18nTInstance(this: void): UseI18nTReturn {
   const i18nGlobal = useI18n()
 
-  /** @this: void */
-  function t(key: string, vars?: Record<string, string | number>): string {
-    return i18nGlobal.t(key, vars)
+  function t(key: string, vars?: Record<string, unknown>): string {
+    return i18nGlobal.t(key, vars as Record<string, string | number>)
   }
 
-  return {
-    i18nT: (key: string, fallbackOrVars?: string | Record<string, unknown>): string => {
-      if (i18nGlobal.te(key)) {
-        const vars = typeof fallbackOrVars === 'object' ? fallbackOrVars as Record<string, string | number> : undefined;
-        return t(key, vars)
-      }
-      if (typeof fallbackOrVars === 'string') {
-        return fallbackOrVars
-      }
-      if (import.meta.env?.DEV) {
-        console.warn(`[i18n] Missing key: "${key}" (locale: ${i18nGlobal.locale.value})`)
-      }
-      return key
-    },
-    ...i18nGlobal
+  function i18nT(key: string, fallback?: string): string {
+    if (i18nGlobal.te(key)) {
+      return t(key)
+    }
+    if (fallback !== undefined) {
+      return fallback
+    }
+    if (import.meta.env?.DEV) {
+      console.warn(`[i18n] Missing key: "${key}" (locale: ${i18nGlobal.locale.value})`)
+    }
+    return key
   }
+
+  return { i18nT, t, te: i18nGlobal.te, locale: i18nGlobal.locale }
 }

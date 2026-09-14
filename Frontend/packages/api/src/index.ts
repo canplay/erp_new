@@ -3,23 +3,7 @@
  * @description 共享 API 客户端和工具函数
  */
 
-export { getAlova } from '@erp-new-frontend-monorepo/boot/alova';
-
-// ==================== 业务 API 导出 ====================
-
-export {
-  deviceApi,
-  dailyApi,
-  weeklyApi,
-  monthlyApi,
-  dangerApi,
-  personnelApi,
-  currentUserApi,
-  identityApi,
-  notificationsApi,
-  forgotPasswordApi,
-  filesApi,
-} from '@erp-new-frontend-monorepo/api-domain';
+export { getAlova } from '@erp-new-frontend-monorepo/boot';
 
 // ==================== 响应归一化工具 ====================
 
@@ -45,3 +29,20 @@ export function normalize<T>(r: unknown, page = 1, size = 20): PagedResult<T> {
 export function unwrapArray<T>(r: unknown): T[] {
   return Array.isArray(r) ? (r as T[]) : ((r as { items?: T[] } | null | undefined)?.items ?? []);
 }
+
+/** 创建 alova API 方法（用于快速定义 GET/POST 端点） */
+export function api<T = unknown>(url: string, method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET', body?: unknown) {
+  const alova = getAlova();
+  const alovaMethod = method === 'GET'
+    ? alova.Get<T>(url)
+    : method === 'POST'
+    ? alova.Post<T>(url, body)
+    : method === 'PUT'
+    ? alova.Put<T>(url, body)
+    : alova.Delete<T>(url, body);
+  return alovaMethod;
+}
+
+// ==================== 类型导出 ====================
+
+export type { ApiResponse, PaginatedResponse, ApiError } from '@erp-new-frontend-monorepo/types';

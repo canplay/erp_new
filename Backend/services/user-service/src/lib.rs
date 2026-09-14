@@ -5,6 +5,7 @@
 pub mod announcement_handlers;
 pub mod department_handlers;
 pub mod handlers;
+pub mod helpers;
 pub mod http_handlers;
 pub mod repository;
 pub mod role_handlers;

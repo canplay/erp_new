@@ -4,6 +4,8 @@ use axum::{Json, http::StatusCode, response::{IntoResponse, Response}};
 use serde_json::json;
 use thiserror::Error;
 
+use crate::helpers::json_api_key_error;
+
 /// API密钥服务错误类型
 #[derive(Error, Debug)]
 pub enum ApiKeyError {
@@ -74,10 +76,7 @@ impl IntoResponse for ApiKeyError {
             }
         };
 
-        let body = Json(json!({
-            "code": error_code(&self),
-            "message": message,
-        }));
+        let body = json_api_key_error(error_code(&self), &message);
 
         (status, body).into_response()
     }

@@ -9,6 +9,7 @@ use axum::{
 use crate::error::{AuditError, AuditResult};
 use crate::models::{LoginLogQuery, LoginLogResponse, LoginStatistics, OperationLogQuery, OperationLogResponse, OperationLogDetailResponse, BatchDeleteRequest, ApiCallLogQuery, ApiCallLogResponse, ApiCallStatistics, ApiEndpointStatistics, ApiTrendPoint, ApiResponseTimeDistribution};
 use crate::repository::AuditRepository;
+use crate::helpers::{json_success, json_ok, json_error, json_error_fmt, json_success_msg, json_ok_msg, json_error_msg, json_error_msg_fmt, json_health};
 
 /// 应用状态
 #[derive(Clone)]
@@ -139,10 +140,7 @@ async fn batch_delete_operation_logs(
         .batch_delete_operation_logs(&req.ids)
         .await?;
 
-    Ok(Json(serde_json::json!({
-        "success": true,
-        "message": format!("已删除 {} 条日志", count)
-    })))
+    Ok(json_ok_msg(&format!("已删除 {} 条日志", count)))
 }
 
 // ============ API 调用日志（API Governance） ============
@@ -190,8 +188,5 @@ async fn get_api_response_distribution(
 
 /// 健康检查
 pub fn health_check() -> Json<serde_json::Value> {
-    Json(serde_json::json!({
-        "status": "healthy",
-        "service": "audit-service"
-    }))
+    json_health("audit-service")
 }

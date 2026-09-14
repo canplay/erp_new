@@ -14,6 +14,7 @@ use crate::error::{FileError, FileResult};
 use crate::models::{SysFile, FileListQuery, FileListResponse, FileDetailResponse};
 use crate::repository::FileRepository;
 use crate::storage::{LocalStorage, StorageBackend, generate_file_name};
+use crate::helpers::{json_success, json_ok, json_error, json_error_fmt, json_success_msg, json_ok_msg, json_error_msg, json_error_msg_fmt, json_health};
 
 /// 应用状态
 #[derive(Clone)]
@@ -150,17 +151,16 @@ async fn upload_file(
 
     Ok((
         StatusCode::CREATED,
-        Json(serde_json::json!({
-            "success": true,
-            "message": "文件上传成功",
-            "data": {
+        json_success_msg(
+            serde_json::json!({
                 "id": id,
                 "name": file.original_name,
                 "url": state.storage.get_url(&stored_key),
                 "size": file.file_size,
                 "mime_type": file.mime_type
-            }
-        })),
+            }),
+            "文件上传成功",
+        ),
     ))
 }
 
@@ -326,10 +326,7 @@ async fn delete_file(
     // 从数据库删除记录
     state.repository.delete(id).await?;
 
-    Ok(Json(serde_json::json!({
-        "success": true,
-        "message": "文件删除成功"
-    })))
+    Ok(json_ok_msg("文件删除成功"))
 }
 
 /// 获取文件分类列表
@@ -347,8 +344,5 @@ async fn list_categories() -> Json<Vec<String>> {
 
 /// 健康检查
 pub fn health_check() -> Json<serde_json::Value> {
-    Json(serde_json::json!({
-        "status": "healthy",
-        "service": "file-service"
-    }))
+    json_health("file-service")
 }

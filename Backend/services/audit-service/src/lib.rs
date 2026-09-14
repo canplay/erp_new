@@ -5,6 +5,7 @@ pub use repository::AuditRepository;
 pub mod error;
 pub mod grpc_handlers; // gRPC 服务处理器
 pub mod handlers;
+pub mod helpers;
 pub mod models;
 pub mod repository;
 pub mod security; // 敏感操作告警模块

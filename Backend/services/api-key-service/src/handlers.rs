@@ -14,6 +14,12 @@ use crate::models::{
     ApiKey, CreateKeyRequest, KeyQuery, KeyStats, PageResult, UpdateKeyRequest, ValidateKeyRequest,
 };
 use crate::repository::{ApiKeyRepository, PostgresApiKeyRepository};
+use crate::helpers::{
+    json_api_key_created, json_api_key_list, json_api_key_error, json_api_key_detail,
+    json_api_key_updated, json_api_key_deleted, json_api_key_disabled, json_api_key_expired,
+    json_api_key_ip_not_allowed, json_api_key_invalid, json_api_key_valid, json_api_key_stats,
+    json_api_key_simple, json_validation_error
+};
 
 /// HTTP 请求处理器
 ///
@@ -63,21 +69,7 @@ pub async fn create_key(
 
     info!("创建API密钥: {}", api_key.id);
 
-    Ok((
-        StatusCode::CREATED,
-        Json(json!({
-            "code": 201,
-            "message": "密钥创建成功，请妥善保管密钥Secret，仅此次可见",
-            "data": {
-                "id": api_key.id,
-                "key_id": key_id,
-                "key_secret": key_secret,
-                "name": api_key.name,
-                "permission_level": api_key.permission_level.to_string(),
-                "expires_at": api_key.expires_at
-            }
-        })),
-    ))
+    Ok(json_api_key_created(&key_id, &key_secret, &api_key.name, &api_key.permission_level.to_string(), api_key.expires_at.map(|d| d.to_rfc3339())))
 }
 
 /// 获取密钥列表
@@ -114,24 +106,11 @@ pub async fn list_keys(
                 })
                 .collect();
 
-            Json(json!({
-                "code": 200,
-                "message": "操作成功",
-                "data": PageResult {
-                    records: page_keys,
-                    total,
-                    page: query.page.unwrap_or(1),
-                    page_size: query.page_size.unwrap_or(20)
-                }
-            }))
+            json_api_key_list(page_keys, total, query.page.unwrap_or(1), query.page_size.unwrap_or(20))
         }
         Err(e) => {
             error!("获取密钥列表失败: {}", e);
-            Json(json!({
-                "code": 500,
-                "message": "获取密钥列表失败",
-                "data": null
-            }))
+            json_api_key_error(500, "获取密钥列表失败")
         }
     }
 }
@@ -143,11 +122,7 @@ pub async fn get_key(
     Path(id): Path<String>,
 ) -> Result<impl IntoResponse> {
     match state.repository.find_by_id(&id).await {
-        Ok(Some(key)) => Ok(Json(json!({
-            "code": 200,
-            "message": "操作成功",
-            "data": key
-        }))),
+        Ok(Some(key)) => Ok(json_api_key_detail(&key)),
         Ok(None) => Err(ApiKeyError::KeyNotFound(id)),
         Err(e) => {
             error!("获取密钥详情失败: {}", e);
@@ -200,11 +175,7 @@ pub async fn update_key(
 
     info!("更新API密钥: {}", id);
 
-    Ok(Json(json!({
-        "code": 200,
-        "message": "更新成功",
-        "data": updated
-    })))
+    Ok(json_api_key_updated(&updated))
 }
 
 /// 删除密钥
@@ -216,10 +187,7 @@ pub async fn delete_key(
     match state.repository.delete(&id).await {
         Ok(()) => {
             info!("删除API密钥: {}", id);
-            Ok(Json(json!({
-                "code": 200,
-                "message": "删除成功"
-            })))
+            Ok(json_api_key_deleted())
         }
         Err(e) => {
             error!("删除 API Key 失败: {}", e);
@@ -237,46 +205,27 @@ pub async fn validate_key(
     match state.repository.find_by_key_id(&payload.key).await {
         Ok(Some(key)) => {
             if key.status != "active" {
-                return Json(json!({
-                    "valid": false,
-                    "error": "密钥已被禁用"
-                }));
+                return json_api_key_disabled();
             }
 
             if key.expires_at.is_some_and(|e| e < Utc::now()) {
-                return Json(json!({
-                    "valid": false,
-                    "error": "密钥已过期"
-                }));
+                return json_api_key_expired();
             }
 
             if !key.allowed_ips.is_empty()
                 && let Some(ref ip) = payload.ip_address
                     && !key.allowed_ips.iter().any(|p| p == ip) {
-                        return Json(json!({
-                            "valid": false,
-                            "error": "IP地址不被允许"
-                        }));
+                        return json_api_key_ip_not_allowed();
                     }
 
             let _ = state.repository.update_last_used(&key.id).await;
 
-            Json(json!({
-                "valid": true,
-                "key_id": key.key_id,
-                "permission_level": key.permission_level.to_string()
-            }))
+            json_api_key_valid(&key.key_id, &key.permission_level.to_string())
         }
-        Ok(None) => Json(json!({
-            "valid": false,
-            "error": "密钥无效"
-        })),
+        Ok(None) => json_api_key_invalid(),
         Err(e) => {
             error!("验证密钥失败: {}", e);
-            Json(json!({
-                "valid": false,
-                "error": "验证失败"
-            }))
+            json_validation_error("验证失败")
         }
     }
 }
@@ -304,10 +253,7 @@ pub async fn disable_key(
 
     info!("禁用API密钥: {}", id);
 
-    Ok(Json(json!({
-        "code": 200,
-        "message": "密钥已禁用"
-    })))
+    Ok(json_api_key_simple("密钥已禁用"))
 }
 
 /// 启用密钥
@@ -333,10 +279,7 @@ pub async fn enable_key(
 
     info!("启用API密钥: {}", id);
 
-    Ok(Json(json!({
-        "code": 200,
-        "message": "密钥已启用"
-    })))
+    Ok(json_api_key_simple("密钥已启用"))
 }
 
 /// 获取统计信息
@@ -347,25 +290,10 @@ pub async fn get_stats(
 ) -> impl IntoResponse {
     let user_id = extract_user_id(&headers);
     match state.repository.list_by_user(user_id, 1, 1).await {
-        Ok((_, total)) => Json(json!({
-            "code": 200,
-            "message": "操作成功",
-            "data": KeyStats {
-                total_keys: total,
-                active_keys: total,
-                expired_keys: 0,
-                revoked_keys: 0,
-                total_requests: 0,
-                failed_requests: 0
-            }
-        })),
+        Ok((_, total)) => json_api_key_stats(total),
         Err(e) => {
             error!("获取统计信息失败: {}", e);
-            Json(json!({
-                "code": 500,
-                "message": "获取统计信息失败",
-                "data": null
-            }))
+json_api_key_error(500, "获取统计信息失败")
         }
     }
 }

@@ -1,7 +1,8 @@
 use axum::{routing::get, Router, extract::State, Json};
 use std::sync::Arc;
-use serde_json::{json, Value};
+use serde_json::Value;
 use crate::AppState;
+use super::helpers::json_success;
 
 pub fn routes() -> Router<Arc<AppState>> {
     Router::new()
@@ -11,13 +12,13 @@ pub fn routes() -> Router<Arc<AppState>> {
 }
 
 async fn list_plans(State(_state): State<Arc<AppState>>) -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"plans": []}}))
+    json_success(serde_json::json!({"plans": []}))
 }
 
 async fn list_subscriptions(State(_state): State<Arc<AppState>>) -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"subscriptions": []}}))
+    json_success(serde_json::json!({"subscriptions": []}))
 }
 
 async fn list_invoices(State(_state): State<Arc<AppState>>) -> Json<Value> {
-    Json(json!({"success": true, "code": 200, "data": {"invoices": []}}))
+    json_success(serde_json::json!({"invoices": []}))
 }

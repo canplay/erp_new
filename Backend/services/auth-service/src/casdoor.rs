@@ -33,7 +33,7 @@ impl Default for CasdoorConfig {
             client_id: std::env::var("CASDOOR_CLIENT_ID")
                 .unwrap_or_else(|_| "default-client-id".to_string()),
             client_secret: std::env::var("CASDOOR_CLIENT_SECRET")
-                .expect("CASDOOR_CLIENT_SECRET must be set"),
+                .unwrap_or_else(|_| "default-secret".to_string()),
             organization: std::env::var("CASDOOR_ORGANIZATION")
                 .unwrap_or_else(|_| "built-in".to_string()),
             application: std::env::var("CASDOOR_APPLICATION")
@@ -105,7 +105,10 @@ impl CasdoorClient {
         let http_client = reqwest::Client::builder()
             .timeout(std::time::Duration::from_secs(30))
             .build()
-            .expect("Failed to create HTTP client");
+            .unwrap_or_else(|e| {
+                tracing::error!("创建 HTTP 客户端失败: {e}");
+                reqwest::Client::new()
+            });
 
         Self {
             config,

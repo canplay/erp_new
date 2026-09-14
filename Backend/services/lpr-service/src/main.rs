@@ -21,7 +21,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let bootstrap = ServiceBootstrap::new(config);
 
     // 自定义初始化
-    let grpc_service = create_grpc_service().await;
+    let grpc_service = create_grpc_service().await?;
     let _http_router = health_routes();
 
     let grpc_fn = move |addr: SocketAddr| {

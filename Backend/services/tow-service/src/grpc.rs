@@ -97,7 +97,7 @@ impl common::service_bootstrap::GrpcServiceBuilder for TowGrpcService {
     fn build_grpc_server(&self, grpc_addr: &str) -> Result<tokio::task::JoinHandle<()>, Box<dyn std::error::Error + Send + Sync>> {
         use tonic::transport::Server;
 
-        let addr: SocketAddr = grpc_addr.parse().expect("invalid grpc addr");
+        let addr: SocketAddr = grpc_addr.parse().map_err(|e| format!("无效的 gRPC 地址 '{grpc_addr}': {e}"))?;
         let server = TowServiceServer::new(TowGrpcService::new(self.pool.clone()));
         let handle = tokio::spawn(async move {
             if let Err(e) = Server::builder()

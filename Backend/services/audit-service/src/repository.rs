@@ -1,6 +1,6 @@
 //! 审计数据库操作
 
-use crate::error::AuditResult;
+use crate::error::{AuditError, AuditResult};
 use crate::models::{CreateLoginLog, SysLoginLog, LoginStatistics, CreateOperationLog, SysOperationLog, ApiCallLogQuery, ApiCallLog, ApiCallStatistics, ApiEndpointStatistics, ApiTrendPoint, ApiResponseTimeDistribution, CreateApiCallLog};
 use chrono::{DateTime, Utc};
 use sqlx::PgPool;
@@ -132,7 +132,7 @@ impl AuditRepository {
             .date_naive()
             .and_hms_opt(0, 0, 0)
             .map(|n| DateTime::<Utc>::from_naive_utc_and_offset(n, Utc))
-            .expect("valid HMS time");
+            .ok_or_else(|| AuditError::InvalidParam("无效的 HMS 时间".to_string()))?;
         let today_count: i64 = sqlx::query_scalar!(
             "SELECT COUNT(*) FROM sys_login_logs WHERE created_at >= $1",
             today_start,

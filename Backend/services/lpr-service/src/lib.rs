@@ -57,14 +57,12 @@ pub fn create_state() -> AppState {
 }
 
 /// 创建数据库连接池
-pub async fn create_db_pool() -> PgPool {
+pub async fn create_db_pool() -> Result<PgPool, sqlx::Error> {
     let database_url =
         std::env::var("DATABASE_URL").unwrap_or_else(|_| {
-            "postgres://postgres:${DATABASE_PASSWORD}@localhost:5432/myai".to_string()
+            "postgres://postgres:***@localhost:5432/myai".to_string()
         });
-    PgPool::connect(&database_url)
-        .await
-        .expect("无法连接到数据库，请检查 DATABASE_URL 环境变量")
+    PgPool::connect(&database_url).await
 }
 
 /// 创建 Redis 连接（可选）
@@ -90,14 +88,14 @@ pub async fn create_redis_conn() -> Option<ConnectionManager> {
 }
 
 /// 创建通行服务实例
-pub async fn create_pass_service() -> Arc<PassService> {
-    let db_pool = create_db_pool().await;
+pub async fn create_pass_service() -> Result<Arc<PassService>, sqlx::Error> {
+    let db_pool = create_db_pool().await?;
     let redis_conn = create_redis_conn().await;
-    Arc::new(PassService::new(db_pool, redis_conn))
+    Ok(Arc::new(PassService::new(db_pool, redis_conn)))
 }
 
 /// 创建 gRPC 服务实现
-pub async fn create_grpc_service() -> crate::grpc::LprGrpcService {
-    let pass_service = create_pass_service().await;
-    crate::grpc::LprGrpcService::new(pass_service)
+pub async fn create_grpc_service() -> Result<crate::grpc::LprGrpcService, sqlx::Error> {
+    let pass_service = create_pass_service().await?;
+    Ok(crate::grpc::LprGrpcService::new(pass_service))
 }

@@ -10,8 +10,8 @@ MyAI 是一套面向多业务场景的全栈微服务管理平台，采用 Rust 
 
 ```
 myai/
-├── Backend/                        # 后端（22 个微服务 + API Gateway + 11 个共享 Crates）
-│   ├── services/                   # 各微服务源码（21 个）
+├── Backend/                        # 后端（22 个微服务含 gateway + 10 个共享 Crates）
+│   ├── services/                   # 各微服务源码（22 个）
 │   │   ├── api-gateway/            # HTTP 网关（统一 REST + WS 入口）
 │   │   ├── auth-service/           # 认证服务
 │   │   ├── user-service/           # 用户服务
@@ -34,7 +34,7 @@ myai/
 │   │   ├── clean-service/          # 清洁服务
 │   │   ├── xlt-service/            # XLT 服务
 │   │   └── billing-service/        # 计费服务（计划/订阅/发票/用量）
-│   ├── crates/                     # 共享 Crates（11 个）
+│   ├── crates/                     # 共享 Crates（10 个）
 │   │   ├── auth-core/              # 认证核心
 │   │   ├── cache-core/             # 缓存核心
 │   │   ├── circuit-breaker-core/   # 熔断核心
@@ -47,22 +47,22 @@ myai/
 │   │   └── tenant-core/            # 租户核心（多租户隔离）
 │   ├── protos/                     # gRPC Proto 定义（20 个 .proto）
 │   ├── sql/
-│   │   ├── 000_init.sql            # 数据库 schema（103 表）
+│   │   ├── 000_init.sql            # 数据库 schema（106 表）
 │   │   ├── 001_saas_core.up.sql    # SaaS 核心表（租户/订阅/计费）
 │   │   ├── 001_tenant_id_columns.sql  # tenant_id 字段补充
 │   │   ├── 002_missing_indexes.sql    # 缺失索引补充
-│   │   ├── 003_subscription_tables.sql # 订阅计费表（5 表）
+│   │   ├── 003_subscription_tables.sql # 订阅计费表（6 表）
 │   │   ├── gw_tables.sql              # Gateway 专属表（7 表）
 │   │   ├── 999_reset.sql              # 数据库重置（开发用）
 │   │   └── schema.sql                 # Schema 版本追踪
 │   ├── Cargo.toml                  # 工作区配置
 │   └── Dockerfile.*                # 多阶段构建
 │
-├── Frontend/                       # 前端（pnpm + Turborepo）
-│   ├── admin/                      # 管理后台（平台运营视角）
-│   ├── tenant/                     # 单位业务视角
-│   ├── ops/                        # 运营面板
-│   ├── social/                     # 社交端
+├── Frontend/                       # 前端（pnpm + Turborepo, 174 页面）
+│   ├── admin/                      # 管理后台（56 页面，平台运营）
+│   ├── tenant/                     # 单位业务（86 页面）
+│   ├── ops/                        # 运营面板（19 页面）
+│   ├── social/                     # 社交端（13 页面）
 │   ├── packages/
 │   │   ├── api/                    # API 封装（alova）
 │   │   ├── boot/                   # 启动引导（alova 实例）
@@ -105,7 +105,7 @@ myai/
 |---|---|
 | 后端框架 | Rust (Axum) + gRPC (Tonic) |
 || 前端框架 | Vue 3.5 + Quasar 2 + Pinia + Vite（admin 平台 / tenant 单位 / ops 运营 / social 社交） |
-|| 数据库 | PostgreSQL（127 表：000_init 103 + 001_saas + 001_tenant_id + 002_index + 003_subscription 5 + gw_tables 7 + 999_reset + schema） |
+|| 数据库 | PostgreSQL（119 表：000_init 106 + 001_saas + 001_tenant_id + 002_index + 003_subscription 6 + gw_tables 7） |
 | 缓存 / 任务 | Redis |
 | 认证 | JWT Bearer |
 | 容器化 | Docker / Podman / Kubernetes |
@@ -128,7 +128,7 @@ myai/
 cp .env.example .env
 cp Scripts/.env.example Scripts/.env
 
-# 2. 初始化数据库（共 127 表）
+# 2. 初始化数据库（共 119 表）
 psql -h <host> -U postgres -d myai -f Backend/sql/000_init.sql
 psql -h <host> -U postgres -d myai -f Backend/sql/001_saas_core.up.sql
 psql -h <host> -U postgres -d myai -f Backend/sql/001_tenant_id_columns.sql
@@ -181,6 +181,16 @@ bash Scripts/verify-deployment.sh myai
 | 镜像 tag 格式 | `YYYYMMDDHHMM`（纯数字 12 位） |
 | 数据库 | `myai` (PostgreSQL) |
 | Redis | `redis-replication` |
+
+## 版本历史
+
+| 版本 | 日期 | 说明 |
+|---|---|---|
+| v0.2.5 | 2026-09-14 | 文档同步修正：表数(127→119)、服务数(21→22)、Crates(11→10)、前端页面(admin 56/tenant 86/ops 19/social 13)、HTTP端点(386→394) |
+| v0.2.4 | 2026-09-14 | 修正前端页面计数 |
+| v0.2.2 | 2026-09-12 | 文档同步：修正表数(103→115)、HTTP端点(280→386) |
+| v0.2.0 | 2026-08-11 | 架构文档 |
+| v0.1.0 | 2026-06-10 | 初始架构设计 |
 
 ## 许可证
 

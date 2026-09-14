@@ -18,12 +18,15 @@ export interface I18nTParams {
 
 /**
  * Returns a safe i18n translation function.
+ * - If the key exists in the translation registry, `t` is used.
+ * - If the key is missing AND a string `fallback` is given, the fallback is returned.
+ * - If the key is missing AND no fallback, the key itself is returned (useful in dev).
  */
 export function useI18nT(this: void): I18nTParams {
-  const { t: tInternal, te: teInternal, locale } = useI18n()
+  const i18n = useI18n()
 
-  const t = (key: I18nKey, vars?: I18nVars): string => tInternal(key, vars)
-  const te = (key: I18nKey): boolean => teInternal(key)
+  const t = (key: I18nKey, vars?: I18nVars): string => i18n.t(key, vars)
+  const te = (key: I18nKey): boolean => i18n.te(key)
 
   const i18nT = (key: I18nKey, fallback?: I18nFallback): string => {
     if (te(key)) {
@@ -38,7 +41,7 @@ export function useI18nT(this: void): I18nTParams {
     return key
   }
 
-  return { t, te, i18nT, locale }
+  return { t, te, i18nT, locale: i18n.locale }
 }
 
 /**

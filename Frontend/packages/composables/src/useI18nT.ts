@@ -1,7 +1,7 @@
 /**
  * @file Use I18n T composable with full type safety
- * Returns a translation function `t` and a safe `i18nT` that falls back
- * to key or provided string instead of throwing.
+ * @description Safe i18n translation function with fallback
+ * Falls back to the key itself (not crash) when translation missing
  */
 import { useI18n } from 'vue-i18n'
 
@@ -23,10 +23,16 @@ export interface I18nTParams {
  * - If the key is missing AND no fallback, the key itself is returned (useful in dev).
  */
 export function useI18nT(this: void): I18nTParams {
-  const { t: tInternal, te: teInternal, locale } = useI18n()
+  const i18n = useI18n()
 
-  const t = (key: I18nKey, vars?: I18nVars): string => tInternal(key, vars)
-  const te = (key: I18nKey): boolean => teInternal(key)
+  const t = (key: I18nKey, vars?: I18nVars): string => {
+    if (vars) {
+      return i18n.t(key, vars)
+    }
+    return i18n.t(key)
+  }
+
+  const te = (key: I18nKey): boolean => i18n.te(key)
 
   const i18nT = (key: I18nKey, fallback?: I18nFallback): string => {
     if (te(key)) {
@@ -35,13 +41,15 @@ export function useI18nT(this: void): I18nTParams {
     if (typeof fallback === 'string') {
       return fallback
     }
-    if (import.meta.env?.DEV) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const dev = (import.meta as any)?.env?.DEV
+    if (dev) {
       console.warn(`[i18n] Missing translation key: "${key}"`)
     }
     return key
   }
 
-  return { t, te, i18nT, locale }
+  return { t, te, i18nT, locale: i18n.locale }
 }
 
 /**

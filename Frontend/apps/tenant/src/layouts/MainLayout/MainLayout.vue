@@ -69,7 +69,6 @@
  * @date 2026-04-03
  */
 
-/* eslint-disable @typescript-eslint/consistent-type-imports */
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';

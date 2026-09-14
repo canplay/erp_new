@@ -149,7 +149,9 @@ cargo run --package billing-service # HTTP 8088 / gRPC 9101
 # 5. 启动前端
 cd Frontend
 pnpm install
-pnpm dev:admin    # http://localhost:9000
+pnpm --filter myai-admin dev    # http://localhost:9000
+pnpm --filter myai-ops dev      # http://localhost:9001
+pnpm --filter myai-social dev   # http://localhost:9002
 ```
 
 ## 生产部署（K8s）

@@ -6,11 +6,11 @@
 use axum::{
     Json, Router,
     extract::{Query, State},
-    http::StatusCode,
     response::IntoResponse,
 };
 use serde::{Deserialize, Serialize};
 
+use crate::helpers::{json_error, json_health, json_success};
 use crate::repository::{
     CarClassRepository, CarColorRepository, CarQuery, CarRepository, CarTypeRepository,
     DcCausesRepository, DcTypeRepository,
@@ -131,31 +131,17 @@ pub async fn list_cars(
     match repo.list(&query).await {
         Ok(result) => {
             let cars: Vec<CarResponse> = result.cars.into_iter().map(std::convert::Into::into).collect();
-            (
-                StatusCode::OK,
-                Json(serde_json::json!({
-                    "status": 1,
-                    "message": "success",
-                    "data": {
-                        "list": cars,
-                        "total": result.total,
-                        "page": result.page,
-                        "page_size": result.page_size
-                    }
-                })),
-            )
+            json_success(serde_json::json!({
+                "list": cars,
+                "total": result.total,
+                "page": result.page,
+                "page_size": result.page_size
+            }))
                 .into_response()
         }
         Err(e) => {
             tracing::error!("查询车辆列表失败: {e:?}");
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                Json(serde_json::json!({
-                    "status": 0,
-                    "message": e.to_string()
-                })),
-            )
-                .into_response()
+            json_error(e.to_string()).into_response()
         }
     }
 }
@@ -179,25 +165,10 @@ pub async fn count_cars(
     };
 
     match repo.count(&query).await {
-        Ok(count) => (
-            StatusCode::OK,
-            Json(serde_json::json!({
-                "status": 1,
-                "message": "success",
-                "data": count
-            })),
-        )
-            .into_response(),
+        Ok(count) => json_success(serde_json::json!(count)).into_response(),
         Err(e) => {
             tracing::error!("统计车辆数量失败: {e:?}");
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                Json(serde_json::json!({
-                    "status": 0,
-                    "message": e.to_string()
-                })),
-            )
-                .into_response()
+            json_error(e.to_string()).into_response()
         }
     }
 }
@@ -210,45 +181,23 @@ pub async fn detain_car(
     let repo = CarRepository::new(state.pool.clone());
 
     match repo.find_by_license(&req.plate).await {
-        Ok(Some(car)) => (
-            StatusCode::OK,
-            Json(serde_json::json!({
-                "status": 1,
-                "message": "success",
-                "data": {
-                    "id": car.id,
-                    "license": car.license,
-                    "dc_causes": car.dc_causes,
-                    "dc_date": car.dc_date,
-                    "dc_address": car.dc_address,
-                    "dc_into_date": car.dc_into_date,
-                    "cmd_unit": car.cmd_unit,
-                    "attachment": car.attachment,
-                    "cv": car.cv,
-                    "tv": car.tv
-                }
-            })),
-        )
+        Ok(Some(car)) => json_success(serde_json::json!({
+            "id": car.id,
+            "license": car.license,
+            "dc_causes": car.dc_causes,
+            "dc_date": car.dc_date,
+            "dc_address": car.dc_address,
+            "dc_into_date": car.dc_into_date,
+            "cmd_unit": car.cmd_unit,
+            "attachment": car.attachment,
+            "cv": car.cv,
+            "tv": car.tv
+        }))
             .into_response(),
-        Ok(None) => (
-            StatusCode::OK,
-            Json(serde_json::json!({
-                "status": 1,
-                "message": "success",
-                "data": serde_json::json!([])
-            })),
-        )
-            .into_response(),
+        Ok(None) => json_success(serde_json::json!([])).into_response(),
         Err(e) => {
             tracing::error!("车辆扣押查询失败: {e:?}");
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                Json(serde_json::json!({
-                    "status": 0,
-                    "message": e.to_string()
-                })),
-            )
-                .into_response()
+            json_error(e.to_string()).into_response()
         }
     }
 }
@@ -258,25 +207,10 @@ pub async fn list_car_class(State(state): State<HttpAppState>) -> impl IntoRespo
     let repo = CarClassRepository::new(state.pool.clone());
 
     match repo.list().await {
-        Ok(items) => (
-            StatusCode::OK,
-            Json(serde_json::json!({
-                "status": 1,
-                "message": "success",
-                "data": items
-            })),
-        )
-            .into_response(),
+        Ok(items) => json_success(serde_json::json!(items)).into_response(),
         Err(e) => {
             tracing::error!("获取车辆分类列表失败: {e:?}");
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                Json(serde_json::json!({
-                    "status": 0,
-                    "message": e.to_string()
-                })),
-            )
-                .into_response()
+            json_error(e.to_string()).into_response()
         }
     }
 }
@@ -286,25 +220,10 @@ pub async fn list_car_type(State(state): State<HttpAppState>) -> impl IntoRespon
     let repo = CarTypeRepository::new(state.pool.clone());
 
     match repo.list().await {
-        Ok(items) => (
-            StatusCode::OK,
-            Json(serde_json::json!({
-                "status": 1,
-                "message": "success",
-                "data": items
-            })),
-        )
-            .into_response(),
+        Ok(items) => json_success(serde_json::json!(items)).into_response(),
         Err(e) => {
             tracing::error!("获取车辆类型列表失败: {e:?}");
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                Json(serde_json::json!({
-                    "status": 0,
-                    "message": e.to_string()
-                })),
-            )
-                .into_response()
+            json_error(e.to_string()).into_response()
         }
     }
 }
@@ -314,25 +233,10 @@ pub async fn list_car_color(State(state): State<HttpAppState>) -> impl IntoRespo
     let repo = CarColorRepository::new(state.pool.clone());
 
     match repo.list().await {
-        Ok(items) => (
-            StatusCode::OK,
-            Json(serde_json::json!({
-                "status": 1,
-                "message": "success",
-                "data": items
-            })),
-        )
-            .into_response(),
+        Ok(items) => json_success(serde_json::json!(items)).into_response(),
         Err(e) => {
             tracing::error!("获取车辆颜色列表失败: {e:?}");
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                Json(serde_json::json!({
-                    "status": 0,
-                    "message": e.to_string()
-                })),
-            )
-                .into_response()
+            json_error(e.to_string()).into_response()
         }
     }
 }
@@ -342,25 +246,10 @@ pub async fn list_causes_type(State(state): State<HttpAppState>) -> impl IntoRes
     let repo = DcTypeRepository::new(state.pool.clone());
 
     match repo.list().await {
-        Ok(items) => (
-            StatusCode::OK,
-            Json(serde_json::json!({
-                "status": 1,
-                "message": "success",
-                "data": items
-            })),
-        )
-            .into_response(),
+        Ok(items) => json_success(serde_json::json!(items)).into_response(),
         Err(e) => {
             tracing::error!("获取拖车原因类型列表失败: {e:?}");
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                Json(serde_json::json!({
-                    "status": 0,
-                    "message": e.to_string()
-                })),
-            )
-                .into_response()
+            json_error(e.to_string()).into_response()
         }
     }
 }
@@ -370,39 +259,17 @@ pub async fn list_causes(State(state): State<HttpAppState>) -> impl IntoResponse
     let repo = DcCausesRepository::new(state.pool.clone());
 
     match repo.list().await {
-        Ok(items) => (
-            StatusCode::OK,
-            Json(serde_json::json!({
-                "status": 1,
-                "message": "success",
-                "data": items
-            })),
-        )
-            .into_response(),
+        Ok(items) => json_success(serde_json::json!(items)).into_response(),
         Err(e) => {
             tracing::error!("获取拖车原因列表失败: {e:?}");
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                Json(serde_json::json!({
-                    "status": 0,
-                    "message": e.to_string()
-                })),
-            )
-                .into_response()
+            json_error(e.to_string()).into_response()
         }
     }
 }
 
 /// 健康检查
 pub async fn health() -> impl IntoResponse {
-    (
-        StatusCode::OK,
-        Json(serde_json::json!({
-            "status": 1,
-            "message": "success"
-        })),
-    )
-        .into_response()
+    json_health().into_response()
 }
 
 // ============ 路由构建 ============

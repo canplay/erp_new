@@ -10,7 +10,7 @@ use common::AppError;
 #[allow(unused_imports)]
 
 use crate::AppState;
-use crate::routes::helpers::json_error;
+use crate::routes::helpers::{json_error, json_lpr_response, json_success};
 
 /// 车牌识别回调请求体
 #[derive(Debug, Deserialize)]
@@ -58,11 +58,7 @@ async fn lpr_callback_handler(
         .await;
 
     match result {
-        Ok(response) => Ok(Json(serde_json::json!({
-            "success": response.success,
-            "message": response.message,
-            "code": response.code
-        }))),
+        Ok(response) => Ok(json_lpr_response(&response)),
         Err(e) => {
             tracing::error!("gRPC LPR 回调转发失败: {e}");
             Err(AppError::ServiceUnavailable(format!("lpr-service 调用失败: {e}")))
@@ -97,16 +93,12 @@ async fn vehicle_auth_handler(
         .await;
 
     match result {
-        Ok(response) => Ok(Json(serde_json::json!({
-            "success": true,
-            "code": 200,
-            "data": {
-                "is_authorized": response.is_authorized,
-                "auth_type": response.auth_type,
-                "driver_name": response.driver_name,
-                "driver_phone": response.driver_phone,
-                "valid_until": response.valid_until,
-            }
+        Ok(response) => Ok(json_success(serde_json::json!({
+            "is_authorized": response.is_authorized,
+            "auth_type": response.auth_type,
+            "driver_name": response.driver_name,
+            "driver_phone": response.driver_phone,
+            "valid_until": response.valid_until,
         }))),
         Err(e) => {
             tracing::error!("gRPC LPR 车辆授权转发失败: {e}");

@@ -8,6 +8,7 @@ use serde::Deserialize;
 use std::sync::Arc;
 
 use crate::error::Result;
+use crate::handlers::helpers::{json_empty_success, json_health, json_ok, json_success};
 use crate::models::{
     BillingRequest, MqttEnvelope, VehicleEvent, VehicleQuery,
 };
@@ -33,7 +34,7 @@ pub async fn vehicle_entry(
     Json(event): Json<VehicleEvent>,
 ) -> Result<Json<serde_json::Value>> {
     let record = state.parking_service.handle_entry(&event).await?;
-    Ok(Json(serde_json::json!(record)))
+    Ok(json_success(record))
 }
 
 /// 车辆出场
@@ -42,7 +43,7 @@ pub async fn vehicle_exit(
     Json(event): Json<VehicleEvent>,
 ) -> Result<Json<serde_json::Value>> {
     let record = state.parking_service.handle_exit(&event).await?;
-    Ok(Json(serde_json::json!(record)))
+    Ok(json_success(record))
 }
 
 /// 查询在场车辆
@@ -54,7 +55,7 @@ pub async fn get_parking_vehicle(
         .parking_service
         .get_parking_vehicle(&park_code, &plate_no)
         .await?;
-    Ok(Json(serde_json::json!(vehicle)))
+    Ok(json_success(vehicle))
 }
 
 /// 计算停车费用
@@ -63,7 +64,7 @@ pub async fn calc_billing(
     Json(req): Json<BillingRequest>,
 ) -> Result<Json<serde_json::Value>> {
     let result = state.billing_service.calculate(&req).await?;
-    Ok(Json(serde_json::json!(result)))
+    Ok(json_success(result))
 }
 
 /// 车辆进出记录列表
@@ -71,12 +72,12 @@ pub async fn list_records(
     State(_state): State<AppState>,
     Query(query): Query<VehicleQuery>,
 ) -> Result<Json<serde_json::Value>> {
-    Ok(Json(serde_json::json!({
-        "records": [],
-        "total": 0,
-        "page": query.page.unwrap_or(1),
-        "page_size": query.page_size.unwrap_or(20),
-    })))
+    Ok(json_success(VehicleQueryResponse {
+        records: vec![],
+        total: 0,
+        page: query.page.unwrap_or(1),
+        page_size: query.page_size.unwrap_or(20),
+    }))
 }
 
 /// 接收设备 MQTT 消息回调 (HTTP bridge)
@@ -131,10 +132,7 @@ pub async fn mqtt_callback(
 
     state.device_manager.dispatch(envelope).await;
 
-    Ok(Json(serde_json::json!({
-        "code": 200,
-        "message": "success"
-    })))
+    Ok(json_ok(200, "success"))
 }
 
 /// 获取设备列表
@@ -142,7 +140,7 @@ pub async fn list_devices(
     State(state): State<AppState>,
 ) -> Result<Json<serde_json::Value>> {
     let devices = state.device_manager.list_devices().await;
-    Ok(Json(serde_json::json!(devices)))
+    Ok(json_success(devices))
 }
 
 /// 发送开闸命令
@@ -152,12 +150,20 @@ pub struct BarrierCommand {
     pub request_id: String,
 }
 
+#[derive(Debug, serde::Serialize)]
+pub struct VehicleQueryResponse {
+    pub records: Vec<serde_json::Value>,
+    pub total: i32,
+    pub page: i32,
+    pub page_size: i32,
+}
+
 pub async fn open_barrier(
     State(state): State<AppState>,
     Json(cmd): Json<BarrierCommand>,
 ) -> Result<Json<serde_json::Value>> {
     state.mqtt_gateway.send_open(&cmd.sn, &cmd.request_id).await?;
-    Ok(Json(serde_json::json!({"success": true})))
+    Ok(json_empty_success())
 }
 
 /// 发送关闸命令
@@ -166,13 +172,10 @@ pub async fn close_barrier(
     Json(cmd): Json<BarrierCommand>,
 ) -> Result<Json<serde_json::Value>> {
     state.mqtt_gateway.send_close(&cmd.sn, &cmd.request_id).await?;
-    Ok(Json(serde_json::json!({"success": true})))
+    Ok(json_empty_success())
 }
 
 /// 健康检查
 pub async fn health() -> Json<serde_json::Value> {
-    Json(serde_json::json!({
-        "status": "ok",
-        "service": "xlt-service"
-    }))
+    json_health("xlt-service")
 }

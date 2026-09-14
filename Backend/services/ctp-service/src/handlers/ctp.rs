@@ -6,6 +6,7 @@ use axum::{Json, extract::Query, extract::State};
 use std::sync::Arc;
 
 use crate::error::Result;
+use crate::helpers::{json_ctp_lock_response, json_device_upload_response, json_health, json_success_value};
 use crate::models::{CmdType, DeviceDataUpload, DeviceQuery};
 use crate::services::CtpDeviceService;
 
@@ -23,10 +24,7 @@ pub async fn receive_device_data(
     let ctp_resp = state.ctp_service.upload_device_data(&upload).await?;
     state.ctp_service.handle_device_data_upload(&upload).await?;
 
-    Ok(Json(serde_json::json!({
-        "error_code": ctp_resp.error_code,
-        "error_msg": ctp_resp.error_msg,
-    })))
+    Ok(json_device_upload_response(ctp_resp.error_code, &ctp_resp.error_msg))
 }
 
 /// 发送锁控制命令（开锁/关锁/同步）
@@ -45,12 +43,7 @@ pub async fn control_lock(
         CmdType::Syn => "syn",
     };
 
-    Ok(Json(serde_json::json!({
-        "success": ctp_resp.error_code == 0,
-        "message": ctp_resp.error_msg,
-        "device_no": cmd.device_no,
-        "action": action_str,
-    })))
+    Ok(json_ctp_lock_response(ctp_resp.error_code == 0, &ctp_resp.error_msg, &cmd.device_no, action_str))
 }
 
 /// 查询单个设备状态（从 Redis 缓存获取）
@@ -59,7 +52,7 @@ pub async fn get_device(
     axum::extract::Path(device_no): axum::extract::Path<String>,
 ) -> Result<Json<serde_json::Value>> {
     let device = state.ctp_service.get_device_status(&device_no).await?;
-    Ok(Json(serde_json::json!(device)))
+    Ok(json_success_value(serde_json::to_value(device).unwrap_or_default()))
 }
 
 /// 分页获取设备列表（支持按车场代码过滤）
@@ -78,8 +71,5 @@ pub async fn list_devices(
 
 /// 健康检查端点
 pub async fn health() -> Json<serde_json::Value> {
-    Json(serde_json::json!({
-        "status": "ok",
-        "service": "ctp-service"
-    }))
+    json_health("ctp-service")
 }

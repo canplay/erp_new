@@ -19,10 +19,9 @@ use axum::{
     http::StatusCode,
     middleware::Next,
     response::{IntoResponse, Response},
-    Json,
 };
+use crate::routes::helpers::json_grpc_error;
 use common::AppError;
-use serde_json::json;
 
 /// gRPC 错误处理中间件
 ///
@@ -83,11 +82,7 @@ pub fn grpc_unavailable_response(service_name: &str, err: &tonic::Status) -> Res
         )
     };
 
-    let body = Json(json!({
-        "success": false,
-        "code": 10005,
-        "error": message,
-    }));
+    let body = json_grpc_error(message);
 
     (status_code, body).into_response()
 }

@@ -5,6 +5,7 @@
 //! 使用微服务架构标准模式
 
 pub mod grpc;
+pub mod helpers;
 pub mod http_handlers;
 pub mod repository;
 pub mod timeout; // 任务超时处理模块

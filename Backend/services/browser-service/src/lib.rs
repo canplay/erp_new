@@ -7,4 +7,5 @@ pub mod browser_pool;
 pub mod cookie_store;
 pub mod grpc_handlers;
 pub mod grpc_server;
+pub mod helpers;
 pub mod http_server;

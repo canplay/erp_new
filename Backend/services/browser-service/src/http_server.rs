@@ -31,6 +31,7 @@ use serde_json::{json, Value};
 use uuid::Uuid;
 
 use crate::browser_pool::{BrowserPool, BrowserSession};
+use crate::helpers::{json_error_fmt, json_error_status, json_ok, json_unavailable};
 
 /// 应用状态
 #[derive(Clone)]
@@ -101,7 +102,7 @@ pub struct CookieRequest {
 // ===== 健康检查 =====
 
 async fn health_check() -> Json<Value> {
-    Json(json!({
+    json_ok(json!({
         "status": "healthy",
         "service": "browser-service",
         "timestamp": chrono::Utc::now().to_rfc3339()
@@ -114,10 +115,7 @@ async fn health_check() -> Json<Value> {
 async fn create_session(
     State(state): State<Arc<AppState>>,
 ) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
-    let page_arc = state.pool.get_page().ok_or_else(|| {
-        let err = json!({"error": "浏览器池为空"});
-        (StatusCode::SERVICE_UNAVAILABLE, Json(err))
-    })?;
+    let page_arc = state.pool.get_page().ok_or_else(|| json_unavailable("浏览器池为空"))?;
 
     let session_id = Uuid::new_v4().to_string();
     let session = BrowserSession::new(session_id.clone());
@@ -129,15 +127,14 @@ async fn create_session(
             *session.tab.lock().await = Some(tab);
         }
         Err(e) => {
-            let err = json!({"error": format!("无法创建标签页: {}", e)});
-            return Err((StatusCode::INTERNAL_SERVER_ERROR, Json(err)));
+            return Err(json_error_fmt("无法创建标签页", &e));
         }
     }
 
     let mut sessions = state.sessions.lock().await;
     sessions.insert(session_id.clone(), session);
 
-    Ok(Json(json!({
+    Ok(json_ok(json!({
         "session_id": session_id
     })))
 }
@@ -147,7 +144,7 @@ async fn pool_status(
     State(state): State<Arc<AppState>>,
 ) -> Json<Value> {
     let active_sessions = state.sessions.lock().await.len();
-    Json(json!({
+    json_ok(json!({
         "pool_size": state.pool.size(),
         "active_sessions": active_sessions
     }))
@@ -164,12 +161,9 @@ async fn close_session(
         if let Some(tab) = tab_guard.take() {
             let _ = tab.close().await;
         }
-        Ok(Json(json!({"status": "closed", "session_id": id})))
+        Ok(json_ok(json!({"status": "closed", "session_id": id})))
     } else {
-        Err((
-            StatusCode::NOT_FOUND,
-            Json(json!({"error": "会话不存在"})),
-        ))
+        Err(json_error_status(StatusCode::NOT_FOUND, "会话不存在"))
     }
 }
 
@@ -180,11 +174,11 @@ macro_rules! with_tab {
     ($state:expr, $id:expr, |$tab:ident| $body:expr) => {{
         let sessions = $state.sessions.lock().await;
         let session = sessions.get(&$id).ok_or_else(|| {
-            (StatusCode::NOT_FOUND, Json(json!({"error": "会话不存在"})))
+            json_error_status(StatusCode::NOT_FOUND, "会话不存在")
         })?;
         let mut tab_guard = session.tab.lock().await;
         let $tab = tab_guard.as_mut().ok_or_else(|| {
-            (StatusCode::BAD_REQUEST, Json(json!({"error": "标签页未初始化"})))
+            json_error_status(StatusCode::BAD_REQUEST, "标签页未初始化")
         })?;
         $body
     }};
@@ -202,12 +196,9 @@ async fn navigate(
         match tab.get(&req.url).await {
             Ok(success) => {
                 let title = tab.title().await.unwrap_or_default();
-                Ok(Json(json!({"status": if success { "ok" } else { "timeout" }, "title": title, "url": req.url})))
+                Ok(json_ok(json!({"status": if success { "ok" } else { "timeout" }, "title": title, "url": req.url})))
             }
-            Err(e) => Err((
-                StatusCode::INTERNAL_SERVER_ERROR,
-                Json(json!({"error": format!("导航失败: {}", e)})),
-            )),
+            Err(e) => Err(json_error_fmt("导航失败", &e)),
         }
     })
 }
@@ -219,7 +210,7 @@ async fn get_text(
 ) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
     with_tab!(state, id, |tab| {
         let text = tab.ele_text("body").await.unwrap_or(None).unwrap_or_default();
-        Ok(Json(json!({"text": text})))
+        Ok(json_ok(json!({"text": text})))
     })
 }
 
@@ -230,7 +221,7 @@ async fn get_html(
 ) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
     with_tab!(state, id, |tab| {
         let html = tab.html().await.unwrap_or_default();
-        Ok(Json(json!({"html": html})))
+        Ok(json_ok(json!({"html": html})))
     })
 }
 
@@ -241,7 +232,7 @@ async fn get_title(
 ) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
     with_tab!(state, id, |tab| {
         let title = tab.title().await.unwrap_or_default();
-        Ok(Json(json!({"title": title})))
+        Ok(json_ok(json!({"title": title})))
     })
 }
 
@@ -253,11 +244,8 @@ async fn click_element(
 ) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
     with_tab!(state, id, |tab| {
         match tab.click(&req.selector).await {
-            Ok(()) => Ok(Json(json!({"status": "clicked", "selector": req.selector}))),
-            Err(e) => Err((
-                StatusCode::INTERNAL_SERVER_ERROR,
-                Json(json!({"error": format!("点击失败: {}", e)})),
-            )),
+            Ok(()) => Ok(json_ok(json!({"status": "clicked", "selector": req.selector}))),
+            Err(e) => Err(json_error_fmt("点击失败", &e)),
         }
     })
 }
@@ -270,11 +258,8 @@ async fn type_text(
 ) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
     with_tab!(state, id, |tab| {
         match tab.input(&req.selector, &req.text).await {
-            Ok(()) => Ok(Json(json!({"status": "typed", "selector": req.selector}))),
-            Err(e) => Err((
-                StatusCode::INTERNAL_SERVER_ERROR,
-                Json(json!({"error": format!("输入失败: {}", e)})),
-            )),
+            Ok(()) => Ok(json_ok(json!({"status": "typed", "selector": req.selector}))),
+            Err(e) => Err(json_error_fmt("输入失败", &e)),
         }
     })
 }
@@ -302,14 +287,11 @@ async fn inject_cookies(
             .collect();
 
         match tab.set_cookies(cookie_params).await {
-            Ok(()) => Ok(Json(json!({
+            Ok(()) => Ok(json_ok(json!({
                 "status": "injected",
                 "count": req.cookies.len()
             }))),
-            Err(e) => Err((
-                StatusCode::INTERNAL_SERVER_ERROR,
-                Json(json!({"error": format!("Cookie 注入失败: {}", e)})),
-            )),
+            Err(e) => Err(json_error_fmt("Cookie 注入失败", &e)),
         }
     })
 }
@@ -321,14 +303,11 @@ async fn take_screenshot(
 ) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
     with_tab!(state, id, |tab| {
         match tab.screenshot_base64(false).await {
-            Ok(b64) => Ok(Json(json!({
+            Ok(b64) => Ok(json_ok(json!({
                 "status": "captured",
                 "image_base64": b64
             }))),
-            Err(e) => Err((
-                StatusCode::INTERNAL_SERVER_ERROR,
-                Json(json!({"error": format!("截图失败: {}", e)})),
-            )),
+            Err(e) => Err(json_error_fmt("截图失败", &e)),
         }
     })
 }
@@ -341,10 +320,7 @@ async fn get_elements(
 ) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
     let selector = params.get("selector").cloned().unwrap_or_default();
     if selector.is_empty() {
-        return Err((
-            StatusCode::BAD_REQUEST,
-            Json(json!({"error": "缺少 selector 查询参数"})),
-        ));
+        return Err(json_error_status(StatusCode::BAD_REQUEST, "缺少 selector 查询参数"));
     }
 
     with_tab!(state, id, |tab| {
@@ -364,18 +340,15 @@ async fn get_elements(
                     if let Ok(Some(cls)) = el.attr("class").await {
                         attrs.insert("class".to_string(), cls);
                     }
-                    infos.push(serde_json::json!({
+                    infos.push(json!({
                         "tag": tag,
                         "text": text,
                         "attributes": attrs,
                     }));
                 }
-                Ok(Json(json!({"elements": infos, "count": infos.len()})))
+                Ok(json_ok(json!({"elements": infos, "count": infos.len()})))
             }
-            Err(e) => Err((
-                StatusCode::INTERNAL_SERVER_ERROR,
-                Json(json!({"error": format!("查找元素失败: {}", e)})),
-            )),
+            Err(e) => Err(json_error_fmt("查找元素失败", &e)),
         }
     })
 }

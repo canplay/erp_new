@@ -31,7 +31,7 @@ async fn get_account(State(state): State<Arc<AppState>>, Path(id): Path<String>)
 
 pub fn routes() -> Router<Arc<AppState>> {
     Router::new()
-        .route("/api/v1/social-ops/health", get(|| async { Json(json!({"status":"ok"})) }))
+        .route("/api/v1/social-ops/health", get(|| async { json_ok() }))
         .route("/api/v1/social-ops/accounts", get(list_accounts))
         .route("/api/v1/social-ops/accounts/{id}", get(get_account))
 }

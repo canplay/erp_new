@@ -554,7 +554,10 @@ fn generate_key_id() -> String {
     use std::time::{SystemTime, UNIX_EPOCH};
     let timestamp = SystemTime::now()
         .duration_since(UNIX_EPOCH)
-        .expect("system time should be after UNIX epoch")
+        .unwrap_or_else(|_| {
+            tracing::error!("系统时间早于 UNIX epoch");
+            std::time::Duration::from_secs(0)
+        })
         .as_nanos();
     format!("key_{timestamp:016x}")
 }
@@ -564,7 +567,10 @@ fn generate_key_pair() -> (String, String) {
     use std::time::{SystemTime, UNIX_EPOCH};
     let timestamp = SystemTime::now()
         .duration_since(UNIX_EPOCH)
-        .expect("system time should be after UNIX epoch")
+        .unwrap_or_else(|_| {
+            tracing::error!("系统时间早于 UNIX epoch");
+            std::time::Duration::from_secs(0)
+        })
         .as_nanos();
     let hash = format!("{timestamp:032x}");
     let prefix = format!("{:08}", timestamp % 100000000);

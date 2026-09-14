@@ -238,7 +238,10 @@ impl MediaManager {
     pub fn generate_file_id(&self) -> String {
         let timestamp = SystemTime::now()
             .duration_since(UNIX_EPOCH)
-            .expect("system time should be after UNIX epoch")
+            .unwrap_or_else(|_| {
+                tracing::error!("系统时间早于 UNIX epoch");
+                std::time::Duration::from_secs(0)
+            })
             .as_nanos();
         format!("media_{:x}", timestamp)
     }
@@ -443,7 +446,10 @@ impl MediaManager {
                 record.synced_at = Some(
                     SystemTime::now()
                         .duration_since(UNIX_EPOCH)
-                        .expect("system time should be after UNIX epoch")
+                        .unwrap_or_else(|_| {
+                            tracing::error!("系统时间早于 UNIX epoch");
+                            std::time::Duration::from_secs(0)
+                        })
                         .as_secs()
                 );
             }
@@ -497,7 +503,10 @@ impl MediaManager {
     pub fn cleanup_unused(&self, older_than_secs: u64) -> usize {
         let cutoff = SystemTime::now()
             .duration_since(UNIX_EPOCH)
-            .expect("system time should be after UNIX epoch")
+            .unwrap_or_else(|_| {
+                tracing::error!("系统时间早于 UNIX epoch");
+                std::time::Duration::from_secs(0)
+            })
             .as_secs()
             .saturating_sub(older_than_secs);
 

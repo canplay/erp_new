@@ -625,7 +625,7 @@ pub async fn get_import_template() -> impl IntoResponse {
 pub async fn download_import_template() -> impl IntoResponse {
     let csv_content = "username,password,email,nickname,phone,role\nuser1,Password@123,user1@example.com,用户1,13800000001,user\nuser2,Password@123,user2@example.com,用户2,13800000002,user\n";
 
-    (axum::response::Response::builder()
+    axum::response::Response::builder()
         .status(StatusCode::OK)
         .header("Content-Type", "text/csv; charset=utf-8")
         .header(
@@ -633,7 +633,13 @@ pub async fn download_import_template() -> impl IntoResponse {
             "attachment; filename=user_import_template.csv",
         )
         .body(axum::body::Body::from(csv_content))
-        .expect("response building should not fail"),)
+        .unwrap_or_else(|e| {
+            tracing::error!("构建下载模板响应失败: {e}");
+            axum::response::Response::builder()
+                .status(StatusCode::INTERNAL_SERVER_ERROR)
+                .body(axum::body::Body::from("内部服务器错误"))
+                .unwrap_or_else(|_| axum::response::Response::new(axum::body::Body::empty()))
+        })
         .into_response()
 }
 
@@ -807,7 +813,7 @@ pub async fn export_users(
                 );
             }
 
-            (axum::response::Response::builder()
+            axum::response::Response::builder()
                 .status(StatusCode::OK)
                 .header("Content-Type", "text/csv; charset=utf-8")
                 .header(
@@ -815,7 +821,13 @@ pub async fn export_users(
                     "attachment; filename=users_export.csv",
                 )
                 .body(axum::body::Body::from(csv_content))
-                .expect("response building should not fail"),)
+                .unwrap_or_else(|e| {
+                    tracing::error!("构建导出用户响应失败: {e}");
+                    axum::response::Response::builder()
+                        .status(StatusCode::INTERNAL_SERVER_ERROR)
+                        .body(axum::body::Body::from("内部服务器错误"))
+                        .unwrap_or_else(|_| axum::response::Response::new(axum::body::Body::empty()))
+                })
                 .into_response()
         }
         Err(e) => {

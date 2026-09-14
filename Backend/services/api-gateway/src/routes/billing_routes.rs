@@ -1,6 +1,6 @@
 use axum::{routing::get, Router, extract::State, Json};
 use std::sync::Arc;
-use serde_json::json;
+use serde_json::{json, Value};
 use crate::AppState;
 
 pub fn routes() -> Router<Arc<AppState>> {
@@ -10,14 +10,14 @@ pub fn routes() -> Router<Arc<AppState>> {
         .route("/api/v1/billing/invoices", get(list_invoices))
 }
 
-async fn list_plans(State(_state): State<Arc<AppState>>) -> Json<serde_json::Value> {
-    Json(json!({"plans": []}))
+async fn list_plans(State(_state): State<Arc<AppState>>) -> Json<Value> {
+    Json(json!({"success": true, "code": 200, "data": {"plans": []}}))
 }
 
-async fn list_subscriptions(State(_state): State<Arc<AppState>>) -> Json<serde_json::Value> {
-    Json(json!({"subscriptions": []}))
+async fn list_subscriptions(State(_state): State<Arc<AppState>>) -> Json<Value> {
+    Json(json!({"success": true, "code": 200, "data": {"subscriptions": []}}))
 }
 
-async fn list_invoices(State(_state): State<Arc<AppState>>) -> Json<serde_json::Value> {
-    Json(json!({"invoices": []}))
+async fn list_invoices(State(_state): State<Arc<AppState>>) -> Json<Value> {
+    Json(json!({"success": true, "code": 200, "data": {"invoices": []}}))
 }

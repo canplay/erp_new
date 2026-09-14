@@ -120,22 +120,53 @@ async fn register_handler(
     State(state): State<Arc<AppState>>,
     Json(body): Json<Value>,
 ) -> impl IntoResponse {
+    let username = body.get("username").and_then(|v| v.as_str()).unwrap_or("").to_string();
+    let password = body.get("password").and_then(|v| v.as_str()).unwrap_or("").to_string();
+
+    // 密码强度验证：至少8位，包含字母和数字
+    if password.len() < 8
+        || !password.chars().any(|c| c.is_ascii_alphabetic())
+        || !password.chars().any(|c| c.is_ascii_digit())
+    {
+        return json_error_response_fmt(
+            StatusCode::BAD_REQUEST,
+            "密码必须至少8位且包含字母和数字",
+            &"密码必须至少8位且包含字母和数字".to_string(),
+        );
+    }
+
     let mut client = match state.grpc_clients.read().await.auth_client().await {
         Ok(c) => c,
-        Err(e) => return json_error_response_fmt(StatusCode::SERVICE_UNAVAILABLE, "认证服务不可用: {e}", &format!("认证服务不可用: {e}") )
+        Err(e) => {
+            return json_error_response_fmt(
+                StatusCode::SERVICE_UNAVAILABLE,
+                "认证服务不可用: {e}",
+                &format!("认证服务不可用: {e}"),
+            )
+        }
     };
 
-    match client.register(
-        body.get("username").and_then(|v| v.as_str()).unwrap_or("").to_string(),
-        body.get("password").and_then(|v| v.as_str()).unwrap_or("").to_string(),
-        body.get("email").and_then(|v| v.as_str()).unwrap_or("").to_string(),
-        body.get("phone").and_then(|v| v.as_str()).unwrap_or("").to_string(),
-        body.get("nickname").and_then(|v| v.as_str()).unwrap_or("").to_string(),
-    ).await {
-        Ok(resp) => (StatusCode::OK, json_success(json!({
-            "token": resp.token, "user_id": resp.user_id, "username": resp.username
-        }))),
-        Err(e) => return json_error_response_fmt(StatusCode::BAD_REQUEST, "注册失败: {e}", &format!("注册失败: {e}") )
+    match client
+        .register(
+            username,
+            password,
+            body.get("email").and_then(|v| v.as_str()).unwrap_or("").to_string(),
+            body.get("phone").and_then(|v| v.as_str()).unwrap_or("").to_string(),
+            body.get("nickname").and_then(|v| v.as_str()).unwrap_or("").to_string(),
+        )
+        .await
+    {
+        Ok(resp) => (
+            StatusCode::OK,
+            json_success(json!({
+                "token": resp.token, "user_id": resp.user_id, "username": resp.username
+            })),
+        ),
+        Err(e) => json_error_response_fmt(
+            StatusCode::BAD_REQUEST,
+            "注册失败: {e}",
+            &format!("注册失败: {e}"),
+        ),
     }
 }
 

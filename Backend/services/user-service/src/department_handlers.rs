@@ -10,6 +10,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::http_handlers::HttpAppState;
 use crate::repository::DepartmentRepositoryError;
+use crate::helpers::{json_success, json_ok, json_error, json_error_fmt, json_success_msg, json_ok_msg, json_error_msg, json_error_msg_fmt};
 
 // ============ 请求/响应结构 ============
 
@@ -125,15 +126,12 @@ pub async fn list_departments(
 
             (
                 StatusCode::OK,
-                Json(serde_json::json!({
-                    "success": true,
-                    "data": {
+                json_success(serde_json::json!({
                         "list": departments,
                         "total": result.total,
                         "page": page,
                         "page_size": page_size
-                    }
-                })),
+                    }),
             )
                 .into_response()
         }
@@ -141,10 +139,7 @@ pub async fn list_departments(
             tracing::error!("查询部门列表失败: {e}");
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Json(serde_json::json!({
-                    "success": false,
-                    "error": "查询部门列表失败"
-                })),
+                json_error("查询部门列表失败"),
             )
                 .into_response()
         }
@@ -175,10 +170,7 @@ pub async fn get_department_tree(State(state): State<HttpAppState>) -> impl Into
 
             (
                 StatusCode::OK,
-                Json(serde_json::json!({
-                    "success": true,
-                    "data": tree_response
-                })),
+                json_success(tree_response),
             )
                 .into_response()
         }
@@ -186,10 +178,7 @@ pub async fn get_department_tree(State(state): State<HttpAppState>) -> impl Into
             tracing::error!("获取部门树失败: {e}");
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Json(serde_json::json!({
-                    "success": false,
-                    "error": "获取部门树失败"
-                })),
+                json_error("获取部门树失败"),
             )
                 .into_response()
         }
@@ -204,9 +193,7 @@ pub async fn get_department(
     match state.department_repository.find_by_id(id).await {
         Ok(Some(dept)) => (
             StatusCode::OK,
-            Json(serde_json::json!({
-                "success": true,
-                "data": {
+            json_success(serde_json::json!({
                     "id": dept.id,
                     "name": dept.name,
                     "code": dept.code,
@@ -219,26 +206,19 @@ pub async fn get_department(
                     "status": dept.status,
                     "created_at": dept.created_at.to_rfc3339(),
                     "updated_at": dept.updated_at.to_rfc3339(),
-                }
-            })),
+                }),
         )
             .into_response(),
         Ok(None) => (
             StatusCode::NOT_FOUND,
-            Json(serde_json::json!({
-                "success": false,
-                "error": "部门不存在"
-            })),
+            json_error("部门不存在"),
         )
             .into_response(),
         Err(e) => {
             tracing::error!("查询部门失败: {e}");
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Json(serde_json::json!({
-                    "success": false,
-                    "error": "查询部门失败"
-                })),
+                json_error("查询部门失败"),
             )
                 .into_response()
         }
@@ -253,10 +233,7 @@ pub async fn create_department(
     if req.name.is_empty() {
         return (
             StatusCode::BAD_REQUEST,
-            Json(serde_json::json!({
-                "success": false,
-                "error": "部门名称不能为空"
-            })),
+            json_error("部门名称不能为空"),
         )
             .into_response();
     }
@@ -275,39 +252,27 @@ pub async fn create_department(
     {
         Ok(id) => (
             StatusCode::CREATED,
-            Json(serde_json::json!({
-                "success": true,
-                "data": {
+            json_success(serde_json::json!({
                     "id": id,
                     "name": req.name
-                }
-            })),
+                }),
         )
             .into_response(),
         Err(DepartmentRepositoryError::AlreadyExists) => (
             StatusCode::CONFLICT,
-            Json(serde_json::json!({
-                "success": false,
-                "error": "部门代码已存在"
-            })),
+            json_error("部门代码已存在"),
         )
             .into_response(),
         Err(DepartmentRepositoryError::MaxLevelExceeded) => (
             StatusCode::BAD_REQUEST,
-            Json(serde_json::json!({
-                "success": false,
-                "error": "部门层级不能超过5级"
-            })),
+            json_error("部门层级不能超过5级"),
         )
             .into_response(),
         Err(e) => {
             tracing::error!("创建部门失败: {e}");
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Json(serde_json::json!({
-                    "success": false,
-                    "error": "创建部门失败"
-                })),
+                json_error("创建部门失败"),
             )
                 .into_response()
         }
@@ -336,48 +301,33 @@ pub async fn update_department(
     {
         Ok(Some(dept)) => (
             StatusCode::OK,
-            Json(serde_json::json!({
-                "success": true,
-                "data": {
+            json_success(serde_json::json!({
                     "id": dept.id,
                     "name": dept.name,
                     "code": dept.code,
-                }
-            })),
+                }),
         )
             .into_response(),
         Ok(None) => (
             StatusCode::NOT_FOUND,
-            Json(serde_json::json!({
-                "success": false,
-                "error": "部门不存在"
-            })),
+            json_error("部门不存在"),
         )
             .into_response(),
         Err(DepartmentRepositoryError::CircularReference) => (
             StatusCode::BAD_REQUEST,
-            Json(serde_json::json!({
-                "success": false,
-                "error": "不能将自己或子部门设为父部门"
-            })),
+            json_error("不能将自己或子部门设为父部门"),
         )
             .into_response(),
         Err(DepartmentRepositoryError::MaxLevelExceeded) => (
             StatusCode::BAD_REQUEST,
-            Json(serde_json::json!({
-                "success": false,
-                "error": "部门层级不能超过5级"
-            })),
+            json_error("部门层级不能超过5级"),
         )
             .into_response(),
         Err(e) => {
             tracing::error!("更新部门失败: {e}");
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Json(serde_json::json!({
-                    "success": false,
-                    "error": "更新部门失败"
-                })),
+                json_error("更新部门失败"),
             )
                 .into_response()
         }
@@ -392,44 +342,29 @@ pub async fn delete_department(
     match state.department_repository.delete(id).await {
         Ok(true) => (
             StatusCode::OK,
-            Json(serde_json::json!({
-                "success": true,
-                "message": "部门删除成功"
-            })),
+            json_ok_msg("部门删除成功"),
         )
             .into_response(),
         Ok(false) => (
             StatusCode::NOT_FOUND,
-            Json(serde_json::json!({
-                "success": false,
-                "error": "部门不存在"
-            })),
+            json_error("部门不存在"),
         )
             .into_response(),
         Err(DepartmentRepositoryError::HasChildDepartments) => (
             StatusCode::CONFLICT,
-            Json(serde_json::json!({
-                "success": false,
-                "error": "部门有子部门，无法删除"
-            })),
+            json_error("部门有子部门，无法删除"),
         )
             .into_response(),
         Err(DepartmentRepositoryError::HasAssociatedUsers) => (
             StatusCode::CONFLICT,
-            Json(serde_json::json!({
-                "success": false,
-                "error": "部门有用户关联，无法删除"
-            })),
+            json_error("部门有用户关联，无法删除"),
         )
             .into_response(),
         Err(e) => {
             tracing::error!("删除部门失败: {e}");
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Json(serde_json::json!({
-                    "success": false,
-                    "error": "删除部门失败"
-                })),
+                json_error("删除部门失败"),
             )
                 .into_response()
         }
@@ -449,44 +384,29 @@ pub async fn move_department(
     {
         Ok(true) => (
             StatusCode::OK,
-            Json(serde_json::json!({
-                "success": true,
-                "message": "部门移动成功"
-            })),
+            json_ok_msg("部门移动成功"),
         )
             .into_response(),
         Ok(false) => (
             StatusCode::NOT_FOUND,
-            Json(serde_json::json!({
-                "success": false,
-                "error": "部门不存在"
-            })),
+            json_error("部门不存在"),
         )
             .into_response(),
         Err(DepartmentRepositoryError::CircularReference) => (
             StatusCode::BAD_REQUEST,
-            Json(serde_json::json!({
-                "success": false,
-                "error": "不能将自己或子部门设为父部门"
-            })),
+            json_error("不能将自己或子部门设为父部门"),
         )
             .into_response(),
         Err(DepartmentRepositoryError::MaxLevelExceeded) => (
             StatusCode::BAD_REQUEST,
-            Json(serde_json::json!({
-                "success": false,
-                "error": "部门层级不能超过5级"
-            })),
+            json_error("部门层级不能超过5级"),
         )
             .into_response(),
         Err(e) => {
             tracing::error!("移动部门失败: {e}");
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Json(serde_json::json!({
-                    "success": false,
-                    "error": "移动部门失败"
-                })),
+                json_error("移动部门失败"),
             )
                 .into_response()
         }
@@ -509,25 +429,19 @@ pub async fn get_department_users(
     {
         Ok((user_ids, total)) => (
             StatusCode::OK,
-            Json(serde_json::json!({
-                "success": true,
-                "data": {
+            json_success(serde_json::json!({
                     "user_ids": user_ids,
                     "total": total,
                     "page": page,
                     "page_size": page_size
-                }
-            })),
+                }),
         )
             .into_response(),
         Err(e) => {
             tracing::error!("获取部门用户失败: {e}");
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Json(serde_json::json!({
-                    "success": false,
-                    "error": "获取部门用户失败"
-                })),
+                json_error("获取部门用户失败"),
             )
                 .into_response()
         }

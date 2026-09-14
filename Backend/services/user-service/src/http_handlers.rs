@@ -15,6 +15,7 @@ use axum::{
 use serde::{Deserialize, Serialize};
 
 use common::{
+use crate::helpers::{json_success, json_ok, json_error, json_error_fmt, json_success_msg, json_ok_msg, json_error_msg, json_error_msg_fmt};
     DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE, MAX_USERNAME_LENGTH, MIN_PAGE,
     MIN_USERNAME_LENGTH, VALID_ROLES, VALID_STATUSES, default_password,
 };
@@ -199,15 +200,12 @@ pub async fn list_users(
             let users: Vec<UserResponse> = result.users.into_iter().map(std::convert::Into::into).collect();
             (
                 StatusCode::OK,
-                Json(serde_json::json!({
-                    "success": true,
-                    "data": {
+                json_success(serde_json::json!({
                         "list": users,
                         "total": result.total,
                         "page": page,
                         "page_size": page_size
-                    }
-                })),
+                    }),
             )
                 .into_response()
         }
@@ -215,10 +213,7 @@ pub async fn list_users(
             tracing::error!("查询用户列表失败: {e:?}");
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Json(serde_json::json!({
-                    "success": false,
-                    "error": "查询用户列表失败"
-                })),
+                json_error("查询用户列表失败"),
             )
                 .into_response()
         }
@@ -233,28 +228,19 @@ pub async fn get_user(
     match state.user_repository.find_by_id(user_id).await {
         Ok(Some(user)) => (
             StatusCode::OK,
-            Json(serde_json::json!({
-                "success": true,
-                "data": UserResponse::from(user)
-            })),
+            json_success(UserResponse::from(user)),
         )
             .into_response(),
         Ok(None) => (
             StatusCode::NOT_FOUND,
-            Json(serde_json::json!({
-                "success": false,
-                "error": "用户不存在"
-            })),
+            json_error("用户不存在"),
         )
             .into_response(),
         Err(e) => {
             tracing::error!("查询用户失败: {e:?}");
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Json(serde_json::json!({
-                    "success": false,
-                    "error": "查询用户失败"
-                })),
+                json_error("查询用户失败"),
             )
                 .into_response()
         }
@@ -270,10 +256,7 @@ pub async fn create_user(
     if let Err(msg) = validate_username(&req.username) {
         return (
             StatusCode::BAD_REQUEST,
-            Json(serde_json::json!({
-                "success": false,
-                "error": msg
-            })),
+            json_error(&format!("{}", msg)),
         )
             .into_response();
     }
@@ -286,10 +269,7 @@ pub async fn create_user(
             tracing::error!("密码哈希失败: {e}");
             return (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Json(serde_json::json!({
-                    "success": false,
-                    "error": "密码处理失败"
-                })),
+                json_error("密码处理失败"),
             )
                 .into_response();
         }
@@ -309,31 +289,22 @@ pub async fn create_user(
     {
         Ok(user_id) => (
             StatusCode::CREATED,
-            Json(serde_json::json!({
-                "success": true,
-                "data": {
+            json_success(serde_json::json!({
                     "id": user_id,
                     "username": req.username
-                }
-            })),
+                }),
         )
             .into_response(),
         Err(crate::repository::UserRepositoryError::AlreadyExists) => (
             StatusCode::CONFLICT,
-            Json(serde_json::json!({
-                "success": false,
-                "error": "用户名已存在"
-            })),
+            json_error("用户名已存在"),
         )
             .into_response(),
         Err(e) => {
             tracing::error!("创建用户失败: {e:?}");
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Json(serde_json::json!({
-                    "success": false,
-                    "error": "创建用户失败"
-                })),
+                json_error("创建用户失败"),
             )
                 .into_response()
         }
@@ -359,28 +330,19 @@ pub async fn update_user(
     {
         Ok(Some(user)) => (
             StatusCode::OK,
-            Json(serde_json::json!({
-                "success": true,
-                "data": UserResponse::from(user)
-            })),
+            json_success(UserResponse::from(user)),
         )
             .into_response(),
         Ok(None) => (
             StatusCode::NOT_FOUND,
-            Json(serde_json::json!({
-                "success": false,
-                "error": "用户不存在"
-            })),
+            json_error("用户不存在"),
         )
             .into_response(),
         Err(e) => {
             tracing::error!("更新用户失败: {e:?}");
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Json(serde_json::json!({
-                    "success": false,
-                    "error": "更新用户失败"
-                })),
+                json_error("更新用户失败"),
             )
                 .into_response()
         }
@@ -395,28 +357,19 @@ pub async fn delete_user(
     match state.user_repository.delete(user_id).await {
         Ok(true) => (
             StatusCode::OK,
-            Json(serde_json::json!({
-                "success": true,
-                "message": "用户删除成功"
-            })),
+            json_ok_msg("用户删除成功"),
         )
             .into_response(),
         Ok(false) => (
             StatusCode::NOT_FOUND,
-            Json(serde_json::json!({
-                "success": false,
-                "error": "用户不存在"
-            })),
+            json_error("用户不存在"),
         )
             .into_response(),
         Err(e) => {
             tracing::error!("删除用户失败: {e:?}");
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Json(serde_json::json!({
-                    "success": false,
-                    "error": "删除用户失败"
-                })),
+                json_error("删除用户失败"),
             )
                 .into_response()
         }
@@ -433,10 +386,7 @@ pub async fn update_user_status(
     if let Err(msg) = validate_status(req.status) {
         return (
             StatusCode::BAD_REQUEST,
-            Json(serde_json::json!({
-                "success": false,
-                "error": msg
-            })),
+            json_error(&format!("{}", msg)),
         )
             .into_response();
     }
@@ -449,28 +399,19 @@ pub async fn update_user_status(
     {
         Ok(true) => (
             StatusCode::OK,
-            Json(serde_json::json!({
-                "success": true,
-                "message": "状态更新成功"
-            })),
+            json_ok_msg("状态更新成功"),
         )
             .into_response(),
         Ok(false) => (
             StatusCode::NOT_FOUND,
-            Json(serde_json::json!({
-                "success": false,
-                "error": "用户不存在"
-            })),
+            json_error("用户不存在"),
         )
             .into_response(),
         Err(e) => {
             tracing::error!("更新用户状态失败: {e:?}");
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Json(serde_json::json!({
-                    "success": false,
-                    "error": "更新用户状态失败"
-                })),
+                json_error("更新用户状态失败"),
             )
                 .into_response()
         }
@@ -487,10 +428,7 @@ pub async fn update_user_role(
     if let Err(msg) = validate_role(&req.role) {
         return (
             StatusCode::BAD_REQUEST,
-            Json(serde_json::json!({
-                "success": false,
-                "error": msg
-            })),
+            json_error(&format!("{}", msg)),
         )
             .into_response();
     }
@@ -499,28 +437,19 @@ pub async fn update_user_role(
     match state.user_repository.update_role(user_id, &req.role).await {
         Ok(true) => (
             StatusCode::OK,
-            Json(serde_json::json!({
-                "success": true,
-                "message": "角色更新成功"
-            })),
+            json_ok_msg("角色更新成功"),
         )
             .into_response(),
         Ok(false) => (
             StatusCode::NOT_FOUND,
-            Json(serde_json::json!({
-                "success": false,
-                "error": "用户不存在"
-            })),
+            json_error("用户不存在"),
         )
             .into_response(),
         Err(e) => {
             tracing::error!("更新用户角色失败: {e:?}");
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Json(serde_json::json!({
-                    "success": false,
-                    "error": "更新用户角色失败"
-                })),
+                json_error("更新用户角色失败"),
             )
                 .into_response()
         }
@@ -556,10 +485,7 @@ pub async fn reset_user_password(
             tracing::error!("密码哈希失败: {e}");
             return (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Json(serde_json::json!({
-                    "success": false,
-                    "error": "密码处理失败"
-                })),
+                json_error("密码处理失败"),
             )
                 .into_response();
         }
@@ -572,31 +498,21 @@ pub async fn reset_user_password(
     {
         Ok(true) => (
             StatusCode::OK,
-            Json(serde_json::json!({
-                "success": true,
-                "message": "密码重置成功",
-                "data": {
+            json_success_msg({
                     "new_password": password_to_hash
-                }
-            })),
+                }, "密码重置成功"),
         )
             .into_response(),
         Ok(false) => (
             StatusCode::NOT_FOUND,
-            Json(serde_json::json!({
-                "success": false,
-                "error": "用户不存在"
-            })),
+            json_error("用户不存在"),
         )
             .into_response(),
         Err(e) => {
             tracing::error!("重置密码失败: {e:?}");
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Json(serde_json::json!({
-                    "success": false,
-                    "error": "重置密码失败"
-                })),
+                json_error("重置密码失败"),
             )
                 .into_response()
         }
@@ -609,14 +525,11 @@ pub async fn get_import_template() -> impl IntoResponse {
 
     (
         StatusCode::OK,
-        Json(serde_json::json!({
-            "success": true,
-            "data": {
+        json_success(serde_json::json!({
                 "template": template,
                 "columns": ["username", "password", "email", "nickname", "phone", "role"],
                 "description": "用户导入模板，请按此格式填写 CSV 文件"
-            }
-        })),
+            }),
     )
         .into_response()
 }
@@ -655,10 +568,7 @@ pub async fn import_users(
             tracing::error!("读取上传文件失败: {e}");
             return (
                 StatusCode::BAD_REQUEST,
-                Json(serde_json::json!({
-                    "success": false,
-                    "error": "无法读取上传文件"
-                })),
+                json_error("无法读取上传文件"),
             )
                 .into_response();
         }
@@ -766,10 +676,7 @@ pub async fn import_users(
 
     (
         StatusCode::OK,
-        Json(serde_json::json!({
-            "success": true,
-            "message": format!("导入完成: 成功 {} 个，失败 {} 个", success_count, fail_count),
-            "data": {
+        json_success_msg({
                 "total": total,
                 "success": success_count,
                 "failed": fail_count,
@@ -778,8 +685,7 @@ pub async fn import_users(
                 } else {
                     errors
                 }
-            }
-        })),
+            }, &format!("导入完成: 成功 {),
     )
         .into_response()
 }
@@ -834,10 +740,7 @@ pub async fn export_users(
             tracing::error!("导出用户失败: {e:?}");
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Json(serde_json::json!({
-                    "success": false,
-                    "error": "导出用户失败"
-                })),
+                json_error("导出用户失败"),
             )
                 .into_response()
         }
@@ -866,10 +769,7 @@ pub async fn batch_update_user_role(
     if let Err(msg) = validate_role(&req.role) {
         return (
             StatusCode::BAD_REQUEST,
-            Json(serde_json::json!({
-                "success": false,
-                "error": msg
-            })),
+            json_error(&format!("{}", msg)),
         )
             .into_response();
     }
@@ -878,10 +778,7 @@ pub async fn batch_update_user_role(
     match state.user_repository.batch_update_role(&req.user_ids, &req.role).await {
         Ok(result) => (
             StatusCode::OK,
-            Json(serde_json::json!({
-                "success": true,
-                "message": format!("成功更新 {} 个用户，失败 {} 个", result.success_count, result.fail_count),
-                "data": {
+            json_success_msg({
                     "success_count": result.success_count,
                     "fail_count": result.fail_count,
                     "errors": result.errors.iter().map(|e| {
@@ -890,17 +787,13 @@ pub async fn batch_update_user_role(
                             "message": e.message
                         })
                     }).collect::<Vec<_>>()
-                }
-            })),
+                }, &format!("成功更新 {),
         ).into_response(),
         Err(e) => {
             tracing::error!("批量更新用户角色失败: {e:?}");
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Json(serde_json::json!({
-                    "success": false,
-                    "error": "批量更新用户角色失败"
-                })),
+                json_error("批量更新用户角色失败"),
             ).into_response()
         }
     }
@@ -915,10 +808,7 @@ pub async fn batch_update_user_status(
     if let Err(msg) = validate_status(req.status) {
         return (
             StatusCode::BAD_REQUEST,
-            Json(serde_json::json!({
-                "success": false,
-                "error": msg
-            })),
+            json_error(&format!("{}", msg)),
         )
             .into_response();
     }
@@ -927,10 +817,7 @@ pub async fn batch_update_user_status(
     match state.user_repository.batch_update_status(&req.user_ids, req.status).await {
         Ok(result) => (
             StatusCode::OK,
-            Json(serde_json::json!({
-                "success": true,
-                "message": format!("成功更新 {} 个用户，失败 {} 个", result.success_count, result.fail_count),
-                "data": {
+            json_success_msg({
                     "success_count": result.success_count,
                     "fail_count": result.fail_count,
                     "errors": result.errors.iter().map(|e| {
@@ -939,17 +826,13 @@ pub async fn batch_update_user_status(
                             "message": e.message
                         })
                     }).collect::<Vec<_>>()
-                }
-            })),
+                }, &format!("成功更新 {),
         ).into_response(),
         Err(e) => {
             tracing::error!("批量更新用户状态失败: {e:?}");
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Json(serde_json::json!({
-                    "success": false,
-                    "error": "批量更新用户状态失败"
-                })),
+                json_error("批量更新用户状态失败"),
             ).into_response()
         }
     }
@@ -964,10 +847,7 @@ pub async fn batch_delete_users(
     match state.user_repository.batch_delete(&req.user_ids).await {
         Ok(result) => (
             StatusCode::OK,
-            Json(serde_json::json!({
-                "success": true,
-                "message": format!("成功删除 {} 个用户，失败 {} 个", result.success_count, result.fail_count),
-                "data": {
+            json_success_msg({
                     "success_count": result.success_count,
                     "fail_count": result.fail_count,
                     "errors": result.errors.iter().map(|e| {
@@ -976,17 +856,13 @@ pub async fn batch_delete_users(
                             "message": e.message
                         })
                     }).collect::<Vec<_>>()
-                }
-            })),
+                }, &format!("成功删除 {),
         ).into_response(),
         Err(e) => {
             tracing::error!("批量删除用户失败: {e:?}");
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Json(serde_json::json!({
-                    "success": false,
-                    "error": "批量删除用户失败"
-                })),
+                json_error("批量删除用户失败"),
             ).into_response()
         }
     }
@@ -996,10 +872,7 @@ pub async fn batch_delete_users(
 pub async fn health() -> impl IntoResponse {
     (
         StatusCode::OK,
-        Json(serde_json::json!({
-            "status": "healthy",
-            "service": "user-service"
-        })),
+        json_health("user-service"),
     )
         .into_response()
 }

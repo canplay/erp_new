@@ -10,6 +10,7 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
 use crate::http_handlers::HttpAppState;
+use crate::helpers::{json_success, json_ok, json_error, json_error_fmt, json_success_msg, json_ok_msg, json_error_msg, json_error_msg_fmt};
 
 // ============ 请求/响应结构 ============
 
@@ -171,15 +172,12 @@ pub async fn list_announcements(
 
             (
                 StatusCode::OK,
-                Json(serde_json::json!({
-                    "success": true,
-                    "data": {
+                json_success(serde_json::json!({
                         "list": announcements,
                         "total": result.total,
                         "page": page,
                         "page_size": page_size
-                    }
-                })),
+                    }),
             )
                 .into_response()
         }
@@ -187,10 +185,7 @@ pub async fn list_announcements(
             tracing::error!("查询公告列表失败: {e}");
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Json(serde_json::json!({
-                    "success": false,
-                    "error": "查询公告列表失败"
-                })),
+                json_error("查询公告列表失败"),
             )
                 .into_response()
         }
@@ -217,10 +212,7 @@ pub async fn get_active_announcements(State(state): State<HttpAppState>) -> impl
 
             (
                 StatusCode::OK,
-                Json(serde_json::json!({
-                    "success": true,
-                    "data": result
-                })),
+                json_success(result),
             )
                 .into_response()
         }
@@ -228,10 +220,7 @@ pub async fn get_active_announcements(State(state): State<HttpAppState>) -> impl
             tracing::error!("获取活跃公告失败: {e}");
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Json(serde_json::json!({
-                    "success": false,
-                    "error": "获取活跃公告失败"
-                })),
+                json_error("获取活跃公告失败"),
             )
                 .into_response()
         }
@@ -246,9 +235,7 @@ pub async fn get_announcement(
     match state.announcement_repository.find_by_id(id).await {
         Ok(Some(ann)) => (
             StatusCode::OK,
-            Json(serde_json::json!({
-                "success": true,
-                "data": {
+            json_success(serde_json::json!({
                     "id": ann.id,
                     "title": ann.title,
                     "content": ann.content,
@@ -262,26 +249,19 @@ pub async fn get_announcement(
                     "created_by_name": ann.created_by_name,
                     "created_at": ann.created_at.to_rfc3339(),
                     "updated_at": ann.updated_at.to_rfc3339(),
-                }
-            })),
+                }),
         )
             .into_response(),
         Ok(None) => (
             StatusCode::NOT_FOUND,
-            Json(serde_json::json!({
-                "success": false,
-                "error": "公告不存在"
-            })),
+            json_error("公告不存在"),
         )
             .into_response(),
         Err(e) => {
             tracing::error!("查询公告失败: {e}");
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Json(serde_json::json!({
-                    "success": false,
-                    "error": "查询公告失败"
-                })),
+                json_error("查询公告失败"),
             )
                 .into_response()
         }
@@ -296,10 +276,7 @@ pub async fn create_announcement(
     if req.title.is_empty() || req.content.is_empty() {
         return (
             StatusCode::BAD_REQUEST,
-            Json(serde_json::json!({
-                "success": false,
-                "error": "标题和内容不能为空"
-            })),
+            json_error("标题和内容不能为空"),
         )
             .into_response();
     }
@@ -324,23 +301,17 @@ pub async fn create_announcement(
     {
         Ok(id) => (
             StatusCode::CREATED,
-            Json(serde_json::json!({
-                "success": true,
-                "data": {
+            json_success(serde_json::json!({
                     "id": id,
                     "title": req.title
-                }
-            })),
+                }),
         )
             .into_response(),
         Err(e) => {
             tracing::error!("创建公告失败: {e}");
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Json(serde_json::json!({
-                    "success": false,
-                    "error": "创建公告失败"
-                })),
+                json_error("创建公告失败"),
             )
                 .into_response()
         }
@@ -373,28 +344,19 @@ pub async fn update_announcement(
     {
         Ok(true) => (
             StatusCode::OK,
-            Json(serde_json::json!({
-                "success": true,
-                "message": "公告更新成功"
-            })),
+            json_ok_msg("公告更新成功"),
         )
             .into_response(),
         Ok(false) => (
             StatusCode::NOT_FOUND,
-            Json(serde_json::json!({
-                "success": false,
-                "error": "公告不存在"
-            })),
+            json_error("公告不存在"),
         )
             .into_response(),
         Err(e) => {
             tracing::error!("更新公告失败: {e}");
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Json(serde_json::json!({
-                    "success": false,
-                    "error": "更新公告失败"
-                })),
+                json_error("更新公告失败"),
             )
                 .into_response()
         }
@@ -409,28 +371,19 @@ pub async fn delete_announcement(
     match state.announcement_repository.delete(id).await {
         Ok(true) => (
             StatusCode::OK,
-            Json(serde_json::json!({
-                "success": true,
-                "message": "公告删除成功"
-            })),
+            json_ok_msg("公告删除成功"),
         )
             .into_response(),
         Ok(false) => (
             StatusCode::NOT_FOUND,
-            Json(serde_json::json!({
-                "success": false,
-                "error": "公告不存在"
-            })),
+            json_error("公告不存在"),
         )
             .into_response(),
         Err(e) => {
             tracing::error!("删除公告失败: {e}");
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Json(serde_json::json!({
-                    "success": false,
-                    "error": "删除公告失败"
-                })),
+                json_error("删除公告失败"),
             )
                 .into_response()
         }
@@ -458,10 +411,7 @@ pub async fn list_configs(State(state): State<HttpAppState>) -> impl IntoRespons
 
             (
                 StatusCode::OK,
-                Json(serde_json::json!({
-                    "success": true,
-                    "data": result
-                })),
+                json_success(result),
             )
                 .into_response()
         }
@@ -469,10 +419,7 @@ pub async fn list_configs(State(state): State<HttpAppState>) -> impl IntoRespons
             tracing::error!("获取配置失败: {e}");
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Json(serde_json::json!({
-                    "success": false,
-                    "error": "获取配置失败"
-                })),
+                json_error("获取配置失败"),
             )
                 .into_response()
         }
@@ -487,9 +434,7 @@ pub async fn get_config(
     match state.announcement_repository.get_config(&key).await {
         Ok(Some(config)) => (
             StatusCode::OK,
-            Json(serde_json::json!({
-                "success": true,
-                "data": {
+            json_success(serde_json::json!({
                     "id": config.id,
                     "category": config.category,
                     "config_key": config.config_key,
@@ -497,26 +442,19 @@ pub async fn get_config(
                     "value_type": config.value_type,
                     "label": config.label,
                     "description": config.description,
-                }
-            })),
+                }),
         )
             .into_response(),
         Ok(None) => (
             StatusCode::NOT_FOUND,
-            Json(serde_json::json!({
-                "success": false,
-                "error": "配置不存在"
-            })),
+            json_error("配置不存在"),
         )
             .into_response(),
         Err(e) => {
             tracing::error!("获取配置失败: {e}");
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Json(serde_json::json!({
-                    "success": false,
-                    "error": "获取配置失败"
-                })),
+                json_error("获取配置失败"),
             )
                 .into_response()
         }
@@ -536,28 +474,19 @@ pub async fn update_config(
     {
         Ok(true) => (
             StatusCode::OK,
-            Json(serde_json::json!({
-                "success": true,
-                "message": "配置更新成功"
-            })),
+            json_ok_msg("配置更新成功"),
         )
             .into_response(),
         Ok(false) => (
             StatusCode::NOT_FOUND,
-            Json(serde_json::json!({
-                "success": false,
-                "error": "配置不存在"
-            })),
+            json_error("配置不存在"),
         )
             .into_response(),
         Err(e) => {
             tracing::error!("更新配置失败: {e}");
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Json(serde_json::json!({
-                    "success": false,
-                    "error": "更新配置失败"
-                })),
+                json_error("更新配置失败"),
             )
                 .into_response()
         }
@@ -572,28 +501,19 @@ pub async fn reset_config(
     match state.announcement_repository.reset_config(&key).await {
         Ok(true) => (
             StatusCode::OK,
-            Json(serde_json::json!({
-                "success": true,
-                "message": "配置重置成功"
-            })),
+            json_ok_msg("配置重置成功"),
         )
             .into_response(),
         Ok(false) => (
             StatusCode::NOT_FOUND,
-            Json(serde_json::json!({
-                "success": false,
-                "error": "配置不存在"
-            })),
+            json_error("配置不存在"),
         )
             .into_response(),
         Err(e) => {
             tracing::error!("重置配置失败: {e}");
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Json(serde_json::json!({
-                    "success": false,
-                    "error": "重置配置失败"
-                })),
+                json_error("重置配置失败"),
             )
                 .into_response()
         }
@@ -638,15 +558,12 @@ pub async fn list_login_logs(
 
             (
                 StatusCode::OK,
-                Json(serde_json::json!({
-                    "success": true,
-                    "data": {
+                json_success(serde_json::json!({
                         "list": logs,
                         "total": result.total,
                         "page": page,
                         "page_size": page_size
-                    }
-                })),
+                    }),
             )
                 .into_response()
         }
@@ -654,10 +571,7 @@ pub async fn list_login_logs(
             tracing::error!("查询登录日志失败: {e}");
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Json(serde_json::json!({
-                    "success": false,
-                    "error": "查询登录日志失败"
-                })),
+                json_error("查询登录日志失败"),
             )
                 .into_response()
         }

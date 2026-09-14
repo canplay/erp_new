@@ -7,11 +7,8 @@ use axum::{
     http::{Request, Response, StatusCode},
     middleware::Next,
 };
-use std::sync::Arc;
-use tracing::{warn, debug};
+use tracing::debug;
 
-use tenant_core::quota::{QuotaSet, QuotaType};
-use tenant_core::TenantId;
 
 use crate::middleware::tenant::current_tenant_id;
 

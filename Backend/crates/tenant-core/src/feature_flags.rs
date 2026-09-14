@@ -128,7 +128,7 @@ impl FeatureFlagManager {
 
 /// 功能标志预设（按套餐）
 pub mod presets {
-    use super::*;
+    
     use std::collections::HashMap;
 
     /// 免费套餐功能

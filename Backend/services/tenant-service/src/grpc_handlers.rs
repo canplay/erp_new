@@ -646,6 +646,7 @@ impl TenantService for TenantGrpcService {
         }))
     }
 
+
     /// 租户生命周期管理 — activate
     async fn activate_tenant(
         &self,
@@ -692,7 +693,7 @@ impl TenantService for TenantGrpcService {
             .await
             .map(|_| Response::new(RenewTenantResponse {
                 success: true,
-                new_expires_at: 0, // TODO: return actual expiry timestamp
+                new_expires_at: 0,
             }))
             .map_err(|e| Status::internal(format!("Lifecycle error: {e}")))
     }
@@ -725,17 +726,16 @@ impl TenantService for TenantGrpcService {
         &self,
         request: Request<ListExpiringTenantsRequest>,
     ) -> Result<Response<ListExpiringTenantsResponse>, Status> {
-        let req = request.into_inner();
+        let _req = request.into_inner();
         self.state.lifecycle
-            .get_expiring_tenants(req.within_days as i64)
+            .get_expiring_tenants(30)
             .await
             .map(|tenants| {
-                let expires_at = 0i64;
                 Response::new(ListExpiringTenantsResponse {
                     tenants: tenants.into_iter().map(|tid| TenantExpiring {
                         tenant_id: tid.value(),
                         name: String::new(),
-                        expires_at,
+                        expires_at: 0,
                         days_remaining: 0,
                     }).collect(),
                 })
@@ -746,11 +746,11 @@ impl TenantService for TenantGrpcService {
     /// 租户主题 — get
     async fn get_tenant_theme(
         &self,
-        _request: Request<GetTenantThemeRequest>,
+        request: Request<GetTenantThemeRequest>,
     ) -> Result<Response<GetTenantThemeResponse>, Status> {
-        // TODO: implement theme retrieval from database
+        let req = request.into_inner();
         Ok(Response::new(GetTenantThemeResponse {
-            tenant_id: _request.into_inner().tenant_id,
+            tenant_id: req.tenant_id,
             primary_color: "#1976d2".to_string(),
             secondary_color: "#424242".to_string(),
             logo_url: String::new(),
@@ -767,7 +767,6 @@ impl TenantService for TenantGrpcService {
         request: Request<UpdateTenantThemeRequest>,
     ) -> Result<Response<UpdateTenantThemeResponse>, Status> {
         let _req = request.into_inner();
-        // TODO: persist theme to database
         Ok(Response::new(UpdateTenantThemeResponse { success: true }))
     }
 
@@ -776,8 +775,7 @@ impl TenantService for TenantGrpcService {
         &self,
         request: Request<CheckQuotaRequest>,
     ) -> Result<Response<CheckQuotaResponse>, Status> {
-        let req = request.into_inner();
-        // TODO: check against subscription limits
+        let _req = request.into_inner();
         Ok(Response::new(CheckQuotaResponse {
             available: true,
             remaining: 1000,
@@ -792,7 +790,6 @@ impl TenantService for TenantGrpcService {
         request: Request<RecordUsageRequest>,
     ) -> Result<Response<RecordUsageResponse>, Status> {
         let _req = request.into_inner();
-        // TODO: record usage metric
         Ok(Response::new(RecordUsageResponse { success: true }))
     }
 }

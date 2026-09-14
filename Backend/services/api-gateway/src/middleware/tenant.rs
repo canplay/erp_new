@@ -7,7 +7,6 @@ use axum::{
     http::{Request, Response, StatusCode},
     middleware::Next,
 };
-use std::sync::Arc;
 use tracing::{warn, debug};
 
 use tenant_core::context::{set_tenant_context, TenantContext};
@@ -17,7 +16,7 @@ use crate::middleware::jwt::JwtClaims;
 
 /// 从请求中提取租户 ID 并注入到上下文中
 pub async fn tenant_extraction_middleware(
-    mut request: Request<Body>,
+    request: Request<Body>,
     next: Next,
 ) -> Result<Response<Body>, StatusCode> {
     // 从 JWT Claims 中提取租户 ID

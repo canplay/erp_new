@@ -4,6 +4,7 @@
 //! that returns an `axum::Router<Arc<AppState>>`.
 //! The `all_routes()` function merges all sub-routers into one.
 
+pub mod billing_routes;
 pub mod api_key_routes;
 pub mod audit_routes;
 pub mod auth_routes;
@@ -39,6 +40,7 @@ use crate::AppState;
 
 
 pub use api_key_routes::routes as api_key_routes;
+pub use billing_routes::routes as billing_routes;
 pub use audit_routes::routes as audit_routes;
 pub use auth_routes::routes as auth_routes;
 pub use browser_routes::routes as browser_routes;
@@ -79,6 +81,7 @@ pub fn all_routes() -> Router<Arc<AppState>> {
         .merge(workflow_routes())
         .merge(audit_routes())
         .merge(api_key_routes())
+        .merge(billing_routes())
         .merge(social_ops_routes())
         .merge(device_routes())
         .merge(security_routes())

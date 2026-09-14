@@ -48,7 +48,7 @@ impl IpRateLimiter {
     pub fn new(requests_per_minute: u32) -> Self {
         Self {
             request_counts: Arc::new(parking_lot::Mutex::new(
-                lru::LruCache::new(std::num::NonZeroUsize::new(10_000).unwrap())
+                lru::LruCache::new(std::num::NonZeroUsize::new(10_000).unwrap_or(std::num::NonZeroUsize::MIN))
             )),
             requests_per_minute,
         }

@@ -197,7 +197,7 @@ where
                     let response = Response::builder()
                         .status(StatusCode::BAD_REQUEST)
                         .body(Body::from("Missing x-tenant-id header"))
-                        .unwrap();
+                        .unwrap_or_else(|_| Response::new(Body::from("Bad Request")));
                     Ok(response)
                 }
             }

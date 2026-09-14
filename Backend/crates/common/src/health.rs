@@ -143,13 +143,19 @@ impl RedisHealthState {
                 let url = url.clone();
                 // 实际连接 Redis 并执行 PING 命令
                 let result = tokio::spawn(async move {
-                    let client = redis::Client::open(url.as_str()).unwrap();
-                    let mut conn = client.get_multiplexed_async_connection().await.unwrap();
-                    let _: () = redis::cmd("PING")
-                        .query_async(&mut conn)
-                        .await
-                        .unwrap();
-                    Ok::<(), Box<dyn std::error::Error + Send + Sync>>(())
+                    let client = match redis::Client::open(url.as_str()) {
+                        Ok(c) => c,
+                        Err(e) => return Err::<(), Box<dyn std::error::Error + Send + Sync>>(format!("Redis client error: {e}").into())
+                    };
+                    let mut conn = match client.get_multiplexed_async_connection().await {
+                        Ok(c) => c,
+                        Err(e) => return Err(format!("Redis connect error: {e}").into())
+                    };
+                    let _: () = match redis::cmd("PING").query_async(&mut conn).await {
+                        Ok(r) => r,
+                        Err(e) => return Err(format!("Redis PING error: {e}").into())
+                    };
+                    Ok(())
                 })
                 .await;
                 

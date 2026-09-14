@@ -113,7 +113,7 @@ impl Invoice {
     pub fn recalculate(&mut self) {
         self.subtotal = self.line_items.iter().map(|item| item.amount).sum();
         // 简化：假设税率 6%
-        self.tax_amount = (self.subtotal * Decimal::try_from(0.06).unwrap()).round_dp(2);
+        self.tax_amount = (self.subtotal * Decimal::try_from(0.06).unwrap_or(Decimal::ZERO)).round_dp(2);
         self.total = self.subtotal + self.tax_amount;
         self.updated_at = Utc::now();
     }

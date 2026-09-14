@@ -158,9 +158,14 @@ impl LifecycleManager {
         }
         
         chrono::NaiveDate::from_ymd_opt(year, month, from.day().min(28))
-            .unwrap_or_else(|| chrono::NaiveDate::from_ymd_opt(year, month, 28).unwrap())
-            .and_hms_opt(from.hour(), from.minute(), from.second())
-            .unwrap()
+            .unwrap_or_else(|| chrono::NaiveDate::from_ymd_opt(year, month, 1).unwrap_or_default())
+            .and_hms_opt(from.hour().min(23), from.minute().min(59), from.second().min(59))
+            .unwrap_or_else(|| {
+                chrono::NaiveDate::from_ymd_opt(year, month, 1)
+                    .unwrap_or_default()
+                    .and_hms_opt(0, 0, 0)
+                    .unwrap_or_default()
+            })
             .and_utc()
     }
 }

@@ -281,17 +281,17 @@ impl MockEmailProvider {
 
     /// Get all sent messages (for testing)
     pub fn get_sent_messages(&self) -> Vec<EmailMessage> {
-        self.sent_messages.lock().expect("lock should not be poisoned").clone()
+        self.sent_messages.lock().unwrap_or_else(|e| e.into_inner()).clone()
     }
 
     /// Get the count of sent messages
     pub fn sent_count(&self) -> usize {
-        self.sent_messages.lock().expect("lock should not be poisoned").len()
+        self.sent_messages.lock().unwrap_or_else(|e| e.into_inner()).len()
     }
 
     /// Clear all sent messages
     pub fn clear(&self) {
-        self.sent_messages.lock().expect("lock should not be poisoned").clear();
+        self.sent_messages.lock().unwrap_or_else(|e| e.into_inner()).clear();
     }
 }
 
@@ -304,12 +304,12 @@ impl Default for MockEmailProvider {
 #[async_trait::async_trait]
 impl EmailProvider for MockEmailProvider {
     async fn send(&self, message: &EmailMessage) -> EmailResult<()> {
-        self.sent_messages.lock().expect("lock should not be poisoned").push(message.clone());
+        self.sent_messages.lock().unwrap_or_else(|e| e.into_inner()).push(message.clone());
         Ok(())
     }
 
     async fn send_batch(&self, messages: &[EmailMessage]) -> EmailResult<usize> {
-        let mut sent = self.sent_messages.lock().expect("lock should not be poisoned");
+        let mut sent = self.sent_messages.lock().unwrap_or_else(|e| e.into_inner());
         let count = messages.len();
         for message in messages {
             sent.push(message.clone());

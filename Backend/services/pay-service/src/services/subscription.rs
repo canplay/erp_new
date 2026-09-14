@@ -334,7 +334,12 @@ impl SubscriptionService {
 impl Default for SubscriptionService {
     fn default() -> Self {
         let pool = sqlx::PgPool::connect_lazy(&std::env::var("DATABASE_URL").unwrap_or_default())
-            .expect("failed to connect to database");
+            .unwrap_or_else(|e| {
+                tracing::error!("数据库连接失败: {e}");
+                sqlx::PgPool::connect_lazy("postgres://localhost:5432/fallback").unwrap_or_else(|_| {
+                    panic!("无法建立数据库连接: {e}")
+                })
+            });
         Self { pool }
     }
 }

@@ -421,7 +421,7 @@ fn uuid_v4() -> String {
     use std::time::{SystemTime, UNIX_EPOCH};
     let timestamp = SystemTime::now()
         .duration_since(UNIX_EPOCH)
-        .expect("system time should be after UNIX epoch")
+        .unwrap_or_else(|_| { tracing::error!("system time is before UNIX epoch"); std::time::Duration::from_secs(0) })
         .as_nanos();
     format!("{timestamp:032x}")
 }

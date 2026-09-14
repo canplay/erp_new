@@ -230,7 +230,7 @@ impl WorkflowEventEmitter {
     /// Emit a workflow event
     pub async fn emit(&self, event: &WorkflowEvent) -> WorkflowEventResult<()> {
         // Store in history
-        self.event_history.lock().expect("lock should not be poisoned").push(event.clone());
+        self.event_history.lock().unwrap_or_else(|e| e.into_inner()).push(event.clone());
 
         // Log the event
         tracing::info!(
@@ -434,17 +434,17 @@ impl WorkflowEventEmitter {
 
     /// Get event history (for testing/debugging)
     pub fn get_event_history(&self) -> Vec<WorkflowEvent> {
-        self.event_history.lock().expect("lock should not be poisoned").clone()
+        self.event_history.lock().unwrap_or_else(|e| e.into_inner()).clone()
     }
 
     /// Clear event history
     pub fn clear_history(&self) {
-        self.event_history.lock().expect("lock should not be poisoned").clear();
+        self.event_history.lock().unwrap_or_else(|e| e.into_inner()).clear();
     }
 
     /// Get event count
     pub fn event_count(&self) -> usize {
-        self.event_history.lock().expect("lock should not be poisoned").len()
+        self.event_history.lock().unwrap_or_else(|e| e.into_inner()).len()
     }
 }
 

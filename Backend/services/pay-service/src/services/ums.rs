@@ -114,7 +114,10 @@ impl UmsService {
 
         let timestamp = SystemTime::now()
             .duration_since(UNIX_EPOCH)
-            .expect("system time should be after UNIX epoch")
+            .unwrap_or_else(|e| {
+                tracing::error!("系统时间早于 UNIX epoch: {e}");
+                std::time::Duration::from_secs(0)
+            })
             .as_secs();
 
         let timestamp_str = format!(

@@ -172,7 +172,7 @@ pub async fn ums_query(
     Query(params): Query<UmsQueryParams>,
 ) -> Result<Json<Response<serde_json::Value>>, PayError> {
     let pool = sqlx::PgPool::connect_lazy(&std::env::var("DATABASE_URL").unwrap_or_default())
-        .expect("failed to connect to database");
+        .map_err(|e| PayError::InternalError(format!("数据库连接失败: {e}")))?;
     let service = UmsService::new(create_ums_config(), pool);
     let token = get_ums_token(&service).await?;
     let result = service.query(&params, &token).await?;
@@ -185,7 +185,7 @@ pub async fn ums_create(
     Json(params): Json<UmsOrderParams>,
 ) -> Result<Json<Response<serde_json::Value>>, PayError> {
     let pool = sqlx::PgPool::connect_lazy(&std::env::var("DATABASE_URL").unwrap_or_default())
-        .expect("failed to connect to database");
+        .map_err(|e| PayError::InternalError(format!("数据库连接失败: {e}")))?;
     let service = UmsService::new(create_ums_config(), pool);
     let token = get_ums_token(&service).await?;
     let result = service.create_order(&params, &token).await?;
@@ -198,7 +198,7 @@ pub async fn ums_close(
     Json(params): Json<UmsCloseParams>,
 ) -> Result<Json<Response<serde_json::Value>>, PayError> {
     let pool = sqlx::PgPool::connect_lazy(&std::env::var("DATABASE_URL").unwrap_or_default())
-        .expect("failed to connect to database");
+        .map_err(|e| PayError::InternalError(format!("数据库连接失败: {e}")))?;
     let service = UmsService::new(create_ums_config(), pool);
     let token = get_ums_token(&service).await?;
     let result = service.close(&params, &token).await?;
@@ -211,7 +211,7 @@ pub async fn ums_refund(
     Json(params): Json<UmsRefundParams>,
 ) -> Result<Json<Response<serde_json::Value>>, PayError> {
     let pool = sqlx::PgPool::connect_lazy(&std::env::var("DATABASE_URL").unwrap_or_default())
-        .expect("failed to connect to database");
+        .map_err(|e| PayError::InternalError(format!("数据库连接失败: {e}")))?;
     let service = UmsService::new(create_ums_config(), pool);
     let token = get_ums_token(&service).await?;
     let result = service.refund(&params, &token).await?;

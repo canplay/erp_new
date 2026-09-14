@@ -599,7 +599,7 @@ impl common::service_bootstrap::GrpcServiceBuilder for WorkflowGrpcServer {
     fn build_grpc_server(&self, grpc_addr: &str) -> Result<tokio::task::JoinHandle<()>, Box<dyn std::error::Error + Send + Sync>> {
         use tonic::transport::Server;
 
-        let addr: SocketAddr = grpc_addr.parse().expect("invalid grpc addr");
+        let addr: SocketAddr = grpc_addr.parse().map_err(|e| format!("invalid grpc addr: {e}"))?;
         let server = WorkflowServiceServer::new(WorkflowGrpcServer::new(&self.pool));
         let handle = tokio::spawn(async move {
             if let Err(e) = Server::builder()

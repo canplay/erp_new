@@ -131,8 +131,8 @@ impl Default for QuietHours {
     fn default() -> Self {
         Self {
             enabled: false,
-            start_time: NaiveTime::from_hms_opt(22, 0, 0).expect("test assertion"),
-            end_time: NaiveTime::from_hms_opt(8, 0, 0).expect("test assertion"),
+            start_time: NaiveTime::from_hms_opt(22, 0, 0).unwrap_or_default(),
+            end_time: NaiveTime::from_hms_opt(8, 0, 0).unwrap_or_default(),
             timezone: "UTC".to_string(),
             allow_urgent: true,
         }

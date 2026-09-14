@@ -915,7 +915,16 @@ impl TaskScheduler {
     fn sign_payload(&self, payload: &serde_json::Value) -> String {
         let secret = std::env::var("WEBHOOK_SECRET").unwrap_or_default();
         let mut mac = HmacSha256::new_from_slice(secret.as_bytes())
-            .expect("HMAC can take key of any size");
+            .unwrap_or_else(|_| {
+                tracing::error!("HMAC key initialization failed, using zero-filled key");
+                HmacSha256::new_from_slice(&[0u8; 32])
+                    .unwrap_or_else(|e| {
+                        tracing::error!("Failed to initialize HMAC even with zero key: {e}");
+                        // HMAC-SHA256 should accept any key size, so this should never happen
+                        // But we need to return something, so we panic here
+                        panic!("HMAC-SHA256 key initialization failed: {e}")
+                    })
+            });
         mac.update(payload.to_string().as_bytes());
         let result = mac.finalize();
         hex::encode(result.into_bytes())

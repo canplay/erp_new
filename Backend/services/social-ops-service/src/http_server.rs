@@ -41,6 +41,11 @@ use crate::models::account::{CreateAccountRequest, UpdateAccountRequest};
 use crate::services::account_service::AccountService;
 use crate::services::content_service::ContentService;
 use crate::services::crawl_service::CrawlService;
+use crate::helpers::{
+    json_success, json_ok, json_error, json_error_fmt, json_success_msg, json_ok_msg, json_error_msg, json_error_msg_fmt,
+    json_social_accounts, json_social_created, json_social_status, json_social_ok,
+    json_social_sources, json_social_source, json_social_items, json_social_error
+};
 
 #[derive(Clone)]
 pub struct HttpAppState {
@@ -104,7 +109,7 @@ async fn list_accounts(
         .list(query.user_id)
         .await
         .map_err(|e| error_response(StatusCode::INTERNAL_SERVER_ERROR, &e.to_string()))?;
-    Ok(Json(json!({"accounts": accounts})))
+    Ok(json_social_accounts(&accounts))
 }
 
 async fn add_account(
@@ -116,7 +121,7 @@ async fn add_account(
         .create(&body)
         .await
         .map_err(|e| error_response(StatusCode::INTERNAL_SERVER_ERROR, &e.to_string()))?;
-    Ok(Json(json!({"id": account.id, "status": "created"})))
+    Ok(json_social_created(account.id))
 }
 
 async fn get_account(
@@ -129,7 +134,7 @@ async fn get_account(
         .await
         .map_err(|e| error_response(StatusCode::INTERNAL_SERVER_ERROR, &e.to_string()))?;
     match account {
-        Some(a) => Ok(Json(json!(a))),
+        Some(a) => Ok(json_success(serde_json::json!(a))),
         None => Err(error_response(StatusCode::NOT_FOUND, "Account not found")),
     }
 }
@@ -145,7 +150,7 @@ async fn update_account(
         .await
         .map_err(|e| error_response(StatusCode::INTERNAL_SERVER_ERROR, &e.to_string()))?;
     match account {
-        Some(_) => Ok(Json(json!({"status": "updated"}))),
+        Some(_) => Ok(json_social_status("updated")),
         None => Err(error_response(StatusCode::NOT_FOUND, "Account not found")),
     }
 }
@@ -160,7 +165,7 @@ async fn delete_account(
         .await
         .map_err(|e| error_response(StatusCode::INTERNAL_SERVER_ERROR, &e.to_string()))?;
     if deleted {
-        Ok(Json(json!({"success": true})))
+        Ok(json_ok())
     } else {
         Err(error_response(StatusCode::NOT_FOUND, "Account not found"))
     }
@@ -179,7 +184,7 @@ async fn list_contents(
         .list(query.status.as_deref(), page, page_size)
         .await
         .map_err(|e| error_response(StatusCode::INTERNAL_SERVER_ERROR, &e.to_string()))?;
-    Ok(Json(json!({"items": items, "total": total})))
+    Ok(json_social_items(&items, total))
 }
 
 async fn get_content(
@@ -208,7 +213,7 @@ async fn update_content(
         .await
         .map_err(|e| error_response(StatusCode::INTERNAL_SERVER_ERROR, &e.to_string()))?;
     if updated {
-        Ok(Json(json!({"status": "updated"})))
+        Ok(json_social_status("updated"))
     } else {
         Err(error_response(StatusCode::NOT_FOUND, "Content not found"))
     }
@@ -223,11 +228,12 @@ async fn create_content_manual(
         .create(&body.title, &body.body, &body.content_type, body.source_url.as_deref())
         .await
         .map_err(|e| error_response(StatusCode::INTERNAL_SERVER_ERROR, &e.to_string()))?;
-    Ok(Json(json!({"id": result["id"], "status": "created"})))
+    let id = result["id"].as_str().unwrap_or_default();
+    Ok(json_social_created(id))
 }
 
 fn error_response(status: StatusCode, message: &str) -> (StatusCode, Json<Value>) {
-    (status, Json(json!({"error": message})))
+    (status, json_error(&format!("{}", message)))
 }
 
 // ===== Crawl Handlers =====
@@ -246,7 +252,7 @@ async fn trigger_crawl(
     Path(source_id): Path<Uuid>,
 ) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
     match state.crawl_service.trigger_crawl(source_id).await {
-        Ok(msg) => Ok(Json(json!({"status": "ok", "message": msg}))),
+        Ok(msg) => Ok(json_social_ok(&msg)),
         Err(e) => Err(error_response(StatusCode::INTERNAL_SERVER_ERROR, &e.to_string())),
     }
 }
@@ -255,7 +261,7 @@ async fn list_sources(
     State(state): State<Arc<HttpAppState>>,
 ) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
     match state.crawl_service.list_sources().await {
-        Ok(sources) => Ok(Json(json!({"sources": sources}))),
+        Ok(sources) => Ok(json_social_sources(&sources)),
         Err(e) => Err(error_response(StatusCode::INTERNAL_SERVER_ERROR, &e.to_string())),
     }
 }
@@ -274,7 +280,7 @@ async fn create_source(
     let interval = body.crawl_interval.unwrap_or(3600);
 
     match state.crawl_service.create_source(&body.platform, &body.name, &config, interval).await {
-        Ok(source) => Ok(Json(json!({"source": source}))),
+        Ok(source) => Ok(json_social_source(&source)),
         Err(e) => Err(error_response(StatusCode::INTERNAL_SERVER_ERROR, &e.to_string())),
     }
 }
@@ -284,7 +290,7 @@ async fn delete_source(
     Path(id): Path<Uuid>,
 ) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
     match state.crawl_service.delete_source(id).await {
-        Ok(true) => Ok(Json(json!({"status": "deleted"}))),
+        Ok(true) => Ok(json_social_status("deleted")),
         Ok(false) => Err(error_response(StatusCode::NOT_FOUND, "Source not found")),
         Err(e) => Err(error_response(StatusCode::INTERNAL_SERVER_ERROR, &e.to_string())),
     }

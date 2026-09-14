@@ -7,6 +7,7 @@ pub mod error;
 pub mod grpc_handlers; // gRPC 业务逻辑（数据库持久化）
 pub mod grpc_server;   // gRPC 服务 trait 实现
 pub mod handlers;      // HTTP handler（即将废弃，保留编译兼容）
+pub mod helpers;
 pub mod models;
 pub mod renewal;
 pub mod repository;    // 数据库仓储层

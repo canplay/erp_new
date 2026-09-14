@@ -49,6 +49,16 @@ pub fn json_error_response_fmt(
     )
 }
 
+/// gRPC 服务不可用的错误响应
+pub fn json_grpc_error(message: String) -> Json<Value> {
+    Json(json!({"success": false, "code": 503, "message": message}))
+}
+
+/// LPR 回调响应 — 使用 grpc_proto 生成的响应
+pub fn json_lpr_response(response: &grpc_proto::lpr::LprCallbackResponse) -> Json<Value> {
+    Json(json!({"success": response.success, "code": response.code, "message": response.message}))
+}
+
 /// Deprecated: 空列表 — 使用 `json_success(Vec::new())` 替代
 #[deprecated(note = "使用 json_success(Vec::new()) 替代")]
 pub async fn stub_list() -> Json<Value> {

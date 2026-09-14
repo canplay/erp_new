@@ -17,6 +17,7 @@ use tracing::{info, error};
 use crate::models::*;
 use crate::engine::WorkflowEngine;
 use auth_core::middleware::AuthenticatedUser;
+use crate::helpers::{json_success, json_ok, json_error, json_error_fmt, json_success_msg, json_ok_msg, json_error_msg, json_error_msg_fmt};
 
 /// 应用状态
 #[derive(Clone)]
@@ -61,15 +62,12 @@ pub async fn list_workflows(
     .flatten()
     .unwrap_or(0);
 
-    Json(json!({
-        "success": true,
-        "data": {
+    json_success({
             "items": workflows,
             "total": total,
             "page": page,
             "page_size": page_size
-        }
-    }))
+        })
 }
 
 /// 创建工作流
@@ -106,19 +104,12 @@ pub async fn create_workflow(
     .await
     .map_err(|e| {
         error!("创建工作流失败: {}", e);
-        (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({
-            "success": false,
-            "message": "创建工作流失败"
-        })))
+        (StatusCode::INTERNAL_SERVER_ERROR, json_error_msg("创建工作流失败"))
     })?;
 
     info!("创建工作流: {}", workflow.id);
 
-    Ok((StatusCode::CREATED, Json(json!({
-        "success": true,
-        "message": "工作流创建成功",
-        "data": { "id": workflow.id }
-    }))))
+    Ok((StatusCode::CREATED, json_success_msg({ "id": workflow.id }, "工作流创建成功")))
 }
 
 /// 获取工作流详情
@@ -141,14 +132,8 @@ pub async fn get_workflow(
     .unwrap_or(None);
 
     match workflow {
-        Some(w) => Json(json!({
-            "success": true,
-            "data": w
-        })),
-        None => Json(json!({
-            "success": false,
-            "message": "工作流不存在"
-        })),
+        Some(w) => json_success(w),
+        None => json_error_msg("工作流不存在"),
     }
 }
 
@@ -178,14 +163,8 @@ pub async fn update_workflow(
     .await;
 
     match result {
-        Ok(r) if r.rows_affected() > 0 => Json(json!({
-            "success": true,
-            "message": "工作流更新成功"
-        })),
-        _ => Json(json!({
-            "success": false,
-            "message": "工作流不存在"
-        })),
+        Ok(r) if r.rows_affected() > 0 => json_ok_msg("工作流更新成功"),
+        _ => json_error_msg("工作流不存在"),
     }
 }
 
@@ -199,14 +178,8 @@ pub async fn delete_workflow(
         .await;
 
     match result {
-        Ok(r) if r.rows_affected() > 0 => Json(json!({
-            "success": true,
-            "message": "工作流删除成功"
-        })),
-        _ => Json(json!({
-            "success": false,
-            "message": "工作流不存在"
-        })),
+        Ok(r) if r.rows_affected() > 0 => json_ok_msg("工作流删除成功"),
+        _ => json_error_msg("工作流不存在"),
     }
 }
 
@@ -248,15 +221,12 @@ pub async fn list_instances(
     .flatten()
     .unwrap_or(0);
 
-    Json(json!({
-        "success": true,
-        "data": {
+    json_success({
             "items": instances,
             "total": total,
             "page": page,
             "page_size": page_size
-        }
-    }))
+        })
 }
 
 /// 启动实例
@@ -281,10 +251,7 @@ pub async fn start_instance(
     .unwrap_or(None);
 
     let workflow = workflow.ok_or_else(|| {
-        (StatusCode::NOT_FOUND, Json(json!({
-            "success": false,
-            "message": "工作流不存在"
-        })))
+        (StatusCode::NOT_FOUND, json_error_msg("工作流不存在"))
     })?;
 
     // 从环境变量获取启动者，默认为 "system"
@@ -316,10 +283,7 @@ pub async fn start_instance(
     .await
     .map_err(|e| {
         error!("启动实例失败: {}", e);
-        (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({
-            "success": false,
-            "message": "启动实例失败"
-        })))
+        (StatusCode::INTERNAL_SERVER_ERROR, json_error_msg("启动实例失败"))
     })?;
 
     info!("启动工作流实例: {}", instance.id);
@@ -336,11 +300,7 @@ pub async fn start_instance(
         }
     }
 
-    Ok((StatusCode::CREATED, Json(json!({
-        "success": true,
-        "message": "实例启动成功",
-        "data": { "id": instance.id }
-    }))))
+    Ok((StatusCode::CREATED, json_success_msg({ "id": instance.id }, "实例启动成功")))
 }
 
 /// 获取实例详情
@@ -363,14 +323,8 @@ pub async fn get_instance(
     .unwrap_or(None);
 
     match instance {
-        Some(i) => Json(json!({
-            "success": true,
-            "data": i
-        })),
-        None => Json(json!({
-            "success": false,
-            "message": "实例不存在"
-        })),
+        Some(i) => json_success(i),
+        None => json_error_msg("实例不存在"),
     }
 }
 
@@ -400,10 +354,7 @@ pub async fn execute_action(
     let instance = match instance {
         Some(i) => i,
         None => {
-            return Json(json!({
-                "success": false,
-                "message": "实例不存在"
-            }));
+            return json_error_msg("实例不存在");
         }
     };
 
@@ -419,10 +370,7 @@ pub async fn execute_action(
                     }
                     Err(e) => {
                         error!("节点完成失败: {}", e);
-                        return Json(json!({
-                            "success": false,
-                            "message": format!("节点完成失败: {}", e)
-                        }));
+                        return json_error_msg(&format!("节点完成失败: {);
                     }
                 }
             }
@@ -431,20 +379,14 @@ pub async fn execute_action(
             // 拒绝任务，取消实例
             if let Err(e) = engine.cancel_instance(&instance_id, payload.comment.clone()).await {
                 error!("取消实例失败: {}", e);
-                return Json(json!({
-                    "success": false,
-                    "message": format!("取消实例失败: {}", e)
-                }));
+                return json_error_msg(&format!("取消实例失败: {);
             }
         }
         "cancel" => {
             // 取消实例
             if let Err(e) = engine.cancel_instance(&instance_id, payload.comment.clone()).await {
                 error!("取消实例失败: {}", e);
-                return Json(json!({
-                    "success": false,
-                    "message": format!("取消实例失败: {}", e)
-                }));
+                return json_error_msg(&format!("取消实例失败: {);
             }
         }
         _ => {
@@ -452,10 +394,7 @@ pub async fn execute_action(
         }
     }
 
-    Json(json!({
-        "success": true,
-        "message": "动作执行成功"
-    }))
+    json_ok_msg("动作执行成功")
 }
 
 /// 列出任务
@@ -478,10 +417,7 @@ pub async fn list_tasks(
     .await
     .unwrap_or_default();
 
-    Json(json!({
-        "success": true,
-        "data": tasks
-    }))
+    json_success(tasks)
 }
 
 /// 完成任务
@@ -497,10 +433,7 @@ pub async fn complete_task(
     .await
     .ok();
 
-    Json(json!({
-        "success": true,
-        "message": "任务完成"
-    }))
+    json_ok_msg("任务完成")
 }
 
 /// 拒绝任务
@@ -516,10 +449,7 @@ pub async fn reject_task(
     .await
     .ok();
 
-    Json(json!({
-        "success": true,
-        "message": "任务已拒绝"
-    }))
+    json_ok_msg("任务已拒绝")
 }
 
 /// 列出节点
@@ -542,10 +472,7 @@ pub async fn list_nodes(
     .await
     .unwrap_or_default();
 
-    Json(json!({
-        "success": true,
-        "data": nodes
-    }))
+    json_success(nodes)
 }
 
 /// 创建节点
@@ -598,17 +525,10 @@ pub async fn create_node(
     .await
     .map_err(|e| {
         error!("创建节点失败: {}", e);
-        (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({
-            "success": false,
-            "message": "创建节点失败"
-        })))
+        (StatusCode::INTERNAL_SERVER_ERROR, json_error_msg("创建节点失败"))
     })?;
 
-    Ok((StatusCode::CREATED, Json(json!({
-        "success": true,
-        "message": "节点创建成功",
-        "data": { "id": node.id }
-    }))))
+    Ok((StatusCode::CREATED, json_success_msg({ "id": node.id }, "节点创建成功")))
 }
 
 /// 更新节点
@@ -636,10 +556,7 @@ pub async fn update_node(
     .await
     .ok();
 
-    Json(json!({
-        "success": true,
-        "message": "节点更新成功"
-    }))
+    json_ok_msg("节点更新成功")
 }
 
 /// 删除节点
@@ -652,10 +569,7 @@ pub async fn delete_node(
         .await
         .ok();
 
-    Json(json!({
-        "success": true,
-        "message": "节点删除成功"
-    }))
+    json_ok_msg("节点删除成功")
 }
 
 /// 列出边
@@ -678,10 +592,7 @@ pub async fn list_edges(
     .await
     .unwrap_or_default();
 
-    Json(json!({
-        "success": true,
-        "data": edges
-    }))
+    json_success(edges)
 }
 
 /// 创建边
@@ -721,17 +632,10 @@ pub async fn create_edge(
     .await
     .map_err(|e| {
         error!("创建边失败: {}", e);
-        (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({
-            "success": false,
-            "message": "创建边失败"
-        })))
+        (StatusCode::INTERNAL_SERVER_ERROR, json_error_msg("创建边失败"))
     })?;
 
-    Ok((StatusCode::CREATED, Json(json!({
-        "success": true,
-        "message": "边创建成功",
-        "data": { "id": edge.id }
-    }))))
+    Ok((StatusCode::CREATED, json_success_msg({ "id": edge.id }, "边创建成功")))
 }
 
 /// 更新边
@@ -759,14 +663,8 @@ pub async fn update_edge(
     .await;
 
     match result {
-        Ok(r) if r.rows_affected() > 0 => Json(json!({
-            "success": true,
-            "message": "边更新成功"
-        })),
-        _ => Json(json!({
-            "success": false,
-            "message": "边不存在"
-        })),
+        Ok(r) if r.rows_affected() > 0 => json_ok_msg("边更新成功"),
+        _ => json_error_msg("边不存在"),
     }
 }
 
@@ -780,8 +678,5 @@ pub async fn delete_edge(
         .await
         .ok();
 
-    Json(json!({
-        "success": true,
-        "message": "边删除成功"
-    }))
+    json_ok_msg("边删除成功")
 }

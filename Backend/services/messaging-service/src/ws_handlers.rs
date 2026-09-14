@@ -12,6 +12,7 @@ use tokio::sync::RwLock;
 use tracing::{info, warn};
 
 use crate::grpc_server::AppState;
+use crate::helpers::{json_success, json_ok, json_error, json_error_fmt, json_success_msg, json_ok_msg, json_error_msg, json_error_msg_fmt};
 
 pub struct WsSession {
     pub user_id: i64,
@@ -84,4 +85,4 @@ async fn handle_message(text: &str, sender: &mut futures_util::stream::SplitSink
     Ok(())
 }
 
-pub async fn ws_status_handler() -> impl IntoResponse { Json(serde_json::json!({"success":true,"data":{"service":"messaging-service","websocket":"enabled"}})) }
+pub async fn ws_status_handler() -> impl IntoResponse { json_success({"service":"messaging-service","websocket":"enabled"}) }

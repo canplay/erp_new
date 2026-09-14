@@ -8,6 +8,7 @@ use std::sync::Arc;
 use crate::error::Result;
 use crate::models::{CouponRequest, HikRequest};
 use crate::services::{HikService, SignoService};
+use crate::helpers::json_hik_success;
 
 /// HTTP 应用状态
 #[derive(Clone)]
@@ -37,10 +38,7 @@ pub async fn coupon(
             .await?;
         Ok(Json(result))
     } else {
-        Ok(Json(serde_json::json!({
-            "message": "success",
-            "status": 0
-        })))
+        Ok(json_hik_success())
     }
 }
 

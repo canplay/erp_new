@@ -5,6 +5,7 @@
 pub mod error;
 pub mod grpc_server;
 pub mod handlers;
+pub mod helpers;
 pub mod models;
 pub mod services;
 

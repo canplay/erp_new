@@ -7,6 +7,8 @@ use crate::TenantId;
 use chrono::{DateTime, Duration, Utc, Datelike, Timelike};
 use serde::{Deserialize, Serialize};
 
+use std::fmt;
+
 /// 租户生命周期状态
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub enum LifecycleState {
@@ -25,6 +27,12 @@ pub enum LifecycleState {
     Expired,
     /// 已删除
     Deleted,
+}
+
+impl fmt::Display for LifecycleState {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.as_str())
+    }
 }
 
 impl LifecycleState {

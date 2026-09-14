@@ -645,12 +645,159 @@ impl TenantService for TenantGrpcService {
             }),
         }))
     }
+
+    /// 租户生命周期管理 — activate
+    async fn activate_tenant(
+        &self,
+        request: Request<ActivateTenantRequest>,
+    ) -> Result<Response<ActivateTenantResponse>, Status> {
+        let req = request.into_inner();
+        let tenant_id = tenant_core::TenantId::new(req.tenant_id);
+        self.state.lifecycle
+            .activate_tenant(tenant_id)
+            .await
+            .map(|_| Response::new(ActivateTenantResponse {
+                success: true,
+                state: "active".to_string(),
+            }))
+            .map_err(|e| Status::internal(format!("Lifecycle error: {e}")))
+    }
+
+    /// 租户生命周期管理 — suspend
+    async fn suspend_tenant(
+        &self,
+        request: Request<SuspendTenantRequest>,
+    ) -> Result<Response<SuspendTenantResponse>, Status> {
+        let req = request.into_inner();
+        let tenant_id = tenant_core::TenantId::new(req.tenant_id);
+        self.state.lifecycle
+            .suspend_tenant(tenant_id, &req.reason)
+            .await
+            .map(|_| Response::new(SuspendTenantResponse {
+                success: true,
+                state: "suspended".to_string(),
+            }))
+            .map_err(|e| Status::internal(format!("Lifecycle error: {e}")))
+    }
+
+    /// 租户生命周期管理 — renew
+    async fn renew_tenant(
+        &self,
+        request: Request<RenewTenantRequest>,
+    ) -> Result<Response<RenewTenantResponse>, Status> {
+        let req = request.into_inner();
+        let tenant_id = tenant_core::TenantId::new(req.tenant_id);
+        self.state.lifecycle
+            .renew_tenant(tenant_id, req.days as i64)
+            .await
+            .map(|_| Response::new(RenewTenantResponse {
+                success: true,
+                new_expires_at: 0, // TODO: return actual expiry timestamp
+            }))
+            .map_err(|e| Status::internal(format!("Lifecycle error: {e}")))
+    }
+
+    /// 租户生命周期管理 — get state
+    async fn get_tenant_state(
+        &self,
+        request: Request<GetTenantStateRequest>,
+    ) -> Result<Response<GetTenantStateResponse>, Status> {
+        let req = request.into_inner();
+        let tenant_id = tenant_core::TenantId::new(req.tenant_id);
+        self.state.lifecycle
+            .get_tenant_state(tenant_id)
+            .await
+            .map(|ts| {
+                let expires_at = ts.expires_at.map(|d| d.timestamp()).unwrap_or(0);
+                let is_operational = ts.state.is_operational();
+                Response::new(GetTenantStateResponse {
+                    tenant_id: req.tenant_id,
+                    state: ts.state.to_string(),
+                    expires_at,
+                    is_operational,
+                })
+            })
+            .map_err(|e| Status::internal(format!("Lifecycle error: {e}")))
+    }
+
+    /// 租户生命周期管理 — list expiring
+    async fn list_expiring_tenants(
+        &self,
+        request: Request<ListExpiringTenantsRequest>,
+    ) -> Result<Response<ListExpiringTenantsResponse>, Status> {
+        let req = request.into_inner();
+        self.state.lifecycle
+            .get_expiring_tenants(req.within_days as i64)
+            .await
+            .map(|tenants| {
+                let expires_at = 0i64;
+                Response::new(ListExpiringTenantsResponse {
+                    tenants: tenants.into_iter().map(|tid| TenantExpiring {
+                        tenant_id: tid.value(),
+                        name: String::new(),
+                        expires_at,
+                        days_remaining: 0,
+                    }).collect(),
+                })
+            })
+            .map_err(|e| Status::internal(format!("Lifecycle error: {e}")))
+    }
+
+    /// 租户主题 — get
+    async fn get_tenant_theme(
+        &self,
+        _request: Request<GetTenantThemeRequest>,
+    ) -> Result<Response<GetTenantThemeResponse>, Status> {
+        // TODO: implement theme retrieval from database
+        Ok(Response::new(GetTenantThemeResponse {
+            tenant_id: _request.into_inner().tenant_id,
+            primary_color: "#1976d2".to_string(),
+            secondary_color: "#424242".to_string(),
+            logo_url: String::new(),
+            favicon_url: String::new(),
+            dark_mode: false,
+            language: "zh-CN".to_string(),
+            timezone: "Asia/Shanghai".to_string(),
+        }))
+    }
+
+    /// 租户主题 — update
+    async fn update_tenant_theme(
+        &self,
+        request: Request<UpdateTenantThemeRequest>,
+    ) -> Result<Response<UpdateTenantThemeResponse>, Status> {
+        let _req = request.into_inner();
+        // TODO: persist theme to database
+        Ok(Response::new(UpdateTenantThemeResponse { success: true }))
+    }
+
+    /// 配额检查
+    async fn check_quota(
+        &self,
+        request: Request<CheckQuotaRequest>,
+    ) -> Result<Response<CheckQuotaResponse>, Status> {
+        let req = request.into_inner();
+        // TODO: check against subscription limits
+        Ok(Response::new(CheckQuotaResponse {
+            available: true,
+            remaining: 1000,
+            limit: 1000,
+            used: 0,
+        }))
+    }
+
+    /// 记录用量
+    async fn record_usage(
+        &self,
+        request: Request<RecordUsageRequest>,
+    ) -> Result<Response<RecordUsageResponse>, Status> {
+        let _req = request.into_inner();
+        // TODO: record usage metric
+        Ok(Response::new(RecordUsageResponse { success: true }))
+    }
 }
 
-// NOTE: activate_tenant, suspend_tenant, renew_tenant, check_quota,
-// record_usage, get_tenant_theme, update_tenant_theme, get_tenant_state,
-// and list_expiring_tenants are NOT part of the gRPC TenantService trait.
-// They are available as standalone functions for HTTP endpoints.
+/// gRPC 服务构建器实现
 
 impl common::service_bootstrap::GrpcServiceBuilder for TenantGrpcService {
     fn build_grpc_server(&self, grpc_addr: &str) -> Result<tokio::task::JoinHandle<()>, Box<dyn std::error::Error + Send + Sync>> {

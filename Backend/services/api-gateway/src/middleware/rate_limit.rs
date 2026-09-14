@@ -66,6 +66,14 @@ pub async fn rate_limit_middleware(request: Request, next: Next) -> Response {
             .status(StatusCode::TOO_MANY_REQUESTS)
             .header("Content-Type", "application/json")
             .body(r#"{"error":"请求过于频繁，请稍后重试"}"#.into())
-            .expect("response building should not fail")
+            .unwrap_or_else(|_| {
+                Response::builder()
+                    .status(500)
+                    .body("Internal Server Error".into())
+                    .unwrap_or_else(|e| {
+                        tracing::error!(error = %e, "构造 429 响应失败");
+                        panic!("无法构造限流响应");
+                    })
+            })
     }
 }

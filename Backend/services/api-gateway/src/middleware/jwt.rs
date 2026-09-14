@@ -143,7 +143,15 @@ pub async fn auth_middleware(mut request: Request, next: Next) -> Response {
                 .status(StatusCode::UNAUTHORIZED)
                 .header("Content-Type", "application/json")
                 .body(r#"{"success":false,"error":"缺少有效的认证令牌"}"#.into())
-                .expect("response building should not fail");
+                .unwrap_or_else(|_| {
+                    Response::builder()
+                        .status(500)
+                        .body("Internal Server Error".into())
+                        .unwrap_or_else(|e| {
+                            tracing::error!(error = %e, "构造 401 响应失败");
+                            panic!("无法构造认证失败响应");
+                        })
+                });
         }
     };
 
@@ -159,7 +167,15 @@ pub async fn auth_middleware(mut request: Request, next: Next) -> Response {
                     .status(StatusCode::UNAUTHORIZED)
                     .header("Content-Type", "application/json")
                     .body(r#"{"success":false,"error":"无效或过期的令牌"}"#.into())
-                    .expect("response building should not fail");
+                    .unwrap_or_else(|_| {
+                        Response::builder()
+                            .status(500)
+                            .body("Internal Server Error".into())
+                            .unwrap_or_else(|e| {
+                                tracing::error!(error = %e, "构造 401 响应失败");
+                                panic!("无法构造认证失败响应");
+                            })
+                    });
             }
         }
     } else {

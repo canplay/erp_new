@@ -21,15 +21,15 @@ export interface UseI18nTReturn {
 export function useI18nT(this: void): UseI18nTReturn {
   const i18n = useI18n()
 
-  function t(key: string, vars?: Record<string, string | number>): string {
+  const t = (key: string, vars?: Record<string, string | number>): string => {
     return i18n.t(key, vars)
   }
 
-  function te(key: string): boolean {
+  const te = (key: string): boolean => {
     return i18n.te(key)
   }
 
-  function i18nT(key: string, fallback?: string): string {
+  const i18nT = (key: string, fallback?: string): string => {
     if (te(key)) {
       return t(key)
     }
@@ -51,12 +51,16 @@ export function useI18nT(this: void): UseI18nTReturn {
 export function createI18nTInstance(this: void): UseI18nTReturn {
   const i18nGlobal = useI18n()
 
-  function t(key: string, vars?: Record<string, string | number>): string {
+  const t = (key: string, vars?: Record<string, string | number>): string => {
     return i18nGlobal.t(key, vars)
   }
 
-  function i18nT(key: string, fallback?: string): string {
-    if (i18nGlobal.te(key)) {
+  const te = (key: string): boolean => {
+    return i18nGlobal.te(key)
+  }
+
+  const i18nT = (key: string, fallback?: string): string => {
+    if (te(key)) {
       return t(key)
     }
     if (fallback !== undefined) {
@@ -68,5 +72,5 @@ export function createI18nTInstance(this: void): UseI18nTReturn {
     return key
   }
 
-  return { i18nT, t, te: i18nGlobal.te, locale: i18nGlobal.locale }
+  return { i18nT, t, te, locale: i18nGlobal.locale }
 }

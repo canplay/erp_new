@@ -128,11 +128,11 @@ pub async fn list_departments(
             (
                 StatusCode::OK,
                 json_success(serde_json::json!({
-                        "list": departments,
-                        "total": result.total,
-                        "page": page,
-                        "page_size": page_size
-                    }),
+                    "list": departments,
+                    "total": result.total,
+                    "page": page,
+                    "page_size": page_size
+                })),
             )
                 .into_response()
         }
@@ -195,19 +195,19 @@ pub async fn get_department(
         Ok(Some(dept)) => (
             StatusCode::OK,
             json_success(serde_json::json!({
-                    "id": dept.id,
-                    "name": dept.name,
-                    "code": dept.code,
-                    "parent_id": dept.parent_id,
-                    "level": dept.level,
-                    "sort_order": dept.sort_order,
-                    "leader_id": dept.leader_id,
-                    "leader_name": dept.leader_name,
-                    "description": dept.description,
-                    "status": dept.status,
-                    "created_at": dept.created_at.to_rfc3339(),
-                    "updated_at": dept.updated_at.to_rfc3339(),
-                }),
+                "id": dept.id,
+                "name": dept.name,
+                "code": dept.code,
+                "parent_id": dept.parent_id,
+                "level": dept.level,
+                "sort_order": dept.sort_order,
+                "leader_id": dept.leader_id,
+                "leader_name": dept.leader_name,
+                "description": dept.description,
+                "status": dept.status,
+                "created_at": dept.created_at.to_rfc3339(),
+                "updated_at": dept.updated_at.to_rfc3339()
+            })),
         )
             .into_response(),
         Ok(None) => (
@@ -254,9 +254,9 @@ pub async fn create_department(
         Ok(id) => (
             StatusCode::CREATED,
             json_success(serde_json::json!({
-                    "id": id,
-                    "name": req.name
-                }),
+                "id": id,
+                "name": req.name
+            })),
         )
             .into_response(),
         Err(DepartmentRepositoryError::AlreadyExists) => (
@@ -303,10 +303,10 @@ pub async fn update_department(
         Ok(Some(dept)) => (
             StatusCode::OK,
             json_success(serde_json::json!({
-                    "id": dept.id,
-                    "name": dept.name,
-                    "code": dept.code,
-                }),
+                "id": dept.id,
+                "name": dept.name,
+                "code": dept.code
+            })),
         )
             .into_response(),
         Ok(None) => (
@@ -431,11 +431,11 @@ pub async fn get_department_users(
         Ok((user_ids, total)) => (
             StatusCode::OK,
             json_success(serde_json::json!({
-                    "user_ids": user_ids,
-                    "total": total,
-                    "page": page,
-                    "page_size": page_size
-                }),
+                "user_ids": user_ids,
+                "total": total,
+                "page": page,
+                "page_size": page_size
+            })),
         )
             .into_response(),
         Err(e) => {

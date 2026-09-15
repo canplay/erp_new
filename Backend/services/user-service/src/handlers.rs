@@ -288,9 +288,17 @@ impl UserService for UserServiceImpl {
     ) -> Result<Response<ResetPasswordResponse>, Status> {
         let req = request.into_inner();
 
+        // Security fix: 不允许默认密码，必须提供 new_password
+        if req.new_password.is_empty() {
+            return Err(Status::invalid_argument("new_password is required"));
+        }
+        if req.new_password.len() < 8 {
+            return Err(Status::invalid_argument("new_password must be at least 8 characters"));
+        }
+
         use argon2::password_hash::{SaltString, rand_core::OsRng};
         use argon2::PasswordHasher;
-        let password_to_hash = if req.new_password.is_empty() { "Password@123" } else { &req.new_password };
+        let password_to_hash = &req.new_password;
         let salt = SaltString::generate(&mut OsRng);
         let argon2 = argon2::Argon2::default();
         let password_hash = argon2

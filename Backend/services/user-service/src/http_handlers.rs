@@ -521,7 +521,7 @@ pub async fn reset_user_password(
 
 /// 获取导入模板（返回 CSV 模板结构）
 pub async fn get_import_template() -> impl IntoResponse {
-    let template = "username,password,email,nickname,phone,role\nuser1,Password@123,user1@example.com,用户1,13800000001,user\nuser2,Password@123,user2@example.com,用户2,13800000002,user\n";
+    let template = "username,password,email,nickname,phone,role\nuser1,,user1@example.com,用户1,13800000001,user\nuser2,,user2@example.com,用户2,13800000002,user\n";
 
     (
         StatusCode::OK,
@@ -536,7 +536,7 @@ pub async fn get_import_template() -> impl IntoResponse {
 
 /// 下载导入模板（返回 CSV 格式）
 pub async fn download_import_template() -> impl IntoResponse {
-    let csv_content = "username,password,email,nickname,phone,role\nuser1,Password@123,user1@example.com,用户1,13800000001,user\nuser2,Password@123,user2@example.com,用户2,13800000002,user\n";
+    let csv_content = "username,password,email,nickname,phone,role\nuser1,,user1@example.com,用户1,13800000001,user\nuser2,,user2@example.com,用户2,13800000002,user\n";
 
     axum::response::Response::builder()
         .status(StatusCode::OK)

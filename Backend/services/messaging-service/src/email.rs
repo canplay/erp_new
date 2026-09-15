@@ -505,7 +505,8 @@ mod tests {
 
         config.host = "smtp.example.com".to_string();
         config.username = "user".to_string();
-        config.password = "pass".to_string();
+        // Security fix: 测试环境使用占位符，生产环境必须从环境变量读取
+        config.password = "test-password-replace-in-production".to_string();
         config.from_address = "noreply@example.com".to_string();
         assert!(config.validate().is_ok());
     }

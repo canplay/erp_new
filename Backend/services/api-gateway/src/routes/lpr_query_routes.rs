@@ -50,8 +50,9 @@ async fn get_stats(State(state): State<Arc<AppState>>, Query(q): Query<RecordQue
 
 // ============ LPR 设备管理 (内存实现，待接入 gRPC) ============
 
-async fn list_lpr_devices() -> Json<Value> {
-    json_success(json!({"list": [], "total": 0}))
+async fn list_lpr_devices() -> AppResult<Json<Value>> {
+    tracing::warn!("list_lpr_devices: 功能未实现");
+    Err(AppError::NotImplemented("list_lpr_devices: 功能未实现".to_string()))
 }
 
 async fn get_lpr_device(axum::extract::Path(id): axum::extract::Path<String>) -> Json<Value> {

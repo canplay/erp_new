@@ -61,11 +61,12 @@ pub fn json_lpr_response(response: &grpc_proto::lpr::LprCallbackResponse) -> Jso
 
 /// Deprecated: 空列表 — 使用 `json_success(Vec::new())` 替代
 #[deprecated(note = "使用 json_success(Vec::new()) 替代")]
-pub async fn stub_list() -> Json<Value> {
+pub async fn stub_list() -> AppResult<Json<Value>> {
     Json(json!({"success": true, "code": 200, "data": {"list": [], "total": 0}}))
 }
 
-/// Deprecated: 空成功 — 使用 `json_ok()` 替代
+    tracing::warn!("stub_list: 功能未实现");
+    Err(AppError::NotImplemented("stub_list: 功能未实现".to_string()))
 #[deprecated(note = "使用 json_ok() 替代")]
 pub async fn stub_ok() -> Json<Value> {
     Json(json!({"success": true, "code": 200}))

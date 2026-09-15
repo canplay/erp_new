@@ -1,24 +1,28 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
+import type { User } from '@erp-new-frontend-monorepo/types';
+import type { UserInfo } from '@erp-new-frontend-monorepo/types';
+import type { Tenant } from '@erp-new-frontend-monorepo/types';
+import type { Notification } from '@erp-new-frontend-monorepo/types';
 
 export const useUserStore = defineStore('user', () => {
-  const users = ref<any[]>([]);
-  const currentUser = ref<any>(null);
+  const users = ref<User[]>([]);
+  const currentUser = ref<UserInfo | null>(null);
   const loading = ref(false);
 
-  function setUsers(u: any[]) { users.value = u; }
-  function setCurrentUser(u: any) { currentUser.value = u; }
+  function setUsers(u: User[]) { users.value = u; }
+  function setCurrentUser(u: UserInfo) { currentUser.value = u; }
   function setLoading(v: boolean) { loading.value = v; }
 
   return { users, currentUser, loading, setUsers, setCurrentUser, setLoading };
 });
 
 export const useTenantStore = defineStore('tenant', () => {
-  const tenants = ref<any[]>([]);
-  const currentTenant = ref<any>(null);
+  const tenants = ref<Tenant[]>([]);
+  const currentTenant = ref<Tenant | null>(null);
 
-  function setTenants(t: any[]) { tenants.value = t; }
-  function setCurrentTenant(t: any) { currentTenant.value = t; }
+  function setTenants(t: Tenant[]) { tenants.value = t; }
+  function setCurrentTenant(t: Tenant) { currentTenant.value = t; }
 
   return { tenants, currentTenant, setTenants, setCurrentTenant };
 });
@@ -34,10 +38,10 @@ export const useThemeStore = defineStore('theme', () => {
 });
 
 export const useNotificationStore = defineStore('notification', () => {
-  const notifications = ref<any[]>([]);
+  const notifications = ref<Notification[]>([]);
   const unreadCount = ref(0);
 
-  function addNotification(n: any) { notifications.value.unshift(n); unreadCount.value++; }
+  function addNotification(n: Notification) { notifications.value.unshift(n); unreadCount.value++; }
   function markAllRead() { unreadCount.value = 0; }
 
   return { notifications, unreadCount, addNotification, markAllRead };

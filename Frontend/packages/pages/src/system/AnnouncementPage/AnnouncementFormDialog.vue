@@ -26,9 +26,17 @@ import { ref, computed, watch } from 'vue';
 import { useQuasar } from 'quasar';
 import { useI18n } from 'vue-i18n';
 
+interface Announcement {
+  id: string | number;
+  title: string;
+  content: string;
+  status: string;
+  created_at: string;
+}
+
 const props = defineProps<{
   modelValue: boolean;
-  editData?: any | null;
+  editData?: Announcement | null;
 }>();
 
 const emit = defineEmits<{

@@ -30,12 +30,20 @@ import AnnouncementTable from './AnnouncementTable.vue';
 import AnnouncementFormDialog from './AnnouncementFormDialog.vue';
 import { useAnnouncement } from './useAnnouncement';
 
+interface AnnouncementRow {
+  id: string | number;
+  title: string;
+  content: string;
+  status: string;
+  created_at: string;
+}
+
 const $q = useQuasar();
 const { t: $t } = useI18n();
 const { announcements, loading, loadAnnouncements, deleteAnnouncement } = useAnnouncement();
 
 const dialogVisible = ref(false);
-const editingData = ref<any>(null);
+const editingData = ref<AnnouncementRow | null>(null);
 
 onMounted(() => {
   loadAnnouncements();
@@ -46,12 +54,12 @@ function openCreate() {
   dialogVisible.value = true;
 }
 
-function openEdit(row: any) {
+function openEdit(row: AnnouncementRow) {
   editingData.value = row;
   dialogVisible.value = true;
 }
 
-function onDelete(row: any) {
+function onDelete(row: AnnouncementRow) {
   $q.dialog({
     title: $t('common.confirm', '确认'),
     message: $t('common.deleteConfirm', '确定删除？'),

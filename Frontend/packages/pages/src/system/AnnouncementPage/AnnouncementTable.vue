@@ -21,14 +21,22 @@ defineOptions({ name: 'AnnouncementTable' });
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+interface AnnouncementRow {
+  id: string | number;
+  title: string;
+  content: string;
+  status: string;
+  created_at: string;
+}
+
 const props = defineProps<{
-  rows: any[];
+  rows: AnnouncementRow[];
   loading?: boolean;
 }>();
 
 defineEmits<{
-  (e: 'edit', row: any): void;
-  (e: 'delete', row: any): void;
+  (e: 'edit', row: AnnouncementRow): void;
+  (e: 'delete', row: AnnouncementRow): void;
 }>();
 
 const { t: $t } = useI18n();

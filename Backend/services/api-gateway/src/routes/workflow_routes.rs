@@ -236,8 +236,9 @@ async fn reject_task(
 
 // ============ 工作流节点/连线（workflow.proto 暂未提供 RPC，保留占位） ============
 
-async fn list_workflow_nodes(Path(_wf_id): Path<String>) -> Json<Value> {
-    json_success(json!({"list": [], "total": 0}))
+async fn list_workflow_nodes(Path(_wf_id): Path<String>) -> AppResult<Json<Value>> {
+    tracing::warn!("list_workflow_nodes: 功能未实现");
+    Err(AppError::NotImplemented("list_workflow_nodes: 功能未实现".to_string()))
 }
 async fn create_workflow_node() -> Json<Value> { json_success(json!({"id": ""})) }
 async fn update_workflow_node(Path(_id): Path<String>) -> Json<Value> { json_ok() }

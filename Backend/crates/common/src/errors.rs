@@ -310,6 +310,10 @@ pub enum AppError {
 
     #[error("数据库错误: {0}")]
     DatabaseError(String),
+
+    /// 功能未实现（桩 handler 占位）
+    #[error("功能未实现: {0}")]
+    NotImplemented(String),
 }
 
 impl IntoResponse for AppError {
@@ -498,6 +502,11 @@ impl IntoResponse for AppError {
                 StatusCode::INTERNAL_SERVER_ERROR,
                 10002,
                 format!("数据库错误: {msg}"),
+            ),
+            Self::NotImplemented(msg) => (
+                StatusCode::NOT_IMPLEMENTED, // 501
+                30012,
+                format!("功能未实现: {msg}"),
             ),
         };
 

@@ -20,6 +20,9 @@ export * from './notification';
 // 导出 Socket 相关类型
 export * from './socket';
 
+// 导出租户相关类型
+export * from './tenant';
+
 // 导出权限相关类型
 export * from './permission';
 

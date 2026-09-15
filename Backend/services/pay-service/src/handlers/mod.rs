@@ -9,6 +9,7 @@ pub use pay_service::*;
 use std::sync::Arc;
 
 use sqlx::PgPool;
+use common::AppError;
 use crate::services::pay::PayService;
 
 /// 应用状态
@@ -21,24 +22,18 @@ pub struct AppState {
 }
 
 impl AppState {
-    #[must_use]
-    pub fn new() -> Self {
+    pub fn new() -> Result<Self, AppError> {
         let pool = PgPool::connect_lazy(&std::env::var("DATABASE_URL").unwrap_or_default())
-            .unwrap_or_else(|e| {
-                tracing::error!("数据库连接失败: {e}");
-                sqlx::PgPool::connect_lazy("postgres://localhost:5432/fallback").unwrap_or_else(|_| {
-                    panic!("无法建立数据库连接: {e}")
-                })
-            });
-        Self {
+            .map_err(AppError::Database)?;
+        Ok(Self {
             pool: pool.clone(),
             pay_service: Arc::new(PayService::new(pool, std::env::var("REDIS_URL").unwrap_or_default())),
-        }
+        })
     }
 }
 
 impl Default for AppState {
     fn default() -> Self {
-        Self::new()
+        Self::new().expect("Failed to create AppState")
     }
 }

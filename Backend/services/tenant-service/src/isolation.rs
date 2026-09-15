@@ -8,6 +8,8 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
+use common::{AppError, AppResult};
+
 /// 租户隔离级别
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub enum IsolationLevel {
@@ -267,14 +269,14 @@ impl TenantIsolationManager {
     /// # Security
     /// tenant_id 通过 `common::sanitize_identifier` 白名单校验，
     /// 只允许 `[a-zA-Z_][a-zA-Z0-9_]*` 格式，防止 SQL 注入。
-    pub async fn generate_filter(&self, tenant_id: &str, _table_name: &str) -> String {
+    pub async fn generate_filter(&self, tenant_id: &str, _table_name: &str) -> AppResult<String> {
         // FIX [SQL-INJ-006]: 校验 tenant_id 格式，防止 SQL 注入
         if let Err(e) = common::sanitize_identifier(tenant_id) {
-            panic!("Invalid tenant_id in generate_filter: {e}");
+            return Err(AppError::InvalidParam(format!("Invalid tenant_id: {e}")));
         }
         let policies = self.policies.read().await;
         if let Some(policy) = policies.get(tenant_id) {
-            match policy.isolation_level {
+            let filter = match policy.isolation_level {
                 IsolationLevel::Full => {
                     format!("database = '{tenant_id}'")
                 }
@@ -284,9 +286,10 @@ impl TenantIsolationManager {
                 IsolationLevel::RowLevel => {
                     format!("tenant_id = '{tenant_id}'")
                 }
-            }
+            };
+            Ok(filter)
         } else {
-            format!("tenant_id = '{tenant_id}'")
+            Ok(format!("tenant_id = '{tenant_id}'"))
         }
     }
 
@@ -301,20 +304,21 @@ impl TenantIsolationManager {
     ///
     /// # Security
     /// 表名通过 `common::sanitize_identifier` 白名单校验，防止 SQL 注入。
-    pub async fn build_filtered_query(&self, table: &str, base_query: Option<&str>) -> String {
+    pub async fn build_filtered_query(&self, table: &str, base_query: Option<&str>) -> AppResult<String> {
         // FIX [SQL-INJ-007]: 校验表名格式
         if let Err(e) = common::sanitize_identifier(table) {
-            panic!("Invalid table name in build_filtered_query: {e}");
+            return Err(AppError::InvalidParam(format!("Invalid table name: {e}")));
         }
         let ctx = self.context.read().await;
         if let Some(context) = ctx.as_ref() {
-            let tenant_filter = self.generate_filter(&context.tenant_id, table).await;
-            match base_query {
+            let tenant_filter = self.generate_filter(&context.tenant_id, table).await?;
+            let query = match base_query {
                 Some(query) => format!("{query} AND {tenant_filter}"),
                 None => format!("SELECT * FROM {table} WHERE {tenant_filter}"),
-            }
+            };
+            Ok(query)
         } else {
-            base_query.map_or_else(|| format!("SELECT * FROM {table}"), std::string::ToString::to_string)
+            Ok(base_query.map_or_else(|| format!("SELECT * FROM {table}"), std::string::ToString::to_string))
         }
     }
 
@@ -519,19 +523,20 @@ mod tests {
         manager.set_context(context).await;
 
         // 生成过滤条件
-        let filter = manager.generate_filter("tenant_001", "users").await;
+        let filter = manager.generate_filter("tenant_001", "users").await.unwrap();
         assert_eq!(filter, "tenant_id = 'tenant_001'");
 
         // 构建过滤查询
         let query = manager
             .build_filtered_query("users", Some("status = 'active'"))
-            .await;
+            .await
+            .unwrap();
         assert!(query.contains("tenant_id = 'tenant_001'"));
         assert!(query.contains("status = 'active'"));
 
         // 清除上下文
         manager.clear_context().await;
-        let query = manager.build_filtered_query("users", None).await;
+        let query = manager.build_filtered_query("users", None).await.unwrap();
         assert_eq!(query, "SELECT * FROM users");
     }
 

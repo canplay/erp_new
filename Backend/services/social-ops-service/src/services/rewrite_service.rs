@@ -20,10 +20,7 @@ impl RewriteService {
         llm_provider_id: Uuid,
         target_count: i32,
     ) -> Result<Value> {
-        let content_exists = sqlx::query_scalar!(
-            "SELECT COUNT(*) FROM socialops.content_items WHERE id = $1",
-            content_id,
-        )
+        let content_exists = sqlx::query_scalar("SELECT COUNT(*) FROM socialops.content_items WHERE id = $1").bind(content_id).bind()
         .fetch_one(&self.db)
         .await?
         .unwrap_or(0);
@@ -32,10 +29,7 @@ impl RewriteService {
             anyhow::bail!("内容不存在: {content_id}");
         }
 
-        let provider_exists = sqlx::query_scalar!(
-            "SELECT COUNT(*) FROM socialops.llm_providers WHERE id = $1 AND is_active = true",
-            llm_provider_id,
-        )
+        let provider_exists = sqlx::query_scalar("SELECT COUNT(*) FROM socialops.llm_providers WHERE id = $1 AND is_active = true").bind(llm_provider_id).bind()
         .fetch_one(&self.db)
         .await?
         .unwrap_or(0);
@@ -46,15 +40,9 @@ impl RewriteService {
 
         let default_prompt = "请对以下内容进行改写，生成多个不同风格的版本。返回 JSON 数组，每个元素包含 title 和 body 字段。";
 
-        let row = sqlx::query!(
-            r#"INSERT INTO socialops.rewrite_tasks (content_id, llm_provider_id, rewrite_prompt, target_count, status)
+        let row = sqlx::query(r#"INSERT INTO socialops.rewrite_tasks (content_id, llm_provider_id, rewrite_prompt, target_count, status)
              VALUES ($1, $2, $3, $4, 'pending')
-             RETURNING id, content_id, llm_provider_id, rewrite_prompt AS "rewrite_prompt!", status, target_count"#,
-            content_id,
-            llm_provider_id,
-            default_prompt,
-            target_count,
-        )
+             RETURNING id, content_id, llm_provider_id, rewrite_prompt AS "rewrite_prompt!", status, target_count"#).bind(content_id).bind(llm_provider_id).bind(default_prompt).bind(target_count).bind()
         .fetch_one(&self.db)
         .await?;
 
@@ -69,11 +57,8 @@ impl RewriteService {
     }
 
     pub async fn process_task(&self, task_id: Uuid) -> Result<Value> {
-        let task = sqlx::query!(
-            r#"SELECT id, content_id, llm_provider_id, rewrite_prompt, status, target_count
-             FROM socialops.rewrite_tasks WHERE id = $1"#,
-            task_id,
-        )
+        let task = sqlx::query(r#"SELECT id, content_id, llm_provider_id, rewrite_prompt, status, target_count
+             FROM socialops.rewrite_tasks WHERE id = $1"#).bind(task_id).bind()
         .fetch_optional(&self.db)
         .await?
         .ok_or_else(|| anyhow::anyhow!("任务不存在: {task_id}"))?;
@@ -88,10 +73,7 @@ impl RewriteService {
             "请对以下内容进行改写，生成多个不同风格的版本。返回 JSON 数组，每个元素包含 title 和 body 字段。",
         );
 
-        let content = sqlx::query!(
-            r#"SELECT title, body FROM socialops.content_items WHERE id = $1"#,
-            content_id,
-        )
+        let content = sqlx::query(r#"SELECT title, body FROM socialops.content_items WHERE id = $1"#).bind(content_id).bind()
         .fetch_optional(&self.db)
         .await?
         .ok_or_else(|| anyhow::anyhow!("内容不存在: {content_id}"))?;
@@ -102,11 +84,8 @@ impl RewriteService {
             content.body.as_deref().unwrap_or("")
         );
 
-        let provider = sqlx::query!(
-            r#"SELECT api_endpoint, api_key_enc, model_name, default_params::text AS "default_params"
-             FROM socialops.llm_providers WHERE id = $1 AND is_active = true"#,
-            llm_provider_id,
-        )
+        let provider = sqlx::query(r#"SELECT api_endpoint, api_key_enc, model_name, default_params::text AS "default_params"
+             FROM socialops.llm_providers WHERE id = $1 AND is_active = true"#).bind(llm_provider_id).bind()
         .fetch_optional(&self.db)
         .await?
         .ok_or_else(|| anyhow::anyhow!("LLM 提供者不存在或未激活: {llm_provider_id}"))?;
@@ -114,10 +93,7 @@ impl RewriteService {
         let (api_endpoint, api_key, model_name) =
             (provider.api_endpoint, provider.api_key_enc, provider.model_name);
 
-        sqlx::query!(
-            "UPDATE socialops.rewrite_tasks SET status = 'running' WHERE id = $1",
-            task_id,
-        )
+        sqlx::query("UPDATE socialops.rewrite_tasks SET status = 'running' WHERE id = $1").bind(task_id).bind()
         .execute(&self.db)
         .await?;
 
@@ -159,10 +135,7 @@ impl RewriteService {
         if !resp.status().is_success() {
             let status_code = resp.status();
             let error_body = resp.text().await.unwrap_or_default();
-            sqlx::query!(
-                "UPDATE socialops.rewrite_tasks SET status = 'failed' WHERE id = $1",
-                task_id,
-            )
+            sqlx::query("UPDATE socialops.rewrite_tasks SET status = 'failed' WHERE id = $1").bind(task_id).bind()
             .execute(&self.db)
             .await?;
             anyhow::bail!("LLM API 返回错误: status={status_code}, body={error_body}");
@@ -183,10 +156,7 @@ impl RewriteService {
             .map_err(|e| anyhow::anyhow!("解析 LLM 返回的 JSON 失败: {e}"))?;
 
         if versions.is_empty() {
-            sqlx::query!(
-                "UPDATE socialops.rewrite_tasks SET status = 'failed' WHERE id = $1",
-                task_id,
-            )
+            sqlx::query("UPDATE socialops.rewrite_tasks SET status = 'failed' WHERE id = $1").bind(task_id).bind()
             .execute(&self.db)
             .await?;
             anyhow::bail!("LLM 未返回有效的版本数据");
@@ -198,16 +168,9 @@ impl RewriteService {
             let v_title = version["title"].as_str().unwrap_or("");
             let v_body = version["body"].as_str().unwrap_or("");
 
-            let row = sqlx::query!(
-                r#"INSERT INTO socialops.rewrite_versions (task_id, version_seq, rewritten_title, rewritten_body, llm_raw_response, status)
+            let row = sqlx::query(r#"INSERT INTO socialops.rewrite_versions (task_id, version_seq, rewritten_title, rewritten_body, llm_raw_response, status)
                  VALUES ($1, $2, $3, $4, $5::jsonb, 'draft')
-                 RETURNING id, version_seq, rewritten_title AS "rewritten_title!", rewritten_body AS "rewritten_body!""#,
-                task_id,
-                seq,
-                v_title,
-                v_body,
-                &llm_response,
-            )
+                 RETURNING id, version_seq, rewritten_title AS "rewritten_title!", rewritten_body AS "rewritten_body!""#).bind(task_id).bind(seq).bind(v_title).bind(v_body).bind(&llm_response).bind()
             .fetch_one(&self.db)
             .await?;
 
@@ -219,10 +182,7 @@ impl RewriteService {
             }));
         }
 
-        sqlx::query!(
-            "UPDATE socialops.rewrite_tasks SET status = 'completed' WHERE id = $1",
-            task_id,
-        )
+        sqlx::query("UPDATE socialops.rewrite_tasks SET status = 'completed' WHERE id = $1").bind(task_id).bind()
         .execute(&self.db)
         .await?;
 
@@ -243,24 +203,16 @@ impl RewriteService {
     ) -> Result<(Vec<Value>, i64)> {
         let offset = (page - 1) * page_size;
 
-        let rows = sqlx::query!(
-            r#"SELECT t.id, t.content_id, t.status, t.rewrite_prompt, t.target_count,
+        let rows = sqlx::query(r#"SELECT t.id, t.content_id, t.status, t.rewrite_prompt, t.target_count,
                to_char(t.created_at, 'YYYY-MM-DD HH24:MI:SS') AS "created_at"
              FROM socialops.rewrite_tasks t
              WHERE ($1::text IS NULL OR t.status = $1)
              ORDER BY t.created_at DESC
-             LIMIT $2 OFFSET $3"#,
-            status,
-            page_size,
-            offset,
-        )
+             LIMIT $2 OFFSET $3"#).bind(status).bind(page_size).bind(offset).bind()
         .fetch_all(&self.db)
         .await?;
 
-        let total: i64 = sqlx::query_scalar!(
-            "SELECT COUNT(*) FROM socialops.rewrite_tasks WHERE ($1::text IS NULL OR status = $1)",
-            status,
-        )
+        let total: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM socialops.rewrite_tasks WHERE ($1::text IS NULL OR status = $1)").bind(status).bind()
         .fetch_one(&self.db)
         .await
         .unwrap_or(Some(0))
@@ -284,14 +236,11 @@ impl RewriteService {
     }
 
     pub async fn get_task(&self, task_id: Uuid) -> Result<Option<Value>> {
-        let task = sqlx::query!(
-            r#"SELECT t.id, t.content_id, t.llm_provider_id, t.rewrite_prompt, t.status, t.target_count,
+        let task = sqlx::query(r#"SELECT t.id, t.content_id, t.llm_provider_id, t.rewrite_prompt, t.status, t.target_count,
                to_char(t.created_at, 'YYYY-MM-DD HH24:MI:SS') AS "created_at",
                to_char(t.completed_at, 'YYYY-MM-DD HH24:MI:SS') AS "completed_at"
              FROM socialops.rewrite_tasks t
-             WHERE t.id = $1"#,
-            task_id,
-        )
+             WHERE t.id = $1"#).bind(task_id).bind()
         .fetch_optional(&self.db)
         .await?;
 
@@ -319,14 +268,11 @@ impl RewriteService {
     }
 
     async fn get_versions_raw(&self, task_id: Uuid) -> Result<Vec<Value>> {
-        let rows = sqlx::query!(
-            r#"SELECT id, version_seq, rewritten_title, rewritten_body, status,
+        let rows = sqlx::query(r#"SELECT id, version_seq, rewritten_title, rewritten_body, status,
                to_char(created_at, 'YYYY-MM-DD HH24:MI:SS') AS "created_at"
              FROM socialops.rewrite_versions
              WHERE task_id = $1
-             ORDER BY version_seq"#,
-            task_id,
-        )
+             ORDER BY version_seq"#).bind(task_id).bind()
         .fetch_all(&self.db)
         .await?;
 
@@ -346,22 +292,15 @@ impl RewriteService {
     }
 
     pub async fn update_version_status(&self, version_id: Uuid, status: &str) -> Result<bool> {
-        let r = sqlx::query!(
-            "UPDATE socialops.rewrite_versions SET status = $1 WHERE id = $2",
-            status,
-            version_id,
-        )
+        let r = sqlx::query("UPDATE socialops.rewrite_versions SET status = $1 WHERE id = $2").bind(status).bind(version_id).bind()
         .execute(&self.db)
         .await?;
         Ok(r.rows_affected() > 0)
     }
 
     pub async fn trigger_process(&self, task_id: Uuid) -> Result<Value> {
-        let task = sqlx::query!(
-            r#"SELECT id, content_id, llm_provider_id, rewrite_prompt, status, target_count
-             FROM socialops.rewrite_tasks WHERE id = $1"#,
-            task_id,
-        )
+        let task = sqlx::query(r#"SELECT id, content_id, llm_provider_id, rewrite_prompt, status, target_count
+             FROM socialops.rewrite_tasks WHERE id = $1"#).bind(task_id).bind()
         .fetch_optional(&self.db)
         .await?
         .ok_or_else(|| anyhow::anyhow!("task not found: {task_id}"))?;
@@ -376,10 +315,7 @@ impl RewriteService {
             "请对以下内容进行改写，生成多个不同风格的版本。返回 JSON 数组，每个元素包含 title 和 body 字段。",
         );
 
-        let content = sqlx::query!(
-            r#"SELECT title, body FROM socialops.content_items WHERE id = $1"#,
-            content_id,
-        )
+        let content = sqlx::query(r#"SELECT title, body FROM socialops.content_items WHERE id = $1"#).bind(content_id).bind()
         .fetch_optional(&self.db)
         .await?
         .ok_or_else(|| anyhow::anyhow!("content not found: {content_id}"))?;
@@ -390,11 +326,8 @@ impl RewriteService {
             content.body.as_deref().unwrap_or("")
         );
 
-        let provider = sqlx::query!(
-            r#"SELECT api_endpoint, api_key_enc, model_name
-             FROM socialops.llm_providers WHERE id = $1 AND is_active = true"#,
-            llm_provider_id,
-        )
+        let provider = sqlx::query(r#"SELECT api_endpoint, api_key_enc, model_name
+             FROM socialops.llm_providers WHERE id = $1 AND is_active = true"#).bind(llm_provider_id).bind()
         .fetch_optional(&self.db)
         .await?
         .ok_or_else(|| anyhow::anyhow!("LLM provider not found or inactive: {llm_provider_id}"))?;
@@ -403,7 +336,7 @@ impl RewriteService {
             (provider.api_endpoint, provider.api_key_enc, provider.model_name);
         let model = model_name.unwrap_or_else(|| "gpt-4o-mini".to_string());
 
-        sqlx::query!("UPDATE socialops.rewrite_tasks SET status = 'running' WHERE id = $1", task_id)
+        sqlx::query("UPDATE socialops.rewrite_tasks SET status = 'running' WHERE id = $1").bind(task_id)
             .execute(&self.db)
             .await?;
 
@@ -443,7 +376,7 @@ impl RewriteService {
         if !resp.status().is_success() {
             let status_code = resp.status();
             let error_body = resp.text().await.unwrap_or_default();
-            sqlx::query!("UPDATE socialops.rewrite_tasks SET status = 'failed' WHERE id = $1", task_id)
+            sqlx::query("UPDATE socialops.rewrite_tasks SET status = 'failed' WHERE id = $1").bind(task_id)
                 .execute(&self.db)
                 .await?;
             anyhow::bail!("LLM API returned error: status={status_code}, body={error_body}");
@@ -462,7 +395,7 @@ impl RewriteService {
             .map_err(|e| anyhow::anyhow!("Failed to parse LLM JSON response: {e}"))?;
 
         if versions.is_empty() {
-            sqlx::query!("UPDATE socialops.rewrite_tasks SET status = 'failed' WHERE id = $1", task_id)
+            sqlx::query("UPDATE socialops.rewrite_tasks SET status = 'failed' WHERE id = $1").bind(task_id)
                 .execute(&self.db)
                 .await?;
             anyhow::bail!("LLM returned no valid versions");
@@ -474,16 +407,9 @@ impl RewriteService {
             let v_title = version["title"].as_str().unwrap_or("");
             let v_body = version["body"].as_str().unwrap_or("");
 
-            let row = sqlx::query!(
-                r#"INSERT INTO socialops.rewrite_versions (task_id, version_seq, rewritten_title, rewritten_body, llm_raw_response, status)
+            let row = sqlx::query(r#"INSERT INTO socialops.rewrite_versions (task_id, version_seq, rewritten_title, rewritten_body, llm_raw_response, status)
                  VALUES ($1, $2, $3, $4, $5::jsonb, 'draft')
-                 RETURNING id, version_seq, rewritten_title AS "rewritten_title!", rewritten_body AS "rewritten_body!""#,
-                task_id,
-                seq,
-                v_title,
-                v_body,
-                &llm_response,
-            )
+                 RETURNING id, version_seq, rewritten_title AS "rewritten_title!", rewritten_body AS "rewritten_body!""#).bind(task_id).bind(seq).bind(v_title).bind(v_body).bind(&llm_response).bind()
             .fetch_one(&self.db)
             .await?;
 
@@ -495,7 +421,7 @@ impl RewriteService {
             }));
         }
 
-        sqlx::query!("UPDATE socialops.rewrite_tasks SET status = 'completed' WHERE id = $1", task_id)
+        sqlx::query("UPDATE socialops.rewrite_tasks SET status = 'completed' WHERE id = $1").bind(task_id)
             .execute(&self.db)
             .await?;
 

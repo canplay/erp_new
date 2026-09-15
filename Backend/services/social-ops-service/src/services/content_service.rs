@@ -21,22 +21,14 @@ impl ContentService {
 
     pub async fn list(&self, status: Option<&str>, page: i64, page_size: i64) -> Result<(Vec<Value>, i64), sqlx::Error> {
         let offset = (page - 1) * page_size;
-        let rows = sqlx::query!(
-            r#"SELECT id, source_type, content_type, title, body, status,
+        let rows = sqlx::query(r#"SELECT id, source_type, content_type, title, body, status,
                to_char(created_at, 'YYYY-MM-DD HH24:MI:SS') AS "created_str"
              FROM socialops.content_items
              WHERE ($1::text IS NULL OR status = $1)
-             ORDER BY created_at DESC LIMIT $2 OFFSET $3"#,
-            status,
-            page_size,
-            offset
-        )
+             ORDER BY created_at DESC LIMIT $2 OFFSET $3"#).bind(status).bind(page_size).bind(offset)
         .fetch_all(&self.db).await?;
 
-        let total: i64 = sqlx::query_scalar!(
-            "SELECT COUNT(*) FROM socialops.content_items WHERE ($1::text IS NULL OR status = $1)",
-            status
-        )
+        let total: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM socialops.content_items WHERE ($1::text IS NULL OR status = $1)").bind(status)
         .fetch_one(&self.db).await
         .unwrap_or(Some(0))
         .unwrap_or(0);
@@ -53,12 +45,9 @@ impl ContentService {
     }
 
     pub async fn get(&self, id: Uuid) -> Result<Option<Value>, sqlx::Error> {
-        let row = sqlx::query!(
-            r#"SELECT id, source_type, content_type, title, body, status,
+        let row = sqlx::query(r#"SELECT id, source_type, content_type, title, body, status,
                to_char(created_at, 'YYYY-MM-DD HH24:MI:SS') AS "created_str"
-             FROM socialops.content_items WHERE id = $1"#,
-            id
-        )
+             FROM socialops.content_items WHERE id = $1"#).bind(id)
         .fetch_optional(&self.db).await?;
 
         Ok(row.map(|row| {
@@ -71,16 +60,9 @@ impl ContentService {
 
     pub async fn create(&self, title: &str, body: &str, content_type: &str, source_url: Option<&str>) -> Result<Value, sqlx::Error> {
         let source_hash = source_url.map(hash_url);
-        let row = sqlx::query!(
-            r#"INSERT INTO socialops.content_items (title, body, content_type, source_url, source_hash, source_type, status)
+        let row = sqlx::query(r#"INSERT INTO socialops.content_items (title, body, content_type, source_url, source_hash, source_type, status)
              VALUES ($1, $2, $3, $4, $5, 'manual', 'draft')
-             RETURNING id, title AS "title!", body AS "body!", content_type, status"#,
-            title,
-            body,
-            content_type,
-            source_url,
-            source_hash.as_deref(),
-        )
+             RETURNING id, title AS "title!", body AS "body!", content_type, status"#).bind(title).bind(body).bind(content_type).bind(source_url).bind(source_hash.as_deref()).bind()
         .fetch_one(&self.db).await?;
 
         Ok(serde_json::json!({
@@ -90,11 +72,7 @@ impl ContentService {
     }
 
     pub async fn update_status(&self, id: Uuid, status: &str) -> Result<bool, sqlx::Error> {
-        let r = sqlx::query!(
-            "UPDATE socialops.content_items SET status = $1, updated_at = NOW() WHERE id = $2",
-            status,
-            id
-        )
+        let r = sqlx::query("UPDATE socialops.content_items SET status = $1, updated_at = NOW() WHERE id = $2").bind(status).bind(id)
         .execute(&self.db).await?;
         Ok(r.rows_affected() > 0)
     }

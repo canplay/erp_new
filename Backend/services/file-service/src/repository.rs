@@ -20,8 +20,7 @@ impl FileRepository {
 
     /// 插入文件记录
     pub async fn insert(&self, file: &crate::models::SysFile) -> AppResult<i64> {
-        let result = sqlx::query_scalar!(
-            r#"
+        let result = sqlx::query_scalar(r#"
             INSERT INTO sys_files (
                 file_name, original_name, file_size, mime_type,
                 storage_path, storage_type, bucket, url, md5,
@@ -29,19 +28,7 @@ impl FileRepository {
             )
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
             RETURNING id
-            "#,
-            &file.file_name,
-            &file.original_name,
-            file.file_size,
-            file.mime_type.as_deref(),
-            &file.storage_path,
-            &file.storage_type,
-            file.bucket.as_deref(),
-            file.url.as_deref(),
-            file.md5.as_deref(),
-            file.created_by,
-            file.tenant_id,
-        )
+            "#).bind(&file.file_name).bind(&file.original_name).bind(file.file_size).bind(file.mime_type.as_deref()).bind(&file.storage_path).bind(&file.storage_type).bind(file.bucket.as_deref()).bind(file.url.as_deref()).bind(file.md5.as_deref()).bind(file.created_by).bind(file.tenant_id).bind()
         .fetch_one(&self.pool)
         .await?;
 
@@ -50,18 +37,14 @@ impl FileRepository {
 
     /// 根据ID查询文件
     pub async fn find_by_id(&self, id: i64) -> AppResult<Option<SysFile>> {
-        let file = sqlx::query_as!(
-            SysFile,
-            r#"
+        let file = sqlx::query_as::<_, SysFile>(r#"
             SELECT id, file_name, original_name, file_size, mime_type,
                    storage_path, COALESCE(storage_type, '') AS "storage_type!",
                    bucket, url, md5,
                    created_by, tenant_id, created_at, updated_at, deleted_at
             FROM sys_files
             WHERE id = $1 AND deleted_at IS NULL
-            "#,
-            id,
-        )
+            "#).bind(id).bind()
         .fetch_optional(&self.pool)
         .await?;
 
@@ -87,28 +70,20 @@ impl FileRepository {
         let end = end_date.and_then(parse_datetime);
 
         // 查询总数
-        let total = sqlx::query_scalar!(
-            r#"
+        let total = sqlx::query_scalar(r#"
             SELECT COUNT(*) FROM sys_files
             WHERE ($1 = '' OR category = $1)
               AND ($2 = '' OR original_name ILIKE $2)
               AND ($3::timestamptz IS NULL OR created_at >= $3::timestamptz)
               AND ($4::timestamptz IS NULL OR created_at <= $4::timestamptz)
               AND deleted_at IS NULL
-            "#,
-            category_filter,
-            keyword_filter,
-            start,
-            end,
-        )
+            "#).bind(category_filter).bind(keyword_filter).bind(start).bind(end).bind()
         .fetch_one(&self.pool)
         .await?
         .unwrap_or(0);
 
         // 查询列表
-        let files = sqlx::query_as!(
-            SysFile,
-            r#"
+        let files = sqlx::query_as::<_, SysFile>(r#"
             SELECT id, file_name, original_name, file_size, mime_type,
                    storage_path, COALESCE(storage_type, '') AS "storage_type!",
                    bucket, url, md5,
@@ -121,14 +96,7 @@ impl FileRepository {
               AND deleted_at IS NULL
             ORDER BY created_at DESC
             LIMIT $5 OFFSET $6
-            "#,
-            category_filter,
-            keyword_filter,
-            start,
-            end,
-            i64::from(page_size),
-            i64::from(offset),
-        )
+            "#).bind(category_filter).bind(keyword_filter).bind(start).bind(end).bind(i64::from(page_size)).bind(i64::from(offset)).bind()
         .fetch_all(&self.pool)
         .await?;
 
@@ -137,14 +105,11 @@ impl FileRepository {
 
     /// 删除文件（软删除）
     pub async fn delete(&self, id: i64) -> AppResult<bool> {
-        let result = sqlx::query!(
-            r#"
+        let result = sqlx::query(r#"
             UPDATE sys_files
             SET deleted_at = CURRENT_TIMESTAMP
             WHERE id = $1 AND deleted_at IS NULL
-            "#,
-            id,
-        )
+            "#).bind(id).bind()
         .execute(&self.pool)
         .await?;
 
@@ -157,14 +122,11 @@ impl FileRepository {
             return Ok(0);
         }
 
-        let result = sqlx::query!(
-            r#"
+        let result = sqlx::query(r#"
             UPDATE sys_files
             SET deleted_at = CURRENT_TIMESTAMP
             WHERE id = ANY($1) AND deleted_at IS NULL
-            "#,
-            ids,
-        )
+            "#).bind(ids).bind()
         .execute(&self.pool)
         .await?;
 
@@ -175,10 +137,7 @@ impl FileRepository {
     pub async fn is_file_in_use(&self, id: i64) -> AppResult<bool> {
         // 可以根据业务需求扩展检查逻辑
         // 例如检查文件是否被文章、设备等引用
-        let count = sqlx::query_scalar!(
-            "SELECT COUNT(*) FROM sys_files WHERE id = $1 AND deleted_at IS NULL",
-            id,
-        )
+        let count = sqlx::query_scalar("SELECT COUNT(*) FROM sys_files WHERE id = $1 AND deleted_at IS NULL").bind(id).bind()
         .fetch_one(&self.pool)
         .await?
         .unwrap_or(0);

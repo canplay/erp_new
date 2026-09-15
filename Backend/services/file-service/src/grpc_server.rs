@@ -1,7 +1,7 @@
 use tonic::{Request, Response, Status};
 
 use grpc_proto::file::file_service_server::FileService;
-use grpc_proto::file::{
+use grpc_proto::file::{Folder, 
     CompleteUploadRequest, CompleteUploadResponse, CreateFolderRequest, CreateFolderResponse,
     DeleteFileRequest, DeleteFileResponse, DeleteFolderRequest, DeleteFolderResponse,
     FileInfo, GetDownloadUrlRequest, GetDownloadUrlResponse, GetFileRequest, GetFileResponse,
@@ -111,7 +111,7 @@ impl FileService for FileGrpcService {
             updated_at: None,
             deleted_at: None,
         };
-        let id = self.state.repository.insert(&sys_file).await
+        let id = self.state().repository.insert(&sys_file).await
             .map_err(|e| Status::internal(format!("Database error: {e}")))?;
         Ok(Response::new(CompleteUploadResponse {
             file: Some(FileInfo {
@@ -215,11 +215,12 @@ impl FileService for FileGrpcService {
 
     async fn get_download_url(
         &self,
-        _request: Request<GetDownloadUrlRequest>,
+        request: Request<GetDownloadUrlRequest>,
     ) -> Result<Response<GetDownloadUrlResponse>, Status> {
-        Err(Status::unimplemented(
-            "get_download_url not implemented via gRPC",
-        ))
+        let req = request.into_inner();
+        // Return a signed URL or internal download endpoint
+        let url = format!("/api/v1/files/{}/download", req.file_id);
+        Ok(Response::new(GetDownloadUrlResponse { url, expires_at: 0 }))
     }
 
     async fn list_folders(

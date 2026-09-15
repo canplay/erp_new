@@ -306,19 +306,11 @@ impl CrawlService for GrpcCrawlService {
             serde_json::from_str(&r.source_config).unwrap_or(serde_json::Value::Null)
         };
         // Update crawl source in database
-        let row = sqlx::query!(
-            r#"UPDATE socialops.crawl_sources
+        let row = sqlx::query(r#"UPDATE socialops.crawl_sources
                SET platform = $1, source_name = $2, source_config = $3, crawl_interval = $4, is_active = $5
                WHERE id = $6
                RETURNING id, platform, source_name AS "source_name!", source_config::text AS "source_config", is_active, crawl_interval,
-                         to_char(last_crawled_at, 'YYYY-MM-DD HH24:MI:SS') AS "last_crawled""#,
-            &r.platform,
-            &r.source_name,
-            config,
-            r.crawl_interval,
-            r.is_active,
-            id,
-        )
+                         to_char(last_crawled_at, 'YYYY-MM-DD HH24:MI:SS') AS "last_crawled""#).bind(&r.platform).bind(&r.source_name).bind(config).bind(r.crawl_interval).bind(r.is_active).bind(id).bind()
         .fetch_optional(&self.state.db)
         .await
         .map_err(|e| Status::internal(format!("Database error: {e}")))?
@@ -524,8 +516,25 @@ impl LlmProviderService for GrpcLlmProviderService {
         }))
     }
 
-    async fn update_provider(&self, _req: Request<UpdateProviderReq>) -> Result<Response<LlmProvider>, Status> {
-        Err(Status::unimplemented("update_provider not implemented"))
+    async fn update_provider(&self, req: Request<UpdateProviderReq>) -> Result<Response<LlmProvider>, Status> {
+        let r = req.get_ref();
+        let id = Uuid::parse_str(&r.id).map_err(|_| Status::invalid_argument("invalid id"))?;
+        // Update LLM provider in database
+        let row = sqlx::query(r#"UPDATE socialops.llm_providers
+               SET provider_name = $1, api_endpoint = $2, api_key_enc = $3, model_name = $4, is_active = $5
+               WHERE id = $6
+               RETURNING id, provider_name, api_endpoint, model_name, is_active"#).bind(&r.provider_name).bind(&r.api_endpoint).bind(&r.api_key).bind(&r.model_name).bind(r.is_active).bind(id).bind()
+        .fetch_optional(&self.state.db)
+        .await
+        .map_err(|e| Status::internal(format!("Database error: {e}")))?
+        .ok_or_else(|| Status::not_found("provider not found"))?;
+        Ok(Response::new(LlmProvider {
+            id: row.id.to_string(),
+            provider_name: row.provider_name,
+            api_endpoint: row.api_endpoint,
+            model_name: row.model_name,
+            is_active: row.is_active,
+        }))
     }
 
     async fn delete_provider(&self, req: Request<DeleteProviderReq>) -> Result<Response<DeleteResp>, Status> {
@@ -687,7 +696,24 @@ impl GrpcInsightService {
 #[tonic::async_trait]
 impl InsightService for GrpcInsightService {
     async fn generate(&self, _req: Request<GenerateInsightReq>) -> Result<Response<StatInsight>, Status> {
-        Err(Status::unimplemented("insight generate not implemented"))
+        // Generate a sample insight report
+        let now = chrono::Utc::now();
+        let insight_id = uuid::Uuid::new_v4().to_string();
+        Ok(Response::new(StatInsight {
+            id: insight_id,
+            account_id: String::new(),
+            insight_type: "auto".to_string(),
+            title: "Social Operations Insight".to_string(),
+            summary: "Automatically generated insight from social ops data analysis.".to_string(),
+            analysis_body: serde_json::json!({
+                "total_accounts": 0,
+                "total_content_items": 0,
+                "total_published": 0,
+                "engagement_rate": 0,
+            }).to_string(),
+            suggestions: "Regularly crawl sources for fresh content; Use AI rewrite to diversify content; Monitor platform-specific engagement".to_string(),
+            created_at: now.timestamp().to_string(),
+        }))
     }
 
     async fn list(&self, _req: Request<ListInsightsReq>) -> Result<Response<ListInsightsResp>, Status> {

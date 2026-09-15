@@ -692,7 +692,7 @@ impl grpc_proto::audit::audit_service_server::AuditService for AuditGrpcService 
         by_action.insert(3, stats.success_count); // LOGIN success
         by_action.insert(99, stats.fail_count);   // LOGIN fail (OTHER)
         // Count API operations by resource type
-        let total_op_count: i64 = sqlx::query_scalar!("SELECT COUNT(*) FROM sys_operation_logs")
+        let total_op_count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM sys_operation_logs")
             .fetch_one(self.state.repository.pool())
             .await
             .map_err(|e| tonic::Status::internal(format!("Database error: {e}")))?.unwrap_or(0);
@@ -720,20 +720,19 @@ impl grpc_proto::audit::audit_service_server::AuditService for AuditGrpcService 
         request: tonic::Request<grpc_proto::audit::ArchiveLogsRequest>,
     ) -> Result<tonic::Response<grpc_proto::audit::ArchiveLogsResponse>, tonic::Status> {
         let req = request.into_inner();
-        let start_dt = req.start_time.as_deref().and_then(|s| {
+        let start_dt = req.start_time.as_ref().and_then(|s| {
             chrono::NaiveDateTime::parse_from_str(s, "%Y-%m-%d %H:%M:%S").ok().or_else(|| {
                 chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d").ok().and_then(|d| d.and_hms_opt(0, 0, 0))
             }).map(|n| chrono::DateTime::<chrono::Utc>::from_naive_utc_and_offset(n, chrono::Utc))
         });
-        let end_dt = req.end_time.as_deref().and_then(|s| {
+        let end_dt = req.end_time.as_ref().and_then(|s| {
             chrono::NaiveDateTime::parse_from_str(s, "%Y-%m-%d %H:%M:%S").ok().or_else(|| {
                 chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d").ok().and_then(|d| d.and_hms_opt(0, 0, 0))
             }).map(|n| chrono::DateTime::<chrono::Utc>::from_naive_utc_and_offset(n, chrono::Utc))
         });
 
         // Insert old logs into archive table, then delete from main table
-        let count: i64 = sqlx::query_scalar!(
-            r#"WITH archived AS (
+        let count: i64 = sqlx::query_scalar(r#"WITH archived AS (
                 DELETE FROM sys_login_logs
                 WHERE ($1::timestamptz IS NULL OR created_at >= $1)
                   AND ($2::timestamptz IS NULL OR created_at <= $2)
@@ -744,10 +743,7 @@ impl grpc_proto::audit::audit_service_server::AuditService for AuditGrpcService 
                           login_location, login_status, fail_reason, login_type, created_at, archived_at)
             SELECT id, user_id, username, ip_address, user_agent,
                    login_location, login_status, fail_reason, login_type, created_at, NOW()
-            FROM archived"#,
-            start_dt,
-            end_dt,
-        )
+            FROM archived"#).bind(start_dt).bind(end_dt).bind()
         .fetch_one(self.state.repository.pool())
         .await
         .map_err(|e| tonic::Status::internal(format!("Database error: {e}")))?
@@ -764,12 +760,12 @@ impl grpc_proto::audit::audit_service_server::AuditService for AuditGrpcService 
         request: tonic::Request<grpc_proto::audit::ExportLogsRequest>,
     ) -> Result<tonic::Response<grpc_proto::audit::ExportLogsResponse>, tonic::Status> {
         let req = request.into_inner();
-        let start_dt = req.start_time.as_deref().and_then(|s| {
+        let start_dt = req.start_time.as_ref().and_then(|s| {
             chrono::NaiveDateTime::parse_from_str(s, "%Y-%m-%d %H:%M:%S").ok().or_else(|| {
                 chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d").ok().and_then(|d| d.and_hms_opt(0, 0, 0))
             }).map(|n| chrono::DateTime::<chrono::Utc>::from_naive_utc_and_offset(n, chrono::Utc))
         });
-        let end_dt = req.end_time.as_deref().and_then(|s| {
+        let end_dt = req.end_time.as_ref().and_then(|s| {
             chrono::NaiveDateTime::parse_from_str(s, "%Y-%m-%d %H:%M:%S").ok().or_else(|| {
                 chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d").ok().and_then(|d| d.and_hms_opt(0, 0, 0))
             }).map(|n| chrono::DateTime::<chrono::Utc>::from_naive_utc_and_offset(n, chrono::Utc))
@@ -783,10 +779,10 @@ impl grpc_proto::audit::audit_service_server::AuditService for AuditGrpcService 
                WHERE ($1::timestamptz IS NULL OR created_at >= $1)
                  AND ($2::timestamptz IS NULL OR created_at <= $2)
                ORDER BY created_at DESC
-               LIMIT 10000"#,
-            start_dt,
-            end_dt,
+               LIMIT 10000"#
         )
+        .bind(start_dt)
+        .bind(end_dt)
         .fetch_all(self.state.repository.pool())
         .await
         .map_err(|e| tonic::Status::internal(format!("Database error: {e}")))?;

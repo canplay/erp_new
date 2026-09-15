@@ -9,7 +9,8 @@ name = "common"
 path = "src/lib.rs"
 
 [features]
-default = ["telemetry", "grpc"]
+default = ["telemetry", "grpc", "metrics-exporter"]
+metrics-exporter = ["dep:prometheus"]
 telemetry = [
     "dep:opentelemetry",
     "dep:opentelemetry_sdk",
@@ -53,6 +54,7 @@ argon2.workspace = true
 bcrypt.workspace = true
 regex = "1"
 lazy_static = "1.5"
+prometheus = { version = "0.13", optional = true }
 hashlink = "0.9"
 indexmap = "2.0"
 redis = { workspace = true }

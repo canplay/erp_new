@@ -559,16 +559,60 @@ impl grpc_proto::audit::audit_service_server::AuditService for AuditGrpcService 
 
     async fn get_login_log(
         &self,
-        _request: tonic::Request<grpc_proto::audit::GetLoginLogRequest>,
+        request: tonic::Request<grpc_proto::audit::GetLoginLogRequest>,
     ) -> Result<tonic::Response<grpc_proto::audit::GetLoginLogResponse>, tonic::Status> {
-        Err(tonic::Status::unimplemented("get_login_log"))
+        let req = request.into_inner();
+        let sql = r"
+            SELECT id, user_id, username, ip_address, user_agent,
+                   login_location, login_status, fail_reason, login_type, created_at
+            FROM sys_login_logs
+            WHERE id = $1
+        ";
+        let log = sqlx::query_as::<_, crate::models::SysLoginLog>(sql)
+            .bind(req.id)
+            .fetch_optional(self.state.repository.pool())
+            .await
+            .map_err(|e| tonic::Status::internal(format!("Database error: {e}")))?;
+        match log {
+            Some(l) => {
+                let info = LoginLogInfo::from(l);
+                Ok(tonic::Response::new(grpc_proto::audit::GetLoginLogResponse {
+                    log: Some(grpc_proto::audit::LoginLogInfo {
+                        id: info.id,
+                        user_id: info.user_id.unwrap_or(0),
+                        username: info.username.unwrap_or_default(),
+                        ip_address: info.ip_address.unwrap_or_default(),
+                        user_agent: info.user_agent.unwrap_or_default(),
+                        success: info.login_status.map(|s| s == 1).unwrap_or(false),
+                        fail_reason: info.fail_reason.unwrap_or_default(),
+                        login_method: info.login_type.unwrap_or_default(),
+                        created_at: info.created_at.map(|t| chrono::DateTime::parse_from_rfc3339(&t).map(|dt| dt.timestamp()).unwrap_or(0)).unwrap_or(0),
+                    }),
+                }))
+            }
+            None => Err(tonic::Status::not_found("login log not found")),
+        }
     }
 
     async fn clear_login_logs(
         &self,
-        _request: tonic::Request<grpc_proto::audit::ClearLoginLogsRequest>,
+        request: tonic::Request<grpc_proto::audit::ClearLoginLogsRequest>,
     ) -> Result<tonic::Response<grpc_proto::audit::ClearLoginLogsResponse>, tonic::Status> {
-        Err(tonic::Status::unimplemented("clear_login_logs"))
+        let req = request.into_inner();
+        let cutoff_dt = chrono::NaiveDate::parse_from_str(&req.before_date, "%Y-%m-%d")
+            .ok()
+            .and_then(|d| d.and_hms_opt(0, 0, 0))
+            .map(|n| chrono::DateTime::<chrono::Utc>::from_naive_utc_and_offset(n, chrono::Utc));
+        let result = sqlx::query_scalar::<_, i64>(
+            "DELETE FROM sys_login_logs WHERE created_at < $1",
+        )
+        .bind(cutoff_dt)
+        .fetch_one(self.state.repository.pool())
+        .await
+        .map_err(|e| tonic::Status::internal(format!("Database error: {e}")))?;
+        Ok(tonic::Response::new(grpc_proto::audit::ClearLoginLogsResponse {
+            cleared_count: result,
+        }))
     }
 
     async fn list_api_call_logs(
@@ -639,21 +683,155 @@ impl grpc_proto::audit::audit_service_server::AuditService for AuditGrpcService 
         &self,
         _request: tonic::Request<grpc_proto::audit::GetStatsRequest>,
     ) -> Result<tonic::Response<grpc_proto::audit::GetStatsResponse>, tonic::Status> {
-        Err(tonic::Status::unimplemented("get_stats"))
+        let stats = get_login_statistics(self.state.clone()).await?;
+        // Aggregate action and resource counts for by_action / by_resource_type
+        let mut by_action: std::collections::HashMap<i32, i64> = std::collections::HashMap::new();
+        let mut by_resource: std::collections::HashMap<String, i64> = std::collections::HashMap::new();
+
+        // Count login actions
+        by_action.insert(3, stats.success_count); // LOGIN success
+        by_action.insert(99, stats.fail_count);   // LOGIN fail (OTHER)
+        // Count API operations by resource type
+        let total_op_count: i64 = sqlx::query_scalar!("SELECT COUNT(*) FROM sys_operation_logs")
+            .fetch_one(self.state.repository.pool())
+            .await
+            .map_err(|e| tonic::Status::internal(format!("Database error: {e}")))?.unwrap_or(0);
+        by_resource.insert("operation_log".to_string(), total_op_count);
+        by_resource.insert("login_log".to_string(), stats.total_count);
+
+        let top_users: Vec<grpc_proto::audit::TopUser> = vec![];
+        let top_resources: Vec<grpc_proto::audit::TopResource> = vec![];
+
+        Ok(tonic::Response::new(grpc_proto::audit::GetStatsResponse {
+            stats: Some(grpc_proto::audit::AuditStats {
+                total_count: stats.total_count + total_op_count,
+                today_count: stats.today_count,
+                week_count: 0,
+                by_action,
+                by_resource_type: by_resource,
+                top_users,
+                top_resources,
+            }),
+        }))
     }
 
     async fn archive_logs(
         &self,
-        _request: tonic::Request<grpc_proto::audit::ArchiveLogsRequest>,
+        request: tonic::Request<grpc_proto::audit::ArchiveLogsRequest>,
     ) -> Result<tonic::Response<grpc_proto::audit::ArchiveLogsResponse>, tonic::Status> {
-        Err(tonic::Status::unimplemented("archive_logs"))
+        let req = request.into_inner();
+        let start_dt = req.start_time.as_deref().and_then(|s| {
+            chrono::NaiveDateTime::parse_from_str(s, "%Y-%m-%d %H:%M:%S").ok().or_else(|| {
+                chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d").ok().and_then(|d| d.and_hms_opt(0, 0, 0))
+            }).map(|n| chrono::DateTime::<chrono::Utc>::from_naive_utc_and_offset(n, chrono::Utc))
+        });
+        let end_dt = req.end_time.as_deref().and_then(|s| {
+            chrono::NaiveDateTime::parse_from_str(s, "%Y-%m-%d %H:%M:%S").ok().or_else(|| {
+                chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d").ok().and_then(|d| d.and_hms_opt(0, 0, 0))
+            }).map(|n| chrono::DateTime::<chrono::Utc>::from_naive_utc_and_offset(n, chrono::Utc))
+        });
+
+        // Insert old logs into archive table, then delete from main table
+        let count: i64 = sqlx::query_scalar!(
+            r#"WITH archived AS (
+                DELETE FROM sys_login_logs
+                WHERE ($1::timestamptz IS NULL OR created_at >= $1)
+                  AND ($2::timestamptz IS NULL OR created_at <= $2)
+                RETURNING id, user_id, username, ip_address, user_agent,
+                          login_location, login_status, fail_reason, login_type, created_at
+            )
+            INSERT INTO sys_login_logs_archive (id, user_id, username, ip_address, user_agent,
+                          login_location, login_status, fail_reason, login_type, created_at, archived_at)
+            SELECT id, user_id, username, ip_address, user_agent,
+                   login_location, login_status, fail_reason, login_type, created_at, NOW()
+            FROM archived"#,
+            start_dt,
+            end_dt,
+        )
+        .fetch_one(self.state.repository.pool())
+        .await
+        .map_err(|e| tonic::Status::internal(format!("Database error: {e}")))?
+        .unwrap_or(0);
+
+        Ok(tonic::Response::new(grpc_proto::audit::ArchiveLogsResponse {
+            archived_count: count,
+            archive_path: format!("sys_login_logs_archive/{}", chrono::Utc::now().format("%Y%m%d_%H%M%S")),
+        }))
     }
 
     async fn export_logs(
         &self,
-        _request: tonic::Request<grpc_proto::audit::ExportLogsRequest>,
+        request: tonic::Request<grpc_proto::audit::ExportLogsRequest>,
     ) -> Result<tonic::Response<grpc_proto::audit::ExportLogsResponse>, tonic::Status> {
-        Err(tonic::Status::unimplemented("export_logs"))
+        let req = request.into_inner();
+        let start_dt = req.start_time.as_deref().and_then(|s| {
+            chrono::NaiveDateTime::parse_from_str(s, "%Y-%m-%d %H:%M:%S").ok().or_else(|| {
+                chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d").ok().and_then(|d| d.and_hms_opt(0, 0, 0))
+            }).map(|n| chrono::DateTime::<chrono::Utc>::from_naive_utc_and_offset(n, chrono::Utc))
+        });
+        let end_dt = req.end_time.as_deref().and_then(|s| {
+            chrono::NaiveDateTime::parse_from_str(s, "%Y-%m-%d %H:%M:%S").ok().or_else(|| {
+                chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d").ok().and_then(|d| d.and_hms_opt(0, 0, 0))
+            }).map(|n| chrono::DateTime::<chrono::Utc>::from_naive_utc_and_offset(n, chrono::Utc))
+        });
+
+        // Query logs for export
+        let logs = sqlx::query_as::<_, crate::models::SysLoginLog>(
+            r#"SELECT id, user_id, username, ip_address, user_agent,
+                      login_location, login_status, fail_reason, login_type, created_at
+               FROM sys_login_logs
+               WHERE ($1::timestamptz IS NULL OR created_at >= $1)
+                 AND ($2::timestamptz IS NULL OR created_at <= $2)
+               ORDER BY created_at DESC
+               LIMIT 10000"#,
+            start_dt,
+            end_dt,
+        )
+        .fetch_all(self.state.repository.pool())
+        .await
+        .map_err(|e| tonic::Status::internal(format!("Database error: {e}")))?;
+
+        let format = req.format.to_lowercase();
+        let data = if format == "json" {
+            // JSON format
+            let entries: Vec<serde_json::Value> = logs.iter().map(|l| {
+                serde_json::json!({
+                    "id": l.id,
+                    "user_id": l.user_id,
+                    "username": l.username,
+                    "ip_address": l.ip_address,
+                    "user_agent": l.user_agent,
+                    "login_status": l.login_status,
+                    "login_type": l.login_type,
+                    "created_at": l.created_at,
+                })
+            }).collect();
+            serde_json::to_vec(&entries).unwrap_or_default()
+        } else {
+            // CSV format (default)
+            let mut csv = String::from("id,user_id,username,ip_address,user_agent,login_status,login_type,created_at\n");
+            for l in &logs {
+                csv.push_str(&format!(
+                    "{},{},{},{},{},{},{},{}\n",
+                    l.id,
+                    l.user_id.unwrap_or(0),
+                    l.username.as_deref().unwrap_or(""),
+                    l.ip_address.as_deref().unwrap_or(""),
+                    l.user_agent.as_deref().unwrap_or(""),
+                    l.login_status.unwrap_or(0),
+                    l.login_type.as_deref().unwrap_or(""),
+                    l.created_at.map(|t| t.to_rfc3339()).unwrap_or_default()
+                ));
+            }
+            csv.into_bytes()
+        };
+
+        let filename = format!("login_logs_export_{}.{}", chrono::Utc::now().format("%Y%m%d_%H%M%S"), if format == "json" { "json" } else { "csv" });
+
+        Ok(tonic::Response::new(grpc_proto::audit::ExportLogsResponse {
+            data,
+            filename,
+        }))
     }
 }
 

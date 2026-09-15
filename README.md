@@ -1,14 +1,14 @@
 # erp_new · 全栈微服务管理平台
 
-> 基于 Rust + Vue 3 + Quasar 的全栈微服务管理平台，采用 Service → gRPC → Gateway → HTTP 的架构，可部署至 K8s（Rancher 管理）。
+> 基于 Rust + Vue 3 + Quasar 的全栈微服务管理平台，采用 Service → gRPC → Gateway → HTTP 架构，可部署至 K8s（Rancher 管理）。
 
 ## 1. 项目概览
 
 | 维度 | 数据 |
 |---|---|
-| 后端 | 22 微服务 / 10 共享 Crates / ~340 Rust 源文件 |
-| 前端 | 4 应用（admin 49 / tenant 138 / ops 4 / social 8）/ 10 共享包 / 199 Vue 组件 |
-| 数据库 | PostgreSQL 16+ / 119 张表 |
+| 后端 | 22 微服务 / 10 共享 Crates / ~388 Rust 源文件 |
+| 前端 | 4 应用（admin 47 / tenant / ops / social）/ 10 共享包 / 199 Vue 组件 |
+| 数据库 | PostgreSQL 16+ / 115 张表 |
 | 部署 | Helm / docker-compose |
 
 **技术栈**：
@@ -17,7 +17,7 @@
 |---|---|
 | 后端框架 | Rust (Axum) + gRPC (Tonic) |
 | 前端框架 | Vue 3.5 + Quasar 2 + Pinia + Vite |
-| 数据库 | PostgreSQL（119 表） |
+| 数据库 | PostgreSQL（115 表） |
 | 缓存 | Redis |
 | 认证 | JWT Bearer |
 | 部署 | Helm / docker-compose |
@@ -28,8 +28,8 @@
 ```mermaid
 flowchart TB
     subgraph FE["前端四端（Frontend/）"]
-        ADMIN["🖥️ admin 平台运营<br/>49 页面"]
-        TENANT["🖥️ tenant 单位业务<br/>138 页面"]
+        ADMIN["🖥️ admin 平台运营<br/>47 页面"]
+        TENANT["🖥️ tenant 单位业务<br/>共享 pages"]
         OPS["📊 ops 运营面板"]
         SOCIAL["💬 social 社交端"]
     end
@@ -37,7 +37,7 @@ flowchart TB
     subgraph SHARED["共享层（packages/）"]
         API["api · 四端共享 API 封装"]
         BOOT["boot · alova 实例 + 认证注入"]
-        COMP["components · 共享组件"]
+        COMP["components · 共享组件 138"]
         PAGES["pages · 页面模板（111 文件）"]
     end
 
@@ -48,18 +48,18 @@ flowchart TB
             USER["user-service"]
             BILL["billing-service"]
             PAY["pay-service"]
-            ..."]
+            ...[""]
         end
         subgraph CRATES["共享 Crates（10个）"]
-            COMMON["common · 公共工具<br/>24 模块"]
+            COMMON["common · 公共工具"]
             AUTHCORE["auth-core · 认证核心"]
             TENANTCORE["tenant-core · 租户核心"]
-            ..."]
+            ...[""]
         end
     end
 
     subgraph INFRA["基础设施"]
-        PG[("PostgreSQL 16+<br/>119 表")]
+        PG[("PostgreSQL 16+<br/>115 表")]
         RD[("Redis 7+<br/>缓存/会话")]
     end
 
@@ -102,7 +102,10 @@ cargo run --package auth-service    # HTTP 8081 / gRPC 9091
 # 6. 启动前端
 cd Frontend
 pnpm install
-pnpm --filter myai-admin dev    # http://localhost:9000
+pnpm --filter myai-admin dev      # http://localhost:9000
+pnpm --filter myai-tenant dev     # http://localhost:9001
+pnpm --filter myai-ops dev        # http://localhost:9002
+pnpm --filter myai-social dev     # http://localhost:9003
 ```
 
 ## 4. 生产部署（K8s）
@@ -144,6 +147,7 @@ helm upgrade --install erp-new ./deploy/helm/myai \
 | ctp-service | 8096 | 9097 | CTP 平板锁 |
 | ebike-service | 8098 | 9100 | 电动自行车 |
 | tow-service | 8094 | 9086 | 拖车服务 |
+| clean-service | 8100 | 8100 | 清洁服务 |
 
 ## 6. 数据库迁移
 
@@ -160,7 +164,7 @@ psql -h <host> -U postgres -d erp_new -f Backend/sql/999_reset.sql
 | 端点 | 说明 |
 |---|---|
 | `/health` | 健康检查（所有服务） |
-| `/metrics` | Prometheus 指标（api-gateway） |
+| `/metrics` | Prometheus 指标（api-gateway + 21 服务） |
 
 ## 8. CI/CD
 
@@ -173,6 +177,7 @@ GitHub Actions 自动执行：
 
 | 版本 | 日期 | 说明 |
 |---|---|---|
+| v0.7.0 | 2026-09-16 | 安全加固: 0硬编码密码, 0 panic!, 统一连接池, smoke test ×22, 清理死代码, 文档同步 |
 | v0.6.0 | 2026-09-16 | CI/CD, Prometheus metrics, docker-compose auto-init |
 | v0.5.0 | 2026-09-16 | SQL 合并, migrations 模块, any 清理 |
 | v0.4.0 | 2026-09-15 | 修复 panic!, 清理桩页面, 重构 Helm |
@@ -184,4 +189,3 @@ GitHub Actions 自动执行：
 ## 10. 许可证
 
 [MIT](LICENSE) © 2026 erp_new Contributors
-

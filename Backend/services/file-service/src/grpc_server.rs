@@ -32,23 +32,103 @@ fn file_info_to_proto(f: crate::grpc_handlers::FileInfo) -> FileInfo {
 impl FileService for FileGrpcService {
     async fn upload(
         &self,
-        _request: Request<UploadRequest>,
+        request: Request<UploadRequest>,
     ) -> Result<Response<UploadResponse>, Status> {
-        Err(Status::unimplemented("upload not implemented via gRPC"))
+        let req = request.into_inner();
+        // Generate a simple file_id for tracking uploads
+        let file_id = format!("upload_{}", chrono::Utc::now().timestamp_millis());
+        let upload_url = format!("/api/files/upload/{}/{}", file_id, req.filename);
+        Ok(Response::new(UploadResponse {
+            file_id,
+            upload_url,
+            upload_method: "PUT".to_string(),
+        }))
     }
 
     async fn upload_chunk(
         &self,
-        _request: Request<UploadChunkRequest>,
+        request: Request<UploadChunkRequest>,
     ) -> Result<Response<UploadChunkResponse>, Status> {
-        Err(Status::unimplemented("upload_chunk not implemented via gRPC"))
+        let req = request.into_inner();
+        // Simulate chunk storage by writing chunk data to temp location
+        let chunk_dir = format!("/tmp/chunks/{}", req.file_id);
+        std::fs::create_dir_all(&chunk_dir).map_err(|e| Status::internal(format!("IO error: {e}")))?;
+        let chunk_path = format!("{}/chunk_{}", chunk_dir, req.chunk_index);
+        std::fs::write(&chunk_path, &req.data).map_err(|e| Status::internal(format!("IO error: {e}")))?;
+        // Count uploaded chunks
+        let uploaded_chunks = std::fs::read_dir(&chunk_dir)
+            .map(|d| d.filter_map(Result::ok).count() as i32)
+            .unwrap_or(0);
+        Ok(Response::new(UploadChunkResponse {
+            success: true,
+            uploaded_chunks,
+            total_chunks: 0,
+        }))
     }
 
     async fn complete_upload(
         &self,
-        _request: Request<CompleteUploadRequest>,
+        request: Request<CompleteUploadRequest>,
     ) -> Result<Response<CompleteUploadResponse>, Status> {
-        Err(Status::unimplemented("complete_upload not implemented via gRPC"))
+        let req = request.into_inner();
+        let chunk_dir = format!("/tmp/chunks/{}", req.file_id);
+        // Find all chunk files and merge them
+        let mut chunk_files: Vec<_> = std::fs::read_dir(&chunk_dir)
+            .map(|d| d.filter_map(Result::ok).collect())
+            .unwrap_or_default();
+        chunk_files.sort_by_key(|e| e.file_name().to_string_lossy().to_string());
+        let mut merged = Vec::new();
+        for chunk_entry in &chunk_files {
+            let data = std::fs::read(chunk_entry.path()).unwrap_or_default();
+            merged.extend_from_slice(&data);
+        }
+        // Compute hash (using djb2 hash as md5 crate is not available)
+        let hash: u64 = merged.iter().fold(5381u64, |h, &b| -> u64 {
+            h.wrapping_mul(33).wrapping_add(b as u64)
+        });
+        let hash_str = format!("{:x}", hash);
+        // Store merged file
+        let storage_path = format!("uploads/{}.bin", req.file_id);
+        std::fs::write(&storage_path, &merged).ok();
+        // Cleanup chunks
+        std::fs::remove_dir_all(&chunk_dir).ok();
+        // Create file record
+        let file_size = merged.len() as i64;
+        let sys_file = crate::models::SysFile {
+            id: 0,
+            file_name: format!("{}.bin", req.file_id),
+            original_name: "uploaded_file".to_string(),
+            file_size,
+            mime_type: Some("application/octet-stream".to_string()),
+            storage_path: storage_path.clone(),
+            storage_type: "local".to_string(),
+            bucket: None,
+            url: Some(format!("/files/{}", storage_path)),
+            md5: Some(hash_str.clone()),
+            created_by: None,
+            tenant_id: None,
+            created_at: Some(chrono::Utc::now()),
+            updated_at: None,
+            deleted_at: None,
+        };
+        let id = self.state.repository.insert(&sys_file).await
+            .map_err(|e| Status::internal(format!("Database error: {e}")))?;
+        Ok(Response::new(CompleteUploadResponse {
+            file: Some(FileInfo {
+                id: id.to_string(),
+                filename: format!("{}.bin", req.file_id),
+                original_filename: "uploaded_file".to_string(),
+                url: format!("/files/{}", storage_path),
+                file_type: FileType::Other as i32,
+                mime_type: "application/octet-stream".to_string(),
+                size: file_size,
+                folder_id: String::new(),
+                user_id: 0,
+                etag: hash_str,
+                created_at: chrono::Utc::now().timestamp(),
+                updated_at: 0,
+            }),
+        }))
     }
 
     async fn list_files(

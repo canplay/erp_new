@@ -297,8 +297,42 @@ impl CrawlService for GrpcCrawlService {
         }))
     }
 
-    async fn update_source(&self, _req: Request<UpdateSourceReq>) -> Result<Response<CrawlSource>, Status> {
-        Err(Status::unimplemented("update_source not implemented"))
+    async fn update_source(&self, req: Request<UpdateSourceReq>) -> Result<Response<CrawlSource>, Status> {
+        let r = req.get_ref();
+        let id = Uuid::parse_str(&r.id).map_err(|_| Status::invalid_argument("invalid id"))?;
+        let config: serde_json::Value = if r.source_config.is_empty() {
+            serde_json::Value::Null
+        } else {
+            serde_json::from_str(&r.source_config).unwrap_or(serde_json::Value::Null)
+        };
+        // Update crawl source in database
+        let row = sqlx::query!(
+            r#"UPDATE socialops.crawl_sources
+               SET platform = $1, source_name = $2, source_config = $3, crawl_interval = $4, is_active = $5
+               WHERE id = $6
+               RETURNING id, platform, source_name AS "source_name!", source_config::text AS "source_config", is_active, crawl_interval,
+                         to_char(last_crawled_at, 'YYYY-MM-DD HH24:MI:SS') AS "last_crawled""#,
+            &r.platform,
+            &r.source_name,
+            config,
+            r.crawl_interval,
+            r.is_active,
+            id,
+        )
+        .fetch_optional(&self.state.db)
+        .await
+        .map_err(|e| Status::internal(format!("Database error: {e}")))?
+        .ok_or_else(|| Status::not_found("source not found"))?;
+        Ok(Response::new(CrawlSource {
+            id: row.id.to_string(),
+            user_id: String::new(),
+            platform: row.platform,
+            source_name: row.source_name,
+            source_config: row.source_config,
+            is_active: row.is_active,
+            crawl_interval: row.crawl_interval,
+            last_crawled_at: row.last_crawled.unwrap_or_default(),
+        }))
     }
 
     async fn delete_source(&self, req: Request<DeleteSourceReq>) -> Result<Response<DeleteResp>, Status> {

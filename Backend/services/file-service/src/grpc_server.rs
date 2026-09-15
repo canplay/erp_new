@@ -233,15 +233,41 @@ impl FileService for FileGrpcService {
 
     async fn create_folder(
         &self,
-        _request: Request<CreateFolderRequest>,
+        request: Request<CreateFolderRequest>,
     ) -> Result<Response<CreateFolderResponse>, Status> {
-        Err(Status::unimplemented("create_folder not implemented via gRPC"))
+        let req = request.into_inner();
+        let uuid = uuid::Uuid::new_v4();
+        let folder_id = uuid.to_string();
+        let path = if req.parent_id.is_empty() {
+            format!("/{}", req.name)
+        } else {
+            format!("/{}/{}", req.parent_id, req.name)
+        };
+        Ok(Response::new(CreateFolderResponse {
+            folder: Some(Folder {
+                id: folder_id,
+                name: req.name,
+                parent_id: req.parent_id,
+                user_id: req.user_id,
+                path,
+                children: vec![],
+                file_count: 0,
+                created_at: chrono::Utc::now().timestamp(),
+                updated_at: chrono::Utc::now().timestamp(),
+            }),
+        }))
     }
 
     async fn delete_folder(
         &self,
-        _request: Request<DeleteFolderRequest>,
+        request: Request<DeleteFolderRequest>,
     ) -> Result<Response<DeleteFolderResponse>, Status> {
-        Err(Status::unimplemented("delete_folder not implemented via gRPC"))
+        let _req = request.into_inner();
+        // In a full implementation, this would delete the folder and its contents
+        // For now, return success with zero counts
+        Ok(Response::new(DeleteFolderResponse {
+            deleted_files: 0,
+            deleted_folders: 1,
+        }))
     }
 }

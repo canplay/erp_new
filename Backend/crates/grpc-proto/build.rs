@@ -26,6 +26,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         format!("{protos_dir_str}/xlt.proto"),
         format!("{protos_dir_str}/ebike.proto"),
         format!("{protos_dir_str}/pay.proto"),
+        format!("{protos_dir_str}/billing.proto"),
     ];
     let includes = &[protos_dir_str.to_string()];
 

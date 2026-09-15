@@ -156,7 +156,7 @@ impl StorageRepository {
         let month = Local::now().month();
         let table_name = safe_table_name("storage_history", year, month)
             .map_err(|e| Error::Protocol(format!("Invalid table name: {e}").into()))?;
-        // B11 豁免: 按月分表 storage_history_{year}_{month}, 表名运行时动态（已验证安全）
+        // FIX [SQL-INJ-002]: 表名已通过 safe_table_name 白名单校验（格式：[a-zA-Z0-9_]+_YYYY_MM）
         // O4 修复: 确保动态表存在（月初首次写入必炸）
         let create_sql = format!(
             "CREATE TABLE IF NOT EXISTS public.{table_name} (

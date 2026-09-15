@@ -26,12 +26,16 @@ pub mod response;
 pub mod service_bootstrap;
 pub mod service_runner;
 pub mod shutdown; // 优雅关闭信号
+pub mod utils; // SQL 标识符清理工具（防 SQL 注入）
 pub mod validation; // 参数校验和密码工具 // 服务运行器（gRPC + HTTP 双服务）
 
 // Re-export repository types
 pub use repository::{
     BaseRepository, CrudRepository, PageQuery, PageResult, RepositoryError, RepositoryResult,
 };
+
+// Re-export SQL sanitization utilities
+pub use utils::{sanitize_identifier, sanitize_schema_name, sanitize_uuid};
 
 // Re-export 导出常用工具函数（定义在 shutdown.rs 和 service_runner.rs 中）
 pub use service_runner::{ServiceRunner, ServiceRunnerHandle};

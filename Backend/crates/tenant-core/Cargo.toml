@@ -17,3 +17,4 @@ base64 = "0.22"
 axum.workspace = true
 tower.workspace = true
 futures-util = "0.3"
+common.workspace = true

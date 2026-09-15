@@ -82,6 +82,10 @@ pub mod pay {
     tonic::include_proto!("pay");
 }
 
+pub mod billing {
+    tonic::include_proto!("erp.billing.v1");
+}
+
 #[cfg(test)]
 mod tests {
     #[test]

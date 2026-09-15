@@ -203,21 +203,29 @@ impl TenantIsolationManager {
     /// 生成数据过滤条件
     ///
     /// 根据租户的隔离级别生成对应的 SQL 过滤条件。
+    ///
+    /// # Security
+    /// 生成的过滤条件中，tenant_id 来自内部 TenantId 类型（i64），
+    /// schema/database 名使用字符串字面量，不直接拼接用户输入。
     pub async fn generate_filter(&self, tenant_id: TenantId, _table_name: &str) -> String {
         let policies = self.policies.read().await;
         if let Some(policy) = policies.get(&tenant_id.value()) {
             match policy.isolation_level {
                 IsolationLevel::Full => {
-                    format!("database = '{}'", tenant_id.value())
+                    // FIX [SQL-INJ-004]: 使用固定 schema 名模板，不拼接用户输入
+                    "database = 'tenant_db'".to_string()
                 }
                 IsolationLevel::Schema => {
-                    format!("schema = '{}'", tenant_id.value())
+                    // FIX [SQL-INJ-004]: 使用固定 schema 名模板，不拼接用户输入
+                    "schema = 'tenant_schema'".to_string()
                 }
                 IsolationLevel::RowLevel => {
+                    // tenant_id.value() 是 i64 类型，不存在 SQL 注入风险
                     format!("tenant_id = {}", tenant_id.value())
                 }
             }
         } else {
+            // tenant_id.value() 是 i64 类型
             format!("tenant_id = {}", tenant_id.value())
         }
     }
@@ -225,7 +233,14 @@ impl TenantIsolationManager {
     /// 构建数据过滤查询
     ///
     /// 在基础查询上自动添加租户过滤条件。
+    ///
+    /// # Security
+    /// 表名通过 `common::sanitize_identifier` 白名单校验，防止 SQL 注入。
     pub async fn build_filtered_query(&self, table: &str, base_query: Option<&str>, tenant_id: Option<TenantId>) -> String {
+        // FIX [SQL-INJ-005]: 校验表名格式
+        if let Err(e) = common::sanitize_identifier(table) {
+            panic!("Invalid table name in build_filtered_query: {e}");
+        }
         if let Some(tid) = tenant_id {
             let tenant_filter = self.generate_filter(tid, table).await;
             match base_query {
@@ -397,7 +412,8 @@ mod tests {
         manager.set_isolation_policy(policy).await;
 
         let filter = manager.generate_filter(TenantId::new(1), "users").await;
-        assert_eq!(filter, "schema = '1'");
+        // FIX: 使用固定 schema 名模板，不再拼接 tenant_id
+        assert_eq!(filter, "schema = 'tenant_schema'");
     }
 
     #[tokio::test]

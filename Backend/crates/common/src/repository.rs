@@ -160,10 +160,16 @@ where
 
 /// 分页查询宏
 /// 用于简化分页查询的实现
+///
+/// # Security
+/// 表名通过 `common::sanitize_identifier` 进行白名单校验，
+/// 只允许 `[a-zA-Z_][a-zA-Z0-9_]*` 格式，防止 SQL 注入。
 #[macro_export]
 macro_rules! impl_paginate {
     ($entity:ident, $table:expr) => {
         fn paginate_query(&self, query: &PageQuery) -> String {
+            // FIX [SQL-INJ-003]: 校验表名格式，防止 SQL 注入
+            common::sanitize_identifier($table).expect("Invalid table name in paginate_query");
             format!(
                 "SELECT * FROM {} ORDER BY id DESC LIMIT {} OFFSET {}",
                 $table,
@@ -173,6 +179,8 @@ macro_rules! impl_paginate {
         }
 
         fn count_query(&self) -> String {
+            // FIX [SQL-INJ-003]: 校验表名格式，防止 SQL 注入
+            common::sanitize_identifier($table).expect("Invalid table name in count_query");
             format!("SELECT COUNT(*) FROM {}", $table)
         }
     };

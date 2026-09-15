@@ -50,6 +50,30 @@ spec:
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      # Pod 反亲和性：尽量将同一服务的 Pod 分散到不同节点
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app.kubernetes.io/name
+                      operator: In
+                      values:
+                        - {{ include "myai.name" $ }}
+                topologyKey: kubernetes.io/hostname
+      {{- with $.Values.affinity }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      # 拓扑分布约束：跨可用区均匀分布 Pod
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              {{- include "myai.selectorLabels" (dict "Values" $.Values "serviceName" $serviceName "Chart" $.Chart "Release" $.Release) | nindent 14 }}
       containers:
         - name: {{ $serviceConfig.name }}
           image: "{{ include "myai.image" (dict "Values" $.Values "serviceConfig" $serviceConfig) }}"
@@ -116,6 +140,13 @@ spec:
           {{- $resources := include "myai.resources" (dict "Values" $.Values "serviceName" $serviceName) }}
           resources:
             {{- $resources | nindent 12 }}
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - sleep 10
           volumeMounts:
             {{- if $hasPersistence }}
             - name: data-storage
@@ -135,10 +166,6 @@ spec:
         {{- end }}
       {{- with $.Values.nodeSelector }}
       nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with $.Values.affinity }}
-      affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- with $.Values.tolerations }}

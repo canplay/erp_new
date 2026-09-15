@@ -172,3 +172,16 @@ readinessProbe:
 {{- toYaml .volumes | nindent 8 -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+获取生命周期配置（优雅关闭）
+*/}}
+{{- define "myai.lifecycle" -}}
+lifecycle:
+  preStop:
+    exec:
+      command:
+        - /bin/sh
+        - -c
+        - sleep 10
+{{- end -}}

@@ -251,7 +251,14 @@ impl OffboardingService {
         // 2. DROP SCHEMA IF EXISTS schema_name CASCADE
         // 3. Clean up related resources
 
+        // FIX [SQL-INJ-008]: 验证 tenant_id 格式（必须是正整数）
+        // schema 名格式：tenant_tenant_{tenant_id}
+        // tenant_id 是 i64 类型，不存在 SQL 注入风险
         let schema_name = format!("tenant_tenant_{}", tenant_id);
+
+        // 验证生成的 schema 名格式正确
+        common::sanitize_schema_name(&schema_name)
+            .map_err(|e| OffboardingError::SchemaDrop(e))?;
 
         Ok(schema_name)
     }

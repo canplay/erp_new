@@ -4,9 +4,6 @@ package erp.billing.v1;
 
 option csharp_namespace = "Erp.Billing.V1";
 
-import "google/protobuf/timestamp.proto";
-import "google/protobuf/empty.proto";
-
 // 计费计划服务
 service BillingPlanService {
   // 创建计费计划
@@ -18,7 +15,7 @@ service BillingPlanService {
   // 更新计费计划
   rpc UpdatePlan(UpdatePlanRequest) returns (BillingPlan);
   // 删除计费计划
-  rpc DeletePlan(DeletePlanRequest) returns (google.protobuf.Empty);
+  rpc DeletePlan(DeletePlanRequest) returns (Empty);
   // 归档计费计划
   rpc ArchivePlan(ArchivePlanRequest) returns (BillingPlan);
 }
@@ -58,12 +55,18 @@ service InvoiceService {
 // 用量服务
 service UsageService {
   // 记录用量
-  rpc RecordUsage(RecordUsageRequest) returns (google.protobuf.Empty);
+  rpc RecordUsage(RecordUsageRequest) returns (Empty);
   // 获取用量
   rpc GetUsage(GetUsageRequest) returns (UsageResponse);
   // 检查配额
   rpc CheckQuota(CheckQuotaRequest) returns (QuotaResponse);
 }
+
+// ============================================
+// 通用消息
+// ============================================
+
+message Empty {}
 
 // ============================================
 // 计费计划消息
@@ -82,8 +85,8 @@ message BillingPlan {
   map<string, int64> quotas = 10;
   int32 sort_order = 11;
   bool is_public = 12;
-  google.protobuf.Timestamp created_at = 13;
-  google.protobuf.Timestamp updated_at = 14;
+  int64 created_at = 13;  // Unix timestamp (seconds)
+  int64 updated_at = 14;  // Unix timestamp (seconds)
 }
 
 message PlanFeature {
@@ -150,17 +153,17 @@ message Subscription {
   string tenant_id = 2;
   string plan_id = 3;
   string status = 4;
-  google.protobuf.Timestamp current_period_start = 5;
-  google.protobuf.Timestamp current_period_end = 6;
+  int64 current_period_start = 5;  // Unix timestamp (seconds)
+  int64 current_period_end = 6;    // Unix timestamp (seconds)
   bool cancel_at_period_end = 7;
-  google.protobuf.Timestamp canceled_at = 8;
-  google.protobuf.Timestamp trial_end = 9;
+  int64 canceled_at = 8;           // Unix timestamp (seconds)
+  int64 trial_end = 9;             // Unix timestamp (seconds)
   int32 quantity = 10;
   double unit_price = 11;
   string currency = 12;
-  google.protobuf.Timestamp next_billing_date = 13;
-  google.protobuf.Timestamp created_at = 14;
-  google.protobuf.Timestamp updated_at = 15;
+  int64 next_billing_date = 13;    // Unix timestamp (seconds)
+  int64 created_at = 14;           // Unix timestamp (seconds)
+  int64 updated_at = 15;           // Unix timestamp (seconds)
 }
 
 message CreateSubscriptionRequest {
@@ -218,15 +221,15 @@ message Invoice {
   double tax_amount = 7;
   double total = 8;
   string currency = 9;
-  google.protobuf.Timestamp period_start = 10;
-  google.protobuf.Timestamp period_end = 11;
-  google.protobuf.Timestamp issued_at = 12;
-  google.protobuf.Timestamp due_at = 13;
-  google.protobuf.Timestamp paid_at = 14;
+  int64 period_start = 10;   // Unix timestamp (seconds)
+  int64 period_end = 11;     // Unix timestamp (seconds)
+  int64 issued_at = 12;      // Unix timestamp (seconds)
+  int64 due_at = 13;         // Unix timestamp (seconds)
+  int64 paid_at = 14;        // Unix timestamp (seconds)
   repeated InvoiceLineItem line_items = 15;
   string notes = 16;
-  google.protobuf.Timestamp created_at = 17;
-  google.protobuf.Timestamp updated_at = 18;
+  int64 created_at = 17;     // Unix timestamp (seconds)
+  int64 updated_at = 18;     // Unix timestamp (seconds)
 }
 
 message InvoiceLineItem {
@@ -239,8 +242,8 @@ message InvoiceLineItem {
 message GenerateInvoiceRequest {
   string subscription_id = 1;
   string tenant_id = 2;
-  google.protobuf.Timestamp period_start = 3;
-  google.protobuf.Timestamp period_end = 4;
+  int64 period_start = 3;    // Unix timestamp (seconds)
+  int64 period_end = 4;      // Unix timestamp (seconds)
   repeated InvoiceLineItem line_items = 5;
 }
 
@@ -281,8 +284,8 @@ message RecordUsageRequest {
 message GetUsageRequest {
   string tenant_id = 1;
   string metric = 2;
-  google.protobuf.Timestamp start_time = 3;
-  google.protobuf.Timestamp end_time = 4;
+  int64 start_time = 3;   // Unix timestamp (seconds)
+  int64 end_time = 4;     // Unix timestamp (seconds)
 }
 
 message UsageResponse {
@@ -298,7 +301,7 @@ message UsageRecord {
   string tenant_id = 1;
   string metric = 2;
   double quantity = 3;
-  google.protobuf.Timestamp recorded_at = 4;
+  int64 recorded_at = 4;  // Unix timestamp (seconds)
 }
 
 message CheckQuotaRequest {

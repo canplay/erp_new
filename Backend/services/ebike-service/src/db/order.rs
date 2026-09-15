@@ -33,6 +33,7 @@ impl OrderRepository {
         let month = Local::now().month();
         let table_name = safe_table_name("order", year, month)
             .map_err(|e| Error::Protocol(format!("Invalid table name: {e}").into()))?;
+        // FIX [SQL-INJ-001]: 表名已通过 safe_table_name 白名单校验（格式：[a-zA-Z0-9_]+_YYYY_MM）
         // 确保动态表存在（月初首次写入必炸，见 O4）
         let create_sql = format!(
             "CREATE TABLE IF NOT EXISTS public.{table_name} (

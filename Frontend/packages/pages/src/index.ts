@@ -8,17 +8,6 @@
  *   import { SomePage } from '@erp-new-frontend-monorepo/pages';
  */
 
-// ============ Admin-facing named components ============
-// These are used by apps/admin/src/pages/* wrappers
-
-export { default as AuditsList } from './audit/PermissionChangeLogPage.vue';
-export { default as AuthLogin } from './LoginPage/Main.vue';
-export { default as AuthRegister } from './LoginPage.vue';
-export { default as BillingView } from './xlt/BillingRulesPage.vue';
-export { default as FilesManager } from './FileManagerPage.vue';
-export { default as OcrWorkbench } from './IndexPage.vue';
-export { default as UsersView } from './user/UserListPage.vue';
-
 // ============ All page components (PascalCase) ============
 
 // Root-level pages
@@ -109,8 +98,6 @@ export { default as OperationLogPage } from './log/OperationLogPage.vue';
 // LoginPage/
 export { default as CaptchaWidget } from './LoginPage/CaptchaWidget.vue';
 export { default as HeaderLogo } from './LoginPage/HeaderLogo.vue';
-export { default as LoginPageCaptchaWidget } from './LoginPage/CaptchaWidget.vue';
-export { default as LoginPageHeaderLogo } from './LoginPage/HeaderLogo.vue';
 export { default as LoginPageLoginForm } from './LoginPage/LoginForm.vue';
 export { default as LoginPageMain } from './LoginPage/Main.vue';
 export { default as LoginPageMemoryWidget } from './LoginPage/MemoryWidget.vue';

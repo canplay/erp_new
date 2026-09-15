@@ -2,21 +2,22 @@
 //!
 //! 根据停车时长和计费规则计算停车费用。
 
-use crate::error::{Result, XltError};
+use common::AppError;
+use common::AppResult;
 use crate::models::{BillingRequest, BillingResult, BillingRule};
 
 /// 计费服务
 pub struct BillingService;
 
 impl BillingService {
-    pub async fn calculate(&self, req: &BillingRequest) -> Result<BillingResult> {
+    pub async fn calculate(&self, req: &BillingRequest) -> AppResult<BillingResult> {
         let entry = chrono::DateTime::parse_from_rfc3339(&req.entry_time)
-            .map_err(|e| XltError::BillingError(format!("入场时间格式错误: {e}")))?;
+            .map_err(|e| AppError::BillingCalculationError(format!("入场时间格式错误: {e}")))?;
         let exit = chrono::DateTime::parse_from_rfc3339(&req.exit_time)
-            .map_err(|e| XltError::BillingError(format!("出场时间格式错误: {e}")))?;
+            .map_err(|e| AppError::BillingCalculationError(format!("出场时间格式错误: {e}")))?;
 
         if exit <= entry {
-            return Err(XltError::BillingError("出场时间必须晚于入场时间".to_string()));
+            return Err(AppError::BillingCalculationError("出场时间必须晚于入场时间".to_string()));
         }
 
         let duration_minutes = (exit - entry).num_minutes();

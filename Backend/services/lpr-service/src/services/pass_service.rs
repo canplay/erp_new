@@ -6,7 +6,8 @@ use redis::aio::ConnectionManager;
 use reqwest::Client as HttpClient;
 use sqlx::PgPool;
 
-use crate::error::{LprError, Result};
+use common::AppError;
+use common::AppResult;
 use crate::models::{
     CreatePassRecord, GateControlResult, PassProcessResult, PassRecord, VehicleAuthorization,
 };
@@ -34,7 +35,7 @@ impl PassService {
     // ==================== 核心入口 ====================
 
     /// 处理车牌识别回调（完整业务流）
-    pub async fn process_callback(&self, req: &CreatePassRecord) -> Result<PassProcessResult> {
+    pub async fn process_callback(&self, req: &CreatePassRecord) -> AppResult<PassProcessResult> {
         let record = self.record_pass(req).await?;
         let auth = self.check_vehicle_authorization(&req.plate_no, &req.park_code).await?;
 
@@ -59,7 +60,7 @@ impl PassService {
 
     // ==================== 数据库操作 ====================
 
-    pub async fn record_pass(&self, req: &CreatePassRecord) -> Result<PassRecord> {
+    pub async fn record_pass(&self, req: &CreatePassRecord) -> AppResult<PassRecord> {
         let row = sqlx::query_as!(
             PassRecord,
             r#"
@@ -91,7 +92,7 @@ impl PassService {
         Ok(row)
     }
 
-    pub async fn update_record_status(&self, record_id: i64, status: &str, remark: &str) -> Result<()> {
+    pub async fn update_record_status(&self, record_id: i64, status: &str, remark: &str) -> AppResult<()> {
         sqlx::query!(
             r#"UPDATE public.lpr_pass_records SET status = $1, remark = $2, updated_at = NOW() WHERE id = $3"#,
             status,
@@ -103,7 +104,7 @@ impl PassService {
         Ok(())
     }
 
-    pub async fn find_latest_entry(&self, plate_no: &str, park_code: &str) -> Result<Option<PassRecord>> {
+    pub async fn find_latest_entry(&self, plate_no: &str, park_code: &str) -> AppResult<Option<PassRecord>> {
         let row = sqlx::query_as!(
             PassRecord,
             r#"
@@ -124,7 +125,7 @@ impl PassService {
 
     // ==================== hik-service 集成 ====================
 
-    async fn check_vehicle_authorization(&self, plate_no: &str, _park_code: &str) -> Result<VehicleAuthorization> {
+    async fn check_vehicle_authorization(&self, plate_no: &str, _park_code: &str) -> AppResult<VehicleAuthorization> {
         // Redis 缓存
         if let Some(ref conn) = self.redis_conn {
             let cache_key = format!("lpr:vehicle:auth:{plate_no}");
@@ -200,7 +201,7 @@ impl PassService {
 
     // ==================== 方向处理 ====================
 
-    async fn handle_entry(&self, record: &PassRecord, auth: &VehicleAuthorization) -> Result<bool> {
+    async fn handle_entry(&self, record: &PassRecord, auth: &VehicleAuthorization) -> AppResult<bool> {
         if auth.is_authorized {
             tracing::info!("授权车辆入场: 车牌={}, 类型={}", record.plate_no, auth.auth_type);
             match self.open_gate(&record.park_code, &record.device_id).await {
@@ -213,27 +214,27 @@ impl PassService {
         }
     }
 
-    async fn handle_exit(&self, record: &PassRecord, auth: &VehicleAuthorization) -> Result<bool> {
+    async fn handle_exit(&self, record: &PassRecord, auth: &VehicleAuthorization) -> AppResult<bool> {
         let entry = self.find_latest_entry(&record.plate_no, &record.park_code).await?;
         if let Some(entry_record) = entry {
             let minutes = record.pass_time.signed_duration_since(entry_record.pass_time).num_minutes();
             tracing::info!("车辆出场: 车牌={}, 停车{}分钟", record.plate_no, minutes);
             if auth.is_authorized || minutes <= 15 {
                 return self.open_gate(&record.park_code, &record.device_id).await.map(|r| r.success)
-                    .map_err(|e| LprError::Internal(e.to_string()));
+                    .map_err(|e| AppError::LprInternal(e.to_string()));
             }
             tracing::info!("临时车辆需缴费: 车牌={}, 停车{}分钟", record.plate_no, minutes);
             Ok(false)
         } else {
             tracing::warn!("出场未找到入场记录: 车牌={}, 直接开闸放行", record.plate_no);
             self.open_gate(&record.park_code, &record.device_id).await.map(|r| r.success)
-                .map_err(|e| LprError::Internal(e.to_string()))
+                .map_err(|e| AppError::LprInternal(e.to_string()))
         }
     }
 
     // ==================== Signo 开闸 ====================
 
-    async fn open_gate(&self, park_code: &str, device_id: &str) -> Result<GateControlResult> {
+    async fn open_gate(&self, park_code: &str, device_id: &str) -> AppResult<GateControlResult> {
         let payload = serde_json::json!({ "park_code": park_code, "device_id": device_id });
         match self.http_client.post(format!("{}/api/hik/signo/open", self.hik_service_url))
             .json(&payload).send().await
@@ -258,7 +259,7 @@ impl PassService {
     // ==================== 查询方法 ====================
 
     /// 查询通行记录列表
-    pub async fn list_records(&self, plate_no: &str, park_code: &str, direction: &str, status: &str, page: i32, page_size: i32) -> Result<Vec<PassRecord>> {
+    pub async fn list_records(&self, plate_no: &str, park_code: &str, direction: &str, status: &str, page: i32, page_size: i32) -> AppResult<Vec<PassRecord>> {
         let rows = sqlx::query_as!(
             PassRecord,
             r#"SELECT id, plate_no, plate_color, plate_type, vehicle_type, device_id, device_name,
@@ -283,7 +284,7 @@ impl PassService {
     }
 
     /// 获取单个通行记录
-    pub async fn get_record(&self, id: i64) -> Result<PassRecord> {
+    pub async fn get_record(&self, id: i64) -> AppResult<PassRecord> {
         let row = sqlx::query_as!(
             PassRecord,
             r#"SELECT id, plate_no, plate_color, plate_type, vehicle_type, device_id, device_name,
@@ -297,7 +298,7 @@ impl PassService {
     }
 
     /// 获取通行统计
-    pub async fn get_stats(&self) -> Result<crate::models::PassStats> {
+    pub async fn get_stats(&self) -> AppResult<crate::models::PassStats> {
         let row = sqlx::query!(
             r#"SELECT COUNT(*) AS "total!",
                       COALESCE(SUM(CASE WHEN direction = 'entry' THEN 1 ELSE 0 END), 0) AS "entry!",
@@ -316,7 +317,7 @@ impl PassService {
     }
 
     /// 获取车辆授权信息（复用授权查询逻辑）
-    pub async fn get_vehicle_auth(&self, plate_no: &str, park_code: &str) -> Result<VehicleAuthorization> {
+    pub async fn get_vehicle_auth(&self, plate_no: &str, park_code: &str) -> AppResult<VehicleAuthorization> {
         self.check_vehicle_authorization(plate_no, park_code).await
     }
 }

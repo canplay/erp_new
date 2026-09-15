@@ -134,6 +134,8 @@ fn map_app_error_to_tonic_status(err: &AppError) -> tonic::Status {
         } => Status::internal(format!(
             "部分操作失败: 成功 {success_count} 个, 失败 {fail_count} 个"
         )),
+        // 其他未明确映射的错误变体（API Key, Billing, File 等服务特定错误）
+        _ => Status::internal(format!("Internal error: {err}")),
     }
 }
 

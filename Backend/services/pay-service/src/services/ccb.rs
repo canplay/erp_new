@@ -3,7 +3,7 @@
 
 #![allow(dead_code)]
 
-use crate::error::Result;
+use common::AppResult;
 use serde::Deserialize;
 
 /// CCB 建行支付配置
@@ -96,7 +96,7 @@ impl CcbService {
     }
 
     /// 批量查询支付订单
-    pub async fn query(&self, params: &CcbQueryParams) -> Result<CcbQueryResponse> {
+    pub async fn query(&self, params: &CcbQueryParams) -> AppResult<CcbQueryResponse> {
         // 构建查询参数
         let mut query_str = format!(
             "VERSION={}&GROUPID={}&MERCHANTID={}&BRANCHID={}&POSID={}&OPERATOR=WEB&WHTYPE=1",
@@ -130,7 +130,7 @@ impl CcbService {
     }
 
     /// 创建支付订单
-    pub async fn create_order(&self, params: &CcbOrderParams) -> Result<CcbOrderResponse> {
+    pub async fn create_order(&self, params: &CcbOrderParams) -> AppResult<CcbOrderResponse> {
         tracing::info!("创建 CCB 订单: {} - {}", params.order, params.amount);
 
         Ok(CcbOrderResponse {
@@ -142,13 +142,13 @@ impl CcbService {
     }
 
     /// 验证支付结果
-    pub async fn verify_payment(&self, order_id: &str) -> Result<bool> {
+    pub async fn verify_payment(&self, order_id: &str) -> AppResult<bool> {
         tracing::debug!("验证 CCB 支付: {order_id}");
         Ok(true)
     }
 
     /// 退款
-    pub async fn refund(&self, order_id: &str, amount: i64) -> Result<bool> {
+    pub async fn refund(&self, order_id: &str, amount: i64) -> AppResult<bool> {
         tracing::info!("CCB 退款: {order_id} - {amount}");
         Ok(true)
     }

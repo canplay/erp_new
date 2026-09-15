@@ -20,7 +20,9 @@
 //! | `HIK_SERVICE_URL` | `http://localhost:8092` | hik-service HTTP 地址 |
 //! | `REDIS_URL` | `redis://127.0.0.1:6379` | Redis 地址 |
 
-pub mod error;
+pub use common::AppError;
+pub use common::AppResult;
+
 pub mod grpc;
 pub mod grpc_server;
 pub mod models;

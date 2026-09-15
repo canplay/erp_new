@@ -9,8 +9,8 @@
 
 use sqlx::PgPool;
 
-use crate::error::{CleanServiceError};
-use crate::error::CleanResult;
+use common::AppError;
+use common::AppResult;
 use crate::models::{FormalBillQuery, PaymentInfoQuery, PaymentStatisticsQuery, PaymentWebQuery, PaymentWebStatisticsQuery, StatisticsResult};
 
 /// 统计服务
@@ -28,7 +28,7 @@ impl StatisticsService {/// 创建统计服务实例
  /// 统计正式账单数量
  ///
  /// 使用参数化查询防止 SQL 注入
- pub async fn formal_bill_count(&self, query: &FormalBillQuery) -> CleanResult<i64> {
+ pub async fn formal_bill_count(&self, query: &FormalBillQuery) -> AppResult<i64> {
      let create_date_start = query.create_date_start.as_deref().unwrap_or("");
      let create_date_end = query.create_date_end.as_deref().unwrap_or("");
      let numbering = query.numbering.as_deref().map(|n| format!("%{n}%")).unwrap_or_default();
@@ -53,7 +53,7 @@ impl StatisticsService {/// 创建统计服务实例
      )
      .fetch_one(&self.pool)
      .await
-     .map_err(|e: sqlx::Error| CleanServiceError::DatabaseError(e.to_string()))?
+     .map_err(|e: sqlx::Error| AppError::DatabaseError(e.to_string()))?
      .unwrap_or(0);
 
      Ok(row)
@@ -62,7 +62,7 @@ impl StatisticsService {/// 创建统计服务实例
  /// 统计正式账单总额
  ///
  /// 使用参数化查询防止 SQL 注入
- pub async fn formal_bill_total(&self, query: &FormalBillQuery) -> CleanResult<StatisticsResult> {
+ pub async fn formal_bill_total(&self, query: &FormalBillQuery) -> AppResult<StatisticsResult> {
      let create_date_start = query.create_date_start.as_deref().unwrap_or("");
      let create_date_end = query.create_date_end.as_deref().unwrap_or("");
 
@@ -78,7 +78,7 @@ impl StatisticsService {/// 创建统计服务实例
      )
      .fetch_one(&self.pool)
      .await
-     .map_err(|e: sqlx::Error| CleanServiceError::DatabaseError(e.to_string()))?
+     .map_err(|e: sqlx::Error| AppError::DatabaseError(e.to_string()))?
      .unwrap_or(0);
 
      let paid = sqlx::query_scalar!(
@@ -92,7 +92,7 @@ impl StatisticsService {/// 创建统计服务实例
      )
      .fetch_one(&self.pool)
      .await
-     .map_err(|e: sqlx::Error| CleanServiceError::DatabaseError(e.to_string()))?
+     .map_err(|e: sqlx::Error| AppError::DatabaseError(e.to_string()))?
      .unwrap_or(0);
 
      Ok(StatisticsResult { total, paid })
@@ -101,7 +101,7 @@ impl StatisticsService {/// 创建统计服务实例
  /// 统计支付信息数量
  ///
  /// 使用参数化查询防止 SQL 注入
- pub async fn payment_info_count(&self, query: &PaymentInfoQuery) -> CleanResult<i64> {
+ pub async fn payment_info_count(&self, query: &PaymentInfoQuery) -> AppResult<i64> {
      let create_date_start = query.create_date_start.as_deref().unwrap_or("");
      let create_date_end = query.create_date_end.as_deref().unwrap_or("");
      let payment_date_start = query.payment_date_start.as_deref().unwrap_or("");
@@ -135,7 +135,7 @@ impl StatisticsService {/// 创建统计服务实例
      )
      .fetch_one(&self.pool)
      .await
-     .map_err(|e: sqlx::Error| CleanServiceError::DatabaseError(e.to_string()))?
+     .map_err(|e: sqlx::Error| AppError::DatabaseError(e.to_string()))?
      .unwrap_or(0);
 
      Ok(row)
@@ -144,7 +144,7 @@ impl StatisticsService {/// 创建统计服务实例
  /// 统计支付信息总额
  ///
  /// 使用参数化查询防止 SQL 注入
- pub async fn payment_info_total(&self, query: &PaymentStatisticsQuery) -> CleanResult<i64> {
+ pub async fn payment_info_total(&self, query: &PaymentStatisticsQuery) -> AppResult<i64> {
      let reality = query.reality.unwrap_or(false);
      let create_date_start = query.create_date_start.as_deref().unwrap_or("");
      let create_date_end = query.create_date_end.as_deref().unwrap_or("");
@@ -200,7 +200,7 @@ impl StatisticsService {/// 创建统计服务实例
      }
      .fetch_one(&self.pool)
      .await
-     .map_err(|e: sqlx::Error| CleanServiceError::DatabaseError(e.to_string()))?
+     .map_err(|e: sqlx::Error| AppError::DatabaseError(e.to_string()))?
      .unwrap_or(0);
 
      Ok(row)
@@ -209,7 +209,7 @@ impl StatisticsService {/// 创建统计服务实例
  /// 统计网络支付数量
  ///
  /// 使用参数化查询防止 SQL 注入
- pub async fn payment_web_count(&self, query: &PaymentWebQuery) -> CleanResult<i64> {
+ pub async fn payment_web_count(&self, query: &PaymentWebQuery) -> AppResult<i64> {
      let create_date_start = query.create_date_start.as_deref().unwrap_or("");
      let create_date_end = query.create_date_end.as_deref().unwrap_or("");
      let payment_date_start = query.payment_date_start.as_deref().unwrap_or("");
@@ -239,7 +239,7 @@ impl StatisticsService {/// 创建统计服务实例
      )
      .fetch_one(&self.pool)
      .await
-     .map_err(|e: sqlx::Error| CleanServiceError::DatabaseError(e.to_string()))?
+     .map_err(|e: sqlx::Error| AppError::DatabaseError(e.to_string()))?
      .unwrap_or(0);
 
      Ok(row)
@@ -248,7 +248,7 @@ impl StatisticsService {/// 创建统计服务实例
  /// 统计网络支付总额
  ///
  /// 使用参数化查询防止 SQL 注入
- pub async fn payment_web_total(&self, query: &PaymentWebStatisticsQuery) -> CleanResult<i64> {
+ pub async fn payment_web_total(&self, query: &PaymentWebStatisticsQuery) -> AppResult<i64> {
      let create_date_start = query.create_date_start.as_deref().unwrap_or("");
      let create_date_end = query.create_date_end.as_deref().unwrap_or("");
      let payment_date_start = query.payment_date_start.as_deref().unwrap_or("");
@@ -279,7 +279,7 @@ impl StatisticsService {/// 创建统计服务实例
      )
      .fetch_one(&self.pool)
      .await
-     .map_err(|e: sqlx::Error| CleanServiceError::DatabaseError(e.to_string()))?
+     .map_err(|e: sqlx::Error| AppError::DatabaseError(e.to_string()))?
      .unwrap_or(0);
 
      Ok(row)

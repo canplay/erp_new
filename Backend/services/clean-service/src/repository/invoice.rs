@@ -3,8 +3,8 @@
 
 use sqlx::PgPool;
 
-use crate::error::{CleanServiceError};
-use crate::error::CleanResult;
+use common::AppError;
+use common::AppResult;
 use crate::models::{Invoice, InvoiceCreateParam, InvoiceQuery};
 
 /// 发票仓储
@@ -18,7 +18,7 @@ impl InvoiceRepository {/// 创建发票仓储实例
  }
 
  /// 统计发票数量
- pub async fn count(&self, query: &InvoiceQuery) -> CleanResult<i64> {
+ pub async fn count(&self, query: &InvoiceQuery) -> AppResult<i64> {
      // 安全加固: 全部改为参数绑定 + 编译期校验(修复: 原实现直接拼接用户输入, SQL 注入)
      let id = query.id.as_deref().map(|s| format!("%{s}%")).unwrap_or_default();
      let no = query.no.as_deref().map(|s| format!("%{s}%")).unwrap_or_default();
@@ -46,14 +46,14 @@ impl InvoiceRepository {/// 创建发票仓储实例
      )
      .fetch_one(&self.pool)
      .await
-     .map_err(|e: sqlx::Error| CleanServiceError::DatabaseError(e.to_string()))?
+     .map_err(|e: sqlx::Error| AppError::DatabaseError(e.to_string()))?
      .unwrap_or(0);
 
      Ok(row)
  }
 
  /// 查询发票列表
- pub async fn list(&self, query: &InvoiceQuery) -> CleanResult<Vec<Invoice>> {
+ pub async fn list(&self, query: &InvoiceQuery) -> AppResult<Vec<Invoice>> {
      // 安全加固: 全部改为参数绑定; ORDER BY 列名白名单(经 CASE 表达式参数化)
      let id = query.id.as_deref().map(|s| format!("%{s}%")).unwrap_or_default();
      let no = query.no.as_deref().map(|s| format!("%{s}%")).unwrap_or_default();
@@ -107,7 +107,7 @@ impl InvoiceRepository {/// 创建发票仓储实例
          )
          .fetch_all(&self.pool)
          .await
-         .map_err(|e: sqlx::Error| CleanServiceError::DatabaseError(e.to_string()))?
+         .map_err(|e: sqlx::Error| AppError::DatabaseError(e.to_string()))?
      } else {
          sqlx::query_as!(
              Invoice,
@@ -147,14 +147,14 @@ impl InvoiceRepository {/// 创建发票仓储实例
          )
          .fetch_all(&self.pool)
          .await
-         .map_err(|e: sqlx::Error| CleanServiceError::DatabaseError(e.to_string()))?
+         .map_err(|e: sqlx::Error| AppError::DatabaseError(e.to_string()))?
      };
 
      Ok(invoices)
  }
 
  /// 创建或更新发票
- pub async fn upsert(&self, param: &InvoiceCreateParam) -> CleanResult<()> {
+ pub async fn upsert(&self, param: &InvoiceCreateParam) -> AppResult<()> {
      let now = chrono::Utc::now().format("%Y-%m-%d %H:%M:%S").to_string();
 
      if let Some(ref id) = param.id {
@@ -190,7 +190,7 @@ impl InvoiceRepository {/// 创建发票仓储实例
          )
          .execute(&self.pool)
          .await
-         .map_err(|e: sqlx::Error| CleanServiceError::DatabaseError(e.to_string()))?;
+         .map_err(|e: sqlx::Error| AppError::DatabaseError(e.to_string()))?;
      } else {
          // 新增: fingerprint 仅在创建时生成一次
          let id = uuid::Uuid::new_v4().to_string();
@@ -226,7 +226,7 @@ impl InvoiceRepository {/// 创建发票仓储实例
          )
          .execute(&self.pool)
          .await
-         .map_err(|e: sqlx::Error| CleanServiceError::DatabaseError(e.to_string()))?;
+         .map_err(|e: sqlx::Error| AppError::DatabaseError(e.to_string()))?;
      }
 
      Ok(())

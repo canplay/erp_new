@@ -15,7 +15,7 @@ use billing_core::{
     BillingPlan, BillingPlanType, Invoice, InvoiceLineItem, InvoiceStatus,
     PlanFeature, Subscription, SubscriptionStatus, UsageRecord, UsageType,
 };
-use common::ApiResponse;
+use common::{ApiResponse, AppError, AppResult};
 
 /// 应用状态
 #[derive(Clone)]
@@ -54,7 +54,7 @@ pub struct PlanFeatureRequest {
 pub async fn create_plan(
     State(state): State<Arc<BillingAppState>>,
     Json(request): Json<CreatePlanRequest>,
-) -> Result<impl IntoResponse, BillingError> {
+) -> AppResult<impl IntoResponse> {
     let plan_type = match request.plan_type.as_str() {
         "free" => BillingPlanType::Free,
         "standard" => BillingPlanType::Standard,
@@ -80,14 +80,14 @@ pub async fn create_plan(
     .bind(serde_json::to_value(&request.quotas).unwrap_or_default())
     .execute(&state.pool)
     .await
-    .map_err(|e| BillingError::DatabaseError(e.to_string()))?;
+    .map_err(|e| AppError::DatabaseError(e.to_string()))?;
 
     Ok((StatusCode::CREATED, Json(ApiResponse::success(id))))
 }
 
 pub async fn list_plans(
     State(state): State<Arc<BillingAppState>>,
-) -> Result<impl IntoResponse, BillingError> {
+) -> AppResult<impl IntoResponse> {
     let plans: Vec<serde_json::Value> = sqlx::query_as::<_, PlanRow>(
         r#"
         SELECT id, name, description, plan_type, status, price_monthly, price_yearly, 
@@ -97,7 +97,7 @@ pub async fn list_plans(
     )
     .fetch_all(&state.pool)
     .await
-    .map_err(|e| BillingError::DatabaseError(e.to_string()))?
+    .map_err(|e| AppError::DatabaseError(e.to_string()))?
     .into_iter()
     .map(|row| {
         serde_json::json!({
@@ -129,7 +129,7 @@ pub struct CreateSubscriptionRequest {
 pub async fn create_subscription(
     State(state): State<Arc<BillingAppState>>,
     Json(request): Json<CreateSubscriptionRequest>,
-) -> Result<impl IntoResponse, BillingError> {
+) -> AppResult<impl IntoResponse> {
     // 获取计划价格
     let plan: PlanRow = sqlx::query_as::<_, PlanRow>(
         "SELECT * FROM plans WHERE id = $1",
@@ -137,8 +137,8 @@ pub async fn create_subscription(
     .bind(request.plan_id)
     .fetch_optional(&state.pool)
     .await
-    .map_err(|e| BillingError::DatabaseError(e.to_string()))?
-    .ok_or(BillingError::NotFound("Plan not found".to_string()))?;
+    .map_err(|e| AppError::DatabaseError(e.to_string()))?
+    .ok_or(AppError::NotFound("Plan not found".to_string()))?;
 
     let now = chrono::Utc::now();
     let trial_end = now + chrono::Duration::days(14);
@@ -159,7 +159,7 @@ pub async fn create_subscription(
     .bind(plan.price_monthly)
     .execute(&state.pool)
     .await
-    .map_err(|e| BillingError::DatabaseError(e.to_string()))?;
+    .map_err(|e| AppError::DatabaseError(e.to_string()))?;
 
     Ok((StatusCode::CREATED, Json(ApiResponse::success(id))))
 }
@@ -176,7 +176,7 @@ pub struct CreateInvoiceRequest {
 pub async fn create_invoice(
     State(state): State<Arc<BillingAppState>>,
     Json(request): Json<CreateInvoiceRequest>,
-) -> Result<impl IntoResponse, BillingError> {
+) -> AppResult<impl IntoResponse> {
     let now = chrono::Utc::now();
     let id = Uuid::new_v4();
     let invoice_number = format!("INV-{}", now.format("%Y%m%d%H%M%S"));
@@ -199,7 +199,7 @@ pub async fn create_invoice(
     .bind(now + chrono::Duration::days(7))
     .execute(&state.pool)
     .await
-    .map_err(|e| BillingError::DatabaseError(e.to_string()))?;
+    .map_err(|e| AppError::DatabaseError(e.to_string()))?;
 
     Ok((StatusCode::CREATED, Json(ApiResponse::success(id))))
 }
@@ -216,7 +216,7 @@ pub struct RecordUsageRequest {
 pub async fn record_usage(
     State(state): State<Arc<BillingAppState>>,
     Json(request): Json<RecordUsageRequest>,
-) -> Result<impl IntoResponse, BillingError> {
+) -> AppResult<impl IntoResponse> {
     sqlx::query(
         "INSERT INTO usage_records (tenant_id, metric, quantity) VALUES ($1, $2, $3)",
     )
@@ -225,30 +225,12 @@ pub async fn record_usage(
     .bind(request.quantity)
     .execute(&state.pool)
     .await
-    .map_err(|e| BillingError::DatabaseError(e.to_string()))?;
+    .map_err(|e| AppError::DatabaseError(e.to_string()))?;
 
     Ok(Json(ApiResponse::success("Usage recorded")))
 }
 
 // ============ 错误类型 ============
-
-#[derive(Debug)]
-pub enum BillingError {
-    DatabaseError(String),
-    NotFound(String),
-    ValidationError(String),
-}
-
-impl IntoResponse for BillingError {
-    fn into_response(self) -> Response {
-        let (status, message) = match self {
-            BillingError::DatabaseError(msg) => (StatusCode::INTERNAL_SERVER_ERROR, msg),
-            BillingError::NotFound(msg) => (StatusCode::NOT_FOUND, msg),
-            BillingError::ValidationError(msg) => (StatusCode::BAD_REQUEST, msg),
-        };
-        (status, Json(ApiResponse::<()>::error(&message))).into_response()
-    }
-}
 
 #[derive(sqlx::FromRow)]
 struct PlanRow {

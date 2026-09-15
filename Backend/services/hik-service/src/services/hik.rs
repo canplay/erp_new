@@ -4,7 +4,8 @@
 use redis::AsyncCommands;
 use serde_json::json;
 
-use crate::error::{HikError, Result};
+use common::AppError;
+use common::AppResult;
 use crate::models::HikRequest;
 
 /// 海康服务
@@ -32,16 +33,16 @@ impl HikService {
     }
 
     /// 获取访问令牌
-    pub async fn get_token(&self) -> Result<String> {
-        let client = redis::Client::open(self.redis_url.as_str()).map_err(HikError::RedisError)?;
+    pub async fn get_token(&self) -> AppResult<String> {
+        let client = redis::Client::open(self.redis_url.as_str()).map_err(AppError::Redis)?;
         let mut conn = client
             .get_multiplexed_async_connection()
             .await
-            .map_err(HikError::RedisError)?;
+            .map_err(AppError::Redis)?;
 
         // 尝试从Redis获取缓存的token
         let cached_token: Option<String> =
-            conn.get("hik_token").await.map_err(HikError::RedisError)?;
+            conn.get("hik_token").await.map_err(AppError::Redis)?;
 
         if let Some(token) = cached_token
             && !token.is_empty() {
@@ -62,10 +63,10 @@ impl HikService {
             .form(&params)
             .send()
             .await
-            .map_err(HikError::RequestError)?;
+            .map_err(AppError::HttpError)?;
 
         if resp.status().is_success() {
-            let body: serde_json::Value = resp.json().await.map_err(HikError::RequestError)?;
+            let body: serde_json::Value = resp.json().await.map_err(AppError::HttpError)?;
 
             if let Some(access_token) = body["access_token"].as_str() {
                 let expires_in = body["expires_in"].as_i64().unwrap_or(3600);
@@ -74,17 +75,17 @@ impl HikService {
                 let _: () = conn
                     .set_ex("hik_token", access_token, expires_in as u64)
                     .await
-                    .map_err(HikError::RedisError)?;
+                    .map_err(AppError::Redis)?;
 
                 return Ok(access_token.to_string());
             }
         }
 
-        Err(HikError::TokenError)
+        Err(AppError::HikTokenError)
     }
 
     /// 执行海康API调用
-    pub async fn exec(&self, request: &HikRequest) -> Result<serde_json::Value> {
+    pub async fn exec(&self, request: &HikRequest) -> AppResult<serde_json::Value> {
         let token = self.get_token().await?;
         let client = reqwest::Client::new();
 
@@ -184,7 +185,7 @@ impl HikService {
                 ),
                 json!({}),
             ),
-            _ => return Err(HikError::InvalidMethod),
+            _ => return Err(AppError::HikInvalidMethod),
         };
 
         let url = format!("{}{}", self.base_url, path);
@@ -196,13 +197,13 @@ impl HikService {
             .json(&body)
             .send()
             .await
-            .map_err(HikError::RequestError)?;
+            .map_err(AppError::HttpError)?;
 
         if resp.status().is_success() {
-            let body: serde_json::Value = resp.json().await.map_err(HikError::RequestError)?;
+            let body: serde_json::Value = resp.json().await.map_err(AppError::HttpError)?;
             Ok(body)
         } else {
-            Err(HikError::ApiError(format!("HTTP {}", resp.status())))
+            Err(AppError::HikApiError(format!("HTTP {}", resp.status())))
         }
     }
 
@@ -213,7 +214,7 @@ impl HikService {
         amount: i32,
         start: i64,
         end: &str,
-    ) -> Result<serde_json::Value> {
+    ) -> AppResult<serde_json::Value> {
         let token = self.get_token().await?;
         let client = reqwest::Client::new();
 
@@ -231,17 +232,17 @@ impl HikService {
             .json(&body)
             .send()
             .await
-            .map_err(HikError::RequestError)?;
+            .map_err(AppError::HttpError)?;
 
         if !resp.status().is_success() {
-            return Err(HikError::ApiError("Failed to get park infos".to_string()));
+            return Err(AppError::HikApiError("Failed to get park infos".to_string()));
         }
 
-        let park_data: serde_json::Value = resp.json().await.map_err(HikError::RequestError)?;
+        let park_data: serde_json::Value = resp.json().await.map_err(AppError::HttpError)?;
 
         let results = park_data["data"]["results"]
             .as_array()
-            .ok_or_else(|| HikError::ApiError("Invalid park data".to_string()))?;
+            .ok_or_else(|| AppError::HikApiError("Invalid park data".to_string()))?;
 
         // 构建停车场编码列表
         let park_codes: Vec<String> = results
@@ -270,13 +271,13 @@ impl HikService {
             .json(&coupon_body)
             .send()
             .await
-            .map_err(HikError::RequestError)?;
+            .map_err(AppError::HttpError)?;
 
         if resp.status().is_success() {
-            let body: serde_json::Value = resp.json().await.map_err(HikError::RequestError)?;
+            let body: serde_json::Value = resp.json().await.map_err(AppError::HttpError)?;
             Ok(body)
         } else {
-            Err(HikError::ApiError("Failed to send coupon".to_string()))
+            Err(AppError::HikApiError("Failed to send coupon".to_string()))
         }
     }
 }

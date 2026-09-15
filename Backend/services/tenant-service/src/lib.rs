@@ -17,6 +17,9 @@ pub use repository::TenantRepository;
 
 pub use grpc_handlers::{TenantAppState, TenantGrpcService, TenantInfo};
 
+// Re-export common error types for consistency with other services
+pub use common::{AppError, AppResult};
+
 // 导出版本管理类型
 pub use isolation::{
     DataFilter, IsolationLevel, IsolationPolicy, ResourceUsage, Tenant, TenantContext,

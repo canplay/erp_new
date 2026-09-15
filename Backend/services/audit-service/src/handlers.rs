@@ -6,10 +6,11 @@ use axum::{
     response::IntoResponse,
 };
 
-use crate::error::{AuditError, AuditResult};
+use common::AppError;
+use common::AppResult;
 use crate::models::{LoginLogQuery, LoginLogResponse, LoginStatistics, OperationLogQuery, OperationLogResponse, OperationLogDetailResponse, BatchDeleteRequest, ApiCallLogQuery, ApiCallLogResponse, ApiCallStatistics, ApiEndpointStatistics, ApiTrendPoint, ApiResponseTimeDistribution};
 use crate::repository::AuditRepository;
-use crate::helpers::{json_success, json_ok, json_error, json_error_fmt, json_success_msg, json_ok_msg, json_error_msg, json_error_msg_fmt, json_health};
+use crate::helpers::{json_ok_msg, json_health};
 
 /// 应用状态
 #[derive(Clone)]
@@ -60,7 +61,7 @@ pub fn create_router(state: AppState) -> Router {
 async fn get_login_logs(
     State(state): State<AppState>,
     Query(query): Query<LoginLogQuery>,
-) -> AuditResult<Json<LoginLogResponse>> {
+) -> AppResult<Json<LoginLogResponse>> {
     let (logs, total) = state
         .repository
         .find_login_logs(
@@ -82,7 +83,7 @@ async fn get_login_logs(
 }
 
 /// 获取登录统计
-async fn get_login_statistics(State(state): State<AppState>) -> AuditResult<Json<LoginStatistics>> {
+async fn get_login_statistics(State(state): State<AppState>) -> AppResult<Json<LoginStatistics>> {
     let stats = state.repository.get_login_statistics().await?;
     Ok(Json(stats))
 }
@@ -93,7 +94,7 @@ async fn get_login_statistics(State(state): State<AppState>) -> AuditResult<Json
 async fn get_operation_logs(
     State(state): State<AppState>,
     Query(query): Query<OperationLogQuery>,
-) -> AuditResult<Json<OperationLogResponse>> {
+) -> AppResult<Json<OperationLogResponse>> {
     let (logs, total) = state
         .repository
         .find_operation_logs(
@@ -120,12 +121,12 @@ async fn get_operation_logs(
 async fn get_operation_log_detail(
     State(state): State<AppState>,
     Path(id): Path<i64>,
-) -> AuditResult<Json<OperationLogDetailResponse>> {
+) -> AppResult<Json<OperationLogDetailResponse>> {
     let log = state
         .repository
         .find_operation_log_by_id(id)
         .await?
-        .ok_or(AuditError::NotFound)?;
+        .ok_or(AppError::AuditNotFound)?;
 
     Ok(Json(OperationLogDetailResponse { log }))
 }
@@ -134,7 +135,7 @@ async fn get_operation_log_detail(
 async fn batch_delete_operation_logs(
     State(state): State<AppState>,
     Json(req): Json<BatchDeleteRequest>,
-) -> AuditResult<impl IntoResponse> {
+) -> AppResult<impl IntoResponse> {
     let count = state
         .repository
         .batch_delete_operation_logs(&req.ids)
@@ -149,7 +150,7 @@ async fn batch_delete_operation_logs(
 async fn get_api_call_logs(
     State(state): State<AppState>,
     Query(query): Query<ApiCallLogQuery>,
-) -> AuditResult<Json<ApiCallLogResponse>> {
+) -> AppResult<Json<ApiCallLogResponse>> {
     let (logs, total) = state.repository.find_api_call_logs(&query).await?;
     Ok(Json(ApiCallLogResponse { list: logs, total }))
 }
@@ -157,7 +158,7 @@ async fn get_api_call_logs(
 /// 获取 API 调用统计
 async fn get_api_call_statistics(
     State(state): State<AppState>,
-) -> AuditResult<Json<ApiCallStatistics>> {
+) -> AppResult<Json<ApiCallStatistics>> {
     let stats = state.repository.get_api_call_statistics().await?;
     Ok(Json(stats))
 }
@@ -165,7 +166,7 @@ async fn get_api_call_statistics(
 /// 获取 API 端点统计
 async fn get_api_endpoint_statistics(
     State(state): State<AppState>,
-) -> AuditResult<Json<Vec<ApiEndpointStatistics>>> {
+) -> AppResult<Json<Vec<ApiEndpointStatistics>>> {
     let stats = state.repository.get_api_endpoint_statistics().await?;
     Ok(Json(stats))
 }
@@ -173,7 +174,7 @@ async fn get_api_endpoint_statistics(
 /// 获取 API 调用趋势
 async fn get_api_call_trend(
     State(state): State<AppState>,
-) -> AuditResult<Json<Vec<ApiTrendPoint>>> {
+) -> AppResult<Json<Vec<ApiTrendPoint>>> {
     let trend = state.repository.get_api_call_trend().await?;
     Ok(Json(trend))
 }
@@ -181,7 +182,7 @@ async fn get_api_call_trend(
 /// 获取响应时间分布
 async fn get_api_response_distribution(
     State(state): State<AppState>,
-) -> AuditResult<Json<Vec<ApiResponseTimeDistribution>>> {
+) -> AppResult<Json<Vec<ApiResponseTimeDistribution>>> {
     let dist = state.repository.get_api_response_distribution().await?;
     Ok(Json(dist))
 }

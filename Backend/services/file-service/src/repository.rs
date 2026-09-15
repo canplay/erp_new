@@ -1,6 +1,6 @@
 //! 文件数据库操作
 
-use crate::error::FileResult;
+use common::AppResult;
 use crate::models::SysFile;
 use chrono::{DateTime, Utc};
 use sqlx::PgPool;
@@ -19,7 +19,7 @@ impl FileRepository {
     }
 
     /// 插入文件记录
-    pub async fn insert(&self, file: &crate::models::SysFile) -> FileResult<i64> {
+    pub async fn insert(&self, file: &crate::models::SysFile) -> AppResult<i64> {
         let result = sqlx::query_scalar!(
             r#"
             INSERT INTO sys_files (
@@ -49,7 +49,7 @@ impl FileRepository {
     }
 
     /// 根据ID查询文件
-    pub async fn find_by_id(&self, id: i64) -> FileResult<Option<SysFile>> {
+    pub async fn find_by_id(&self, id: i64) -> AppResult<Option<SysFile>> {
         let file = sqlx::query_as!(
             SysFile,
             r#"
@@ -77,7 +77,7 @@ impl FileRepository {
         keyword: Option<&str>,
         start_date: Option<&str>,
         end_date: Option<&str>,
-    ) -> FileResult<(Vec<SysFile>, i64)> {
+    ) -> AppResult<(Vec<SysFile>, i64)> {
         let offset = (page.saturating_sub(1)) * page_size;
 
         // 可选过滤条件: 空字符串/空值表示不过滤
@@ -136,7 +136,7 @@ impl FileRepository {
     }
 
     /// 删除文件（软删除）
-    pub async fn delete(&self, id: i64) -> FileResult<bool> {
+    pub async fn delete(&self, id: i64) -> AppResult<bool> {
         let result = sqlx::query!(
             r#"
             UPDATE sys_files
@@ -152,7 +152,7 @@ impl FileRepository {
     }
 
     /// 批量删除文件（软删除）
-    pub async fn batch_delete(&self, ids: &[i64]) -> FileResult<u64> {
+    pub async fn batch_delete(&self, ids: &[i64]) -> AppResult<u64> {
         if ids.is_empty() {
             return Ok(0);
         }
@@ -172,7 +172,7 @@ impl FileRepository {
     }
 
     /// 检查文件是否被使用
-    pub async fn is_file_in_use(&self, id: i64) -> FileResult<bool> {
+    pub async fn is_file_in_use(&self, id: i64) -> AppResult<bool> {
         // 可以根据业务需求扩展检查逻辑
         // 例如检查文件是否被文章、设备等引用
         let count = sqlx::query_scalar!(

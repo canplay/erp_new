@@ -4,7 +4,8 @@
 use sqlx::PgPool;
 use chrono::{Utc, Duration};
 
-use crate::error::{PayError, Result};
+use common::AppError;
+use common::AppResult;
 
 /// 订阅计划定义
 #[derive(Debug, Clone)]
@@ -102,9 +103,9 @@ impl SubscriptionService {
     }
 
     /// 创建订阅
-    pub async fn create_subscription(&self, params: &CreateSubscriptionParams) -> Result<SubscriptionResult> {
+    pub async fn create_subscription(&self, params: &CreateSubscriptionParams) -> AppResult<SubscriptionResult> {
         let plan = PlanDefinition::get_plan(&params.plan_id)
-            .ok_or_else(|| PayError::InternalError(format!("Unknown plan: {}", params.plan_id)))?;
+            .ok_or_else(|| AppError::PayInternalError(format!("Unknown plan: {}", params.plan_id)))?;
 
         let now = Utc::now();
         let trial_days = if params.trial_days > 0 { params.trial_days } else { plan.trial_days };
@@ -135,10 +136,10 @@ impl SubscriptionService {
         .bind(params.tenant_id)
         .fetch_optional(&self.pool)
         .await
-        .map_err(PayError::DatabaseError)?;
+        .map_err(AppError::Database)?;
 
         if existing.is_some() {
-            return Err(PayError::InternalError("Tenant already has an active subscription".to_string()));
+            return Err(AppError::PayInternalError("Tenant already has an active subscription".to_string()));
         }
 
         let row: (i64, i64, String, String, chrono::NaiveDateTime, chrono::NaiveDateTime, bool, chrono::NaiveDateTime, chrono::NaiveDateTime) = sqlx::query_as(
@@ -158,7 +159,7 @@ impl SubscriptionService {
         .bind(now.naive_utc())
         .fetch_one(&self.pool)
         .await
-        .map_err(PayError::DatabaseError)?;
+        .map_err(AppError::Database)?;
 
         Ok(SubscriptionResult {
             id: row.0,
@@ -174,15 +175,15 @@ impl SubscriptionService {
     }
 
     /// 取消订阅
-    pub async fn cancel_subscription(&self, subscription_id: i64, immediate: bool) -> Result<SubscriptionResult> {
+    pub async fn cancel_subscription(&self, subscription_id: i64, immediate: bool) -> AppResult<SubscriptionResult> {
         let row: (i64, i64, String, String, chrono::NaiveDateTime, chrono::NaiveDateTime, bool, chrono::NaiveDateTime, chrono::NaiveDateTime) = sqlx::query_as(
             r#"SELECT id, tenant_id, plan_id, status, current_period_start, current_period_end, cancel_at_period_end, created_at, updated_at FROM subscriptions WHERE id = $1"#
         )
         .bind(subscription_id)
         .fetch_optional(&self.pool)
         .await
-        .map_err(PayError::DatabaseError)?
-        .ok_or_else(|| PayError::InternalError("Subscription not found".to_string()))?;
+        .map_err(AppError::Database)?
+        .ok_or_else(|| AppError::PayInternalError("Subscription not found".to_string()))?;
 
         let now = Utc::now().naive_utc();
 
@@ -194,7 +195,7 @@ impl SubscriptionService {
             .bind(subscription_id)
             .execute(&self.pool)
             .await
-            .map_err(PayError::DatabaseError)?;
+            .map_err(AppError::Database)?;
 
             Ok(SubscriptionResult {
                 id: row.0,
@@ -216,7 +217,7 @@ impl SubscriptionService {
             .bind(subscription_id)
             .execute(&self.pool)
             .await
-            .map_err(PayError::DatabaseError)?;
+            .map_err(AppError::Database)?;
 
             Ok(SubscriptionResult {
                 id: row.0,
@@ -233,15 +234,15 @@ impl SubscriptionService {
     }
 
     /// 获取订阅详情
-    pub async fn get_subscription(&self, subscription_id: i64) -> Result<SubscriptionResult> {
+    pub async fn get_subscription(&self, subscription_id: i64) -> AppResult<SubscriptionResult> {
         let row: (i64, i64, String, String, chrono::NaiveDateTime, chrono::NaiveDateTime, bool, chrono::NaiveDateTime, chrono::NaiveDateTime) = sqlx::query_as(
             r#"SELECT id, tenant_id, plan_id, status, current_period_start, current_period_end, cancel_at_period_end, created_at, updated_at FROM subscriptions WHERE id = $1"#
         )
         .bind(subscription_id)
         .fetch_optional(&self.pool)
         .await
-        .map_err(PayError::DatabaseError)?
-        .ok_or_else(|| PayError::InternalError("Subscription not found".to_string()))?;
+        .map_err(AppError::Database)?
+        .ok_or_else(|| AppError::PayInternalError("Subscription not found".to_string()))?;
 
         Ok(SubscriptionResult {
             id: row.0,
@@ -257,7 +258,7 @@ impl SubscriptionService {
     }
 
     /// 列出订阅
-    pub async fn list_subscriptions(&self, tenant_id: i64, status: Option<&str>, page: i32, page_size: i32) -> Result<Vec<SubscriptionResult>> {
+    pub async fn list_subscriptions(&self, tenant_id: i64, status: Option<&str>, page: i32, page_size: i32) -> AppResult<Vec<SubscriptionResult>> {
         let limit = page_size.max(1).min(100);
         let offset = (page.max(0)) * limit;
 
@@ -277,7 +278,7 @@ impl SubscriptionService {
             .bind(offset as i64)
             .fetch_all(&self.pool)
             .await
-            .map_err(PayError::DatabaseError)?
+            .map_err(AppError::Database)?
         } else {
             sqlx::query_as(
                 r#"
@@ -293,7 +294,7 @@ impl SubscriptionService {
             .bind(offset as i64)
             .fetch_all(&self.pool)
             .await
-            .map_err(PayError::DatabaseError)?
+            .map_err(AppError::Database)?
         };
 
         Ok(rows.into_iter().map(|row| SubscriptionResult {
@@ -310,7 +311,7 @@ impl SubscriptionService {
     }
 
     /// 检查租户是否有有效订阅
-    pub async fn has_active_subscription(&self, tenant_id: i64) -> Result<bool> {
+    pub async fn has_active_subscription(&self, tenant_id: i64) -> AppResult<bool> {
         let now = Utc::now().naive_utc();
 
         let count: (i64,) = sqlx::query_as(
@@ -325,7 +326,7 @@ impl SubscriptionService {
         .bind(now)
         .fetch_one(&self.pool)
         .await
-        .map_err(PayError::DatabaseError)?;
+        .map_err(AppError::Database)?;
 
         Ok(count.0 > 0)
     }

@@ -9,6 +9,8 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 use tracing::{info, warn, error};
 
+use common::AppError;
+
 use tenant_core::{
     context::TenantContext,
     lifecycle::{LifecycleManager, LifecycleState, LifecycleTransition},

@@ -3,8 +3,8 @@
 
 use sqlx::PgPool;
 
-use crate::error::{CleanServiceError};
-use crate::error::CleanResult;
+use common::AppError;
+use common::AppResult;
 use crate::models::Staff;
 
 /// 员工仓储
@@ -19,11 +19,11 @@ impl StaffRepository {
  }
 
  /// 根据ID查询员工
- pub async fn get_by_id(&self, id: &str) -> CleanResult<Option<Staff>> {let staff = sqlx::query_as::<_, Staff>("SELECT * FROM t_s_base_user WHERE id = $1")
+ pub async fn get_by_id(&self, id: &str) -> AppResult<Option<Staff>> {let staff = sqlx::query_as::<_, Staff>("SELECT * FROM t_s_base_user WHERE id = $1")
  .bind(id)
  .fetch_optional(&self.pool)
  .await
- .map_err(|e: sqlx::Error| CleanServiceError::DatabaseError(e.to_string()))?;
+ .map_err(|e: sqlx::Error| AppError::DatabaseError(e.to_string()))?;
 
  Ok(staff)}
 }

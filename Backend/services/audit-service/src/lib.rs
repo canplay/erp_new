@@ -1,8 +1,8 @@
-pub use error::{AuditError, AuditResult};
+pub use common::AppError;
+pub use common::AppResult;
 pub use handlers::{AppState, create_router};
 pub use repository::AuditRepository;
 
-pub mod error;
 pub mod grpc_handlers; // gRPC 服务处理器
 pub mod handlers;
 pub mod helpers;

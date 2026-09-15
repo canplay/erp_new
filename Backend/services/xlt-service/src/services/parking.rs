@@ -2,7 +2,8 @@
 //!
 //! 处理车辆入场/出场逻辑，使用 Redis 缓存在场车辆信息。
 
-use crate::error::{Result, XltError};
+use common::AppError;
+use common::AppResult;
 use crate::models::{ParkingVehicle, VehicleEvent, XltConfig};
 
 /// 停车服务
@@ -25,13 +26,13 @@ impl ParkingService {
     }
 
     /// 车辆入场处理
-    pub async fn handle_entry(&self, event: &VehicleEvent) -> Result<VehicleEvent> {
+    pub async fn handle_entry(&self, event: &VehicleEvent) -> AppResult<VehicleEvent> {
         let client = redis::Client::open(self.config.redis_url.as_str())
-            .map_err(XltError::RedisError)?;
+            .map_err(AppError::from)?;
         let mut conn = client
             .get_multiplexed_async_connection()
             .await
-            .map_err(XltError::RedisError)?;
+            .map_err(AppError::from)?;
 
         let vehicle_key = format!("xlt:parking:{}:{}", event.park_code, event.plate_no);
         let now = chrono::Utc::now().to_rfc3339();
@@ -54,7 +55,7 @@ impl ParkingService {
             serde_json::to_string(&record).unwrap_or_default(),
         )
         .await
-        .map_err(XltError::RedisError)?;
+        .map_err(AppError::from)?;
 
         tracing::info!(
             "车辆入场: plate_no={}, park_code={}",
@@ -66,19 +67,19 @@ impl ParkingService {
     }
 
     /// 车辆出场处理
-    pub async fn handle_exit(&self, event: &VehicleEvent) -> Result<VehicleEvent> {
+    pub async fn handle_exit(&self, event: &VehicleEvent) -> AppResult<VehicleEvent> {
         let client = redis::Client::open(self.config.redis_url.as_str())
-            .map_err(XltError::RedisError)?;
+            .map_err(AppError::from)?;
         let mut conn = client
             .get_multiplexed_async_connection()
             .await
-            .map_err(XltError::RedisError)?;
+            .map_err(AppError::from)?;
 
         let vehicle_key = format!("xlt:parking:{}:{}", event.park_code, event.plate_no);
 
         let _: () = redis::AsyncCommands::del(&mut conn, &vehicle_key)
             .await
-            .map_err(XltError::RedisError)?;
+            .map_err(AppError::from)?;
 
         tracing::info!(
             "车辆出场: plate_no={}, park_code={}, amount={}",
@@ -95,23 +96,23 @@ impl ParkingService {
         &self,
         park_code: &str,
         plate_no: &str,
-    ) -> Result<ParkingVehicle> {
+    ) -> AppResult<ParkingVehicle> {
         let client = redis::Client::open(self.config.redis_url.as_str())
-            .map_err(XltError::RedisError)?;
+            .map_err(AppError::from)?;
         let mut conn = client
             .get_multiplexed_async_connection()
             .await
-            .map_err(XltError::RedisError)?;
+            .map_err(AppError::from)?;
 
         let vehicle_key = format!("xlt:parking:{park_code}:{plate_no}");
         let data: Option<String> = redis::AsyncCommands::get(&mut conn, &vehicle_key)
             .await
-            .map_err(XltError::RedisError)?;
+            .map_err(AppError::from)?;
 
         match data {
             Some(json_str) => {
                 let v: serde_json::Value =
-                    serde_json::from_str(&json_str).map_err(|e| XltError::Internal(e.to_string()))?;
+                    serde_json::from_str(&json_str).map_err(|e| AppError::Internal(e.to_string()))?;
 
                 let entry_time = v["entryTime"].as_str().unwrap_or("").to_string();
                 let duration = Self::calc_duration_minutes(&entry_time);
@@ -127,7 +128,7 @@ impl ParkingService {
                     amount: Self::calc_billing_default(&entry_time),
                 })
             }
-            None => Err(XltError::VehicleNotFound),
+            None => Err(AppError::XltVehicleNotFound),
         }
     }
 

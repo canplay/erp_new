@@ -5,7 +5,9 @@
 //! - CCB 建设银行支付集成
 //! - UMS 银联支付集成
 
-pub mod error;
+pub use common::AppError;
+pub use common::AppResult;
+
 pub mod grpc_server;
 pub mod handlers;
 pub mod models;

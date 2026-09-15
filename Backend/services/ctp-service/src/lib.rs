@@ -17,7 +17,9 @@
 //! | `/api/ctp/device/list` | GET | 设备列表（支持按车场分页） |
 //! | `/health` | GET | 健康检查 |
 
-pub mod error;
+pub use common::AppError;
+pub use common::AppResult;
+
 pub mod grpc_server;
 pub mod handlers;
 pub mod helpers;

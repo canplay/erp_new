@@ -3,7 +3,8 @@
 //! 封装 CTP 第三方平台 HTTP API 调用及 Redis 设备状态缓存逻辑。
 //! 支持设备数据上报、锁控制命令发送、设备状态查询与缓存。
 
-use crate::error::{CtpError, Result};
+use common::AppError;
+use common::AppResult;
 use crate::models::{CmdType, CtpConfig, CtpResponse, DeviceDataUpload, LockDevice, LockStatus};
 use md5;
 
@@ -50,7 +51,7 @@ impl CtpDeviceService {
     /// 上报设备数据至 CTP 平台
     ///
     /// 使用表单格式提交设备电压、状态等数据，并将结果缓存至 Redis。
-    pub async fn upload_device_data(&self, upload: &DeviceDataUpload) -> Result<CtpResponse> {
+    pub async fn upload_device_data(&self, upload: &DeviceDataUpload) -> AppResult<CtpResponse> {
         let date = Self::today_date();
         let sign = self.sign(&upload.device_no, &date);
         let client = reqwest::Client::new();
@@ -81,7 +82,7 @@ impl CtpDeviceService {
             Ok(body)
         } else {
             let text = resp.text().await.unwrap_or_default();
-            Err(CtpError::DeviceConnection(format!("HTTP {status}: {text}")))
+            Err(AppError::CtpDeviceConnection(format!("HTTP {status}: {text}")))
         }
     }
 
@@ -93,7 +94,7 @@ impl CtpDeviceService {
         device_no: &str,
         cmd_type: &CmdType,
         data: Option<&str>,
-    ) -> Result<CtpResponse> {
+    ) -> AppResult<CtpResponse> {
         let date = Self::today_date();
         let sign = self.sign(device_no, &date);
         let client = reqwest::Client::new();
@@ -134,31 +135,31 @@ impl CtpDeviceService {
             Ok(body)
         } else {
             let text = resp.text().await.unwrap_or_default();
-            Err(CtpError::DeviceCommand(format!("HTTP {status}: {text}")))
+            Err(AppError::CtpDeviceCommand(format!("HTTP {status}: {text}")))
         }
     }
 
     /// 从 Redis 缓存查询设备状态
-    pub async fn get_device_status(&self, device_no: &str) -> Result<LockDevice> {
+    pub async fn get_device_status(&self, device_no: &str) -> AppResult<LockDevice> {
         let client = redis::Client::open(self.config.redis_url.as_str())
-            .map_err(CtpError::RedisError)?;
+            .map_err(AppError::from)?;
         let mut conn = client
             .get_multiplexed_async_connection()
             .await
-            .map_err(CtpError::RedisError)?;
+            .map_err(AppError::from)?;
 
         let key = format!("ctp:device:{device_no}");
         let data: Option<String> = redis::AsyncCommands::get(&mut conn, &key)
             .await
-            .map_err(CtpError::RedisError)?;
+            .map_err(AppError::from)?;
 
         match data {
             Some(json_str) => {
                 let device: LockDevice = serde_json::from_str(&json_str)
-                    .map_err(|e| CtpError::Internal(format!("解析设备数据失败: {e}")))?;
+                    .map_err(|e| AppError::CtpInternal(format!("解析设备数据失败: {e}")))?;
                 Ok(device)
             }
-            None => Err(CtpError::DeviceNotFound(device_no.to_string())),
+            None => Err(AppError::CtpDeviceNotFound(device_no.to_string())),
         }
     }
 
@@ -168,13 +169,13 @@ impl CtpDeviceService {
         park_code: Option<&str>,
         page: i32,
         page_size: i32,
-    ) -> Result<serde_json::Value> {
+    ) -> AppResult<serde_json::Value> {
         let client = redis::Client::open(self.config.redis_url.as_str())
-            .map_err(CtpError::RedisError)?;
+            .map_err(AppError::from)?;
         let mut conn = client
             .get_multiplexed_async_connection()
             .await
-            .map_err(CtpError::RedisError)?;
+            .map_err(AppError::from)?;
 
         let pattern = if let Some(code) = park_code {
             format!("ctp:park:{code}:*")
@@ -184,7 +185,7 @@ impl CtpDeviceService {
 
         let keys: Vec<String> = redis::AsyncCommands::keys(&mut conn, &pattern)
             .await
-            .map_err(CtpError::RedisError)?;
+            .map_err(AppError::from)?;
 
         let mut devices = Vec::new();
         let start = ((page - 1) * page_size) as usize;
@@ -193,7 +194,7 @@ impl CtpDeviceService {
         for key in keys.iter().skip(start).take(end - start) {
             let data: Option<String> = redis::AsyncCommands::get(&mut conn, key)
                 .await
-                .map_err(CtpError::RedisError)?;
+                .map_err(AppError::from)?;
             if let Some(json_str) = data
                 && let Ok(device) = serde_json::from_str::<LockDevice>(&json_str) {
                     devices.push(device);
@@ -212,13 +213,13 @@ impl CtpDeviceService {
     ///
     /// 使用状态字解析器（附录2）解析 StatusOne/StatusTwo，
     /// 提取线圈/电量/入位/出位/逃费等状态信息写入缓存。
-    pub async fn handle_device_data_upload(&self, upload: &DeviceDataUpload) -> Result<()> {
+    pub async fn handle_device_data_upload(&self, upload: &DeviceDataUpload) -> AppResult<()> {
         let client = redis::Client::open(self.config.redis_url.as_str())
-            .map_err(CtpError::RedisError)?;
+            .map_err(AppError::from)?;
         let mut conn = client
             .get_multiplexed_async_connection()
             .await
-            .map_err(CtpError::RedisError)?;
+            .map_err(AppError::from)?;
 
         // 使用状态字解析器
         let s1 = upload.status_one.as_deref().unwrap_or("");
@@ -247,12 +248,12 @@ impl CtpDeviceService {
 
         // 将解析结果附加到 device 结构（通过序列化扩展）
         let mut device_json = serde_json::to_value(&device)
-            .map_err(|e| CtpError::Internal(format!("序列化设备失败: {e}")))?;
+            .map_err(|e| AppError::CtpInternal(format!("序列化设备失败: {e}")))?;
         device_json["status_parsed"] = serde_json::to_value(&parsed.status_one)
-            .map_err(|e| CtpError::Internal(format!("序列化状态失败: {e}")))?;
+            .map_err(|e| AppError::CtpInternal(format!("序列化状态失败: {e}")))?;
         if let Some(ref st2) = parsed.status_two {
             device_json["status_two_parsed"] = serde_json::to_value(st2)
-                .map_err(|e| CtpError::Internal(format!("序列化状态失败: {e}")))?;
+                .map_err(|e| AppError::CtpInternal(format!("序列化状态失败: {e}")))?;
         }
         device_json["battery_level"] = serde_json::Value::String(parsed.battery_level.clone());
 
@@ -263,7 +264,7 @@ impl CtpDeviceService {
             serde_json::to_string(&device_json).unwrap_or_default(),
         )
         .await
-        .map_err(CtpError::RedisError)?;
+        .map_err(AppError::from)?;
 
         tracing::info!(
             "设备数据已缓存: device_no={}, status={:?}, battery={}, lock_state={}",

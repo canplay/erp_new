@@ -19,30 +19,8 @@ const WEBHOOK_MAX_RETRIES: u32 = 3;
 /// Webhook request timeout in seconds
 const WEBHOOK_TIMEOUT_SECS: u32 = 10;
 
-/// 工作流引擎错误类型
-#[derive(Debug, thiserror::Error)]
-pub enum EngineError {
-    #[error("工作流不存在: {0}")]
-    WorkflowNotFound(String),
-
-    #[error("工作流未发布: {0}")]
-    WorkflowNotPublished(String),
-
-    #[error("实例不存在: {0}")]
-    InstanceNotFound(String),
-
-    #[error("节点不存在: {0}")]
-    NodeNotFound(String),
-
-    #[error("无效的状态转换: {0}")]
-    InvalidStateTransition(String),
-
-    #[error("执行失败: {0}")]
-    ExecutionFailed(String),
-
-    #[error("数据库错误: {0}")]
-    DatabaseError(#[from] sqlx::Error),
-}
+use common::AppError;
+pub use common::AppError as EngineError;
 
 /// 工作流引擎结果
 pub type EngineResult<T> = Result<T, EngineError>;
@@ -219,11 +197,11 @@ impl WorkflowEngine {
         .await?;
 
         let workflow =
-            workflow.ok_or_else(|| EngineError::WorkflowNotFound(workflow_id.to_string()))?;
+            workflow.ok_or_else(|| AppError::WorkflowNotFound(workflow_id.to_string()))?;
 
         // 检查工作流状态
         if workflow.status != "published" {
-            return Err(EngineError::WorkflowNotPublished(workflow_id.to_string()));
+            return Err(AppError::WorkflowNotPublished(workflow_id.to_string()));
         }
 
         // 解析定义
@@ -339,7 +317,7 @@ impl WorkflowEngine {
         .await?;
 
         let instance =
-            instance.ok_or_else(|| EngineError::InstanceNotFound(instance_id.to_string()))?;
+            instance.ok_or_else(|| AppError::InstanceNotFound(instance_id.to_string()))?;
 
         // 从工作流表获取定义
         let workflow_def: Option<serde_json::Value> =
@@ -539,7 +517,7 @@ impl WorkflowEngine {
         .rows_affected();
 
         if affected == 0 {
-            return Err(EngineError::InstanceNotFound(instance_id.to_string()));
+            return Err(AppError::InstanceNotFound(instance_id.to_string()));
         }
 
         // 更新所有待处理任务
@@ -625,7 +603,7 @@ impl TaskScheduler {
                 let workflow_id = action_params
                     .get("workflow_id")
                     .and_then(|v| v.as_str())
-                    .ok_or_else(|| EngineError::ExecutionFailed("缺少 workflow_id".to_string()))?;
+                    .ok_or_else(|| AppError::ExecutionFailed("缺少 workflow_id".to_string()))?;
 
                 self.execute_workflow_action(workflow_id, action_params)
                     .await?;
@@ -636,7 +614,7 @@ impl TaskScheduler {
                 let report_id = action_params
                     .get("report_id")
                     .and_then(|v| v.as_str())
-                    .ok_or_else(|| EngineError::ExecutionFailed("缺少 report_id".to_string()))?;
+                    .ok_or_else(|| AppError::ExecutionFailed("缺少 report_id".to_string()))?;
 
                 self.execute_report_action(report_id).await?;
                 tracing::info!("生成报表: {report_id}");
@@ -646,7 +624,7 @@ impl TaskScheduler {
                 let url = action_params
                     .get("url")
                     .and_then(|v| v.as_str())
-                    .ok_or_else(|| EngineError::ExecutionFailed("缺少 webhook url".to_string()))?;
+                    .ok_or_else(|| AppError::ExecutionFailed("缺少 webhook url".to_string()))?;
 
                 self.execute_webhook_action(url, action_params).await?;
                 tracing::info!("发送 Webhook: {url}");
@@ -656,13 +634,13 @@ impl TaskScheduler {
                 let script = action_params
                     .get("script")
                     .and_then(|v| v.as_str())
-                    .ok_or_else(|| EngineError::ExecutionFailed("缺少 script 内容".to_string()))?;
+                    .ok_or_else(|| AppError::ExecutionFailed("缺少 script 内容".to_string()))?;
 
                 self.execute_script_action(script).await?;
                 tracing::info!("执行自定义脚本");
             }
             _ => {
-                return Err(EngineError::ExecutionFailed(format!(
+                return Err(AppError::ExecutionFailed(format!(
                     "未知的动作类型: {action_type}"
                 )));
             }
@@ -694,8 +672,8 @@ impl TaskScheduler {
                     .await?;
                 Ok(())
             }
-            Some(_) => Err(EngineError::ExecutionFailed("工作流未发布".to_string())),
-            None => Err(EngineError::WorkflowNotFound(workflow_id.to_string())),
+            Some(_) => Err(AppError::ExecutionFailed("工作流未发布".to_string())),
+            None => Err(AppError::WorkflowNotFound(workflow_id.to_string())),
         }
     }
 
@@ -734,7 +712,7 @@ impl TaskScheduler {
                 let _ = result;
                 Ok(())
             }
-            None => Err(EngineError::ExecutionFailed(format!(
+            None => Err(AppError::ExecutionFailed(format!(
                 "报表不存在: {report_id}"
             ))),
         }
@@ -833,13 +811,13 @@ impl TaskScheduler {
             .cloned()
             .map(|v| serde_json::to_string(&v))
             .transpose()
-            .map_err(|e| EngineError::ExecutionFailed(e.to_string()))?;
+            .map_err(|e| AppError::ExecutionFailed(e.to_string()))?;
 
         // 创建带超时的 HTTP 客户端
         let client = reqwest::Client::builder()
             .timeout(std::time::Duration::from_secs(WEBHOOK_TIMEOUT_SECS as u64))
             .build()
-            .map_err(|e| EngineError::ExecutionFailed(format!("创建HTTP客户端失败: {e}")))?;
+            .map_err(|e| AppError::ExecutionFailed(format!("创建HTTP客户端失败: {e}")))?;
 
         // 构建带签名的 payload
         let timestamp = Utc::now().timestamp();
@@ -853,9 +831,9 @@ impl TaskScheduler {
         // 添加 HMAC 签名 header
         headers.insert(
             reqwest::header::HeaderName::from_bytes(b"X-Webhook-Signature")
-                .map_err(|e| EngineError::ExecutionFailed(e.to_string()))?,
+                .map_err(|e| AppError::ExecutionFailed(e.to_string()))?,
             format!("sha256={signature}").parse().map_err(|e| {
-                EngineError::ExecutionFailed(format!("签名解析失败: {e}"))
+                AppError::ExecutionFailed(format!("签名解析失败: {e}"))
             })?,
         );
 
@@ -869,7 +847,7 @@ impl TaskScheduler {
                 "DELETE" => client.delete(url),
                 "PATCH" => client.patch(url),
                 _ => {
-                    return Err(EngineError::ExecutionFailed(format!(
+                    return Err(AppError::ExecutionFailed(format!(
                         "不支持的HTTP方法: {method}"
                     )));
                 }
@@ -904,7 +882,7 @@ impl TaskScheduler {
             }
         }
 
-        Err(EngineError::ExecutionFailed(format!(
+        Err(AppError::ExecutionFailed(format!(
             "Webhook 请求失败 (已重试 {} 次): {}",
             WEBHOOK_MAX_RETRIES,
             last_error.unwrap_or_default()
@@ -985,7 +963,7 @@ FROM schedule_tasks WHERE id = $1"#,
         .rows_affected();
 
         if affected == 0 {
-            return Err(EngineError::InstanceNotFound(task_id.to_string()));
+            return Err(AppError::InstanceNotFound(task_id.to_string()));
         }
         Ok(())
     }
@@ -1001,7 +979,7 @@ FROM schedule_tasks WHERE id = $1"#,
         .rows_affected();
 
         if affected == 0 {
-            return Err(EngineError::InstanceNotFound(task_id.to_string()));
+            return Err(AppError::InstanceNotFound(task_id.to_string()));
         }
         Ok(())
     }

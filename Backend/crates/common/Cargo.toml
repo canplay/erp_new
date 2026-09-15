@@ -55,7 +55,7 @@ regex = "1"
 lazy_static = "1.5"
 hashlink = "0.9"
 indexmap = "2.0"
-redis = { version = "0.27", features = ["aio", "tokio-comp"] }
+redis = { workspace = true }
 futures = "0.3"
 
 # OpenTelemetry (optional)

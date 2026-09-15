@@ -34,7 +34,7 @@ use axum::{
     routing::{delete, get, post, put},
 };
 use serde::Deserialize;
-use serde_json::{json, Value};
+use serde_json::Value;
 use uuid::Uuid;
 
 use crate::models::account::{CreateAccountRequest, UpdateAccountRequest};
@@ -42,9 +42,9 @@ use crate::services::account_service::AccountService;
 use crate::services::content_service::ContentService;
 use crate::services::crawl_service::CrawlService;
 use crate::helpers::{
-    json_success, json_ok, json_error, json_error_fmt, json_success_msg, json_ok_msg, json_error_msg, json_error_msg_fmt,
+    json_success, json_ok, json_error,
     json_social_accounts, json_social_created, json_social_status, json_social_ok,
-    json_social_sources, json_social_source, json_social_items, json_social_error
+    json_social_sources, json_social_source, json_social_items,
 };
 
 #[derive(Clone)]

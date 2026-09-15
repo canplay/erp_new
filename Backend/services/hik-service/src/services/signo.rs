@@ -1,7 +1,8 @@
 // Signo停车场服务
 // Signo parking service
 
-use crate::error::{HikError, Result};
+use common::AppError;
+use common::AppResult;
 use crate::models::SignoConfig;
 
 /// Signo服务
@@ -19,8 +20,8 @@ impl SignoService {
     }
 
     /// 远程开闸
-    pub async fn open_gate(&self, place: &str, march_no: &str) -> Result<String> {
-        let tag = self.config.tags.get(place).ok_or(HikError::InvalidParams)?;
+    pub async fn open_gate(&self, place: &str, march_no: &str) -> AppResult<String> {
+        let tag = self.config.tags.get(place).ok_or(AppError::HikInvalidParams)?;
 
         let park_no = &tag.phone;
         let pkey = &tag.key;
@@ -44,13 +45,13 @@ impl SignoService {
             .get(&full_url)
             .send()
             .await
-            .map_err(HikError::RequestError)?;
+            .map_err(AppError::HttpError)?;
 
         if resp.status().is_success() {
-            let text = resp.text().await.map_err(HikError::RequestError)?;
+            let text = resp.text().await.map_err(AppError::HttpError)?;
             Ok(text)
         } else {
-            Err(HikError::ApiError("调用失败".to_string()))
+            Err(AppError::HikApiError("调用失败".to_string()))
         }
     }
 }

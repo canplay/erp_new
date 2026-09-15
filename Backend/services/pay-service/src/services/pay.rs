@@ -5,7 +5,7 @@ use redis::AsyncCommands;
 use sqlx::PgPool;
 use sqlx::types::BigDecimal;
 
-use crate::error::{PayError, Result};
+use common::{AppError, AppResult};
 use crate::models::{PayCreateParams, PayOrder, PayQuery};
 
 /// 支付服务
@@ -42,7 +42,7 @@ impl PayService {
     }
 
     /// 查询支付订单数量 (修复: SQL注入-参数绑定)
-    pub async fn count(&self, query: &PayQuery) -> Result<i64> {
+    pub async fn count(&self, query: &PayQuery) -> AppResult<i64> {
         let remark_like = query.remark.as_deref().map(|r| format!("%{r}%"));
 
         let count: i64 = sqlx::query_scalar!(
@@ -56,14 +56,14 @@ impl PayService {
         )
         .fetch_one(&self.pool)
         .await
-        .map_err(PayError::DatabaseError)?
+        .map_err(AppError::Database)?
         .unwrap_or(0);
 
         Ok(count)
     }
 
     /// 查询支付订单列表 (修复: SQL注入-参数绑定+ORDER BY白名单)
-    pub async fn list(&self, query: &PayQuery) -> Result<Vec<PayOrder>> {
+    pub async fn list(&self, query: &PayQuery) -> AppResult<Vec<PayOrder>> {
         let remark_like = query.remark.as_deref().map(|r| format!("%{r}%"));
         let sort_by = query.sort_by.as_deref().unwrap_or("");
         let max_page = query.max_page.unwrap_or(10);
@@ -103,7 +103,7 @@ impl PayService {
             )
             .fetch_all(&self.pool)
             .await
-            .map_err(PayError::DatabaseError)?
+            .map_err(AppError::Database)?
         } else {
             sqlx::query_as!(
                 PayRow,
@@ -138,7 +138,7 @@ impl PayService {
             )
             .fetch_all(&self.pool)
             .await
-            .map_err(PayError::DatabaseError)?
+            .map_err(AppError::Database)?
         };
 
         let orders = rows
@@ -162,22 +162,22 @@ impl PayService {
     }
 
     /// 查询最近已支付订单信息
-    pub async fn latest(&self, user_id: &str) -> Result<Option<PayOrder>> {
-        let client = redis::Client::open(self.redis_url.as_str()).map_err(PayError::RedisError)?;
+    pub async fn latest(&self, user_id: &str) -> AppResult<Option<PayOrder>> {
+        let client = redis::Client::open(self.redis_url.as_str()).map_err(AppError::from)?;
         let mut conn = client
             .get_multiplexed_async_connection()
             .await
-            .map_err(PayError::RedisError)?;
+            .map_err(AppError::from)?;
 
         let cache_key = format!("pay:{user_id}");
 
         // 尝试从Redis获取缓存
-        let cached: Option<String> = conn.get(&cache_key).await.map_err(PayError::RedisError)?;
+        let cached: Option<String> = conn.get(&cache_key).await.map_err(AppError::from)?;
 
         if let Some(cached_data) = cached
             && !cached_data.is_empty() {
                 let order: PayOrder = serde_json::from_str(&cached_data)
-                    .map_err(|e| PayError::InternalError(e.to_string()))?;
+                    .map_err(|e| AppError::PayInternalError(e.to_string()))?;
                 return Ok(Some(order));
             }
 
@@ -202,7 +202,7 @@ impl PayService {
         )
         .fetch_optional(&self.pool)
         .await
-        .map_err(PayError::DatabaseError)?;
+        .map_err(AppError::Database)?;
 
         if let Some(row) = result {
             let order = PayOrder {
@@ -221,11 +221,11 @@ impl PayService {
 
             // 缓存到Redis
             let order_json = serde_json::to_string(&order)
-                .map_err(|e| PayError::InternalError(e.to_string()))?;
+                .map_err(|e| AppError::PayInternalError(e.to_string()))?;
             let _: () = conn
                 .set_ex(&cache_key, order_json, 600)
                 .await
-                .map_err(PayError::RedisError)?;
+                .map_err(AppError::from)?;
 
             Ok(Some(order))
         } else {
@@ -234,7 +234,7 @@ impl PayService {
     }
 
     /// 创建支付订单
-    pub async fn create_order(&self, params: &PayCreateParams) -> Result<PayOrder> {
+    pub async fn create_order(&self, params: &PayCreateParams) -> AppResult<PayOrder> {
         let id = uuid::Uuid::new_v4().to_string();
         let status = params.status.as_deref().unwrap_or("pending");
         let pay_type = params.pay_type.as_deref().unwrap_or("default");
@@ -266,7 +266,7 @@ impl PayService {
         )
         .execute(&self.pool)
         .await
-        .map_err(PayError::DatabaseError)?;
+        .map_err(AppError::Database)?;
 
         Ok(PayOrder {
             id,

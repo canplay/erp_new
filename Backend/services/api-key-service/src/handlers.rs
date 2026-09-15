@@ -9,7 +9,8 @@ use tracing::{error, info};
 use serde_json::json;
 use std::sync::Arc;
 
-use crate::error::{ApiKeyError, Result};
+use common::AppError;
+use common::AppResult;
 use crate::models::{
     ApiKey, CreateKeyRequest, KeyQuery, KeyStats, PageResult, UpdateKeyRequest, ValidateKeyRequest,
 };
@@ -47,7 +48,7 @@ pub async fn create_key(
     State(state): State<AppState>,
     headers: Extension<axum::http::HeaderMap>,
     Json(payload): Json<CreateKeyRequest>,
-) -> Result<impl IntoResponse> {
+) -> AppResult<impl IntoResponse> {
     let user_id = extract_user_id(&headers);
 
     let (mut api_key, key_id, key_secret) = ApiKey::generate(
@@ -64,8 +65,8 @@ pub async fn create_key(
 
     if let Err(e) = state.repository.create(&api_key).await {
         error!("创建 API Key 失败: {}", e);
-        return Err(ApiKeyError::DatabaseError(e));
-    }
+        return Err(AppError::Database(e));
+            }
 
     info!("创建API密钥: {}", api_key.id);
 
@@ -120,13 +121,13 @@ pub async fn list_keys(
 pub async fn get_key(
     State(state): State<AppState>,
     Path(id): Path<String>,
-) -> Result<impl IntoResponse> {
+) -> AppResult<impl IntoResponse> {
     match state.repository.find_by_id(&id).await {
         Ok(Some(key)) => Ok(json_api_key_detail(&key)),
-        Ok(None) => Err(ApiKeyError::KeyNotFound(id)),
+        Ok(None) => Err(AppError::ApiKeyNotFound(id)),
         Err(e) => {
             error!("获取密钥详情失败: {}", e);
-            Err(ApiKeyError::DatabaseError(e))
+            Err(AppError::DatabaseError(e.to_string()))
         }
     }
 }
@@ -137,11 +138,11 @@ pub async fn update_key(
     State(state): State<AppState>,
     Path(id): Path<String>,
     Json(payload): Json<UpdateKeyRequest>,
-) -> Result<impl IntoResponse> {
+) -> AppResult<impl IntoResponse> {
     let existing = match state.repository.find_by_id(&id).await {
         Ok(Some(key)) => key,
-        Ok(None) => return Err(ApiKeyError::KeyNotFound(id)),
-        Err(e) => return Err(ApiKeyError::DatabaseError(e)),
+        Ok(None) => return Err(AppError::ApiKeyNotFound(id)),
+        Err(e) => return Err(AppError::DatabaseError(e.to_string())),
     };
 
     let mut updated = existing;
@@ -170,8 +171,8 @@ pub async fn update_key(
 
     if let Err(e) = state.repository.update(&updated).await {
         error!("更新 API Key 失败: {}", e);
-        return Err(ApiKeyError::DatabaseError(e));
-    }
+        return Err(AppError::Database(e));
+            }
 
     info!("更新API密钥: {}", id);
 
@@ -183,7 +184,7 @@ pub async fn update_key(
 pub async fn delete_key(
     State(state): State<AppState>,
     Path(id): Path<String>,
-) -> Result<impl IntoResponse> {
+) -> AppResult<impl IntoResponse> {
     match state.repository.delete(&id).await {
         Ok(()) => {
             info!("删除API密钥: {}", id);
@@ -191,7 +192,7 @@ pub async fn delete_key(
         }
         Err(e) => {
             error!("删除 API Key 失败: {}", e);
-            Err(ApiKeyError::DatabaseError(e))
+            Err(AppError::DatabaseError(e.to_string()))
         }
     }
 }
@@ -235,11 +236,11 @@ pub async fn validate_key(
 pub async fn disable_key(
     State(state): State<AppState>,
     Path(id): Path<String>,
-) -> Result<impl IntoResponse> {
+) -> AppResult<impl IntoResponse> {
     let existing = match state.repository.find_by_id(&id).await {
         Ok(Some(key)) => key,
-        Ok(None) => return Err(ApiKeyError::KeyNotFound(id)),
-        Err(e) => return Err(ApiKeyError::DatabaseError(e)),
+        Ok(None) => return Err(AppError::ApiKeyNotFound(id)),
+        Err(e) => return Err(AppError::DatabaseError(e.to_string())),
     };
 
     let mut updated = existing;
@@ -248,8 +249,8 @@ pub async fn disable_key(
 
     if let Err(e) = state.repository.update(&updated).await {
         error!("禁用 API Key 失败: {}", e);
-        return Err(ApiKeyError::DatabaseError(e));
-    }
+        return Err(AppError::Database(e));
+            }
 
     info!("禁用API密钥: {}", id);
 
@@ -261,11 +262,11 @@ pub async fn disable_key(
 pub async fn enable_key(
     State(state): State<AppState>,
     Path(id): Path<String>,
-) -> Result<impl IntoResponse> {
+) -> AppResult<impl IntoResponse> {
     let existing = match state.repository.find_by_id(&id).await {
         Ok(Some(key)) => key,
-        Ok(None) => return Err(ApiKeyError::KeyNotFound(id)),
-        Err(e) => return Err(ApiKeyError::DatabaseError(e)),
+        Ok(None) => return Err(AppError::ApiKeyNotFound(id)),
+        Err(e) => return Err(AppError::DatabaseError(e.to_string())),
     };
 
     let mut updated = existing;
@@ -274,8 +275,8 @@ pub async fn enable_key(
 
     if let Err(e) = state.repository.update(&updated).await {
         error!("启用 API Key 失败: {}", e);
-        return Err(ApiKeyError::DatabaseError(e));
-    }
+        return Err(AppError::Database(e));
+            }
 
     info!("启用API密钥: {}", id);
 

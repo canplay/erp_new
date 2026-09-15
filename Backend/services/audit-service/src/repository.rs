@@ -1,6 +1,7 @@
 //! 审计数据库操作
 
-use crate::error::{AuditError, AuditResult};
+use common::AppError;
+use common::AppResult;
 use crate::models::{CreateLoginLog, SysLoginLog, LoginStatistics, CreateOperationLog, SysOperationLog, ApiCallLogQuery, ApiCallLog, ApiCallStatistics, ApiEndpointStatistics, ApiTrendPoint, ApiResponseTimeDistribution, CreateApiCallLog};
 use chrono::{DateTime, Utc};
 use sqlx::PgPool;
@@ -27,7 +28,7 @@ impl AuditRepository {
     // ============ 登录日志 ============
 
     /// 插入登录日志
-    pub async fn insert_login_log(&self, log: &CreateLoginLog) -> AuditResult<i64> {
+    pub async fn insert_login_log(&self, log: &CreateLoginLog) -> AppResult<i64> {
         let result = sqlx::query_scalar!(
             r#"
             INSERT INTO sys_login_logs (
@@ -61,7 +62,7 @@ impl AuditRepository {
         status: Option<i16>,
         start_date: Option<&str>,
         end_date: Option<&str>,
-    ) -> AuditResult<(Vec<SysLoginLog>, i64)> {
+    ) -> AppResult<(Vec<SysLoginLog>, i64)> {
         let offset = (page.saturating_sub(1)) * page_size;
         let start_dt = start_date.and_then(parse_datetime);
         let end_dt = end_date.and_then(parse_datetime);
@@ -110,7 +111,7 @@ impl AuditRepository {
     }
 
     /// 获取登录统计
-    pub async fn get_login_statistics(&self) -> AuditResult<LoginStatistics> {
+    pub async fn get_login_statistics(&self) -> AppResult<LoginStatistics> {
         let total_count: i64 = sqlx::query_scalar!("SELECT COUNT(*) FROM sys_login_logs")
             .fetch_one(&self.pool)
             .await?
@@ -132,7 +133,7 @@ impl AuditRepository {
             .date_naive()
             .and_hms_opt(0, 0, 0)
             .map(|n| DateTime::<Utc>::from_naive_utc_and_offset(n, Utc))
-            .ok_or_else(|| AuditError::InvalidParam("无效的 HMS 时间".to_string()))?;
+            .ok_or_else(|| AppError::InvalidParam("无效的 HMS 时间".to_string()))?;
         let today_count: i64 = sqlx::query_scalar!(
             "SELECT COUNT(*) FROM sys_login_logs WHERE created_at >= $1",
             today_start,
@@ -170,7 +171,7 @@ impl AuditRepository {
     // ============ 操作日志 ============
 
     /// 插入操作日志
-    pub async fn insert_operation_log(&self, log: &CreateOperationLog) -> AuditResult<i64> {
+    pub async fn insert_operation_log(&self, log: &CreateOperationLog) -> AppResult<i64> {
         let result = sqlx::query_scalar!(
             r#"
             INSERT INTO sys_operation_logs (
@@ -214,7 +215,7 @@ impl AuditRepository {
         status: Option<i16>,
         start_date: Option<&str>,
         end_date: Option<&str>,
-    ) -> AuditResult<(Vec<SysOperationLog>, i64)> {
+    ) -> AppResult<(Vec<SysOperationLog>, i64)> {
         let offset = (page.saturating_sub(1)) * page_size;
         let start_dt = start_date.and_then(parse_datetime);
         let end_dt = end_date.and_then(parse_datetime);
@@ -272,7 +273,7 @@ impl AuditRepository {
     }
 
     /// 根据ID查询操作日志
-    pub async fn find_operation_log_by_id(&self, id: i64) -> AuditResult<Option<SysOperationLog>> {
+    pub async fn find_operation_log_by_id(&self, id: i64) -> AppResult<Option<SysOperationLog>> {
         let log = sqlx::query_as!(
             SysOperationLog,
             r#"
@@ -291,7 +292,7 @@ impl AuditRepository {
     }
 
     /// 批量删除操作日志
-    pub async fn batch_delete_operation_logs(&self, ids: &[i64]) -> AuditResult<u64> {
+    pub async fn batch_delete_operation_logs(&self, ids: &[i64]) -> AppResult<u64> {
         if ids.is_empty() {
             return Ok(0);
         }
@@ -309,7 +310,7 @@ impl AuditRepository {
     pub async fn find_api_call_logs(
         &self,
         query: &ApiCallLogQuery,
-    ) -> AuditResult<(Vec<ApiCallLog>, i64)> {
+    ) -> AppResult<(Vec<ApiCallLog>, i64)> {
         let offset = (query.page.saturating_sub(1)) * query.page_size;
         let start_dt = query.start_date.as_deref().and_then(parse_datetime);
         let end_dt = query.end_date.as_deref().and_then(parse_datetime);
@@ -385,7 +386,7 @@ impl AuditRepository {
     }
 
     /// 获取 API 调用统计
-    pub async fn get_api_call_statistics(&self) -> AuditResult<ApiCallStatistics> {
+    pub async fn get_api_call_statistics(&self) -> AppResult<ApiCallStatistics> {
         let total_calls: i64 = sqlx::query_scalar!("SELECT COUNT(*) FROM sys_api_call_logs")
             .fetch_one(&self.pool)
             .await?
@@ -441,7 +442,7 @@ impl AuditRepository {
     }
 
     /// 获取 API 端点统计
-    pub async fn get_api_endpoint_statistics(&self) -> AuditResult<Vec<ApiEndpointStatistics>> {
+    pub async fn get_api_endpoint_statistics(&self) -> AppResult<Vec<ApiEndpointStatistics>> {
         let rows = sqlx::query!(
             r#"SELECT COALESCE(path, '') AS "path!",
                       COALESCE(method, '') AS "method!",
@@ -483,7 +484,7 @@ impl AuditRepository {
     }
 
     /// 获取 API 调用趋势（按小时）
-    pub async fn get_api_call_trend(&self) -> AuditResult<Vec<ApiTrendPoint>> {
+    pub async fn get_api_call_trend(&self) -> AppResult<Vec<ApiTrendPoint>> {
         let rows = sqlx::query!(
             r#"SELECT date_trunc('hour', created_at) AS ts,
                       COUNT(*) AS "call_count!",
@@ -513,7 +514,7 @@ impl AuditRepository {
     /// 获取响应时间分布
     pub async fn get_api_response_distribution(
         &self,
-    ) -> AuditResult<Vec<ApiResponseTimeDistribution>> {
+    ) -> AppResult<Vec<ApiResponseTimeDistribution>> {
         let total: i64 = sqlx::query_scalar!("SELECT COUNT(*) FROM sys_api_call_logs")
             .fetch_one(&self.pool)
             .await?
@@ -553,7 +554,7 @@ impl AuditRepository {
     }
 
     /// 插入 API 调用日志
-    pub async fn insert_api_call_log(&self, log: &CreateApiCallLog) -> AuditResult<i64> {
+    pub async fn insert_api_call_log(&self, log: &CreateApiCallLog) -> AppResult<i64> {
         let result = sqlx::query_scalar!(
             r#"INSERT INTO sys_api_call_logs
                (request_id, method, path, query_params, headers, request_size,

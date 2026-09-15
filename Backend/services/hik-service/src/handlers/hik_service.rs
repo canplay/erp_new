@@ -5,7 +5,7 @@ use axum::{Json, extract::State};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
-use crate::error::Result;
+use common::AppResult;
 use crate::models::{CouponRequest, HikRequest};
 use crate::services::{HikService, SignoService};
 use crate::helpers::json_hik_success;
@@ -21,7 +21,7 @@ pub struct AppState {
 pub async fn exec(
     State(state): State<AppState>,
     Json(payload): Json<HikRequest>,
-) -> Result<Json<serde_json::Value>> {
+) -> AppResult<Json<serde_json::Value>> {
     let result = state.hik_service.exec(&payload).await?;
     Ok(Json(result))
 }
@@ -30,7 +30,7 @@ pub async fn exec(
 pub async fn coupon(
     State(state): State<AppState>,
     Json(payload): Json<CouponRequest>,
-) -> Result<Json<serde_json::Value>> {
+) -> AppResult<Json<serde_json::Value>> {
     if payload.r#type == "car" {
         let result = state
             .hik_service
@@ -52,7 +52,7 @@ pub struct SignoRequest {
 pub async fn signo_open(
     State(state): State<AppState>,
     Json(payload): Json<SignoRequest>,
-) -> Result<Json<SignoResponse>> {
+) -> AppResult<Json<SignoResponse>> {
     let result = state
         .signo_service
         .open_gate(&payload.place, &payload.name)

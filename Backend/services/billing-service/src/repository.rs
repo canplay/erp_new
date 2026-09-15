@@ -3,6 +3,8 @@
 use sqlx::PgPool;
 use uuid::Uuid;
 
+use common::AppError;
+
 /// 计费仓储
 #[derive(Clone)]
 pub struct BillingRepository {

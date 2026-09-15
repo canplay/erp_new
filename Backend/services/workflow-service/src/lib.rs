@@ -33,6 +33,8 @@ pub use repository::{
 pub use grpc_handlers::{WorkflowAppState, WorkflowGrpcService, WorkflowInfo};
 
 // 导出引擎类型
+pub use common::AppError;
+pub use common::AppResult;
 pub use engine::{EngineError, EngineResult, TaskScheduler, WorkflowEngine};
 
 // 导出事件类型

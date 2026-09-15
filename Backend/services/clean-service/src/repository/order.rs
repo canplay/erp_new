@@ -3,8 +3,8 @@
 
 use sqlx::PgPool;
 
-use crate::error::{CleanServiceError};
-use crate::error::CleanResult;
+use common::AppError;
+use common::AppResult;
 use crate::models::{FormalBill, FormalBillQuery, Order, OrderQuery, PaymentWeb, PaymentWebQuery};
 
 /// 订单仓储
@@ -19,7 +19,7 @@ impl OrderRepository {
  }
 
  /// 统计订单数量
- pub async fn count(&self, query: &OrderQuery) -> CleanResult<i64> {
+ pub async fn count(&self, query: &OrderQuery) -> AppResult<i64> {
      // 安全加固: 全部改为参数绑定 + 编译期校验 (修复: 原实现直接拼接用户输入, SQL 注入)
      let id = query.id.as_deref().unwrap_or("");
      let serial_number = query.serial_number.as_deref().unwrap_or("");
@@ -40,14 +40,14 @@ impl OrderRepository {
      )
      .fetch_one(&self.pool)
      .await
-     .map_err(|e: sqlx::Error| CleanServiceError::DatabaseError(e.to_string()))?
+     .map_err(|e: sqlx::Error| AppError::DatabaseError(e.to_string()))?
      .unwrap_or(0);
 
      Ok(row)
      }
 
      /// 查询订单列表
- pub async fn list(&self, query: &OrderQuery) -> CleanResult<Vec<Order>> {
+ pub async fn list(&self, query: &OrderQuery) -> AppResult<Vec<Order>> {
      // 安全加固: 全部改为参数绑定; ORDER BY 列名白名单(经 CASE 表达式参数化)
      let id = query.id.as_deref().unwrap_or("");
      let serial_number = query.serial_number.as_deref().unwrap_or("");
@@ -86,7 +86,7 @@ impl OrderRepository {
          )
          .fetch_all(&self.pool)
          .await
-         .map_err(|e: sqlx::Error| CleanServiceError::DatabaseError(e.to_string()))?
+         .map_err(|e: sqlx::Error| AppError::DatabaseError(e.to_string()))?
      } else {
          sqlx::query_as!(
              Order,
@@ -114,14 +114,14 @@ impl OrderRepository {
          )
          .fetch_all(&self.pool)
          .await
-         .map_err(|e: sqlx::Error| CleanServiceError::DatabaseError(e.to_string()))?
+         .map_err(|e: sqlx::Error| AppError::DatabaseError(e.to_string()))?
      };
 
      Ok(orders)
  }
 
  /// 统计正式账单数量
- pub async fn count_formal_bill(&self, query: &FormalBillQuery) -> CleanResult<i64> {
+ pub async fn count_formal_bill(&self, query: &FormalBillQuery) -> AppResult<i64> {
      // 安全加固: 全部改为参数绑定(修复: 原实现直接拼接用户输入, SQL 注入)
      let create_date_start = query.create_date_start.as_deref().unwrap_or("");
      let create_date_end = query.create_date_end.as_deref().unwrap_or("");
@@ -147,14 +147,14 @@ impl OrderRepository {
      )
      .fetch_one(&self.pool)
      .await
-     .map_err(|e: sqlx::Error| CleanServiceError::DatabaseError(e.to_string()))?
+     .map_err(|e: sqlx::Error| AppError::DatabaseError(e.to_string()))?
      .unwrap_or(0);
 
      Ok(row)
      }
 
      /// 查询正式账单列表
- pub async fn list_formal_bill(&self, query: &FormalBillQuery) -> CleanResult<Vec<FormalBill>> {
+ pub async fn list_formal_bill(&self, query: &FormalBillQuery) -> AppResult<Vec<FormalBill>> {
      // 安全加固: 全部改为参数绑定; ORDER BY 列名白名单(经 CASE 表达式参数化)
      let create_date_start = query.create_date_start.as_deref().unwrap_or("");
      let create_date_end = query.create_date_end.as_deref().unwrap_or("");
@@ -196,7 +196,7 @@ impl OrderRepository {
          )
          .fetch_all(&self.pool)
          .await
-         .map_err(|e: sqlx::Error| CleanServiceError::DatabaseError(e.to_string()))?
+         .map_err(|e: sqlx::Error| AppError::DatabaseError(e.to_string()))?
      } else {
          sqlx::query_as!(
              FormalBill,
@@ -223,14 +223,14 @@ impl OrderRepository {
          )
          .fetch_all(&self.pool)
          .await
-         .map_err(|e: sqlx::Error| CleanServiceError::DatabaseError(e.to_string()))?
+         .map_err(|e: sqlx::Error| AppError::DatabaseError(e.to_string()))?
      };
 
      Ok(bills)
  }
 
  /// 统计网络支付数量
- pub async fn count_payment_web(&self, query: &PaymentWebQuery) -> CleanResult<i64> {
+ pub async fn count_payment_web(&self, query: &PaymentWebQuery) -> AppResult<i64> {
      // 安全加固: 全部改为参数绑定(修复: 原实现直接拼接用户输入, SQL 注入)
      let create_date_start = query.create_date_start.as_deref().unwrap_or("");
      let create_date_end = query.create_date_end.as_deref().unwrap_or("");
@@ -261,14 +261,14 @@ impl OrderRepository {
      )
      .fetch_one(&self.pool)
      .await
-     .map_err(|e: sqlx::Error| CleanServiceError::DatabaseError(e.to_string()))?
+     .map_err(|e: sqlx::Error| AppError::DatabaseError(e.to_string()))?
      .unwrap_or(0);
 
      Ok(row)
      }
 
      /// 查询网络支付列表
- pub async fn list_payment_web(&self, query: &PaymentWebQuery) -> CleanResult<Vec<PaymentWeb>> {
+ pub async fn list_payment_web(&self, query: &PaymentWebQuery) -> AppResult<Vec<PaymentWeb>> {
      // 安全加固: 全部改为参数绑定; ORDER BY 列名白名单(经 CASE 表达式参数化)
      let create_date_start = query.create_date_start.as_deref().unwrap_or("");
      let create_date_end = query.create_date_end.as_deref().unwrap_or("");
@@ -316,7 +316,7 @@ impl OrderRepository {
          )
          .fetch_all(&self.pool)
          .await
-         .map_err(|e: sqlx::Error| CleanServiceError::DatabaseError(e.to_string()))?
+         .map_err(|e: sqlx::Error| AppError::DatabaseError(e.to_string()))?
      } else {
          sqlx::query_as!(
              PaymentWeb,
@@ -347,7 +347,7 @@ impl OrderRepository {
          )
          .fetch_all(&self.pool)
          .await
-         .map_err(|e: sqlx::Error| CleanServiceError::DatabaseError(e.to_string()))?
+         .map_err(|e: sqlx::Error| AppError::DatabaseError(e.to_string()))?
      };
 
      Ok(payments)

@@ -18,7 +18,9 @@
 //! | `/api/xlt/device/close` | POST | 关闸 |
 //! | `/health` | GET | 健康检查 |
 
-pub mod error;
+pub use common::AppError;
+pub use common::AppResult;
+
 pub mod grpc_server;
 pub mod handlers;
 pub mod models;

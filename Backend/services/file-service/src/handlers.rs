@@ -10,11 +10,12 @@ use futures_util::StreamExt;
 use tracing::{error, info};
 use std::sync::Arc;
 
-use crate::error::{FileError, FileResult};
+use common::AppError;
+use common::AppResult;
 use crate::models::{SysFile, FileListQuery, FileListResponse, FileDetailResponse};
 use crate::repository::FileRepository;
 use crate::storage::{LocalStorage, StorageBackend, generate_file_name};
-use crate::helpers::{json_success, json_ok, json_error, json_error_fmt, json_success_msg, json_ok_msg, json_error_msg, json_error_msg_fmt, json_health};
+use crate::helpers::{json_success_msg, json_ok_msg, json_health};
 
 /// 应用状态
 #[derive(Clone)]
@@ -40,7 +41,7 @@ pub fn create_router(state: AppState) -> Router {
 async fn upload_file(
     State(state): State<AppState>,
     mut multipart: Multipart,
-) -> FileResult<impl IntoResponse> {
+) -> AppResult<impl IntoResponse> {
     // 获取上传者 ID（从环境变量获取，默认为 "anonymous"）
     let _uploaded_by = get_uploaded_by();
 
@@ -53,7 +54,7 @@ async fn upload_file(
     // 解析 multipart 数据
     while let Some(field) = multipart.next_field().await.map_err(|e| {
         error!("解析 multipart 失败: {}", e);
-        FileError::InvalidParam("表单解析失败".to_string())
+        AppError::InvalidParam("表单解析失败".to_string())
     })? {
         let field_name = field.name().unwrap_or("").to_string();
 
@@ -71,14 +72,14 @@ async fn upload_file(
                 while let Some(chunk) = stream.next().await {
                     data.extend_from_slice(&chunk.map_err(|e| {
                         error!("读取文件数据失败: {}", e);
-                        FileError::InvalidParam("文件读取失败".to_string())
+                        AppError::InvalidParam("文件读取失败".to_string())
                     })?);
                 }
 
                 // 限制最大文件大小（100MB）
                 const MAX_SIZE: usize = 100 * 1024 * 1024;
                 if data.len() > MAX_SIZE {
-                    return Err(FileError::InvalidParam("文件大小超过100MB限制".to_string()));
+                    return Err(AppError::InvalidParam("文件大小超过100MB限制".to_string()));
                 }
 
                 metadata.size = data.len() as i64;
@@ -107,7 +108,7 @@ async fn upload_file(
         }
     }
 
-    let file_data = file_data.ok_or_else(|| FileError::InvalidParam("未提供文件".to_string()))?;
+    let file_data = file_data.ok_or_else(|| AppError::InvalidParam("未提供文件".to_string()))?;
 
     // 生成唯一存储路径
     let storage_key = generate_storage_path(&file_data.filename, &category);
@@ -119,7 +120,7 @@ async fn upload_file(
         .await
         .map_err(|e| {
             error!("文件上传失败: {}", e);
-            FileError::UploadFailed(e.to_string())
+            AppError::FileUploadFailed(e.to_string())
         })?;
 
     // 创建文件记录
@@ -210,13 +211,13 @@ async fn read_text_field(
     field: impl futures_util::StreamExt<
         Item = Result<bytes::Bytes, axum::extract::multipart::MultipartError>,
     >,
-) -> Result<String, FileError> {
+) -> Result<String, AppError> {
     futures_util::pin_mut!(field);
     let mut text = String::new();
     while let Some(chunk) = futures_util::StreamExt::next(&mut field).await {
         match chunk {
             Ok(bytes) => text.push_str(&String::from_utf8_lossy(&bytes)),
-            Err(e) => return Err(FileError::InvalidParam(format!("读取字段失败: {e}"))),
+            Err(e) => return Err(AppError::InvalidParam(format!("读取字段失败: {e}"))),
         }
     }
     Ok(text)
@@ -236,7 +237,7 @@ fn get_category() -> String {
 async fn list_files(
     State(state): State<AppState>,
     Query(query): Query<FileListQuery>,
-) -> FileResult<Json<FileListResponse>> {
+) -> AppResult<Json<FileListResponse>> {
     let (files, total) = state
         .repository
         .find_list(
@@ -261,12 +262,12 @@ async fn list_files(
 async fn get_file(
     State(state): State<AppState>,
     Path(id): Path<i64>,
-) -> FileResult<Json<FileDetailResponse>> {
+) -> AppResult<Json<FileDetailResponse>> {
     let file = state
         .repository
         .find_by_id(id)
         .await?
-        .ok_or(FileError::NotFound)?;
+        .ok_or(AppError::FileNotFound)?;
 
     Ok(Json(FileDetailResponse {
         file,
@@ -278,14 +279,14 @@ async fn get_file(
 async fn download_file(
     State(state): State<AppState>,
     Path(id): Path<i64>,
-) -> FileResult<impl IntoResponse> {
+) -> AppResult<impl IntoResponse> {
     let file = state
         .repository
         .find_by_id(id)
         .await?
-        .ok_or(FileError::NotFound)?;
+        .ok_or(AppError::FileNotFound)?;
 
-    let data = state.storage.download(&file.storage_path).await?;
+    let data = state.storage.download(&file.storage_path).await.map_err(|e| AppError::FileStorageError(e.to_string()))?;
 
     let filename = urlencoding::encode(&file.original_name);
     let content_disposition = format!(
@@ -313,15 +314,15 @@ async fn download_file(
 async fn delete_file(
     State(state): State<AppState>,
     Path(id): Path<i64>,
-) -> FileResult<impl IntoResponse> {
+) -> AppResult<impl IntoResponse> {
     let file = state
         .repository
         .find_by_id(id)
         .await?
-        .ok_or(FileError::NotFound)?;
+        .ok_or(AppError::FileNotFound)?;
 
     // 从存储中删除文件
-    state.storage.delete(&file.storage_path).await?;
+    state.storage.delete(&file.storage_path).await.map_err(|e| AppError::FileStorageError(e.to_string()))?;
 
     // 从数据库删除记录
     state.repository.delete(id).await?;

@@ -11,6 +11,7 @@ use serde::{Deserialize, Serialize};
 use crate::http_handlers::HttpAppState;
 use crate::repository::DepartmentRepositoryError;
 use crate::helpers::{json_success, json_ok, json_error, json_error_fmt, json_success_msg, json_ok_msg, json_error_msg, json_error_msg_fmt};
+use common::AppError;
 
 // ============ 请求/响应结构 ============
 

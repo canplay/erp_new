@@ -7,7 +7,7 @@ use axum::{
 use serde::Deserialize;
 use std::sync::Arc;
 
-use crate::error::Result;
+use common::{AppError, AppResult};
 use crate::handlers::helpers::{json_empty_success, json_health, json_ok, json_success};
 use crate::models::{
     BillingRequest, MqttEnvelope, VehicleEvent, VehicleQuery,
@@ -32,7 +32,7 @@ pub struct AppState {
 pub async fn vehicle_entry(
     State(state): State<AppState>,
     Json(event): Json<VehicleEvent>,
-) -> Result<Json<serde_json::Value>> {
+) -> AppResult<Json<serde_json::Value>> {
     let record = state.parking_service.handle_entry(&event).await?;
     Ok(json_success(record))
 }
@@ -41,7 +41,7 @@ pub async fn vehicle_entry(
 pub async fn vehicle_exit(
     State(state): State<AppState>,
     Json(event): Json<VehicleEvent>,
-) -> Result<Json<serde_json::Value>> {
+) -> AppResult<Json<serde_json::Value>> {
     let record = state.parking_service.handle_exit(&event).await?;
     Ok(json_success(record))
 }
@@ -50,7 +50,7 @@ pub async fn vehicle_exit(
 pub async fn get_parking_vehicle(
     State(state): State<AppState>,
     Path((park_code, plate_no)): Path<(String, String)>,
-) -> Result<Json<serde_json::Value>> {
+) -> AppResult<Json<serde_json::Value>> {
     let vehicle = state
         .parking_service
         .get_parking_vehicle(&park_code, &plate_no)
@@ -62,7 +62,7 @@ pub async fn get_parking_vehicle(
 pub async fn calc_billing(
     State(state): State<AppState>,
     Json(req): Json<BillingRequest>,
-) -> Result<Json<serde_json::Value>> {
+) -> AppResult<Json<serde_json::Value>> {
     let result = state.billing_service.calculate(&req).await?;
     Ok(json_success(result))
 }
@@ -71,7 +71,7 @@ pub async fn calc_billing(
 pub async fn list_records(
     State(_state): State<AppState>,
     Query(query): Query<VehicleQuery>,
-) -> Result<Json<serde_json::Value>> {
+) -> AppResult<Json<serde_json::Value>> {
     Ok(json_success(VehicleQueryResponse {
         records: vec![],
         total: 0,
@@ -90,9 +90,9 @@ pub struct MqttCallbackPayload {
 pub async fn mqtt_callback(
     State(state): State<AppState>,
     Json(msg): Json<MqttCallbackPayload>,
-) -> Result<Json<serde_json::Value>> {
+) -> AppResult<Json<serde_json::Value>> {
     let envelope: MqttEnvelope = serde_json::from_str(&msg.payload)
-        .map_err(|e| crate::error::XltError::Internal(format!("解析MQTT消息失败: {e}")))?;
+        .map_err(|e| AppError::Internal(format!("解析MQTT消息失败: {e}")))?;
 
     tracing::info!(
         "MQTT回调: topic={}, command={}, sn={}",
@@ -138,7 +138,7 @@ pub async fn mqtt_callback(
 /// 获取设备列表
 pub async fn list_devices(
     State(state): State<AppState>,
-) -> Result<Json<serde_json::Value>> {
+) -> AppResult<Json<serde_json::Value>> {
     let devices = state.device_manager.list_devices().await;
     Ok(json_success(devices))
 }
@@ -161,7 +161,7 @@ pub struct VehicleQueryResponse {
 pub async fn open_barrier(
     State(state): State<AppState>,
     Json(cmd): Json<BarrierCommand>,
-) -> Result<Json<serde_json::Value>> {
+) -> AppResult<Json<serde_json::Value>> {
     state.mqtt_gateway.send_open(&cmd.sn, &cmd.request_id).await?;
     Ok(json_empty_success())
 }
@@ -170,7 +170,7 @@ pub async fn open_barrier(
 pub async fn close_barrier(
     State(state): State<AppState>,
     Json(cmd): Json<BarrierCommand>,
-) -> Result<Json<serde_json::Value>> {
+) -> AppResult<Json<serde_json::Value>> {
     state.mqtt_gateway.send_close(&cmd.sn, &cmd.request_id).await?;
     Ok(json_empty_success())
 }

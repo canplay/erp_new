@@ -2,7 +2,9 @@ use common::service_bootstrap::GrpcServiceBuilder;
 use grpc_proto::clean::clean_service_server::CleanServiceServer;
 use std::net::SocketAddr;
 
-pub mod error;
+pub use common::AppError;
+pub use common::AppResult;
+
 pub mod handlers;
 pub mod models;
 pub mod repository;

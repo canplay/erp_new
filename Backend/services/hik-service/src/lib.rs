@@ -2,7 +2,9 @@
 //!
 //! 提供海康设备的管理和控制接口
 
-pub mod error;
+pub use common::AppError;
+pub use common::AppResult;
+
 pub mod grpc_server;
 pub mod handlers;
 pub mod helpers;

@@ -6,7 +6,8 @@ use serde::Deserialize;
 use sqlx::PgPool;
 use sqlx::types::BigDecimal;
 
-use crate::error::{PayError, Result};
+use common::AppError;
+use common::AppResult;
 
 /// UMS 银联支付配置
 #[derive(Debug, Clone, Deserialize)]
@@ -80,16 +81,16 @@ impl UmsService {
     }
 
     /// 获取访问令牌（公开方法，供 handler 调用）
-    pub async fn get_access_token(&self) -> Result<String> {
+    pub async fn get_access_token(&self) -> AppResult<String> {
         let redis_url = std::env::var("REDIS_URL").unwrap_or_default();
-        let client = redis::Client::open(redis_url.as_str()).map_err(PayError::RedisError)?;
+        let client = redis::Client::open(redis_url.as_str()).map_err(AppError::from)?;
         let mut conn = client
             .get_multiplexed_async_connection()
             .await
-            .map_err(PayError::RedisError)?;
+            .map_err(AppError::from)?;
 
         // 尝试从 Redis 获取缓存的 token
-        let cached: Option<String> = conn.get("ums:key").await.map_err(PayError::RedisError)?;
+        let cached: Option<String> = conn.get("ums:key").await.map_err(AppError::from)?;
 
         if let Some(token) = cached
             && !token.is_empty() && token != "null" {
@@ -103,13 +104,13 @@ impl UmsService {
         let _: () = conn
             .set_ex("ums:key", &token, 600)
             .await
-            .map_err(PayError::RedisError)?;
+            .map_err(AppError::from)?;
 
         Ok(token)
     }
 
     /// 请求新的访问令牌
-    async fn request_new_token(&self) -> Result<String> {
+    async fn request_new_token(&self) -> AppResult<String> {
         use std::time::{SystemTime, UNIX_EPOCH};
 
         let timestamp = SystemTime::now()
@@ -154,14 +155,14 @@ impl UmsService {
             .timeout(std::time::Duration::from_secs(30))
             .send()
             .await
-            .map_err(PayError::RequestError)?;
+            .map_err(AppError::from)?;
 
         let body: serde_json::Value = response.json().await.unwrap_or_default();
 
         body.get("accessToken")
             .and_then(|v| v.as_str())
             .map(String::from)
-            .ok_or_else(|| PayError::InternalError("Failed to get access token".to_string()))
+            .ok_or_else(|| AppError::PayInternalError("Failed to get access token".to_string()))
     }
 
     /// 查询支付订单
@@ -169,7 +170,7 @@ impl UmsService {
         &self,
         params: &UmsQueryParams,
         access_token: &str,
-    ) -> Result<serde_json::Value> {
+    ) -> AppResult<serde_json::Value> {
         let timestamp = chrono::Utc::now().format("%Y-%m-%d %H:%M:%S").to_string();
 
         let client_req = serde_json::json!({
@@ -196,7 +197,7 @@ impl UmsService {
             .timeout(std::time::Duration::from_secs(30))
             .send()
             .await
-            .map_err(PayError::RequestError)?;
+            .map_err(AppError::from)?;
 
         let body: serde_json::Value = response.json().await.unwrap_or_default();
         Ok(body)
@@ -207,7 +208,7 @@ impl UmsService {
         &self,
         params: &UmsOrderParams,
         access_token: &str,
-    ) -> Result<serde_json::Value> {
+    ) -> AppResult<serde_json::Value> {
         let timestamp = chrono::Utc::now().format("%Y-%m-%d %H:%M:%S").to_string();
 
         let mut client_req = serde_json::json!({
@@ -254,7 +255,7 @@ impl UmsService {
             .timeout(std::time::Duration::from_secs(30))
             .send()
             .await
-            .map_err(PayError::RequestError)?;
+            .map_err(AppError::from)?;
 
         let body: serde_json::Value = response.json().await.unwrap_or_default();
 
@@ -275,7 +276,7 @@ impl UmsService {
         &self,
         params: &UmsOrderParams,
         create_params: &serde_json::Value,
-    ) -> Result<()> {
+    ) -> AppResult<()> {
         let no_pay = params
             .no_pay
             .as_ref()
@@ -293,7 +294,7 @@ impl UmsService {
         )
         .fetch_optional(&self.pool)
         .await
-        .map_err(PayError::DatabaseError)?
+        .map_err(AppError::Database)?
         .flatten();
 
         if exists.is_some() {
@@ -309,7 +310,7 @@ impl UmsService {
             )
             .execute(&self.pool)
             .await
-            .map_err(PayError::DatabaseError)?;
+            .map_err(AppError::Database)?;
         } else {
             // 创建新订单
             let id = uuid::Uuid::new_v4().to_string();
@@ -326,7 +327,7 @@ impl UmsService {
             )
             .execute(&self.pool)
             .await
-            .map_err(PayError::DatabaseError)?;
+            .map_err(AppError::Database)?;
         }
 
         Ok(())
@@ -339,7 +340,7 @@ impl UmsService {
     /// 2. 状态机: 仅允许 'generate'(未支付) → 'paid'
     /// 3. 金额核实: 回调参数仅有 order 无签名/金额字段可验, 故主动调用 UMS
     ///    账单查询接口核实订单真实状态与金额, 核实通过才置 paid
-    pub async fn notify(&self, params: &UmsNotifyParams) -> Result<bool> {
+    pub async fn notify(&self, params: &UmsNotifyParams) -> AppResult<bool> {
         // 1) 查本地订单: 不存在则拒绝
         let row = sqlx::query!(
                 "SELECT status, amount FROM pay WHERE \"order\" = $1",
@@ -347,13 +348,13 @@ impl UmsService {
             )
             .fetch_optional(&self.pool)
             .await
-            .map_err(PayError::DatabaseError)?;
+            .map_err(AppError::Database)?;
 
         let (status, local_amount) = row.map(|r| (
             r.status.unwrap_or_default(),
             r.amount.unwrap_or_default().to_string().parse::<i64>().unwrap_or(0)
         )).ok_or_else(|| {
-            PayError::InternalError(format!("支付回调: 订单不存在: {}", params.order))
+            AppError::PayInternalError(format!("支付回调: 订单不存在: {}", params.order))
         })?;
 
         // 2) 幂等: 已支付/已关闭直接返回成功
@@ -363,7 +364,7 @@ impl UmsService {
 
         // 3) 状态机: 仅未支付状态允许流转到 paid
         if status != "generate" {
-            return Err(PayError::InternalError(format!(
+            return Err(AppError::PayInternalError(format!(
                 "支付回调: 订单状态不允许流转: {status}"
             )));
         }
@@ -382,14 +383,14 @@ impl UmsService {
 
         let err_code = verify.get("errCode").and_then(|v| v.as_str()).unwrap_or("");
         if err_code != "00" {
-            return Err(PayError::InternalError(format!(
+            return Err(AppError::PayInternalError(format!(
                 "支付回调: UMS 订单核实失败 errCode={err_code}"
             )));
         }
         // 金额核实: UMS totalAmount 与本地 amount 均为"分"
         if let Some(total) = verify.get("totalAmount").and_then(|v| v.as_i64()) {
             if (total - local_amount).abs() > 1 {
-                return Err(PayError::InternalError(format!(
+                return Err(AppError::PayInternalError(format!(
                     "支付回调: 金额不匹配 核实={total} 本地={local_amount}"
                 )));
             }
@@ -403,7 +404,7 @@ impl UmsService {
         )
         .execute(&self.pool)
         .await
-        .map_err(PayError::DatabaseError)?;
+        .map_err(AppError::Database)?;
 
         if result.rows_affected() == 0 {
             return Ok(true); // 并发下已被其他回调处理, 视为成功(幂等)
@@ -417,7 +418,7 @@ impl UmsService {
         &self,
         params: &UmsCloseParams,
         access_token: &str,
-    ) -> Result<serde_json::Value> {
+    ) -> AppResult<serde_json::Value> {
         let timestamp = chrono::Utc::now().format("%Y-%m-%d %H:%M:%S").to_string();
 
         let client_req = serde_json::json!({
@@ -443,7 +444,7 @@ impl UmsService {
             .timeout(std::time::Duration::from_secs(30))
             .send()
             .await
-            .map_err(PayError::RequestError)?;
+            .map_err(AppError::from)?;
 
         let body: serde_json::Value = response.json().await.unwrap_or_default();
         Ok(body)
@@ -454,7 +455,7 @@ impl UmsService {
         &self,
         params: &UmsRefundParams,
         access_token: &str,
-    ) -> Result<serde_json::Value> {
+    ) -> AppResult<serde_json::Value> {
         let timestamp = chrono::Utc::now().format("%Y-%m-%d %H:%M:%S").to_string();
 
         let mut client_req = serde_json::json!({
@@ -500,7 +501,7 @@ impl UmsService {
             .timeout(std::time::Duration::from_secs(30))
             .send()
             .await
-            .map_err(PayError::RequestError)?;
+            .map_err(AppError::from)?;
 
         let body: serde_json::Value = response.json().await.unwrap_or_default();
         Ok(body)
@@ -511,11 +512,11 @@ impl UmsService {
         &self,
         order: &str,
         _access_token: &str,
-    ) -> Result<serde_json::Value> {
+    ) -> AppResult<serde_json::Value> {
         let row = sqlx::query!("SELECT order_pay FROM pay WHERE \"order\" = $1", order)
             .fetch_optional(&self.pool)
             .await
-            .map_err(PayError::DatabaseError)?;
+            .map_err(AppError::Database)?;
 
         Ok(row.map_or(serde_json::Value::Null, |r| {
             r.order_pay.unwrap_or(serde_json::Value::Null)
@@ -531,11 +532,11 @@ impl UmsService {
 }
 
 /// 查询支付订单信息（独立函数，用于兼容）
-pub async fn ums_info(order: &str, pool: &sqlx::PgPool) -> Result<serde_json::Value> {
+pub async fn ums_info(order: &str, pool: &sqlx::PgPool) -> AppResult<serde_json::Value> {
     let row = sqlx::query!("SELECT order_pay FROM pay WHERE \"order\" = $1", order)
         .fetch_optional(pool)
         .await
-        .map_err(PayError::DatabaseError)?;
+        .map_err(AppError::Database)?;
 
     Ok(row.map_or(serde_json::Value::Null, |r| {
         r.order_pay.unwrap_or(serde_json::Value::Null)

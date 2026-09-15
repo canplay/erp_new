@@ -170,16 +170,13 @@ pub async fn list_announcements(
                 })
                 .collect();
 
-            (
-                StatusCode::OK,
-                json_success(serde_json::json!({
-                        "list": announcements,
-                        "total": result.total,
-                        "page": page,
-                        "page_size": page_size
-                    }),
-            )
-                .into_response()
+            let data = serde_json::json!({
+                "list": announcements,
+                "total": result.total,
+                "page": page,
+                "page_size": page_size
+            });
+            (StatusCode::OK, json_success(data)).into_response()
         }
         Err(e) => {
             tracing::error!("查询公告列表失败: {e}");
@@ -233,25 +230,24 @@ pub async fn get_announcement(
     Path(id): Path<i64>,
 ) -> impl IntoResponse {
     match state.announcement_repository.find_by_id(id).await {
-        Ok(Some(ann)) => (
-            StatusCode::OK,
-            json_success(serde_json::json!({
-                    "id": ann.id,
-                    "title": ann.title,
-                    "content": ann.content,
-                    "announcement_type": ann.announcement_type,
-                    "priority": ann.priority,
-                    "is_pinned": ann.is_pinned,
-                    "is_active": ann.is_active,
-                    "start_time": ann.start_time.map(|t| t.to_rfc3339()),
-                    "end_time": ann.end_time.map(|t| t.to_rfc3339()),
-                    "created_by": ann.created_by,
-                    "created_by_name": ann.created_by_name,
-                    "created_at": ann.created_at.to_rfc3339(),
-                    "updated_at": ann.updated_at.to_rfc3339(),
-                }),
-        )
-            .into_response(),
+        Ok(Some(ann)) => {
+            let data = serde_json::json!({
+                "id": ann.id,
+                "title": ann.title,
+                "content": ann.content,
+                "announcement_type": ann.announcement_type,
+                "priority": ann.priority,
+                "is_pinned": ann.is_pinned,
+                "is_active": ann.is_active,
+                "start_time": ann.start_time.map(|t| t.to_rfc3339()),
+                "end_time": ann.end_time.map(|t| t.to_rfc3339()),
+                "created_by": ann.created_by,
+                "created_by_name": ann.created_by_name,
+                "created_at": ann.created_at.to_rfc3339(),
+                "updated_at": ann.updated_at.to_rfc3339(),
+            });
+            (StatusCode::OK, json_success(data)).into_response()
+        }
         Ok(None) => (
             StatusCode::NOT_FOUND,
             json_error("公告不存在"),
@@ -299,14 +295,13 @@ pub async fn create_announcement(
         )
         .await
     {
-        Ok(id) => (
-            StatusCode::CREATED,
-            json_success(serde_json::json!({
-                    "id": id,
-                    "title": req.title
-                }),
-        )
-            .into_response(),
+        Ok(id) => {
+            let data = serde_json::json!({
+                "id": id,
+                "title": req.title
+            });
+            (StatusCode::CREATED, json_success(data)).into_response()
+        }
         Err(e) => {
             tracing::error!("创建公告失败: {e}");
             (
@@ -432,19 +427,18 @@ pub async fn get_config(
     Path(key): Path<String>,
 ) -> impl IntoResponse {
     match state.announcement_repository.get_config(&key).await {
-        Ok(Some(config)) => (
-            StatusCode::OK,
-            json_success(serde_json::json!({
-                    "id": config.id,
-                    "category": config.category,
-                    "config_key": config.config_key,
-                    "config_value": config.config_value,
-                    "value_type": config.value_type,
-                    "label": config.label,
-                    "description": config.description,
-                }),
-        )
-            .into_response(),
+        Ok(Some(config)) => {
+            let data = serde_json::json!({
+                "id": config.id,
+                "category": config.category,
+                "config_key": config.config_key,
+                "config_value": config.config_value,
+                "value_type": config.value_type,
+                "label": config.label,
+                "description": config.description,
+            });
+            (StatusCode::OK, json_success(data)).into_response()
+        }
         Ok(None) => (
             StatusCode::NOT_FOUND,
             json_error("配置不存在"),
@@ -556,16 +550,13 @@ pub async fn list_login_logs(
                 })
                 .collect();
 
-            (
-                StatusCode::OK,
-                json_success(serde_json::json!({
-                        "list": logs,
-                        "total": result.total,
-                        "page": page,
-                        "page_size": page_size
-                    }),
-            )
-                .into_response()
+            let data = serde_json::json!({
+                "list": logs,
+                "total": result.total,
+                "page": page,
+                "page_size": page_size
+            });
+            (StatusCode::OK, json_success(data)).into_response()
         }
         Err(e) => {
             tracing::error!("查询登录日志失败: {e}");

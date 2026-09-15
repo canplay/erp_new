@@ -5,7 +5,7 @@
 use axum::{Json, extract::Query, extract::State};
 use std::sync::Arc;
 
-use crate::error::Result;
+use common::AppResult;
 use crate::helpers::{json_ctp_lock_response, json_device_upload_response, json_health, json_success_value};
 use crate::models::{CmdType, DeviceDataUpload, DeviceQuery};
 use crate::services::CtpDeviceService;
@@ -20,7 +20,7 @@ pub struct AppState {
 pub async fn receive_device_data(
     State(state): State<AppState>,
     Json(upload): Json<DeviceDataUpload>,
-) -> Result<Json<serde_json::Value>> {
+) -> AppResult<Json<serde_json::Value>> {
     let ctp_resp = state.ctp_service.upload_device_data(&upload).await?;
     state.ctp_service.handle_device_data_upload(&upload).await?;
 
@@ -31,7 +31,7 @@ pub async fn receive_device_data(
 pub async fn control_lock(
     State(state): State<AppState>,
     Json(cmd): Json<crate::models::LockControlRequest>,
-) -> Result<Json<serde_json::Value>> {
+) -> AppResult<Json<serde_json::Value>> {
     let ctp_resp = state
         .ctp_service
         .send_lock_command(&cmd.device_no, &cmd.cmd_type, cmd.data.as_deref())
@@ -50,7 +50,7 @@ pub async fn control_lock(
 pub async fn get_device(
     State(state): State<AppState>,
     axum::extract::Path(device_no): axum::extract::Path<String>,
-) -> Result<Json<serde_json::Value>> {
+) -> AppResult<Json<serde_json::Value>> {
     let device = state.ctp_service.get_device_status(&device_no).await?;
     Ok(json_success_value(serde_json::to_value(device).unwrap_or_default()))
 }
@@ -59,7 +59,7 @@ pub async fn get_device(
 pub async fn list_devices(
     State(state): State<AppState>,
     Query(query): Query<DeviceQuery>,
-) -> Result<Json<serde_json::Value>> {
+) -> AppResult<Json<serde_json::Value>> {
     let page = query.page.unwrap_or(1);
     let page_size = query.page_size.unwrap_or(20);
     let result = state

@@ -4,8 +4,8 @@
 use sqlx::PgPool;
 use std::sync::Arc;
 
-use crate::error::CleanServiceError;
-use crate::error::CleanResult;
+use common::AppError;
+use common::AppResult;
 use crate::models::{InvoiceQuery, Invoice, OrderQuery, Order, FormalBillQuery, FormalBill, PaymentWebQuery, PaymentWeb};
 use crate::repository::{InvoiceRepository, OrderRepository, StaffRepository};
 use crate::services::StatisticsService;
@@ -45,7 +45,7 @@ impl CleanGrpcServer {/// 创建新的 gRPC 服务器实例
 pub async fn get_invoice_count(
  query: &InvoiceQuery,
  state: &AppState,
-) -> Result<i64, CleanServiceError> {state
+) -> Result<i64, AppError> {state
  .invoice_repository
  .count(query)
  .await}
@@ -54,7 +54,7 @@ pub async fn get_invoice_count(
 pub async fn get_invoice_list(
  query: &InvoiceQuery,
  state: &AppState,
-) -> CleanResult<Vec<Invoice>> {state
+) -> AppResult<Vec<Invoice>> {state
  .invoice_repository
  .list(query)
  .await}
@@ -63,7 +63,7 @@ pub async fn get_invoice_list(
 pub async fn get_order_count(
  query: &OrderQuery,
  state: &AppState,
-) -> Result<i64, CleanServiceError> {state
+) -> Result<i64, AppError> {state
  .order_repository
  .count(query)
  .await}
@@ -72,7 +72,7 @@ pub async fn get_order_count(
 pub async fn get_order_list(
  query: &OrderQuery,
  state: &AppState,
-) -> CleanResult<Vec<Order>> {state
+) -> AppResult<Vec<Order>> {state
  .order_repository
  .list(query)
  .await}
@@ -81,7 +81,7 @@ pub async fn get_order_list(
 pub async fn get_formal_bill_count(
  query: &FormalBillQuery,
  state: &AppState,
-) -> Result<i64, CleanServiceError> {state
+) -> Result<i64, AppError> {state
  .order_repository
  .count_formal_bill(query)
  .await}
@@ -90,7 +90,7 @@ pub async fn get_formal_bill_count(
 pub async fn get_formal_bill_list(
  query: &FormalBillQuery,
  state: &AppState,
-) -> CleanResult<Vec<FormalBill>> {state
+) -> AppResult<Vec<FormalBill>> {state
  .order_repository
  .list_formal_bill(query)
  .await}
@@ -99,7 +99,7 @@ pub async fn get_formal_bill_list(
 pub async fn get_payment_web_count(
  query: &PaymentWebQuery,
  state: &AppState,
-) -> Result<i64, CleanServiceError> {state
+) -> Result<i64, AppError> {state
  .order_repository
  .count_payment_web(query)
  .await}
@@ -108,7 +108,7 @@ pub async fn get_payment_web_count(
 pub async fn get_payment_web_list(
  query: &PaymentWebQuery,
  state: &AppState,
-) -> CleanResult<Vec<PaymentWeb>> {state
+) -> AppResult<Vec<PaymentWeb>> {state
  .order_repository
  .list_payment_web(query)
  .await}

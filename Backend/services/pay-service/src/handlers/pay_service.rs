@@ -8,7 +8,7 @@ use axum::{
 use serde::{Deserialize, Serialize};
 
 use super::AppState;
-use crate::error::PayError;
+use common::{AppError, AppResult};
 use crate::models::{PayCreateParams, PayOrder, PayQuery};
 use crate::services::{
     ccb::{
@@ -52,7 +52,7 @@ impl<T> Response<T> {
 pub async fn count(
     State(state): State<AppState>,
     Query(query): Query<PayQuery>,
-) -> Result<Json<Response<i64>>, PayError> {
+) -> AppResult<Json<Response<i64>>> {
     let count = state.pay_service.count(&query).await?;
     Ok(Json(Response::success(count, "查询成功")))
 }
@@ -62,7 +62,7 @@ pub async fn count(
 pub async fn list(
     State(state): State<AppState>,
     Query(query): Query<PayQuery>,
-) -> Result<Json<Response<Vec<PayOrder>>>, PayError> {
+) -> AppResult<Json<Response<Vec<PayOrder>>>> {
     let orders = state.pay_service.list(&query).await?;
     Ok(Json(Response::success(orders, "查询成功")))
 }
@@ -72,7 +72,7 @@ pub async fn list(
 pub async fn latest(
     State(state): State<AppState>,
     Path(user_id): Path<String>,
-) -> Result<Json<Response<Option<PayOrder>>>, PayError> {
+) -> AppResult<Json<Response<Option<PayOrder>>>> {
     let order = state.pay_service.latest(&user_id).await?;
     Ok(Json(Response::success(order, "查询成功")))
 }
@@ -82,7 +82,7 @@ pub async fn latest(
 pub async fn create_order(
     State(state): State<AppState>,
     Json(params): Json<PayCreateParams>,
-) -> Result<Json<Response<PayOrder>>, PayError> {
+) -> AppResult<Json<Response<PayOrder>>> {
     let order = state.pay_service.create_order(&params).await?;
     Ok(Json(Response::success(order, "创建成功")))
 }
@@ -104,7 +104,7 @@ fn create_ccb_config() -> CcbConfig {
 /// GET /api/pay/ccb/query
 pub async fn ccb_query(
     Query(params): Query<CcbQueryParams>,
-) -> Result<Json<CcbQueryResponse>, PayError> {
+) -> AppResult<Json<CcbQueryResponse>> {
     let service = CcbService::new(create_ccb_config());
     let result = service.query(&params).await?;
     Ok(Json(result))
@@ -114,7 +114,7 @@ pub async fn ccb_query(
 /// POST /api/pay/ccb/create
 pub async fn ccb_create(
     Json(params): Json<CcbOrderParams>,
-) -> Result<Json<CcbOrderResponse>, PayError> {
+) -> AppResult<Json<CcbOrderResponse>> {
     let service = CcbService::new(create_ccb_config());
     let result = service.create_order(&params).await?;
     Ok(Json(result))
@@ -122,7 +122,7 @@ pub async fn ccb_create(
 
 /// CCB 验证支付结果
 /// GET /`api/pay/ccb/verify/{order_id`}
-pub async fn ccb_verify(Path(order_id): Path<String>) -> Result<Json<Response<bool>>, PayError> {
+pub async fn ccb_verify(Path(order_id): Path<String>) -> AppResult<Json<Response<bool>>> {
     let service = CcbService::new(create_ccb_config());
     let result = service.verify_payment(&order_id).await?;
     Ok(Json(Response::success(result, "验证成功")))
@@ -139,7 +139,7 @@ pub struct CcbRefundParams {
 /// POST /api/pay/ccb/refund
 pub async fn ccb_refund(
     Json(params): Json<CcbRefundParams>,
-) -> Result<Json<Response<bool>>, PayError> {
+) -> AppResult<Json<Response<bool>>> {
     let service = CcbService::new(create_ccb_config());
     let result = service.refund(&params.order_id, params.amount).await?;
     Ok(Json(Response::success(result, "退款成功")))
@@ -159,20 +159,20 @@ fn create_ums_config() -> UmsConfig {
 }
 
 /// 获取 UMS 访问令牌
-async fn get_ums_token(service: &UmsService) -> Result<String, PayError> {
+async fn get_ums_token(service: &UmsService) -> AppResult<String> {
     service
         .get_access_token()
         .await
-        .map_err(|e| PayError::InternalError(e.to_string()))
+        .map_err(|e| AppError::PayInternalError(e.to_string()))
 }
 
 /// UMS 查询支付订单
 /// GET /api/pay/ums/query
 pub async fn ums_query(
     Query(params): Query<UmsQueryParams>,
-) -> Result<Json<Response<serde_json::Value>>, PayError> {
+) -> AppResult<Json<Response<serde_json::Value>>> {
     let pool = sqlx::PgPool::connect_lazy(&std::env::var("DATABASE_URL").unwrap_or_default())
-        .map_err(|e| PayError::InternalError(format!("数据库连接失败: {e}")))?;
+        .map_err(|e| AppError::PayInternalError(format!("数据库连接失败: {e}")))?;
     let service = UmsService::new(create_ums_config(), pool);
     let token = get_ums_token(&service).await?;
     let result = service.query(&params, &token).await?;
@@ -183,9 +183,9 @@ pub async fn ums_query(
 /// POST /api/pay/ums/create
 pub async fn ums_create(
     Json(params): Json<UmsOrderParams>,
-) -> Result<Json<Response<serde_json::Value>>, PayError> {
+) -> AppResult<Json<Response<serde_json::Value>>> {
     let pool = sqlx::PgPool::connect_lazy(&std::env::var("DATABASE_URL").unwrap_or_default())
-        .map_err(|e| PayError::InternalError(format!("数据库连接失败: {e}")))?;
+        .map_err(|e| AppError::PayInternalError(format!("数据库连接失败: {e}")))?;
     let service = UmsService::new(create_ums_config(), pool);
     let token = get_ums_token(&service).await?;
     let result = service.create_order(&params, &token).await?;
@@ -196,9 +196,9 @@ pub async fn ums_create(
 /// POST /api/pay/ums/close
 pub async fn ums_close(
     Json(params): Json<UmsCloseParams>,
-) -> Result<Json<Response<serde_json::Value>>, PayError> {
+) -> AppResult<Json<Response<serde_json::Value>>> {
     let pool = sqlx::PgPool::connect_lazy(&std::env::var("DATABASE_URL").unwrap_or_default())
-        .map_err(|e| PayError::InternalError(format!("数据库连接失败: {e}")))?;
+        .map_err(|e| AppError::PayInternalError(format!("数据库连接失败: {e}")))?;
     let service = UmsService::new(create_ums_config(), pool);
     let token = get_ums_token(&service).await?;
     let result = service.close(&params, &token).await?;
@@ -209,9 +209,9 @@ pub async fn ums_close(
 /// POST /api/pay/ums/refund
 pub async fn ums_refund(
     Json(params): Json<UmsRefundParams>,
-) -> Result<Json<Response<serde_json::Value>>, PayError> {
+) -> AppResult<Json<Response<serde_json::Value>>> {
     let pool = sqlx::PgPool::connect_lazy(&std::env::var("DATABASE_URL").unwrap_or_default())
-        .map_err(|e| PayError::InternalError(format!("数据库连接失败: {e}")))?;
+        .map_err(|e| AppError::PayInternalError(format!("数据库连接失败: {e}")))?;
     let service = UmsService::new(create_ums_config(), pool);
     let token = get_ums_token(&service).await?;
     let result = service.refund(&params, &token).await?;
@@ -223,7 +223,7 @@ pub async fn ums_refund(
 pub async fn ums_info(
     State(state): State<AppState>,
     Path(order): Path<String>,
-) -> Result<Json<Response<serde_json::Value>>, PayError> {
+) -> AppResult<Json<Response<serde_json::Value>>> {
     let service = UmsService::new(create_ums_config(), state.pool.clone());
     let token = get_ums_token(&service).await?;
     let info = service.query_ums_info(&order, &token).await?;

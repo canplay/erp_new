@@ -73,3 +73,10 @@ dogfood-output/
 .worktrees/
 /Backend/.sqlx
 /.hermes
+
+# 构建缓存（不应提交）
+.turbo/
+.quasar/
+.kilo/
+.vscode/
+.idea/

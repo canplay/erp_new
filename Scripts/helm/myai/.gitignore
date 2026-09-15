@@ -1,9 +1,0 @@
-# 敏感信息文件
-secrets.yaml
-
-# 打包文件
-*.tgz
-
-# 临时文件
-*.tmp
-*.bak

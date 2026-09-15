@@ -6,9 +6,9 @@
 
 | 维度 | 数据 |
 |---|---|
-| 后端 | 22 微服务 / 10 共享 Crates / 394 HTTP 端点 / 119 数据库表 |
-| 前端 | 4 应用（admin 56 / tenant 86 / ops 19 / social 13）/ 10 共享包 |
-| 架构 | admin=平台运营 / tenant=单位业务 / ops=运营面板 / social=社交端 |
+| 后端 | 22 微服务 / 10 共享 Crates / ~340 Rust 源文件 |
+| 前端 | 4 应用（admin 49 / tenant / ops / social）/ 10 共享包 / 199 Vue 组件 |
+| 数据库 | PostgreSQL 16+ / 119 张表 |
 | 部署 | Helm / docker-compose |
 
 **技术栈**：
@@ -17,10 +17,9 @@
 |---|---|
 | 后端框架 | Rust (Axum) + gRPC (Tonic) |
 | 前端框架 | Vue 3.5 + Quasar 2 + Pinia + Vite |
-| 数据库 | PostgreSQL |
+| 数据库 | PostgreSQL（119 表） |
 | 缓存 | Redis |
 | 认证 | JWT Bearer |
-| 容器化 | Docker / Podman / Kubernetes |
 | 部署 | Helm / docker-compose |
 | 工程化 | pnpm workspaces + Turborepo |
 
@@ -29,17 +28,17 @@
 ```mermaid
 flowchart TB
     subgraph FE["前端四端（Frontend/）"]
-        ADMIN["🖥️ admin 平台运营<br/>Quasar SPA<br/>56 页面"]
-        TENANT["🖥️ tenant 单位业务<br/>Quasar SPA<br/>86 页面"]
-        OPS["📊 ops 运营面板<br/>Quasar SPA<br/>19 页面"]
-        SOCIAL["💬 social 社交端<br/>Quasar SPA<br/>13 页面"]
+        ADMIN["🖥️ admin 平台运营<br/>49 页面"]
+        TENANT["🖥️ tenant 单位业务"]
+        OPS["📊 ops 运营面板"]
+        SOCIAL["💬 social 社交端"]
     end
 
     subgraph SHARED["共享层（packages/）"]
         API["api · 四端共享 API 封装"]
         BOOT["boot · alova 实例 + 认证注入"]
         COMP["components · 共享组件"]
-        PAGES["pages · 共享页面"]
+        PAGES["pages · 共享页面模板"]
     end
 
     subgraph BACKEND["后端微服务（Backend/，Rust）"]
@@ -60,8 +59,8 @@ flowchart TB
     end
 
     subgraph INFRA["基础设施"]
-        PG[("PostgreSQL<br/>119 表")]
-        RD[("Redis<br/>缓存/会话")]
+        PG[("PostgreSQL 16+<br/>119 表")]
+        RD[("Redis 7+<br/>缓存/会话")]
         MEILI[("Meilisearch<br/>全文搜索（可选）")]
     end
 
@@ -70,73 +69,13 @@ flowchart TB
     BACKEND --> INFRA
 ```
 
-## 3. 目录结构
-
-```
-erp_new/
-├── Backend/                        # 后端（22 个微服务 + 10 个共享 Crates）
-│   ├── services/                   # 各微服务源码
-│   │   ├── api-gateway/            # HTTP 网关（统一 REST + WS 入口）
-│   │   ├── auth-service/           # 认证服务
-│   │   ├── user-service/           # 用户服务
-│   │   ├── billing-service/        # 计费服务
-│   │   ├── pay-service/            # 支付服务
-│   │   └── ...（共 22 个）
-│   ├── crates/                     # 共享 Crates（10 个）
-│   │   ├── common/                 # 公共库（错误、配置、日志）
-│   │   ├── auth-core/              # 认证核心
-│   │   ├── tenant-core/            # 租户核心
-│   │   └── ...
-│   ├── protos/                     # gRPC Proto 定义（21 个 .proto）
-│   ├── sql/                        # 数据库迁移脚本（8 文件，119 表）
-│   └── Cargo.toml                  # 工作区配置
-│
-├── Frontend/                       # 前端（pnpm + Turborepo）
-│   ├── apps/
-│   │   ├── admin/                  # 管理后台（56 页面，平台运营）
-│   │   ├── tenant/                 # 单位业务（86 页面）
-│   │   ├── ops/                    # 运营面板（19 页面）
-│   │   └── social/                 # 社交端（13 页面）
-│   ├── packages/                   # 共享包（10 个）
-│   │   ├── api/                    # API 封装（alova）
-│   │   ├── boot/                   # 启动引导
-│   │   ├── components/             # 共享组件
-│   │   ├── composables/            # 组合式函数
-│   │   ├── i18n/                   # 国际化
-│   │   ├── pages/                  # 共享页面
-│   │   ├── stores/                 # 共享状态
-│   │   ├── types/                  # 类型定义
-│   │   └── utils/                  # 工具函数
-│   └── package.json
-│
-├── deploy/                         # 部署配置
-│   ├── docker-compose.yml          # 本地开发编排
-│   ├── helm/myai/                  # Helm Chart
-│   └── scripts/                    # 构建/部署脚本
-│       ├── build-backend.sh        # 后端镜像构建
-│       ├── build-frontend.sh       # 前端镜像构建
-│       ├── deploy-backend.sh       # 后端部署
-│       ├── deploy-frontend.sh      # 前端部署
-│       ├── build-and-deploy.sh     # 全栈流水线
-│       └── lib/                    # 共享函数库
-│
-├── Docs/                           # 文档
-│   ├── 设计文档.md                  # 架构设计
-│   ├── 部署文档.md                  # 部署指南
-│   ├── 后端待办.md                  # 后端待办
-│   └── 前端待办.md                  # 前端待办
-│
-├── .env.example                    # 后端运行时环境变量
-└── LICENSE
-```
-
-## 4. 快速开始
+## 3. 快速开始
 
 ### 前置条件
 
 - Rust 1.85+
 - Node.js 20+ / pnpm 11+
-- Docker/Podman（PostgreSQL + Redis）
+- Podman/Docker（PostgreSQL + Redis）
 - （可选）sqlx-cli：`cargo install sqlx-cli --no-default-features --features postgres`
 
 ### 本地启动（docker-compose）
@@ -154,11 +93,11 @@ psql -h localhost -U postgres -d erp_new -f Backend/sql/001_saas_core.up.sql
 psql -h localhost -U postgres -d erp_new -f Backend/sql/001_tenant_id_columns.sql
 psql -h localhost -U postgres -d erp_new -f Backend/sql/002_missing_indexes.sql
 psql -h localhost -U postgres -d erp_new -f Backend/sql/003_subscription_tables.sql
-psql -h localhost -U postgres -d erp_new -f Backend/sql/gw_tables.sql
 
-# 4. 编译时 SQL 验证（离线模式）
+# 4. 编译后端
 cd Backend
 cargo sqlx prepare --workspace
+cargo build --workspace
 
 # 5. 启动后端（按需启动服务）
 cargo run --package api-gateway     # HTTP 8090
@@ -169,47 +108,23 @@ cargo run --package auth-service    # HTTP 8081 / gRPC 9091
 cd Frontend
 pnpm install
 pnpm --filter myai-admin dev    # http://localhost:9000
-pnpm --filter myai-ops dev      # http://localhost:9001
-pnpm --filter myai-social dev   # http://localhost:9002
 ```
 
-### 本地启动（纯本地，无 docker）
+## 4. 生产部署（K8s）
 
 ```bash
-# 1. 确保本地 PostgreSQL 和 Redis 已启动
-#    修改 .env 中的 DATABASE_URL 和 REDIS_URL 指向本地
-
-# 2. 初始化数据库（同上）
-
-# 3. 启动后端
-cd Backend
-cargo run --package api-gateway
-
-# 4. 启动前端
-cd Frontend
-pnpm install
-pnpm --filter myai-admin dev
-```
-
-## 5. 生产部署（K8s）
-
-```bash
-# 构建镜像
-bash deploy/scripts/build-backend.sh
-bash deploy/scripts/build-frontend.sh
-
-# 推送 Harbor
-bash deploy/scripts/push.sh <组件>
+# 构建并推送镜像
+podman build -t erp-new/api-gateway:latest --build-arg SERVICE_NAME=api-gateway --build-arg HTTP_PORT=8090 -f Backend/Dockerfile .
+podman push erp-new/api-gateway:latest
 
 # Helm 部署
-KUBECONFIG=rancher.kubeconfig bash deploy/scripts/deploy-backend.sh
-KUBECONFIG=rancher.kubeconfig bash deploy/scripts/deploy-frontend.sh
-
-# 验证
-bash deploy/scripts/verify-deployment.sh
+helm upgrade --install myai ./deploy/helm/myai \
+  -n myai-prod \
+  -f deploy/helm/myai/values-prod.yaml \
+  --set image.tag=$(date +%Y%m%d%H%M)
 ```
 
-## 6. 微服务清单
+## 5. 微服务清单
 
 | 服务 | HTTP 端口 | gRPC 端口 | 说明 |
 |---|---|---|---|
@@ -235,23 +150,16 @@ bash deploy/scripts/verify-deployment.sh
 | ebike-service | 8098 | 9100 | 电动自行车 |
 | tow-service | 8094 | 9086 | 拖车服务 |
 
-## 7. 环境
-
-| 项 | 值 |
-|---|---|
-| 数据库 | `erp_new` (PostgreSQL) |
-| Redis | `redis://localhost:6379/0` |
-| 镜像 tag 格式 | `YYYYMMDDHHMM`（纯数字 12 位） |
-
-## 8. 版本历史
+## 6. 版本历史
 
 | 版本 | 日期 | 说明 |
 |---|---|---|
-| v0.3.0 | 2026-09-15 | 错误处理统一（AppError/AppResult）、清理冗余、精简部署目录、文档同步 |
+| v0.4.0 | 2026-09-15 | 全面优化：修复 panic!、清理桩页面、重构 Helm Chart、文档同步 |
+| v0.3.0 | 2026-09-15 | 错误处理统一（AppError/AppResult）、清理冗余、精简部署目录 |
 | v0.2.5 | 2026-09-14 | 文档同步修正：表数(127→119)、服务数(21→22)、Crates(11→10) |
 | v0.2.0 | 2026-08-11 | 架构文档 |
 | v0.1.0 | 2026-06-10 | 初始架构设计 |
 
-## 9. 许可证
+## 7. 许可证
 
 [MIT](LICENSE) © 2026 erp_new Contributors

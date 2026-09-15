@@ -35,8 +35,12 @@ pub mod options_routes;
 pub use options_routes::routes as options_routes;
 
 use std::sync::Arc;
-use axum::Router;
+use axum::{Json, Router};
 use crate::AppState;
+
+async fn metrics_handler() -> Json<serde_json::Value> {
+    Json(common::metrics::get_metrics())
+}
 
 
 pub use api_key_routes::routes as api_key_routes;
@@ -95,4 +99,5 @@ pub fn all_routes() -> Router<Arc<AppState>> {
         .merge(hik_routes())
         .merge(xlt_routes())
         .merge(options_routes())
+        .route("/metrics", axum::routing::get(metrics_handler))
 }

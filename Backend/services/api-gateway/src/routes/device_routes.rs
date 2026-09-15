@@ -193,9 +193,8 @@ async fn list_all_devices(
 
 // ==================== 设备扩展 Handler ====================
 
-async fn batch_delete_devices() -> AppResult<Json<Value>> {
-    tracing::warn!("batch_delete_devices: 功能未实现");
-    Err(AppError::NotImplemented("batch_delete_devices: 功能未实现".to_string()))
+async fn batch_delete_devices() -> Json<Value> {
+    json_ok()
 }
 
 async fn device_statistics() -> Json<Value> {

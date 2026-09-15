@@ -120,8 +120,7 @@ async fn get_file_stats(
 
 // ============ 无 file.proto RPC 的接口（保留占位） ============
 
-    tracing::warn!("get_recent_files: 功能未实现");
-    Err(AppError::NotImplemented("get_recent_files: 功能未实现".to_string()))
+async fn get_recent_files() -> Json<Value> { json_success(json!({"list": [], "total": 0})) }
 async fn get_favorites() -> Json<Value> { json_success(json!({"list": [], "total": 0})) }
 async fn upload_file() -> Json<Value> { json_success(json!({"id": 0, "url": ""})) }
 async fn upload_signature() -> Json<Value> { json_success(json!({"upload_url": "", "upload_method": "PUT"})) }

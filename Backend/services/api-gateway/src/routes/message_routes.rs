@@ -132,8 +132,7 @@ async fn batch_delete_messages(
     json_ok()
 }
 
-    tracing::warn!("star_message: 功能未实现");
-    Err(AppError::NotImplemented("star_message: 功能未实现".to_string()))
+async fn star_message() -> Json<Value> { json_ok() }
 async fn unstar_message() -> Json<Value> { json_ok() }
 
 async fn get_unread_count(

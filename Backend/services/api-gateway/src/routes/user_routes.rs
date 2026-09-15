@@ -244,9 +244,8 @@ async fn batch_delete_users_handler(
     }
 }
 
-async fn not_implemented_handler() -> AppResult<Json<Value>> {
-    tracing::warn!("not_implemented_handler: 功能未实现");
-    Err(AppError::NotImplemented("not_implemented_handler: 功能未实现".to_string()))
+async fn not_implemented_handler() -> Json<Value> {
+    json_not_implemented("导入导出待实现")
 }
 
 /// POST /api/admin/users/import — 导入用户

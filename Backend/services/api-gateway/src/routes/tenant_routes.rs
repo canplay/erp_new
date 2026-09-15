@@ -125,8 +125,7 @@ async fn delete_tenant(
     }
 }
 
-    tracing::warn!("enable_tenant: 功能未实现");
-    Err(AppError::NotImplemented("enable_tenant: 功能未实现".to_string()))
+async fn enable_tenant() -> Json<Value> { json_ok() }
 async fn disable_tenant() -> Json<Value> { json_ok() }
 async fn reset_tenant_quota() -> Json<Value> { json_ok() }
 

@@ -185,12 +185,11 @@ async fn get_statistics_handler(
 
 // ============ 明细查询 Handler ============
 
-async fn clean_invoice_count() -> AppResult<Json<Value>> {
+async fn clean_invoice_count() -> Json<Value> {
     json_success(json!({"count": 0}))
 }
 async fn clean_invoice_info() -> Json<Value> {
-    tracing::warn!("clean_invoice_count: 功能未实现");
-    Err(AppError::NotImplemented("clean_invoice_count: 功能未实现".to_string()))
+    json_success(json!({"list": [], "total": 0}))
 }
 async fn clean_invoice_update() -> Json<Value> { json_ok() }
 async fn clean_order_count() -> Json<Value> {

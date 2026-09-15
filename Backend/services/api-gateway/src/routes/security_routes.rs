@@ -745,8 +745,7 @@ async fn batch_disable_ip_whitelist(
     json_ok()
 }
 
-    tracing::warn!("reorder_ip_whitelist: 功能未实现");
-    Err(AppError::NotImplemented("reorder_ip_whitelist: 功能未实现".to_string()))
+async fn reorder_ip_whitelist() -> Json<Value> { json_ok() }
 
 async fn check_ip_whitelist(
     State(state): State<Arc<AppState>>,

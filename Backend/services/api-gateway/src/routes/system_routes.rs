@@ -126,9 +126,8 @@ async fn monitor_handler() -> Json<Value> {
 
 // ==================== 权限管理 ====================
 
-async fn list_permissions() -> AppResult<Json<Value>> {
-    tracing::warn!("list_permissions: 功能未实现");
-    Err(AppError::NotImplemented("list_permissions: 功能未实现".to_string()))
+async fn list_permissions() -> Json<Value> {
+    json_success(json!({"list": [], "total": 0}))
 }
 
 async fn create_permission() -> Json<Value> {

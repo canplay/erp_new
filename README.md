@@ -7,7 +7,7 @@
 | 维度 | 数据 |
 |---|---|
 | 后端 | 22 微服务 / 10 共享 Crates / ~340 Rust 源文件 |
-| 前端 | 4 应用（admin 47 / tenant / ops / social）/ 10 共享包 / 199 Vue 组件 |
+| 前端 | 4 应用（admin 49 / tenant 138 / ops 4 / social 8）/ 10 共享包 / 199 Vue 组件 |
 | 数据库 | PostgreSQL 16+ / 119 张表 |
 | 部署 | Helm / docker-compose |
 
@@ -28,8 +28,8 @@
 ```mermaid
 flowchart TB
     subgraph FE["前端四端（Frontend/）"]
-        ADMIN["🖥️ admin 平台运营<br/>47 页面"]
-        TENANT["🖥️ tenant 单位业务"]
+        ADMIN["🖥️ admin 平台运营<br/>49 页面"]
+        TENANT["🖥️ tenant 单位业务<br/>138 页面"]
         OPS["📊 ops 运营面板"]
         SOCIAL["💬 social 社交端"]
     end
@@ -38,7 +38,7 @@ flowchart TB
         API["api · 四端共享 API 封装"]
         BOOT["boot · alova 实例 + 认证注入"]
         COMP["components · 共享组件"]
-        PAGES["pages · 共享页面模板"]
+        PAGES["pages · 页面模板（111 文件）"]
     end
 
     subgraph BACKEND["后端微服务（Backend/，Rust）"]
@@ -51,7 +51,7 @@ flowchart TB
             ..."]
         end
         subgraph CRATES["共享 Crates（10个）"]
-            COMMON["common · 公共工具"]
+            COMMON["common · 公共工具<br/>24 模块"]
             AUTHCORE["auth-core · 认证核心"]
             TENANTCORE["tenant-core · 租户核心"]
             ..."]
@@ -61,7 +61,6 @@ flowchart TB
     subgraph INFRA["基础设施"]
         PG[("PostgreSQL 16+<br/>119 表")]
         RD[("Redis 7+<br/>缓存/会话")]
-        MEILI[("Meilisearch<br/>全文搜索（可选）")]
     end
 
     FE --> SHARED
@@ -87,8 +86,8 @@ cp .env.example .env
 # 2. 启动基础设施（PostgreSQL + Redis + Meilisearch）
 podman compose -f deploy/docker-compose.yml up -d
 
-# 3. 初始化数据库
-psql -h localhost -U postgres -d erp_new -f Backend/sql/schema.sql
+# 3. 初始化数据库（自动 via docker-compose volumes）
+# 或手动: psql -h localhost -U postgres -d erp_new -f Backend/sql/schema.sql
 
 # 4. 编译后端
 cd Backend
@@ -149,24 +148,40 @@ helm upgrade --install erp-new ./deploy/helm/myai \
 ## 6. 数据库迁移
 
 ```bash
-# 全量初始化
+# 全量初始化（docker-compose 自动执行）
 psql -h <host> -U postgres -d erp_new -f Backend/sql/schema.sql
 
 # 重置（开发用，危险！）
 psql -h <host> -U postgres -d erp_new -f Backend/sql/999_reset.sql
 ```
 
-## 7. 版本历史
+## 7. 可观测性
+
+| 端点 | 说明 |
+|---|---|
+| `/health` | 健康检查（所有服务） |
+| `/metrics` | Prometheus 指标（api-gateway） |
+
+## 8. CI/CD
+
+GitHub Actions 自动执行：
+- Backend: `cargo fmt`, `clippy`, `check`, `test`
+- Frontend: `vue-tsc` 类型检查, `quasar build`
+- Helm: `lint` 验证
+
+## 9. 版本历史
 
 | 版本 | 日期 | 说明 |
 |---|---|---|
-| v0.5.0 | 2026-09-16 | SQL合并、迁移模块、any清理、Helm文档更新 |
-| v0.4.0 | 2026-09-15 | 全面优化：修复 panic!、清理桩页面、重构 Helm Chart、文档同步 |
-| v0.3.0 | 2026-09-15 | 错误处理统一（AppError/AppResult）、清理冗余、精简部署目录 |
-| v0.2.5 | 2026-09-14 | 文档同步修正：表数(127→119)、服务数(21→22)、Crates(11→10) |
+| v0.6.0 | 2026-09-16 | CI/CD, Prometheus metrics, docker-compose auto-init |
+| v0.5.0 | 2026-09-16 | SQL 合并, migrations 模块, any 清理 |
+| v0.4.0 | 2026-09-15 | 修复 panic!, 清理桩页面, 重构 Helm |
+| v0.3.0 | 2026-09-15 | 错误处理统一, 清理冗余 |
+| v0.2.5 | 2026-09-14 | 文档同步修正 |
 | v0.2.0 | 2026-08-11 | 架构文档 |
 | v0.1.0 | 2026-06-10 | 初始架构设计 |
 
-## 8. 许可证
+## 10. 许可证
 
 [MIT](LICENSE) © 2026 erp_new Contributors
+

@@ -26,24 +26,9 @@ export default defineRouter(() => {
         component: () => import('@/pages/auth/login/index.vue'),
       },
       {
-        path: '/auth/forgot-password',
-        name: 'forgot-password',
-        component: () => import('@/pages/auth/forgot-password/index.vue'),
-      },
-      {
-        path: '/auth/reset-password',
-        name: 'reset-password',
-        component: () => import('@/pages/auth/reset-password/index.vue'),
-      },
-      {
         path: '/auth/register',
         name: 'register',
         component: () => import('@/pages/auth/register/index.vue'),
-      },
-      {
-        path: '/auth/confirm-email',
-        name: 'confirm-email',
-        component: () => import('@/pages/auth/confirm-email/index.vue'),
       },
       {
         path: '/',
@@ -171,12 +156,6 @@ export default defineRouter(() => {
             meta: { cap: 'billing' },
           },
           {
-            path: 'sessions',
-            name: 'sessions',
-            component: () => import('@/pages/sessions/index.vue'),
-            meta: { cap: 'sessions-platform' },
-          },
-          {
             path: 'webhooks',
             name: 'webhooks',
             component: () => import('@/pages/webhooks/index.vue'),
@@ -193,24 +172,6 @@ export default defineRouter(() => {
             name: 'messages',
             component: () => import('@/pages/messages/index.vue'),
             meta: { cap: 'messages' },
-          },
-          {
-            path: 'settings/security',
-            name: 'settings-security',
-            component: () => import('@/pages/settings/security/index.vue'),
-            meta: { cap: 'settings' },
-          },
-          {
-            path: 'settings/appearance',
-            name: 'settings-appearance',
-            component: () => import('@/pages/settings/appearance/index.vue'),
-            meta: { cap: 'settings' },
-          },
-          {
-            path: 'settings/sessions',
-            name: 'settings-sessions',
-            component: () => import('@/pages/settings/sessions/index.vue'),
-            meta: { cap: 'settings' },
           },
           {
             path: 'impersonation',
@@ -249,22 +210,10 @@ export default defineRouter(() => {
             meta: { cap: 'tickets' },
           },
           {
-            path: 'chat',
-            name: 'chat',
-            component: () => import('@/pages/chat/index.vue'),
-            meta: { cap: 'chat' },
-          },
-          {
             path: 'health',
             name: 'health',
             component: () => import('@/pages/health/index.vue'),
             meta: { cap: 'health' },
-          },
-          {
-            path: 'profile',
-            name: 'profile',
-            component: () => import('@/pages/profile/index.vue'),
-            meta: { cap: 'profile' },
           },
         ],
       },
@@ -284,9 +233,6 @@ export default defineRouter(() => {
   // 登录守卫：未登录访问非登录页 → /auth/login；已登录访问登录页 → /
   const publicPaths = [
     '/auth/login',
-    '/auth/forgot-password',
-    '/auth/reset-password',
-    '/auth/confirm-email',
     '/auth/register',
   ];
   Router.beforeEach((to) => {

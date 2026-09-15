@@ -7,7 +7,7 @@
 | 维度 | 数据 |
 |---|---|
 | 后端 | 22 微服务 / 10 共享 Crates / ~340 Rust 源文件 |
-| 前端 | 4 应用（admin 49 / tenant / ops / social）/ 10 共享包 / 199 Vue 组件 |
+| 前端 | 4 应用（admin 47 / tenant / ops / social）/ 10 共享包 / 199 Vue 组件 |
 | 数据库 | PostgreSQL 16+ / 119 张表 |
 | 部署 | Helm / docker-compose |
 
@@ -28,7 +28,7 @@
 ```mermaid
 flowchart TB
     subgraph FE["前端四端（Frontend/）"]
-        ADMIN["🖥️ admin 平台运营<br/>49 页面"]
+        ADMIN["🖥️ admin 平台运营<br/>47 页面"]
         TENANT["🖥️ tenant 单位业务"]
         OPS["📊 ops 运营面板"]
         SOCIAL["💬 social 社交端"]
@@ -88,11 +88,7 @@ cp .env.example .env
 podman compose -f deploy/docker-compose.yml up -d
 
 # 3. 初始化数据库
-psql -h localhost -U postgres -d erp_new -f Backend/sql/000_init.sql
-psql -h localhost -U postgres -d erp_new -f Backend/sql/001_saas_core.up.sql
-psql -h localhost -U postgres -d erp_new -f Backend/sql/001_tenant_id_columns.sql
-psql -h localhost -U postgres -d erp_new -f Backend/sql/002_missing_indexes.sql
-psql -h localhost -U postgres -d erp_new -f Backend/sql/003_subscription_tables.sql
+psql -h localhost -U postgres -d erp_new -f Backend/sql/schema.sql
 
 # 4. 编译后端
 cd Backend
@@ -118,7 +114,7 @@ podman build -t erp-new/api-gateway:latest --build-arg SERVICE_NAME=api-gateway 
 podman push erp-new/api-gateway:latest
 
 # Helm 部署
-helm upgrade --install myai ./deploy/helm/myai \
+helm upgrade --install erp-new ./deploy/helm/myai \
   -n myai-prod \
   -f deploy/helm/myai/values-prod.yaml \
   --set image.tag=$(date +%Y%m%d%H%M)
@@ -150,16 +146,27 @@ helm upgrade --install myai ./deploy/helm/myai \
 | ebike-service | 8098 | 9100 | 电动自行车 |
 | tow-service | 8094 | 9086 | 拖车服务 |
 
-## 6. 版本历史
+## 6. 数据库迁移
+
+```bash
+# 全量初始化
+psql -h <host> -U postgres -d erp_new -f Backend/sql/schema.sql
+
+# 重置（开发用，危险！）
+psql -h <host> -U postgres -d erp_new -f Backend/sql/999_reset.sql
+```
+
+## 7. 版本历史
 
 | 版本 | 日期 | 说明 |
 |---|---|---|
+| v0.5.0 | 2026-09-16 | SQL合并、迁移模块、any清理、Helm文档更新 |
 | v0.4.0 | 2026-09-15 | 全面优化：修复 panic!、清理桩页面、重构 Helm Chart、文档同步 |
 | v0.3.0 | 2026-09-15 | 错误处理统一（AppError/AppResult）、清理冗余、精简部署目录 |
 | v0.2.5 | 2026-09-14 | 文档同步修正：表数(127→119)、服务数(21→22)、Crates(11→10) |
 | v0.2.0 | 2026-08-11 | 架构文档 |
 | v0.1.0 | 2026-06-10 | 初始架构设计 |
 
-## 7. 许可证
+## 8. 许可证
 
 [MIT](LICENSE) © 2026 erp_new Contributors

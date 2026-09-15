@@ -7,7 +7,7 @@ MyAI Backend Helm Chart 辅助函数模板
 {{/*
 根据服务名称获取副本数
 */}}
-{{- define "myai.replicaCount" -}}
+{{- define "erpnew.replicaCount" -}}
 {{- $replicaCount := .Values.replicaCount -}}
 {{- $serviceName := .serviceName -}}
 {{- if hasKey $replicaCount $serviceName -}}
@@ -20,7 +20,7 @@ MyAI Backend Helm Chart 辅助函数模板
 {{/*
 根据服务名称获取资源限制
 */}}
-{{- define "myai.resources" -}}
+{{- define "erpnew.resources" -}}
 {{- $resources := .Values.resources -}}
 {{- $serviceName := .serviceName -}}
 {{- if hasKey $resources $serviceName -}}
@@ -34,7 +34,7 @@ MyAI Backend Helm Chart 辅助函数模板
 获取镜像完整地址
 支持按服务独立配置 imageName，无则使用全局 image.repository
 */}}
-{{- define "myai.image" -}}
+{{- define "erpnew.image" -}}
 {{- $registry := .Values.global.imageRegistry -}}
 {{- $serviceConfig := .serviceConfig -}}
 {{- $imageName := $serviceConfig.imageName | default .Values.image.repository -}}
@@ -52,31 +52,31 @@ MyAI Backend Helm Chart 辅助函数模板
 {{/*
 获取服务名称
 */}}
-{{- define "myai.fullname" -}}
+{{- define "erpnew.fullname" -}}
 {{- $name := .componentName | default .serviceName -}}
-{{- printf "%s-%s" (include "myai.name" .) $name -}}
+{{- printf "%s-%s" (include "erpnew.name" .) $name -}}
 {{- end -}}
 
 {{/*
 获取 Chart 名称
 */}}
-{{- define "myai.name" -}}
+{{- define "erpnew.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{/*
 获取 Chart 完整名称
 */}}
-{{- define "myai.fullchartname" -}}
+{{- define "erpnew.fullchartname" -}}
 {{- printf "%s-%s" .Release.Name .Chart.Name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{/*
 获取服务标签
 */}}
-{{- define "myai.labels" -}}
+{{- define "erpnew.labels" -}}
 helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
-{{ include "myai.selectorLabels" . }}
+{{ include "erpnew.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -86,8 +86,8 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 获取选择器标签
 */}}
-{{- define "myai.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "myai.name" . }}
+{{- define "erpnew.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "erpnew.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- if .serviceName }}
 app.kubernetes.io/component: {{ .serviceName }}
@@ -97,7 +97,7 @@ app.kubernetes.io/component: {{ .serviceName }}
 {{/*
 获取环境变量
 */}}
-{{- define "myai.envVars" -}}
+{{- define "erpnew.envVars" -}}
 {{- range $key, $value := .env }}
 - name: {{ $key }}
   value: {{ $value | quote }}
@@ -107,7 +107,7 @@ app.kubernetes.io/component: {{ .serviceName }}
 {{/*
 从 ConfigMap 获取环境变量
 */}}
-{{- define "myai.envFromConfigMap" -}}
+{{- define "erpnew.envFromConfigMap" -}}
 {{- if .configMapName -}}
 - configMapRef:
     name: {{ .configMapName }}
@@ -117,7 +117,7 @@ app.kubernetes.io/component: {{ .serviceName }}
 {{/*
 从 Secret 获取环境变量
 */}}
-{{- define "myai.envFromSecret" -}}
+{{- define "erpnew.envFromSecret" -}}
 {{- if .secretName -}}
 - secretRef:
     name: {{ .secretName }}
@@ -127,7 +127,7 @@ app.kubernetes.io/component: {{ .serviceName }}
 {{/*
 获取健康检查配置
 */}}
-{{- define "myai.livenessProbe" -}}
+{{- define "erpnew.livenessProbe" -}}
 {{- if .Values.healthCheck.enabled -}}
 livenessProbe:
   httpGet:
@@ -141,7 +141,7 @@ livenessProbe:
 {{- end -}}
 {{- end -}}
 
-{{- define "myai.readinessProbe" -}}
+{{- define "erpnew.readinessProbe" -}}
 {{- if .Values.healthCheck.enabled -}}
 readinessProbe:
   httpGet:
@@ -158,7 +158,7 @@ readinessProbe:
 {{/*
 获取挂载卷
 */}}
-{{- define "myai.volumeMounts" -}}
+{{- define "erpnew.volumeMounts" -}}
 {{- if .volumeMounts -}}
 {{- toYaml .volumeMounts | nindent 8 -}}
 {{- end -}}
@@ -167,7 +167,7 @@ readinessProbe:
 {{/*
 获取卷
 */}}
-{{- define "myai.volumes" -}}
+{{- define "erpnew.volumes" -}}
 {{- if .volumes -}}
 {{- toYaml .volumes | nindent 8 -}}
 {{- end -}}
@@ -176,7 +176,7 @@ readinessProbe:
 {{/*
 获取生命周期配置（优雅关闭）
 */}}
-{{- define "myai.lifecycle" -}}
+{{- define "erpnew.lifecycle" -}}
 lifecycle:
   preStop:
     exec:

@@ -11,11 +11,11 @@ kind: Service
 metadata:
   name: {{ $serviceConfig.name }}
   labels:
-    {{- include "myai.labels" (dict "Values" $.Values "serviceName" $serviceName "Chart" $.Chart "Release" $.Release) | nindent 4 }}
+    {{- include "erpnew.labels" (dict "Values" $.Values "serviceName" $serviceName "Chart" $.Chart "Release" $.Release) | nindent 4 }}
 spec:
   type: {{ if $serviceConfig.service }}{{ $serviceConfig.service.type | default "ClusterIP" }}{{ else }}ClusterIP{{ end }}
   selector:
-    {{- include "myai.selectorLabels" (dict "Values" $.Values "serviceName" $serviceName "Chart" $.Chart "Release" $.Release) | nindent 4 }}
+    {{- include "erpnew.selectorLabels" (dict "Values" $.Values "serviceName" $serviceName "Chart" $.Chart "Release" $.Release) | nindent 4 }}
   ports:
     {{- if and $serviceConfig.service $serviceConfig.service.ports }}
     {{- range $serviceConfig.service.ports }}

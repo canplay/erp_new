@@ -1,14 +1,22 @@
 # =============================================================================
-# 生产环境配置
+# erp_new Helm Chart — 生产环境配置
+# =============================================================================
+# 用法:
+#   helm install myai ./helm/myai -f ./helm/myai/values-prod.yaml
 # =============================================================================
 
-# 镜像配置
+global:
+  imageRegistry: "harbor.example.com:8003/erp"
+  imagePullSecrets:
+    - name: harbor-secret
+  envPrefix: ""
+  timezone: Asia/Shanghai
+
 image:
-  repository: myai-backend
-  tag: "20260730.1"
+  repository: erp-new-backend
+  tag: "20260915.1"
   pullPolicy: IfNotPresent
 
-# 副本数配置（生产环境使用多个副本）
 replicaCount:
   apiGateway: 3
   authService: 3
@@ -28,9 +36,12 @@ replicaCount:
   ctpService: 1
   xltService: 1
   ebikeService: 1
+  lprService: 1
+  socialOpsService: 1
+  browserService: 1
   billingService: 2
+  admin: 2
 
-# 资源限制配置（生产环境资源限制严格）
 resources:
   apiGateway:
     requests:
@@ -61,14 +72,65 @@ resources:
       cpu: 1000m
       memory: 1Gi
 
-# 日志配置（生产环境使用 info 级别）
-logging:
-  level: info
-  format: json
-  maxSize: 500
-  maxFiles: 14
+healthCheck:
+  enabled: true
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 3
+    successThreshold: 1
+  readinessProbe:
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+    successThreshold: 1
 
-# ConfigMap 配置
+services:
+  apiGateway:
+    env:
+      CORS_ALLOWED_ORIGINS: "https://admin.example.com,https://api.example.com"
+      CORS_ALLOWED_METHODS: "GET,POST,PUT,DELETE,PATCH,OPTIONS"
+      CORS_ALLOWED_HEADERS: "Content-Type,Authorization,X-Requested-With"
+      CORS_MAX_AGE: 3600
+
+  fileService:
+    persistence:
+      enabled: true
+      size: 100Gi
+      storageClass: ""
+
+  admin:
+    env:
+      VITE_API_BASE_URL: "https://api.example.com/api"
+
+ingress:
+  enabled: true
+  className: traefik
+  baseDomain: "example.com"
+  tlsSecretName: tls
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+  hosts:
+    - host: admin.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+          service: erp-new-admin
+          port: 80
+    - host: api.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+          service: api-gateway
+          port: 8090
+  tls:
+    - hosts:
+        - "*.example.com"
+      secretName: tls
+  sslipPorts: {}
+
 configMap:
   logging:
     RUST_LOG: info
@@ -77,52 +139,38 @@ configMap:
     LOG_MAX_FILES: "14"
   otel:
     OTEL_ENABLED: "true"
-    OTEL_SERVICE_NAME: myai-backend-prod
+    OTEL_SERVICE_NAME: erp-new-backend-prod
+  databasePool:
+    maxConnections: "5"
+    minConnections: "2"
+    connectTimeout: "30"
+    idleTimeout: "300"
+    maxLifetime: "1800"
 
-# OpenTelemetry 配置（生产环境启用）
-otel:
-  enabled: true
-  exporterOtlpEndpoint: "http://jaeger-collector:4317"
-  serviceName: myai-backend-prod
+secret:
+  database:
+    POSTGRES_PASSWORD: "CHANGE-ME-MANAGED-EXTERNALLY"
+    DATABASE_URL: "postgresql://postgres:***@pg-cluster:5432/erp_new"
+  redis:
+    REDIS_URL: "redis://default:***@redis-cluster:6379/0"
+  jwt:
+    JWT_SECRET: "CHANGE-ME-MANAGED-EXTERNALLY"
+    JWT_ISSUER: "erp-new"
+    JWT_AUDIENCE: "erp-new-users"
+    JWT_ACCESS_EXPIRY: "900"
+    GRPC_AUTH_TOKEN: "CHANGE-ME-MANAGED-EXTERNALLY"
 
-# Ingress 配置（生产环境）
-ingress:
-  enabled: true
-  className: nginx
-  annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
-  hosts:
-    - host: api.example.com
-      paths:
-        - path: /
-          pathType: Prefix
-  tls:
-    - secretName: myai-backend-tls
-      hosts:
-        - api.example.com
-
-# 基础设施配置（生产环境使用较大的存储）
 infrastructure:
   postgres:
-    persistence:
-      size: 100Gi
+    enabled: false
   redis:
-    persistence:
-      size: 20Gi
+    enabled: false
 
-# 文件服务存储（生产环境）
-services:
-  fileService:
-    persistence:
-      size: 100Gi
+serviceAccount:
+  create: false
+  annotations: {}
+  name: ""
 
-# 节点选择器（生产环境可以指定特定节点）
-nodeSelector:
-  # environment: production
-
-# 亲和性配置（生产环境）
 affinity:
   podAntiAffinity:
     preferredDuringSchedulingIgnoredDuringExecution:
@@ -133,5 +181,21 @@ affinity:
               - key: app.kubernetes.io/name
                 operator: In
                 values:
-                  - myai-backend
+                  - myai
           topologyKey: kubernetes.io/hostname
+
+monitoring:
+  enabled: true
+  scrapeInterval: "30s"
+  scrapeTimeout: "10s"
+
+otel:
+  enabled: true
+  exporterOtlpEndpoint: "http://jaeger-collector:4317"
+  serviceName: erp-new-backend-prod
+
+logging:
+  level: info
+  format: json
+  maxSize: 500
+  maxFiles: 14

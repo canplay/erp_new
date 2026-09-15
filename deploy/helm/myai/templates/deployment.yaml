@@ -9,11 +9,11 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "myai.fullname" (dict "Values" $.Values "serviceName" $serviceName "componentName" $serviceConfig.name "Chart" $.Chart "Release" $.Release) }}
+  name: {{ include "erpnew.fullname" (dict "Values" $.Values "serviceName" $serviceName "componentName" $serviceConfig.name "Chart" $.Chart "Release" $.Release) }}
   labels:
-    {{- include "myai.labels" (dict "Values" $.Values "serviceName" $serviceName "Chart" $.Chart "Release" $.Release) | nindent 4 }}
+    {{- include "erpnew.labels" (dict "Values" $.Values "serviceName" $serviceName "Chart" $.Chart "Release" $.Release) | nindent 4 }}
 spec:
-  replicas: {{ include "myai.replicaCount" (dict "Values" $.Values "serviceName" $serviceName) }}
+  replicas: {{ include "erpnew.replicaCount" (dict "Values" $.Values "serviceName" $serviceName) }}
   {{- $hasPersistence := and $serviceConfig.persistence $serviceConfig.persistence.enabled }}
   {{- if $hasPersistence }}
   # 使用 RWO 持久卷的服务必须用 Recreate: 先删旧 Pod 再建新 Pod,
@@ -25,11 +25,11 @@ spec:
   {{- end }}
   selector:
     matchLabels:
-      {{- include "myai.selectorLabels" (dict "Values" $.Values "serviceName" $serviceName "Chart" $.Chart "Release" $.Release) | nindent 6 }}
+      {{- include "erpnew.selectorLabels" (dict "Values" $.Values "serviceName" $serviceName "Chart" $.Chart "Release" $.Release) | nindent 6 }}
   template:
     metadata:
       labels:
-        {{- include "myai.selectorLabels" (dict "Values" $.Values "serviceName" $serviceName "Chart" $.Chart "Release" $.Release) | nindent 8 }}
+        {{- include "erpnew.selectorLabels" (dict "Values" $.Values "serviceName" $serviceName "Chart" $.Chart "Release" $.Release) | nindent 8 }}
       annotations:
         prometheus.io/scrape: {{ if $.Values.monitoring.enabled }}"true"{{ else }}"false"{{ end }}
         prometheus.io/port: "{{ $serviceConfig.ports.http }}"
@@ -61,7 +61,7 @@ spec:
                     - key: app.kubernetes.io/name
                       operator: In
                       values:
-                        - {{ include "myai.name" $ }}
+                        - {{ include "erpnew.name" $ }}
                 topologyKey: kubernetes.io/hostname
       {{- with $.Values.affinity }}
         {{- toYaml . | nindent 8 }}
@@ -73,10 +73,10 @@ spec:
           whenUnsatisfiable: ScheduleAnyway
           labelSelector:
             matchLabels:
-              {{- include "myai.selectorLabels" (dict "Values" $.Values "serviceName" $serviceName "Chart" $.Chart "Release" $.Release) | nindent 14 }}
+              {{- include "erpnew.selectorLabels" (dict "Values" $.Values "serviceName" $serviceName "Chart" $.Chart "Release" $.Release) | nindent 14 }}
       containers:
         - name: {{ $serviceConfig.name }}
-          image: "{{ include "myai.image" (dict "Values" $.Values "serviceConfig" $serviceConfig) }}"
+          image: "{{ include "erpnew.image" (dict "Values" $.Values "serviceConfig" $serviceConfig) }}"
           imagePullPolicy: {{ $.Values.image.pullPolicy }}
           {{- $secCtx := $.Values.securityContext | default dict }}
           {{- if $serviceConfig.securityContext }}
@@ -131,13 +131,13 @@ spec:
             - name: PUBLIC_GRPC
               value: "true"
             # 服务特定环境变量
-            {{- include "myai.envVars" (dict "env" $serviceConfig.env) | nindent 12 }}
+            {{- include "erpnew.envVars" (dict "env" $serviceConfig.env) | nindent 12 }}
           envFrom:
             - configMapRef:
-                name: {{ include "myai.fullchartname" $ }}-config
+                name: {{ include "erpnew.fullchartname" $ }}-config
             - secretRef:
-                name: {{ include "myai.fullchartname" $ }}-secret
-          {{- $resources := include "myai.resources" (dict "Values" $.Values "serviceName" $serviceName) }}
+                name: {{ include "erpnew.fullchartname" $ }}-secret
+          {{- $resources := include "erpnew.resources" (dict "Values" $.Values "serviceName" $serviceName) }}
           resources:
             {{- $resources | nindent 12 }}
           lifecycle:
@@ -159,7 +159,7 @@ spec:
         {{- if $hasPersistence }}
         - name: data-storage
           persistentVolumeClaim:
-            claimName: {{ include "myai.fullname" (dict "Values" $.Values "serviceName" $serviceName "componentName" $serviceConfig.name "Chart" $.Chart "Release" $.Release) }}-data
+            claimName: {{ include "erpnew.fullname" (dict "Values" $.Values "serviceName" $serviceName "componentName" $serviceConfig.name "Chart" $.Chart "Release" $.Release) }}-data
         {{- end }}
         {{- with $serviceConfig.volumes }}
         {{- toYaml . | nindent 8 }}

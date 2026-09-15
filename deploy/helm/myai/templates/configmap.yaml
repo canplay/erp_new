@@ -6,9 +6,9 @@ ConfigMap 模板 - 非敏感配置
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "myai.fullchartname" . }}-config
+  name: {{ include "erpnew.fullchartname" . }}-config
   labels:
-    {{- include "myai.labels" . | nindent 4 }}
+    {{- include "erpnew.labels" . | nindent 4 }}
 data:
   # 日志配置
   RUST_LOG: {{ .Values.configMap.logging.RUST_LOG | quote }}

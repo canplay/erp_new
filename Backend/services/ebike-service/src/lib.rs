@@ -8,10 +8,10 @@
 //! 所有 HTTP 路由代码保留为内部兼容，不再启动 axum server。
 
 pub mod db;
+pub mod ebike_server;
 pub mod grpc_server;
 pub mod model;
 pub mod route;
-pub mod services;
 
 use auth_core::JwtService;
 use axum::Router;

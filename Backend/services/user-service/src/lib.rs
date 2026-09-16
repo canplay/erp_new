@@ -3,12 +3,19 @@
 //! 提供用户服务的 gRPC + HTTP 实现
 
 pub mod announcement_handlers;
+pub mod announcement_methods;
 pub mod department_handlers;
+pub mod department_methods;
+pub mod dictionary_methods;
 pub mod handlers;
 pub mod helpers;
 pub mod http_handlers;
+pub mod permission_methods;
 pub mod repository;
 pub mod role_handlers;
+pub mod role_methods;
+pub mod system_config_methods;
+pub mod user_methods;
 
 // 导出 Repository 类型
 pub use repository::{

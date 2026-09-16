@@ -6,7 +6,7 @@ pub use common::AppError;
 pub use common::AppResult;
 
 pub mod grpc_server;
-pub mod handlers;
+pub mod hik_service;
 pub mod helpers;
 pub mod models;
 pub mod services;
@@ -14,7 +14,7 @@ pub mod services;
 use axum::{Router, routing::post};
 use std::sync::Arc;
 
-use crate::handlers::hik_service::{AppState, coupon, exec, signo_open};
+use crate::hik_service::{AppState, coupon, exec, signo_open};
 use crate::services::{HikService, SignoService};
 
 /// 创建 Hik Service 应用

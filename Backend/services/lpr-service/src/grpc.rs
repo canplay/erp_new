@@ -15,8 +15,8 @@ use grpc_proto::lpr::{
     GetVehicleAuthRequest, VehicleAuthInfo,
 };
 
-use crate::models::CreatePassRecord;
-use crate::services::PassService;
+use crate::CreatePassRecord;
+use crate::PassService;
 
 pub struct LprGrpcService {
     pub pass_service: Arc<PassService>,
@@ -28,7 +28,7 @@ impl LprGrpcService {
         Self { pass_service }
     }
 
-    fn record_to_proto(r: &crate::models::PassRecord) -> PassRecordInfo {
+    fn record_to_proto(r: &crate::PassRecord) -> PassRecordInfo {
         PassRecordInfo {
             id: r.id,
             plate_no: r.plate_no.clone(),

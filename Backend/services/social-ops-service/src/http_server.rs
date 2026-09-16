@@ -37,7 +37,7 @@ use serde::Deserialize;
 use serde_json::Value;
 use uuid::Uuid;
 
-use crate::models::account::{CreateAccountRequest, UpdateAccountRequest};
+use crate::account::{CreateAccountRequest, UpdateAccountRequest};
 use crate::services::account_service::AccountService;
 use crate::services::content_service::ContentService;
 use crate::services::crawl_service::CrawlService;

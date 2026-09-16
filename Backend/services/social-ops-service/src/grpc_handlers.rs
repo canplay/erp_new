@@ -22,7 +22,7 @@ use crate::services::content_service::ContentService as ContentSvc;
 use crate::services::publish_service::PublishService as PublishSvc;
 use crate::services::llm_service::LlmService;
 use crate::services::rewrite_service::RewriteService as RewriteSvc;
-use crate::models::account::{CreateAccountRequest, UpdateAccountRequest, SocialAccount};
+use crate::account::{CreateAccountRequest, UpdateAccountRequest, SocialAccount};
 
 // ===== From impls =====
 

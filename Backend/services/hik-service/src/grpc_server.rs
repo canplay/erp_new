@@ -8,7 +8,7 @@ use grpc_proto::hik::{
     SignoRequest as ProtoSignoRequest, SignoResponse,
 };
 
-use crate::handlers::hik_service::AppState;
+use crate::hik_service::AppState;
 use crate::models::HikRequest as ServiceHikRequest;
 
 pub async fn start_grpc_server(addr: SocketAddr, state: AppState) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {

@@ -8,7 +8,7 @@ use sqlx::PgPool;
 
 use common::AppError;
 use common::AppResult;
-use crate::models::{
+use crate::{
     CreatePassRecord, GateControlResult, PassProcessResult, PassRecord, VehicleAuthorization,
 };
 
@@ -298,7 +298,7 @@ impl PassService {
     }
 
     /// 获取通行统计
-    pub async fn get_stats(&self) -> AppResult<crate::models::PassStats> {
+    pub async fn get_stats(&self) -> AppResult<crate::PassStats> {
         let row = sqlx::query!(
             r#"SELECT COUNT(*) AS "total!",
                       COALESCE(SUM(CASE WHEN direction = 'entry' THEN 1 ELSE 0 END), 0) AS "entry!",
@@ -307,7 +307,7 @@ impl PassService {
                FROM public.lpr_pass_records"#,
         )
         .fetch_one(&self.db_pool).await?;
-        Ok(crate::models::PassStats {
+        Ok(crate::PassStats {
             total_pass: row.total,
             total_entry: row.entry,
             total_exit: row.exit,

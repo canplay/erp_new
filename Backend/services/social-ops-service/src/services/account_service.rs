@@ -2,7 +2,7 @@
 
 use sqlx::PgPool;
 use uuid::Uuid;
-use crate::models::account::{SocialAccount, CreateAccountRequest, UpdateAccountRequest};
+use crate::account::{SocialAccount, CreateAccountRequest, UpdateAccountRequest};
 
 #[derive(Clone)]
 pub struct AccountService {

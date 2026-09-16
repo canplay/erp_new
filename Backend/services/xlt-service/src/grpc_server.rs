@@ -9,7 +9,7 @@ use grpc_proto::xlt::{
     RecordListResponse, VehicleEvent as ProtoVehicleEvent, VehicleQueryRequest,
 };
 
-use crate::handlers::AppState;
+use crate::xlt::AppState;
 use crate::models::{BillingRequest as ServiceBillingRequest, VehicleEvent as ServiceVehicleEvent};
 
 pub async fn start_grpc_server(addr: SocketAddr, state: AppState) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {

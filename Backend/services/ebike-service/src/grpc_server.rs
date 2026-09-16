@@ -4,7 +4,7 @@ use tokio::task::JoinHandle;
 use std::sync::Arc;
 use common::service_bootstrap::GrpcServiceBuilder;
 
-use crate::services::ebike::ebike_server::EbikeGrpcService;
+use crate::ebike_server::EbikeGrpcService;
 use crate::AppState;
 use grpc_proto::ebike::ebike_service_server::EbikeServiceServer;
 

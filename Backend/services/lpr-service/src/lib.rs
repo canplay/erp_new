@@ -16,7 +16,7 @@
 //!
 //! | 变量 | 默认值 | 说明 |
 //! |------|--------|------|
-//! | `DATABASE_URL` | `postgres://postgres:postgres@localhost:5432/myai` | PG 连接串 |
+//! | `DATABASE_URL` | `postgres://postgres:***@localhost:5432/myai` | PG 连接串 |
 //! | `HIK_SERVICE_URL` | `http://localhost:8092` | hik-service HTTP 地址 |
 //! | `REDIS_URL` | `redis://127.0.0.1:6379` | Redis 地址 |
 
@@ -25,15 +25,18 @@ pub use common::AppResult;
 
 pub mod grpc;
 pub mod grpc_server;
-pub mod models;
-pub mod services;
+pub mod pass_record;
+pub mod pass_service;
+
+pub use pass_record::*;
+pub use pass_service::PassService;
 
 use axum::{Router, routing::get};
 use redis::aio::ConnectionManager;
 use sqlx::PgPool;
 use std::sync::Arc;
 
-use crate::services::PassService;
+use crate::pass_service::PassService;
 
 /// gRPC 应用状态
 #[derive(Clone)]

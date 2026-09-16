@@ -9,7 +9,7 @@ use grpc_proto::ctp::{
     LockDevice as ProtoLockDevice, PingRequest, PingResponse,
 };
 
-use crate::handlers::AppState;
+use crate::ctp::AppState;
 use crate::models::{CmdType, DeviceDataUpload as ServiceDeviceDataUpload};
 
 pub async fn start_grpc_server(addr: SocketAddr, state: AppState) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {

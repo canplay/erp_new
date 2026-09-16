@@ -21,38 +21,41 @@
 pub use common::AppError;
 pub use common::AppResult;
 
+pub mod billing;
+pub mod device_manager;
 pub mod grpc_server;
-pub mod handlers;
-pub mod models;
-pub mod services;
+pub mod helpers;
+pub mod mqtt_gateway;
+pub mod parking;
+pub mod xlt;
+
+pub use xlt::AppState;
 
 use axum::{Router, routing::get, routing::post};
 use std::sync::Arc;
 
-use crate::handlers::AppState;
+use crate::billing::BillingService;
+use crate::device_manager::DeviceManager;
+use crate::mqtt_gateway::MqttGateway;
+use crate::parking::ParkingService;
+use crate::xlt::AppState;
 use crate::models::MqttConfig;
-use crate::services::{
-    billing::BillingService,
-    device_manager::DeviceManager,
-    mqtt_gateway::MqttGateway,
-    parking::ParkingService,
-};
 
 pub fn create_app(state: AppState) -> Router {
     Router::new()
-        .route("/api/xlt/parking/entry", post(handlers::xlt::vehicle_entry))
-        .route("/api/xlt/parking/exit", post(handlers::xlt::vehicle_exit))
+        .route("/api/xlt/parking/entry", post(xlt::vehicle_entry))
+        .route("/api/xlt/parking/exit", post(xlt::vehicle_exit))
         .route(
             "/api/xlt/parking/vehicle/{park_code}/{plate_no}",
-            get(handlers::xlt::get_parking_vehicle),
+            get(xlt::get_parking_vehicle),
         )
-        .route("/api/xlt/parking/billing", post(handlers::xlt::calc_billing))
-        .route("/api/xlt/parking/records", get(handlers::xlt::list_records))
-        .route("/api/xlt/mqtt/callback", post(handlers::xlt::mqtt_callback))
-        .route("/api/xlt/device/list", get(handlers::xlt::list_devices))
-        .route("/api/xlt/device/open", post(handlers::xlt::open_barrier))
-        .route("/api/xlt/device/close", post(handlers::xlt::close_barrier))
-        .route("/health", get(handlers::xlt::health))
+        .route("/api/xlt/parking/billing", post(xlt::calc_billing))
+        .route("/api/xlt/parking/records", get(xlt::list_records))
+        .route("/api/xlt/mqtt/callback", post(xlt::mqtt_callback))
+        .route("/api/xlt/device/list", get(xlt::list_devices))
+        .route("/api/xlt/device/open", post(xlt::open_barrier))
+        .route("/api/xlt/device/close", post(xlt::close_barrier))
+        .route("/health", get(xlt::health))
         .with_state(state)
 }
 

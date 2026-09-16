@@ -1,7 +1,7 @@
 //! gRPC 服务实现
 //! 实现 `CleanService` 服务接口（简化版，所有方法返回空数据）
 
-use crate::handlers::AppState;
+use crate::clean_service::AppState;
 use std::sync::Arc;
 use tonic::{Request, Response, Status};
 

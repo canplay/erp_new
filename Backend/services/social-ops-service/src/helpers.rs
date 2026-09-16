@@ -76,7 +76,7 @@ pub fn json_validation_success(key_id: &str, permission_level: &str) -> Json<Val
 }
 
 /// Social accounts list response
-pub fn json_social_accounts(accounts: &[crate::models::SocialAccount]) -> Json<Value> {
+pub fn json_social_accounts(accounts: &[crate::SocialAccount]) -> Json<Value> {
     Json(json!({"accounts": accounts}))
 }
 

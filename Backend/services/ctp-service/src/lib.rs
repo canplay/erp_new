@@ -20,26 +20,28 @@
 pub use common::AppError;
 pub use common::AppResult;
 
+pub mod ctp;
 pub mod grpc_server;
-pub mod handlers;
 pub mod helpers;
 pub mod models;
 pub mod services;
 
+pub use ctp::AppState;
+
 use axum::{Router, routing::get, routing::post};
 use std::sync::Arc;
 
-use crate::handlers::AppState;
+use crate::ctp::AppState;
 use crate::services::CtpDeviceService;
 
 /// 创建 HTTP 应用
 pub fn create_app(state: AppState) -> Router {
     Router::new()
-        .route("/api/ctp/report", post(handlers::ctp::receive_device_data))
-        .route("/api/ctp/device/control", post(handlers::ctp::control_lock))
-        .route("/api/ctp/device/{device_no}", get(handlers::ctp::get_device))
-        .route("/api/ctp/device/list", get(handlers::ctp::list_devices))
-        .route("/health", get(handlers::ctp::health))
+        .route("/api/ctp/report", post(ctp::receive_device_data))
+        .route("/api/ctp/device/control", post(ctp::control_lock))
+        .route("/api/ctp/device/{device_no}", get(ctp::get_device))
+        .route("/api/ctp/device/list", get(ctp::list_devices))
+        .route("/health", get(ctp::health))
         .with_state(state)
 }
 

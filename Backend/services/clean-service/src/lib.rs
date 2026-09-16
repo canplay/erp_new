@@ -5,13 +5,13 @@ use std::net::SocketAddr;
 pub use common::AppError;
 pub use common::AppResult;
 
-pub mod handlers;
+pub mod clean_service;
 pub mod models;
 pub mod repository;
 pub mod services;
 
 // 导出应用状态
-pub use handlers::AppState;
+pub use clean_service::AppState;
 
 // 导出 gRPC 服务实现
 pub use services::grpc_impl::CleanGrpcService;

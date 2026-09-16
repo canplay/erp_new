@@ -29,14 +29,14 @@ impl StatisticsService {/// 创建统计服务实例
  ///
  /// 使用参数化查询防止 SQL 注入
  pub async fn formal_bill_count(&self, query: &FormalBillQuery) -> AppResult<i64> {
-     let create_date_start = query.create_date_start.as_deref().unwrap_or("");
-     let create_date_end = query.create_date_end.as_deref().unwrap_or("");
-     let numbering = query.numbering.as_deref().map(|n| format!("%{n}%")).unwrap_or_default();
-     let fzr = query.fzr.as_deref().map(|f| format!("%{f}%")).unwrap_or_default();
+     let create_date_start = query.create_date_start.as_deref().unwrap_or("" );
+     let create_date_end = query.create_date_end.as_deref().unwrap_or("" );
+     let numbering = query.numbering.as_deref().map(|n| format!("%{n}%" )).unwrap_or_default();
+     let fzr = query.fzr.as_deref().map(|f| format!("%{f}%" )).unwrap_or_default();
      let status = match query.status.as_deref() {
-         Some("已支付") => "Y",
-         Some("未支付") => "N",
-         _ => "",
+         Some("已支付" ) => "Y" ,
+         Some("未支付" ) => "N" ,
+         _ => "" ,
      };
 
      let row = sqlx::query_scalar!(
@@ -63,8 +63,8 @@ impl StatisticsService {/// 创建统计服务实例
  ///
  /// 使用参数化查询防止 SQL 注入
  pub async fn formal_bill_total(&self, query: &FormalBillQuery) -> AppResult<StatisticsResult> {
-     let create_date_start = query.create_date_start.as_deref().unwrap_or("");
-     let create_date_end = query.create_date_end.as_deref().unwrap_or("");
+     let create_date_start = query.create_date_start.as_deref().unwrap_or(" ");
+     let create_date_end = query.create_date_end.as_deref().unwrap_or("" );
 
      // 使用 COALESCE 处理 NULL 值; ::bigint 将 numeric 聚合结果转为 i64
      let total = sqlx::query_scalar!(
@@ -102,18 +102,18 @@ impl StatisticsService {/// 创建统计服务实例
  ///
  /// 使用参数化查询防止 SQL 注入
  pub async fn payment_info_count(&self, query: &PaymentInfoQuery) -> AppResult<i64> {
-     let create_date_start = query.create_date_start.as_deref().unwrap_or("");
-     let create_date_end = query.create_date_end.as_deref().unwrap_or("");
-     let payment_date_start = query.payment_date_start.as_deref().unwrap_or("");
-     let payment_date_end = query.payment_date_end.as_deref().unwrap_or("");
-     let numbering = query.numbering.as_deref().unwrap_or("");
-     let cashier = query.fzr.as_deref().unwrap_or("");
-     let source = query.source.as_deref().unwrap_or("");
-     let type_ = query.type_.as_deref().unwrap_or("");
+     let create_date_start = query.create_date_start.as_deref().unwrap_or(" ");
+     let create_date_end = query.create_date_end.as_deref().unwrap_or("" );
+     let payment_date_start = query.payment_date_start.as_deref().unwrap_or("" );
+     let payment_date_end = query.payment_date_end.as_deref().unwrap_or("" );
+     let numbering = query.numbering.as_deref().unwrap_or("" );
+     let cashier = query.fzr.as_deref().unwrap_or("" );
+     let source = query.source.as_deref().unwrap_or("" );
+     let type_ = query.type_.as_deref().unwrap_or("" );
      let status = match query.status.as_deref() {
-         Some("已支付") => "Y",
-         Some("未支付") => "N",
-         _ => "",
+         Some("已支付" ) => "Y" ,
+         Some("未支付" ) => "N" ,
+         _ => "" ,
      };
 
      let row = sqlx::query_scalar!(
@@ -146,18 +146,18 @@ impl StatisticsService {/// 创建统计服务实例
  /// 使用参数化查询防止 SQL 注入
  pub async fn payment_info_total(&self, query: &PaymentStatisticsQuery) -> AppResult<i64> {
      let reality = query.reality.unwrap_or(false);
-     let create_date_start = query.create_date_start.as_deref().unwrap_or("");
-     let create_date_end = query.create_date_end.as_deref().unwrap_or("");
-     let payment_date_start = query.payment_date_start.as_deref().unwrap_or("");
-     let payment_date_end = query.payment_date_end.as_deref().unwrap_or("");
-     let numbering = query.numbering.as_deref().unwrap_or("");
-     let cashier = query.fzr.as_deref().unwrap_or("");
-     let source = query.source.as_deref().unwrap_or("");
-     let type_ = query.type_.as_deref().unwrap_or("");
+     let create_date_start = query.create_date_start.as_deref().unwrap_or(" ");
+     let create_date_end = query.create_date_end.as_deref().unwrap_or("" );
+     let payment_date_start = query.payment_date_start.as_deref().unwrap_or("" );
+     let payment_date_end = query.payment_date_end.as_deref().unwrap_or("" );
+     let numbering = query.numbering.as_deref().unwrap_or("" );
+     let cashier = query.fzr.as_deref().unwrap_or("" );
+     let source = query.source.as_deref().unwrap_or("" );
+     let type_ = query.type_.as_deref().unwrap_or("" );
      let status = match query.status.as_deref() {
-         Some("已支付") => "Y",
-         Some("未支付") => "N",
-         _ => "",
+         Some("已支付" ) => "Y" ,
+         Some("未支付" ) => "N" ,
+         _ => "" ,
      };
 
      // reality=true 时统计实缴金额, 否则统计应缴金额(与旧实现一致)
@@ -210,16 +210,16 @@ impl StatisticsService {/// 创建统计服务实例
  ///
  /// 使用参数化查询防止 SQL 注入
  pub async fn payment_web_count(&self, query: &PaymentWebQuery) -> AppResult<i64> {
-     let create_date_start = query.create_date_start.as_deref().unwrap_or("");
-     let create_date_end = query.create_date_end.as_deref().unwrap_or("");
-     let payment_date_start = query.payment_date_start.as_deref().unwrap_or("");
-     let payment_date_end = query.payment_date_end.as_deref().unwrap_or("");
-     let numbering = query.numbering.as_deref().unwrap_or("");
-     let type_ = query.type_.as_deref().unwrap_or("");
+     let create_date_start = query.create_date_start.as_deref().unwrap_or(" ");
+     let create_date_end = query.create_date_end.as_deref().unwrap_or("" );
+     let payment_date_start = query.payment_date_start.as_deref().unwrap_or("" );
+     let payment_date_end = query.payment_date_end.as_deref().unwrap_or("" );
+     let numbering = query.numbering.as_deref().unwrap_or("" );
+     let type_ = query.type_.as_deref().unwrap_or("" );
      let status = match query.status.as_deref() {
-         Some("已支付") => "Y",
-         Some("未支付") => "N",
-         _ => "",
+         Some("已支付" ) => "Y" ,
+         Some("未支付" ) => "N" ,
+         _ => "" ,
      };
 
      let row = sqlx::query_scalar!(
@@ -249,16 +249,16 @@ impl StatisticsService {/// 创建统计服务实例
  ///
  /// 使用参数化查询防止 SQL 注入
  pub async fn payment_web_total(&self, query: &PaymentWebStatisticsQuery) -> AppResult<i64> {
-     let create_date_start = query.create_date_start.as_deref().unwrap_or("");
-     let create_date_end = query.create_date_end.as_deref().unwrap_or("");
-     let payment_date_start = query.payment_date_start.as_deref().unwrap_or("");
-     let payment_date_end = query.payment_date_end.as_deref().unwrap_or("");
-     let numbering = query.numbering.as_deref().unwrap_or("");
-     let type_ = query.type_.as_deref().unwrap_or("");
+     let create_date_start = query.create_date_start.as_deref().unwrap_or(" ");
+     let create_date_end = query.create_date_end.as_deref().unwrap_or("" );
+     let payment_date_start = query.payment_date_start.as_deref().unwrap_or("" );
+     let payment_date_end = query.payment_date_end.as_deref().unwrap_or("" );
+     let numbering = query.numbering.as_deref().unwrap_or("" );
+     let type_ = query.type_.as_deref().unwrap_or("" );
      let status = match query.status.as_deref() {
-         Some("已支付") => "Y",
-         Some("未支付") => "N",
-         _ => "",
+         Some("已支付" ) => "Y" ,
+         Some("未支付" ) => "N" ,
+         _ => "" ,
      };
 
      // 使用 COALESCE 处理 NULL 值; ::bigint 将 numeric 聚合结果转为 i64

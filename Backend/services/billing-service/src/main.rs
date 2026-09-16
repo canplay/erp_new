@@ -15,12 +15,12 @@ use billing_service::BillingAppState;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 使用 ServiceBootstrap 统一启动器
-    let config = ServiceConfig::from_env("billing-service", 8088, 9101);
+    let config = ServiceConfig::from_env("billing-service" , 8088, 9101);
 
     let bootstrap = ServiceBootstrap::new(config);
 
     // 创建数据库连接池
-    let database_url = std::env::var("DATABASE_URL")
+    let database_url = std::env::var("DATABASE_URL" )
         .unwrap_or_else(|_| "postgres://postgres:***@localhost:5432/myai".to_string());
     let pool = sqlx::PgPool::connect(&database_url).await?;
 
@@ -31,7 +31,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // billing-service 目前只有 HTTP 端点，gRPC 使用 no-op
     bootstrap.start_with_grpc_fn(move |_addr| {
         Box::pin(tokio::spawn(async move {
-            tracing::info!("billing-service gRPC no-op (HTTP only)");
+            tracing::info!("billing-service gRPC no-op (HTTP only)" );
         }))
     }).await?;
 

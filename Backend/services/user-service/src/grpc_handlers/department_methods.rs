@@ -67,7 +67,7 @@
                     updated_at: d.updated_at.timestamp(),
                 }),
             })),
-            None => Err(Status::not_found("部门不存在")),
+            None => Err(Status::not_found("部门不存在" )),
         }
     }
 
@@ -78,7 +78,7 @@
         let req = request.into_inner();
 
         if req.name.is_empty() {
-            return Err(Status::invalid_argument("部门名称不能为空"));
+            return Err(Status::invalid_argument("部门名称不能为空" ));
         }
 
         let parent_id = if req.parent_id == 0 {
@@ -105,9 +105,9 @@
             .await
             .map_err(|e| match e {
                 crate::repository::DepartmentRepositoryError::AlreadyExists => {
-                    Status::already_exists("部门代码已存在")
+                    Status::already_exists("部门代码已存在" )
                 }
-                other => Status::internal(format!("{:?}", other)),
+                other => Status::internal(format!("{:?}" , other)),
             })?;
 
         Ok(Response::new(CreateDepartmentResponse {
@@ -138,7 +138,7 @@
             .map_err(|e| Status::internal(e.to_string()))?;
 
         if exists.is_none() {
-            return Err(Status::not_found("部门不存在"));
+            return Err(Status::not_found("部门不存在" ));
         }
 
         self.state
@@ -172,12 +172,12 @@
             .await
             .map_err(|e| match e {
                 crate::repository::DepartmentRepositoryError::HasChildDepartments => {
-                    Status::failed_precondition("部门有子部门，无法删除")
+                    Status::failed_precondition("部门有子部门，无法删除" )
                 }
                 crate::repository::DepartmentRepositoryError::HasAssociatedUsers => {
-                    Status::failed_precondition("部门有用户关联，无法删除")
+                    Status::failed_precondition("部门有用户关联，无法删除" )
                 }
-                other => Status::internal(format!("{:?}", other)),
+                other => Status::internal(format!("{:?}" , other)),
             })?;
 
         Ok(Response::new(DeleteDepartmentResponse { success: result }))

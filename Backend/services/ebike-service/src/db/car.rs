@@ -61,7 +61,7 @@ impl CarRepository {
         self.add_history(info).await?;
 
         let rows: Vec<String> = sqlx::query_scalar!(
-            "SELECT code FROM public.car WHERE code = $1",
+            "SELECT code FROM public.car WHERE code = $1" ,
             &info.code,
         )
         .fetch_all(&self.pool)
@@ -122,7 +122,7 @@ impl CarRepository {
         // provide 非空时按运营方过滤，保证数据隔离（运营方只能删自己的车）
         if provide.is_empty() {
             sqlx::query!(
-                "UPDATE public.car SET update_date = $1, delete = $2 WHERE code = $3",
+                "UPDATE public.car SET update_date = $1, delete = $2 WHERE code = $3" ,
                 Local::now().naive_local(),
                 true,
                 code,
@@ -131,7 +131,7 @@ impl CarRepository {
             .await?;
         } else {
             sqlx::query!(
-                "UPDATE public.car SET update_date = $1, delete = $2 WHERE code = $3 AND provide = $4",
+                "UPDATE public.car SET update_date = $1, delete = $2 WHERE code = $3 AND provide = $4" ,
                 Local::now().naive_local(),
                 true,
                 code,
@@ -156,11 +156,11 @@ impl CarRepository {
         let rows = sqlx::query_as!(
             CarInfo,
             r#"SELECT code,
-                      COALESCE(status, 0) AS "status!",
-                      COALESCE(provide, '') AS "provide!",
-                      COALESCE(speed, 0) AS "speed!",
+                      COALESCE(status, 0) AS "status!" ,
+                      COALESCE(provide, '') AS "provide!" ,
+                      COALESCE(speed, 0) AS "speed!" ,
                       gps,
-                      COALESCE(type, 0) AS "type!",
+                      COALESCE(type, 0) AS "type!" ,
                       time, alert, remark, delete, create_date, update_date,
                       COALESCE(gps_type, 0) AS "gps_type!"
                FROM public.car
@@ -174,8 +174,8 @@ impl CarRepository {
             code,
             provide,
             status,
-            &format!("%{time_start}%"),
-            &format!("%{time_end}%"),
+            &format!("%{time_start}%" ),
+            &format!("%{time_end}%" ),
             limit,
             offset,
         )
@@ -188,8 +188,8 @@ impl CarRepository {
     pub async fn history(&self, code: &str) -> Result<Vec<CarInfo>, Error> {
         let year = Local::now().year();
         let month = Local::now().month();
-        let table_name = safe_table_name("car_history", year, month)
-            .map_err(|e| Error::Protocol(format!("Invalid table name: {e}").into()))?;
+        let table_name = safe_table_name("car_history" , year, month)
+            .map_err(|e| Error::Protocol(format!("Invalid table name: {e}" ).into()))?;
         let query = format!(
             "SELECT code, status, provide, speed, gps, COALESCE(type, 0) AS type, time, alert, remark, delete, create_date, \
              update_date, gps_type FROM public.{table_name} WHERE code = $1 AND delete = false"
@@ -213,8 +213,8 @@ impl CarRepository {
     ) -> Result<Vec<CarInfo>, Error> {
         let year = Local::now().year();
         let month = Local::now().month();
-        let table_name = safe_table_name("car_history", year, month)
-            .map_err(|e| Error::Protocol(format!("Invalid table name: {e}").into()))?;
+        let table_name = safe_table_name("car_history" , year, month)
+            .map_err(|e| Error::Protocol(format!("Invalid table name: {e}" ).into()))?;
         let query = format!(
             "SELECT code, status, provide, speed, gps, COALESCE(type, 0) AS type, time, alert, remark, delete, \
              create_date, update_date, gps_type FROM public.{table_name} \
@@ -230,9 +230,9 @@ impl CarRepository {
             .bind(code)
             .bind(provide)
             .bind(status)
-            .bind(format!("%{time}%"))
-            .bind(format!("%{alert}%"))
-            .bind(format!("%{remark}%"))
+            .bind(format!("%{time}%" ))
+            .bind(format!("%{alert}%" ))
+            .bind(format!("%{remark}%" ))
             .fetch_all(&self.pool)
             .await?;
 
@@ -250,7 +250,7 @@ impl CarRepository {
     ) -> Result<(), Error> {
         // 同车辆同类型未处理的违停不重复创建
         let existing = sqlx::query!(
-            "SELECT id FROM violations WHERE car_code = $1 AND violation_type = $2 AND status = 0",
+            "SELECT id FROM violations WHERE car_code = $1 AND violation_type = $2 AND status = 0" ,
             car_code,
             violation_type,
         )
@@ -281,20 +281,20 @@ impl CarRepository {
     ) -> Result<Vec<ViolationRecord>, Error> {
         // 确保索引已创建（幂等）
         let _ = sqlx::query(
-            "CREATE INDEX IF NOT EXISTS idx_violation_provide_status ON violations(provide, status)",
+            "CREATE INDEX IF NOT EXISTS idx_violation_provide_status ON violations(provide, status)" ,
         )
         .execute(&self.pool)
         .await;
 
         let rows = sqlx::query_as!(
             ViolationRecord,
-            r#"SELECT id::BIGINT AS "id!",
+            r#"SELECT id::BIGINT AS "id!" ,
                       car_code, provide,
-                      COALESCE(lng, '') AS "lng!",
-                      COALESCE(lat, '') AS "lat!",
-                      COALESCE(violation_type, '') AS "violation_type!",
-                      COALESCE(status, 0) AS "status!",
-                      COALESCE(created_at, NOW()::timestamp) AS "created_at!",
+                      COALESCE(lng, '') AS "lng!" ,
+                      COALESCE(lat, '') AS "lat!" ,
+                      COALESCE(violation_type, '') AS "violation_type!" ,
+                      COALESCE(status, 0) AS "status!" ,
+                      COALESCE(created_at, NOW()::timestamp) AS "created_at!" ,
                       resolved_at, remark
                FROM violations
                WHERE ($1 = '' OR provide = $1)
@@ -313,13 +313,13 @@ impl CarRepository {
     pub async fn resolve_violation(&self, id: i64, remark: &str) -> Result<bool, Error> {
         // 先创建索引（如果尚未存在），加速 provide + status 的联合查询
         sqlx::query(
-            "CREATE INDEX IF NOT EXISTS idx_violation_provide_status ON violations(provide, status)",
+            "CREATE INDEX IF NOT EXISTS idx_violation_provide_status ON violations(provide, status)" ,
         )
         .execute(&self.pool)
         .await?;
 
         sqlx::query!(
-            "UPDATE violations SET status = 2, resolved_at = NOW(), remark = $1 WHERE id::BIGINT = $2",
+            "UPDATE violations SET status = 2, resolved_at = NOW(), remark = $1 WHERE id::BIGINT = $2" ,
             remark,
             id,
         )
@@ -331,8 +331,8 @@ impl CarRepository {
     async fn add_history(&self, info: &CarInfo) -> Result<bool, Error> {
         let year = Local::now().year();
         let month = Local::now().month();
-        let table_name = safe_table_name("car_history", year, month)
-            .map_err(|e| Error::Protocol(format!("Invalid table name: {e}").into()))?;
+        let table_name = safe_table_name("car_history" , year, month)
+            .map_err(|e| Error::Protocol(format!("Invalid table name: {e}" ).into()))?;
         // B11 豁免: 按月分表 car_history_{year}_{month}, 表名运行时动态（已验证安全）
         // 修复 (2026-08-10): 补 type 列——历史表 type 曾为 NULL 导致 query_as 解码失败
         let query = format!(
@@ -345,9 +345,9 @@ impl CarRepository {
         .bind(info.status)
         .bind(&info.provide)
         .bind(info.speed)
-        .bind(info.gps.as_ref().unwrap_or(&json!({ "lng": "", "lat": "" })))
+        .bind(info.gps.as_ref().unwrap_or(&json!({ "lng": " ", "lat": " " })))
         .bind(info.r#type)
-        .bind(info.time.as_ref().unwrap_or(&json!({ "lng": "", "lat": "" })))
+        .bind(info.time.as_ref().unwrap_or(&json!({ "lng": " ", "lat": " " })))
         .bind(Local::now().naive_local())
         .bind(Local::now().naive_local())
         .bind(false)
@@ -363,14 +363,14 @@ impl CarRepository {
 /// 为 car 表添加复合索引：provide + status + delete（用于运营方过滤和条件查询）
 pub async fn ensure_car_indexes(pool: &PgPool) -> Result<(), Error> {
     let _ = sqlx::query(
-        "CREATE INDEX IF NOT EXISTS idx_car_provide_status_delete ON public.car(provide, status, delete)",
+        "CREATE INDEX IF NOT EXISTS idx_car_provide_status_delete ON public.car(provide, status, delete)" ,
     )
     .execute(pool)
     .await;
 
     // car.code 唯一索引（加速精确查询和去重）
     let _ = sqlx::query(
-        "CREATE UNIQUE INDEX IF NOT EXISTS idx_car_code ON public.car(code)",
+        "CREATE UNIQUE INDEX IF NOT EXISTS idx_car_code ON public.car(code)" ,
     )
     .execute(pool)
     .await;
@@ -382,7 +382,7 @@ pub async fn ensure_car_indexes(pool: &PgPool) -> Result<(), Error> {
 /// 为 operators 表添加唯一索引：provide（加速配额查询和去重）
 pub async fn ensure_operators_indexes(pool: &PgPool) -> Result<(), Error> {
     let _ = sqlx::query(
-        "CREATE UNIQUE INDEX IF NOT EXISTS idx_operators_provide ON operators(provide)",
+        "CREATE UNIQUE INDEX IF NOT EXISTS idx_operators_provide ON operators(provide)" ,
     )
     .execute(pool)
     .await;

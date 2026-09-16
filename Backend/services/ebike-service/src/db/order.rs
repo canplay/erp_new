@@ -31,8 +31,8 @@ impl OrderRepository {
     pub async fn add(&self, info: &OrderInfo) -> Result<String, Error> {
         let year = Local::now().year();
         let month = Local::now().month();
-        let table_name = safe_table_name("order", year, month)
-            .map_err(|e| Error::Protocol(format!("Invalid table name: {e}").into()))?;
+        let table_name = safe_table_name("order" , year, month)
+            .map_err(|e| Error::Protocol(format!("Invalid table name: {e}" ).into()))?;
         // FIX [SQL-INJ-001]: 表名已通过 safe_table_name 白名单校验（格式：[a-zA-Z0-9_]+_YYYY_MM）
         // 确保动态表存在（月初首次写入必炸，见 O4）
         let create_sql = format!(
@@ -101,7 +101,7 @@ impl OrderRepository {
                 .execute(&self.pool).await?;
 
             // 查询生成的 hash
-            let query_sql = format!("SELECT hash FROM public.{table_name} ORDER BY create_date DESC LIMIT 1");
+            let query_sql = format!("SELECT hash FROM public.{table_name} ORDER BY create_date DESC LIMIT 1" );
             let row = sqlx::query_as::<_, (String,)>(&query_sql)
                 .fetch_one(&self.pool).await?;
             Ok(row.0)
@@ -176,8 +176,8 @@ impl OrderRepository {
     ) -> Result<Vec<OrderInfo>, Error> {
         let year = Local::now().year();
         let month = Local::now().month();
-        let table_name = safe_table_name("order", year, month)
-            .map_err(|e| Error::Protocol(format!("Invalid table name: {e}").into()))?;
+        let table_name = safe_table_name("order" , year, month)
+            .map_err(|e| Error::Protocol(format!("Invalid table name: {e}" ).into()))?;
 
         let query = format!(
             "SELECT * FROM public.{table_name} \
@@ -216,7 +216,7 @@ impl OrderRepository {
 /// 为 order 表添加复合索引：provide + status + create_date（用于条件查询和排序）
 pub async fn ensure_order_indexes(pool: &PgPool) -> Result<(), Error> {
     let _ = sqlx::query(
-        "CREATE INDEX IF NOT EXISTS idx_order_provide_status_create ON public.order(provide, status, create_date)",
+        "CREATE INDEX IF NOT EXISTS idx_order_provide_status_create ON public.order(provide, status, create_date)" ,
     )
     .execute(pool)
     .await;

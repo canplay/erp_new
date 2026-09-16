@@ -29,7 +29,7 @@ pub fn json_ok(code: u16, message: &str) -> Json<Value> {
 
 /// Health check response
 pub fn json_health(service: &str) -> Json<Value> {
-    Json(json!({"status": "ok", "service": service}))
+    Json(json!({"status": "ok" , "service": service}))
 }
 
 /// Empty success response

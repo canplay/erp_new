@@ -99,7 +99,7 @@ pub fn parse_status_one(status_one: &str) -> StatusOneParsed {
         0x6 => "Locked(Force)".to_string(),
         0x3 => "Unlocked(Force)".to_string(),
         _ if val == 0 => "Offline".to_string(),
-        _ => format!("Unknown(0x{lock_bits:X})"),
+        _ => format!("Unknown(0x{lock_bits:X})" ),
     };
 
     // 23-20 位: 左线圈
@@ -107,7 +107,7 @@ pub fn parse_status_one(status_one: &str) -> StatusOneParsed {
     let left_coil = match left_coil_val {
         0x0 => "Normal".to_string(),
         0x1 => "Triggered".to_string(),
-        _ => format!("0x{left_coil_val:X}"),
+        _ => format!("0x{left_coil_val:X}" ),
     };
 
     // 19-16 位: 右线圈
@@ -115,7 +115,7 @@ pub fn parse_status_one(status_one: &str) -> StatusOneParsed {
     let right_coil = match right_coil_val {
         0x0 => "Normal".to_string(),
         0x1 => "Triggered".to_string(),
-        _ => format!("0x{right_coil_val:X}"),
+        _ => format!("0x{right_coil_val:X}" ),
     };
 
     // 15-12 位: 电量等级
@@ -192,7 +192,7 @@ pub fn parse_status(status_one: &str, status_two: &str) -> StatusParseResult {
         0 => "Normal".to_string(),
         1 => "Low".to_string(),
         2 => "Critical".to_string(),
-        _ => format!("Level{}", parsed_one.battery_raw),
+        _ => format!("Level{}" , parsed_one.battery_raw),
     };
 
     StatusParseResult {
@@ -210,45 +210,45 @@ mod tests {
 
     #[test]
     fn test_parse_status_one_locked() {
-        let result = parse_status_one("40000000");
-        assert_eq!(result.lock_state, "Locked");
+        let result = parse_status_one("40000000" );
+        assert_eq!(result.lock_state, "Locked" );
         assert!(!result.alarm);
         assert!(!result.reset_flag);
     }
 
     #[test]
     fn test_parse_status_one_unlocked() {
-        let result = parse_status_one("20000001");
-        assert_eq!(result.lock_state, "Unlocked");
+        let result = parse_status_one("20000001" );
+        assert_eq!(result.lock_state, "Unlocked" );
         assert!(result.heartbeat);
     }
 
     #[test]
     fn test_parse_status_one_with_alarm() {
-        let result = parse_status_one("40000002");
-        assert_eq!(result.lock_state, "Locked");
+        let result = parse_status_one("40000002" );
+        assert_eq!(result.lock_state, "Locked" );
         assert!(result.alarm);
     }
 
     #[test]
     fn test_parse_status_two_counts() {
-        let result = parse_status_two("032014C81500").expect("status parsing should not fail");
+        let result = parse_status_two("032014C81500" ).expect("status parsing should not fail" );
         // 0320 = entry count, 14C8 = exit count, 1500 = theft count
         assert!(result.total_entry_count > 0 || result.total_exit_count > 0);
     }
 
     #[test]
     fn test_parse_status_empty() {
-        let result = parse_status_one("");
-        assert_eq!(result.lock_state, "Offline");
-        assert!(parse_status_two("").is_none());
+        let result = parse_status_one("" );
+        assert_eq!(result.lock_state, "Offline" );
+        assert!(parse_status_two("" ).is_none());
     }
 
     #[test]
     fn test_parse_status_combined() {
-        let result = parse_status("40000000", "032014C81500");
+        let result = parse_status("40000000" , "032014C81500" );
         assert!(result.valid);
-        assert_eq!(result.lock_status, "Locked");
+        assert_eq!(result.lock_status, "Locked" );
         assert!(result.status_two.is_some());
     }
 }

@@ -53,7 +53,7 @@ impl DeviceManager {
             last_heartbeat: now,
         };
         self.devices.write().await.insert(sn.to_string(), info);
-        tracing::info!("设备注册: sn={sn}, client_id={client_id}");
+        tracing::info!("设备注册: sn={sn}, client_id={client_id}" );
     }
 
     pub async fn update_heartbeat(&self, sn: &str) {
@@ -86,7 +86,7 @@ impl DeviceManager {
                 handler(envelope.clone());
             }
         } else {
-            tracing::warn!("未知命令: {}, sn={}", envelope.command, envelope.sn);
+            tracing::warn!("未知命令: {}, sn={}" , envelope.command, envelope.sn);
         }
     }
 }
@@ -98,29 +98,29 @@ mod tests {
     #[tokio::test]
     async fn test_register_and_get_device() {
         let manager = DeviceManager::new();
-        manager.register_device("SN001", "client-1", "info1", "1.0").await;
+        manager.register_device("SN001" , "client-1" , "info1" , "1.0" ).await;
 
-        let device = manager.get_device("SN001").await;
+        let device = manager.get_device("SN001" ).await;
         assert!(device.is_some());
-        let device = device.expect("device should exist");
-        assert_eq!(device.sn, "SN001");
-        assert_eq!(device.client_id, "client-1");
-        assert_eq!(device.dev_info, "info1");
-        assert_eq!(device.version, "1.0");
+        let device = device.expect("device should exist" );
+        assert_eq!(device.sn, "SN001" );
+        assert_eq!(device.client_id, "client-1" );
+        assert_eq!(device.dev_info, "info1" );
+        assert_eq!(device.version, "1.0" );
     }
 
     #[tokio::test]
     async fn test_get_nonexistent_device() {
         let manager = DeviceManager::new();
-        let device = manager.get_device("NONEXISTENT").await;
+        let device = manager.get_device("NONEXISTENT" ).await;
         assert!(device.is_none());
     }
 
     #[tokio::test]
     async fn test_list_devices_multiple() {
         let manager = DeviceManager::new();
-        manager.register_device("SN001", "client-1", "info1", "1.0").await;
-        manager.register_device("SN002", "client-2", "info2", "2.0").await;
+        manager.register_device("SN001" , "client-1" , "info1" , "1.0" ).await;
+        manager.register_device("SN002" , "client-2" , "info2" , "2.0" ).await;
 
         let devices = manager.list_devices().await;
         assert_eq!(devices.len(), 2);
@@ -136,16 +136,16 @@ mod tests {
     #[tokio::test]
     async fn test_update_heartbeat_updates_timestamp() {
         let manager = DeviceManager::new();
-        manager.register_device("SN001", "client-1", "info1", "1.0").await;
+        manager.register_device("SN001" , "client-1" , "info1" , "1.0" ).await;
 
-        let device_before = manager.get_device("SN001").await.expect("test assertion");
+        let device_before = manager.get_device("SN001" ).await.expect("test assertion" );
         let heartbeat_before = device_before.last_heartbeat.clone();
 
         // Small delay to ensure timestamp changes
         tokio::time::sleep(tokio::time::Duration::from_millis(10)).await;
-        manager.update_heartbeat("SN001").await;
+        manager.update_heartbeat("SN001" ).await;
 
-        let device_after = manager.get_device("SN001").await.expect("test assertion");
+        let device_after = manager.get_device("SN001" ).await.expect("test assertion" );
         assert!(device_after.last_heartbeat >= heartbeat_before);
     }
 
@@ -153,15 +153,15 @@ mod tests {
     async fn test_update_heartbeat_nonexistent_device() {
         let manager = DeviceManager::new();
         // Should not panic
-        manager.update_heartbeat("NONEXISTENT").await;
+        manager.update_heartbeat("NONEXISTENT" ).await;
     }
 
     #[tokio::test]
     async fn test_register_device_connected_at_set() {
         let manager = DeviceManager::new();
-        manager.register_device("SN001", "client-1", "info1", "1.0").await;
+        manager.register_device("SN001" , "client-1" , "info1" , "1.0" ).await;
 
-        let device = manager.get_device("SN001").await.expect("test assertion");
+        let device = manager.get_device("SN001" ).await.expect("test assertion" );
         assert!(!device.connected_at.is_empty());
         assert_eq!(device.connected_at, device.last_heartbeat);
     }
@@ -180,7 +180,7 @@ mod tests {
             });
         });
 
-        manager.register_handler("TestCommand", handler).await;
+        manager.register_handler("TestCommand" , handler).await;
 
         let envelope = MqttEnvelope {
             command: "TestCommand".to_string(),

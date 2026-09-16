@@ -245,7 +245,7 @@ impl ReceiptManager {
             .map(|user_receipts| {
                 user_receipts
                     .keys()
-                    .filter(|uid| uid.starts_with("user_"))
+                    .filter(|uid| uid.starts_with("user_" ))
                     .cloned()
                     .collect()
             })
@@ -421,9 +421,9 @@ fn uuid_v4() -> String {
     use std::time::{SystemTime, UNIX_EPOCH};
     let timestamp = SystemTime::now()
         .duration_since(UNIX_EPOCH)
-        .unwrap_or_else(|_| { tracing::error!("system time is before UNIX epoch"); std::time::Duration::from_secs(0) })
+        .unwrap_or_else(|_| { tracing::error!("system time is before UNIX epoch" ); std::time::Duration::from_secs(0) })
         .as_nanos();
-    format!("{timestamp:032x}")
+    format!("{timestamp:032x}" )
 }
 
 #[cfg(test)]
@@ -436,21 +436,21 @@ mod tests {
 
         let receipt = manager
             .mark_read(
-                "msg_001",
-                "user_001",
+                "msg_001" ,
+                "user_001" ,
                 Some("device_001".to_string()),
                 Some("web".to_string()),
             )
             .await;
 
-        assert_eq!(receipt.message_id, "msg_001");
-        assert_eq!(receipt.user_id, "user_001");
+        assert_eq!(receipt.message_id, "msg_001" );
+        assert_eq!(receipt.user_id, "user_001" );
         assert_eq!(receipt.status, ReceiptStatus::Read);
 
         // 验证回执可以获取
-        let fetched = manager.get_receipt("msg_001", "user_001").await;
+        let fetched = manager.get_receipt("msg_001" , "user_001" ).await;
         assert!(fetched.is_some());
-        assert_eq!(fetched.expect("receipt should exist").status, ReceiptStatus::Read);
+        assert_eq!(fetched.expect("receipt should exist" ).status, ReceiptStatus::Read);
     }
 
     #[tokio::test]
@@ -471,9 +471,9 @@ mod tests {
         assert_eq!(count, 3);
 
         // 验证批量已读
-        assert!(manager.get_receipt("msg_001", "user_001").await.is_some());
-        assert!(manager.get_receipt("msg_002", "user_001").await.is_some());
-        assert!(manager.get_receipt("msg_003", "user_001").await.is_some());
+        assert!(manager.get_receipt("msg_001" , "user_001" ).await.is_some());
+        assert!(manager.get_receipt("msg_002" , "user_001" ).await.is_some());
+        assert!(manager.get_receipt("msg_003" , "user_001" ).await.is_some());
     }
 
     #[tokio::test]
@@ -481,8 +481,8 @@ mod tests {
         let manager = ReceiptManager::default_manager();
 
         // 标记部分消息已读
-        manager.mark_read("msg_001", "user_001", None, None).await;
-        manager.mark_read("msg_002", "user_001", None, None).await;
+        manager.mark_read("msg_001" , "user_001" , None, None).await;
+        manager.mark_read("msg_002" , "user_001" , None, None).await;
 
         let message_ids = vec![
             "msg_001".to_string(),
@@ -491,7 +491,7 @@ mod tests {
             "msg_004".to_string(),
         ];
 
-        let unread = manager.count_unread("user_001", &message_ids).await;
+        let unread = manager.count_unread("user_001" , &message_ids).await;
         assert_eq!(unread, 2); // msg_003, msg_004 未读
     }
 
@@ -507,14 +507,14 @@ mod tests {
 
         // 部分用户已读
         manager
-            .mark_read("group_msg_001", "user_001", None, None)
+            .mark_read("group_msg_001" , "user_001" , None, None)
             .await;
         manager
-            .mark_read("group_msg_001", "user_002", None, None)
+            .mark_read("group_msg_001" , "user_002" , None, None)
             .await;
 
         let stats = manager
-            .update_group_stats("group_msg_001", 3, &member_ids)
+            .update_group_stats("group_msg_001" , 3, &member_ids)
             .await;
 
         assert_eq!(stats.total_members, 3);
@@ -533,8 +533,8 @@ mod tests {
         // 在 web 端已读
         manager
             .mark_read(
-                "msg_001",
-                "user_001",
+                "msg_001" ,
+                "user_001" ,
                 Some("device_web".to_string()),
                 Some("web".to_string()),
             )
@@ -542,13 +542,13 @@ mod tests {
 
         // 同步到移动端
         let sync_count = manager
-            .sync_multi_device("user_001", "msg_001", "device_web")
+            .sync_multi_device("user_001" , "msg_001" , "device_web" )
             .await;
 
         assert!(sync_count >= 1);
 
         // 验证移动端也有回执
-        let mobile_receipt = manager.get_receipt("msg_001", "user_001").await;
+        let mobile_receipt = manager.get_receipt("msg_001" , "user_001" ).await;
         assert!(mobile_receipt.is_some());
     }
 
@@ -556,23 +556,23 @@ mod tests {
     async fn test_cleanup_expired() {
         let manager = ReceiptManager::default_manager();
 
-        manager.mark_read("msg_001", "user_001", None, None).await;
+        manager.mark_read("msg_001" , "user_001" , None, None).await;
 
         // 清理过期回执（0秒 = 全部过期）
         let removed = manager.cleanup_expired(0).await;
         assert_eq!(removed, 1);
 
         // 验证回执已删除
-        assert!(manager.get_receipt("msg_001", "user_001").await.is_none());
+        assert!(manager.get_receipt("msg_001" , "user_001" ).await.is_none());
     }
 
     #[tokio::test]
     async fn test_stats() {
         let manager = ReceiptManager::default_manager();
 
-        manager.mark_read("msg_001", "user_001", None, None).await;
-        manager.mark_read("msg_001", "user_002", None, None).await;
-        manager.mark_read("msg_002", "user_001", None, None).await;
+        manager.mark_read("msg_001" , "user_001" , None, None).await;
+        manager.mark_read("msg_001" , "user_002" , None, None).await;
+        manager.mark_read("msg_002" , "user_001" , None, None).await;
 
         let stats = manager.get_stats().await;
         assert_eq!(stats.total_messages, 2);

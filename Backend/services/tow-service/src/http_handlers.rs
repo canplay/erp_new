@@ -140,7 +140,7 @@ pub async fn list_cars(
                 .into_response()
         }
         Err(e) => {
-            tracing::error!("查询车辆列表失败: {e:?}");
+            tracing::error!("查询车辆列表失败: {e:?}" );
             json_error(e.to_string()).into_response()
         }
     }
@@ -167,7 +167,7 @@ pub async fn count_cars(
     match repo.count(&query).await {
         Ok(count) => json_success(serde_json::json!(count)).into_response(),
         Err(e) => {
-            tracing::error!("统计车辆数量失败: {e:?}");
+            tracing::error!("统计车辆数量失败: {e:?}" );
             json_error(e.to_string()).into_response()
         }
     }
@@ -196,7 +196,7 @@ pub async fn detain_car(
             .into_response(),
         Ok(None) => json_success(serde_json::json!([])).into_response(),
         Err(e) => {
-            tracing::error!("车辆扣押查询失败: {e:?}");
+            tracing::error!("车辆扣押查询失败: {e:?}" );
             json_error(e.to_string()).into_response()
         }
     }
@@ -209,7 +209,7 @@ pub async fn list_car_class(State(state): State<HttpAppState>) -> impl IntoRespo
     match repo.list().await {
         Ok(items) => json_success(serde_json::json!(items)).into_response(),
         Err(e) => {
-            tracing::error!("获取车辆分类列表失败: {e:?}");
+            tracing::error!("获取车辆分类列表失败: {e:?}" );
             json_error(e.to_string()).into_response()
         }
     }
@@ -222,7 +222,7 @@ pub async fn list_car_type(State(state): State<HttpAppState>) -> impl IntoRespon
     match repo.list().await {
         Ok(items) => json_success(serde_json::json!(items)).into_response(),
         Err(e) => {
-            tracing::error!("获取车辆类型列表失败: {e:?}");
+            tracing::error!("获取车辆类型列表失败: {e:?}" );
             json_error(e.to_string()).into_response()
         }
     }
@@ -235,7 +235,7 @@ pub async fn list_car_color(State(state): State<HttpAppState>) -> impl IntoRespo
     match repo.list().await {
         Ok(items) => json_success(serde_json::json!(items)).into_response(),
         Err(e) => {
-            tracing::error!("获取车辆颜色列表失败: {e:?}");
+            tracing::error!("获取车辆颜色列表失败: {e:?}" );
             json_error(e.to_string()).into_response()
         }
     }
@@ -248,7 +248,7 @@ pub async fn list_causes_type(State(state): State<HttpAppState>) -> impl IntoRes
     match repo.list().await {
         Ok(items) => json_success(serde_json::json!(items)).into_response(),
         Err(e) => {
-            tracing::error!("获取拖车原因类型列表失败: {e:?}");
+            tracing::error!("获取拖车原因类型列表失败: {e:?}" );
             json_error(e.to_string()).into_response()
         }
     }
@@ -261,7 +261,7 @@ pub async fn list_causes(State(state): State<HttpAppState>) -> impl IntoResponse
     match repo.list().await {
         Ok(items) => json_success(serde_json::json!(items)).into_response(),
         Err(e) => {
-            tracing::error!("获取拖车原因列表失败: {e:?}");
+            tracing::error!("获取拖车原因列表失败: {e:?}" );
             json_error(e.to_string()).into_response()
         }
     }
@@ -277,21 +277,21 @@ pub async fn health() -> impl IntoResponse {
 /// 创建车辆路由
 pub fn create_car_router(state: HttpAppState) -> Router {
     Router::new()
-        .route("/count", axum::routing::post(count_cars))
-        .route("/list", axum::routing::post(list_cars))
-        .route("/detain", axum::routing::post(detain_car))
-        .route("/health", axum::routing::get(health))
+        .route("/count" , axum::routing::post(count_cars))
+        .route("/list" , axum::routing::post(list_cars))
+        .route("/detain" , axum::routing::post(detain_car))
+        .route("/health" , axum::routing::get(health))
         .with_state(state)
 }
 
 /// 创建配置选项路由
 pub fn create_options_router(state: HttpAppState) -> Router {
     Router::new()
-        .route("/car_class", axum::routing::get(list_car_class))
-        .route("/car_type", axum::routing::get(list_car_type))
-        .route("/car_color", axum::routing::get(list_car_color))
-        .route("/causes_type", axum::routing::get(list_causes_type))
-        .route("/causes", axum::routing::get(list_causes))
-        .route("/health", axum::routing::get(health))
+        .route("/car_class" , axum::routing::get(list_car_class))
+        .route("/car_type" , axum::routing::get(list_car_type))
+        .route("/car_color" , axum::routing::get(list_car_color))
+        .route("/causes_type" , axum::routing::get(list_causes_type))
+        .route("/causes" , axum::routing::get(list_causes))
+        .route("/health" , axum::routing::get(health))
         .with_state(state)
 }

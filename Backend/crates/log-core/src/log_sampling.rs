@@ -203,7 +203,7 @@ mod tests {
         let mut count = 0;
 
         for _ in 0..10 {
-            if sampler.should_log("test", "info") {
+            if sampler.should_log("test" , "info" ) {
                 count += 1;
             }
         }
@@ -216,7 +216,7 @@ mod tests {
     fn test_sampling_stats() {
         let sampler = LogSampler::with_fixed_rate(10);
         for _ in 0..100 {
-            sampler.should_log("test", "info");
+            sampler.should_log("test" , "info" );
         }
 
         let stats = sampler.get_stats();
@@ -229,7 +229,7 @@ mod tests {
     fn test_reset() {
         let sampler = LogSampler::with_fixed_rate(5);
         for _ in 0..50 {
-            sampler.should_log("test", "info");
+            sampler.should_log("test" , "info" );
         }
 
         sampler.reset();

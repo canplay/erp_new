@@ -16,7 +16,7 @@ use crate::services::ccb::{CcbConfig, CcbService};
 use crate::services::ums::{UmsConfig, UmsService};
 
 pub async fn start_grpc_server(addr: SocketAddr, state: AppState) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    tracing::info!("[PayService] gRPC listening on {addr}");
+    tracing::info!("[PayService] gRPC listening on {addr}" );
     Server::builder().layer(tonic::service::interceptor::InterceptorLayer::new(common::grpc_auth_interceptor))
         .add_service(PayServiceServer::new(GrpcPayService { state: Arc::new(state) }))
         .serve_with_shutdown(addr, shutdown_signal())
@@ -50,30 +50,30 @@ fn pay_order_to_proto(o: crate::models::PayOrder) -> ProtoPayOrder {
 
 fn create_ccb_config() -> CcbConfig {
     CcbConfig {
-        merchantid: std::env::var("CCB_MERCHANT_ID").unwrap_or_default(),
-        branchid: std::env::var("CCB_BRANCH_ID").unwrap_or_default(),
-        posid: std::env::var("CCB_POS_ID").unwrap_or_default(),
-        qupwd: std::env::var("CCB_QUPWD").unwrap_or_default(),
-        pub_key: std::env::var("CCB_PUB_KEY").unwrap_or_default(),
+        merchantid: std::env::var("CCB_MERCHANT_ID" ).unwrap_or_default(),
+        branchid: std::env::var("CCB_BRANCH_ID" ).unwrap_or_default(),
+        posid: std::env::var("CCB_POS_ID" ).unwrap_or_default(),
+        qupwd: std::env::var("CCB_QUPWD" ).unwrap_or_default(),
+        pub_key: std::env::var("CCB_PUB_KEY" ).unwrap_or_default(),
     }
 }
 
 fn create_ums_config() -> UmsConfig {
     UmsConfig {
-        appid: std::env::var("UMS_APP_ID").unwrap_or_default(),
-        appkey: std::env::var("UMS_APP_KEY").unwrap_or_default(),
-        mid: std::env::var("UMS_MID").unwrap_or_default(),
-        tid: std::env::var("UMS_TID").unwrap_or_default(),
-        ysjc: std::env::var("UMS_YSJC").ok(),
+        appid: std::env::var("UMS_APP_ID" ).unwrap_or_default(),
+        appkey: std::env::var("UMS_APP_KEY" ).unwrap_or_default(),
+        mid: std::env::var("UMS_MID" ).unwrap_or_default(),
+        tid: std::env::var("UMS_TID" ).unwrap_or_default(),
+        ysjc: std::env::var("UMS_YSJC" ).ok(),
     }
 }
 
 fn now_date_str() -> String {
-    Utc::now().format("%Y-%m-%d").to_string()
+    Utc::now().format("%Y-%m-%d" ).to_string()
 }
 
 fn now_time_str() -> String {
-    Utc::now().format("%Y-%m-%d %H:%M:%S").to_string()
+    Utc::now().format("%Y-%m-%d %H:%M:%S" ).to_string()
 }
 
 #[tonic::async_trait]
@@ -91,7 +91,7 @@ impl PayService for GrpcPayService {
         };
         match self.state.pay_service.count(&service_query).await {
             Ok(count) => Ok(Response::new(CountResponse { count, message: "success".to_string() })),
-            Err(e) => Err(Status::internal(format!("{e}"))),
+            Err(e) => Err(Status::internal(format!("{e}" ))),
         }
     }
 
@@ -111,7 +111,7 @@ impl PayService for GrpcPayService {
                 orders: orders.into_iter().map(pay_order_to_proto).collect(),
                 message: "success".to_string(),
             })),
-            Err(e) => Err(Status::internal(format!("{e}"))),
+            Err(e) => Err(Status::internal(format!("{e}" ))),
         }
     }
 
@@ -122,8 +122,8 @@ impl PayService for GrpcPayService {
                 order: Some(pay_order_to_proto(order)),
                 message: "success".to_string(),
             })),
-            Ok(None) => Err(Status::not_found("no order found")),
-            Err(e) => Err(Status::internal(format!("{e}"))),
+            Ok(None) => Err(Status::not_found("no order found" )),
+            Err(e) => Err(Status::internal(format!("{e}" ))),
         }
     }
 
@@ -144,7 +144,7 @@ impl PayService for GrpcPayService {
                 order: Some(pay_order_to_proto(order)),
                 message: "success".to_string(),
             })),
-            Err(e) => Err(Status::internal(format!("{e}"))),
+            Err(e) => Err(Status::internal(format!("{e}" ))),
         }
     }
 
@@ -164,7 +164,7 @@ impl PayService for GrpcPayService {
         };
         service.query(&svc_params).await
             .map(|resp| Response::new(CcbQueryResponse { data_json: serde_json::to_string(&resp).unwrap_or_default() }))
-            .map_err(|e| Status::internal(format!("{e}")))
+            .map_err(|e| Status::internal(format!("{e}" )))
     }
 
     async fn ccb_create(&self, request: Request<CcbOrderParams>) -> Result<Response<CcbOrderResponse>, Status> {
@@ -183,7 +183,7 @@ impl PayService for GrpcPayService {
         };
         service.create_order(&svc_params).await
             .map(|resp| Response::new(CcbOrderResponse { data_json: serde_json::to_string(&resp).unwrap_or_default() }))
-            .map_err(|e| Status::internal(format!("{e}")))
+            .map_err(|e| Status::internal(format!("{e}" )))
     }
 
     async fn ccb_verify(&self, request: Request<CcbVerifyRequest>) -> Result<Response<BoolResponse>, Status> {
@@ -191,7 +191,7 @@ impl PayService for GrpcPayService {
         let service = CcbService::new(create_ccb_config());
         service.verify_payment(&order_id).await
             .map(|success| Response::new(BoolResponse { success, message: "success".to_string() }))
-            .map_err(|e| Status::internal(format!("{e}")))
+            .map_err(|e| Status::internal(format!("{e}" )))
     }
 
     async fn ccb_refund(&self, request: Request<CcbRefundRequest>) -> Result<Response<BoolResponse>, Status> {
@@ -199,7 +199,7 @@ impl PayService for GrpcPayService {
         let service = CcbService::new(create_ccb_config());
         service.refund(&req.order_id, req.amount as i64).await
             .map(|success| Response::new(BoolResponse { success, message: "success".to_string() }))
-            .map_err(|e| Status::internal(format!("{e}")))
+            .map_err(|e| Status::internal(format!("{e}" )))
     }
 
     async fn ums_query(&self, request: Request<UmsQueryParams>) -> Result<Response<JsonValueResponse>, Status> {
@@ -212,7 +212,7 @@ impl PayService for GrpcPayService {
         };
         service.query(&svc_params, &token).await
             .map(|data| Response::new(JsonValueResponse { data_json: data.to_string(), message: "success".to_string() }))
-            .map_err(|e| Status::internal(format!("{e}")))
+            .map_err(|e| Status::internal(format!("{e}" )))
     }
 
     async fn ums_create(&self, request: Request<UmsOrderParams>) -> Result<Response<JsonValueResponse>, Status> {
@@ -231,7 +231,7 @@ impl PayService for GrpcPayService {
         };
         service.create_order(&svc_params, &token).await
             .map(|data| Response::new(JsonValueResponse { data_json: data.to_string(), message: "success".to_string() }))
-            .map_err(|e| Status::internal(format!("{e}")))
+            .map_err(|e| Status::internal(format!("{e}" )))
     }
 
     async fn ums_close(&self, request: Request<UmsCloseParams>) -> Result<Response<JsonValueResponse>, Status> {
@@ -244,7 +244,7 @@ impl PayService for GrpcPayService {
         };
         service.close(&svc_params, &token).await
             .map(|data| Response::new(JsonValueResponse { data_json: data.to_string(), message: "success".to_string() }))
-            .map_err(|e| Status::internal(format!("{e}")))
+            .map_err(|e| Status::internal(format!("{e}" )))
     }
 
     async fn ums_refund(&self, request: Request<UmsRefundParams>) -> Result<Response<JsonValueResponse>, Status> {
@@ -256,12 +256,12 @@ impl PayService for GrpcPayService {
             no: params.order_id.clone(),
             desc: Some(params.reason),
             amount: params.amount as i64,
-            refundno: format!("REFUND_{}", params.order_id),
+            refundno: format!("REFUND_{}" , params.order_id),
             zone: None,
         };
         service.refund(&svc_params, &token).await
             .map(|data| Response::new(JsonValueResponse { data_json: data.to_string(), message: "success".to_string() }))
-            .map_err(|e| Status::internal(format!("{e}")))
+            .map_err(|e| Status::internal(format!("{e}" )))
     }
 
     async fn ums_info(&self, request: Request<UmsInfoRequest>) -> Result<Response<JsonValueResponse>, Status> {
@@ -270,6 +270,6 @@ impl PayService for GrpcPayService {
         let token = service.get_access_token().await.map_err(|e| Status::internal(e.to_string()))?;
         service.query_ums_info(&order, &token).await
             .map(|data| Response::new(JsonValueResponse { data_json: data.to_string(), message: "success".to_string() }))
-            .map_err(|e| Status::internal(format!("{e}")))
+            .map_err(|e| Status::internal(format!("{e}" )))
     }
 }

@@ -20,12 +20,12 @@ async fn check_quota(state: &AppState, provide: &str) -> Result<(), String> {
     // admin 不受配额限制
     // 单次查询：同时获取车辆数和配额
     let row = sqlx::query!(
-        "SELECT COUNT(*) as cnt, COALESCE(o.vehicle_quota, 999999) as quota FROM car LEFT JOIN operators o ON car.provide = o.provide WHERE car.provide = $1 AND car.delete = false",
+        "SELECT COUNT(*) as cnt, COALESCE(o.vehicle_quota, 999999) as quota FROM car LEFT JOIN operators o ON car.provide = o.provide WHERE car.provide = $1 AND car.delete = false" ,
         provide,
     )
     .fetch_one(&*state.car_repo.pool())
     .await
-    .map_err(|e| format!("运营商查询失败: {e}"))?;
+    .map_err(|e| format!("运营商查询失败: {e}" ))?;
 
     let count: i64 = row.cnt;
     let quota: i32 = row.quota.unwrap_or(999999);
@@ -44,9 +44,9 @@ async fn get_storages_cached(state: &AppState) -> Result<Vec<crate::model::Stora
     let mut cache = state.storage_cache.write().await;
     // 缓存未初始化或过期时重新查询
     if cache.is_empty() {
-        let storages = state.storage_repo.query("", "", -1)
+        let storages = state.storage_repo.query(" ", "" , -1)
             .await
-            .map_err(|e| format!("停放区查询失败: {e}"))?;
+            .map_err(|e| format!("停放区查询失败: {e}" ))?;
         *cache = storages;
     }
     Ok(cache.clone())
@@ -96,10 +96,10 @@ fn check_violation(
 ///
 /// # HTTP 状态码语义
 /// - `200`: 成功。`ok_response` 返回 `{"success": true, "data": [...]}`（query/history/alert/violations）；
-///   `success_with_message_response` 返回 `{"success": true, "message": "..."}`（add/batch_add/delete/resolve_violation）。
-/// - `400`: 业务/参数错误 `{"success": false, "error": "..."}`：配额已满、batch 超过 500 条、`items` 非数组、未知 `method`。
-/// - `401`: 鉴权/数据隔离失败 `{"success": false, "error": "..."}`：运营方 provide 与账号不匹配、非 admin 处理违停。
-/// - `500`: 数据库或内部错误 `{"success": false, "error": "..."}`。
+///   `success_with_message_response` 返回 `{"success": true, "message": "..." }`（add/batch_add/delete/resolve_violation）。
+/// - `400`: 业务/参数错误 `{"success": false, "error": "..." }`：配额已满、batch 超过 500 条、`items` 非数组、未知 `method`。
+/// - `401`: 鉴权/数据隔离失败 `{"success": false, "error": "..." }`：运营方 provide 与账号不匹配、非 admin 处理违停。
+/// - `500`: 数据库或内部错误 `{"success": false, "error": "..." }`。
 ///
 /// # 各 method 的 JSON body 字段
 /// - `add` (`*` 必填): `code*`, `provide*`, `status`, `speed`, `gps{lng,lat}`, `gps_type`, `time{start,end}`, `alert`, `remark`；
@@ -111,32 +111,32 @@ fn check_violation(
 /// - `history`: `code*`；返回当前月份历史表（car_history_yyyy_mm）中该车辆的轨迹数组。
 /// - `alert`: `code`, `provide`, `status`(-1 全部), `time`, `alert`, `remark`；返回含告警的车辆数组。
 /// - `violations`: `provide`, `status`(-1 全部)；返回违停记录数组（最多 200 条）。
-/// - `resolve_violation`: `id*`, `remark`；仅 admin 可调用，成功返回 200 `{"success": true, "message": "违停已处理"}`。
+/// - `resolve_violation`: `id*`, `remark`；仅 admin 可调用，成功返回 200 `{"success": true, "message": "违停已处理" }`。
 pub async fn car(
     user: AuthenticatedUser,
     State(state): State<AppState>,
     AxumJson(req): AxumJson<Value>,
 ) -> Response {
-    let method = req["method"].as_str().unwrap_or("");
+    let method = req["method" ].as_str().unwrap_or("" );
     let user_role = user.0.role.as_str();
 
     match method {
         "add" => {
-            let provide = req["provide"].as_str().unwrap_or("");
+            let provide = req["provide" ].as_str().unwrap_or("" );
             // 运营方只能操作自己的数据,admin 可操作所有
             if user_role != "admin" && user_role != provide {
-                return common::unauthorized_response("provide mismatch: 运营商标识与账号不匹配 ").into_response();
+                return common::unauthorized_response("provide mismatch: 运营商标识与账号不匹配 " ).into_response();
             }
-            let code = req["code"].as_str().unwrap_or("");
-            let status = req["status"].as_i64();
-            let provide = req["provide"].as_str().unwrap_or("");
-            let speed = req["speed"].as_f64().unwrap_or(0.0);
-            let gps_type = req["gps_type"].as_i64();
-            let alert = req["alert"].as_str().unwrap_or("");
-            let remark = req["remark"].as_str().unwrap_or("");
+            let code = req["code" ].as_str().unwrap_or("" );
+            let status = req["status" ].as_i64();
+            let provide = req["provide" ].as_str().unwrap_or("" );
+            let speed = req["speed" ].as_f64().unwrap_or(0.0);
+            let gps_type = req["gps_type" ].as_i64();
+            let alert = req["alert" ].as_str().unwrap_or("" );
+            let remark = req["remark" ].as_str().unwrap_or("" );
 
-            let time_start = req["time"]["start"].as_str().unwrap_or("");
-            let time_end = req["time"]["end"].as_str().unwrap_or("");
+            let time_start = req["time" ]["start" ].as_str().unwrap_or("" );
+            let time_end = req["time" ]["end" ].as_str().unwrap_or("" );
 
             let info = CarInfo {
                 code: code.to_string(),
@@ -144,8 +144,8 @@ pub async fn car(
                 provide: provide.to_string(),
                 speed,
                 gps: Some(json!({
-                    "lng": req["gps"]["lng"].as_str().unwrap_or(""),
-                    "lat": req["gps"]["lat"].as_str().unwrap_or(""),
+                    "lng": req["gps" ]["lng" ].as_str().unwrap_or("" ),
+                    "lat": req["gps" ]["lat" ].as_str().unwrap_or("" ),
                 })),
                 gps_type: gps_type.unwrap_or(0),
                 time: Some(json!({
@@ -167,46 +167,46 @@ pub async fn car(
             }
 
             // 违停检测：使用缓存的停放区列表
-            let lng = req["gps"]["lng"].as_str().unwrap_or("");
-            let lat = req["gps"]["lat"].as_str().unwrap_or("");
+            let lng = req["gps" ]["lng" ].as_str().unwrap_or("" );
+            let lat = req["gps" ]["lat" ].as_str().unwrap_or("" );
             if let Ok(storages) = get_storages_cached(&state).await {
                 if let Some(violation_msg) = check_violation(lng, lat, &storages) {
                     let _ = state.car_repo.save_violation(
                         code, provide, lng, lat, &violation_msg
                     ).await;
-                    tracing::warn!("[违停检测] 车辆 {} ({}) 违停: {}", code, provide, violation_msg);
+                    tracing::warn!("[违停检测] 车辆 {} ({}) 违停: {}" , code, provide, violation_msg);
                 }
             }
 
             match state.car_repo.add(&info).await {
-                Ok(_) => common::success_with_message_response("success").into_response(),
-                Err(e) => common::internal_error_response(&format!("{e:?}")).into_response(),
+                Ok(_) => common::success_with_message_response("success" ).into_response(),
+                Err(e) => common::internal_error_response(&format!("{e:?}" )).into_response(),
             }
         }
         "batch_add" => {
             const MAX_BATCH: usize = 500;
-            if let Some(items) = req["items"].as_array() {
+            if let Some(items) = req["items" ].as_array() {
                 if items.len() > MAX_BATCH {
                     return common::bad_request_response(
-                        &format!("batch size exceeded: max {MAX_BATCH} items per request ")
+                        &format!("batch size exceeded: max {MAX_BATCH} items per request " )
                     ).into_response();
                 }
                 // 校验批量下每辆车是否属于当前运营商
                 for item in items {
-                    let p = item["provide"].as_str().unwrap_or("");
+                    let p = item["provide" ].as_str().unwrap_or("" );
                     if user_role != "admin" && user_role != p {
                         return common::unauthorized_response(
-                            &format!("provide mismatch in batch: 车辆 {} 不属于当前运营方 ", item["code"].as_str().unwrap_or("?"))
+                            &format!("provide mismatch in batch: 车辆 {} 不属于当前运营方 " , item["code" ].as_str().unwrap_or("?" ))
                         ).into_response();
                     }
                 }
                 // 每辆车执行配额和违停检测
                 let mut cars: Vec<CarInfo> = Vec::new();
                 for item in items {
-                    let code = item["code"].as_str().unwrap_or("");
-                    let provide = item["provide"].as_str().unwrap_or("");
-                    let lng = item["gps"]["lng"].as_str().unwrap_or("");
-                    let lat = item["gps"]["lat"].as_str().unwrap_or("");
+                    let code = item["code" ].as_str().unwrap_or("" );
+                    let provide = item["provide" ].as_str().unwrap_or("" );
+                    let lng = item["gps" ]["lng" ].as_str().unwrap_or("" );
+                    let lat = item["gps" ]["lat" ].as_str().unwrap_or("" );
 
                     // 配额检查
                     if user_role != "admin" {
@@ -222,7 +222,7 @@ pub async fn car(
                                 code, provide, lng, lat, &violation_msg
                             ).await;
                             tracing::warn!(
-                                "[违停检测] 车辆 {} ({}) 违停: {}",
+                                "[违停检测] 车辆 {} ({}) 违停: {}" ,
                                 code, provide, violation_msg
                             );
                         }
@@ -230,60 +230,60 @@ pub async fn car(
 
                     cars.push(CarInfo {
                         code: code.to_string(),
-                        status: item["status"].as_i64().unwrap_or(0),
+                        status: item["status" ].as_i64().unwrap_or(0),
                         provide: provide.to_string(),
-                        speed: item["speed"].as_f64().unwrap_or(0.0),
+                        speed: item["speed" ].as_f64().unwrap_or(0.0),
                         gps: Some(json!({
                             "lng": lng,
                             "lat": lat,
                         })),
-                        gps_type: item["gps_type"].as_i64().unwrap_or(0),
+                        gps_type: item["gps_type" ].as_i64().unwrap_or(0),
                         time: Some(json!({
-                            "start": item["time"]["start"].as_str().unwrap_or("").to_string(),
-                            "end": item["time"]["end"].as_str().unwrap_or("").to_string(),
+                            "start": item["time" ]["start" ].as_str().unwrap_or("" ).to_string(),
+                            "end": item["time" ]["end" ].as_str().unwrap_or("" ).to_string(),
                         })),
                         create_date: Some(chrono::Local::now().naive_local()),
                         update_date: Some(chrono::Local::now().naive_local()),
                         delete: Some(false),
-                        alert: Some(item["alert"].as_str().unwrap_or("").to_string()),
-                        remark: Some(item["remark"].as_str().unwrap_or("").to_string()),
+                        alert: Some(item["alert" ].as_str().unwrap_or("" ).to_string()),
+                        remark: Some(item["remark" ].as_str().unwrap_or("" ).to_string()),
                         r#type: 0,
                     });
                 }
 
                 match state.car_repo.add_batch(&cars).await {
-                    Ok(_) => common::success_with_message_response("success").into_response(),
-                    Err(e) => common::internal_error_response(&format!("{e:?}")).into_response(),
+                    Ok(_) => common::success_with_message_response("success" ).into_response(),
+                    Err(e) => common::internal_error_response(&format!("{e:?}" )).into_response(),
                 }
             } else {
-                common::bad_request_response("invalid items array ").into_response()
+                common::bad_request_response("invalid items array " ).into_response()
             }
         }
         "delete" => {
-            let code = req["code"].as_str().unwrap_or("");
-            let provide = req["provide"].as_str().unwrap_or("");
+            let code = req["code" ].as_str().unwrap_or("" );
+            let provide = req["provide" ].as_str().unwrap_or("" );
             if user_role != "admin" && user_role != provide {
-                return common::unauthorized_response("provide mismatch ").into_response();
+                return common::unauthorized_response("provide mismatch " ).into_response();
             }
             match state.car_repo.del(code, provide).await {
-                Ok(_) => common::success_with_message_response("success").into_response(),
-                Err(e) => common::internal_error_response(&format!("{e:?}")).into_response(),
+                Ok(_) => common::success_with_message_response("success" ).into_response(),
+                Err(e) => common::internal_error_response(&format!("{e:?}" )).into_response(),
             }
         }
         "query" => {
-            let code = req["code"].as_str().unwrap_or("");
+            let code = req["code" ].as_str().unwrap_or("" );
             // 运营方只能查自己,admin 可查所有
             let provide = if user_role == "admin" {
-                req["provide"].as_str().unwrap_or("")
+                req["provide" ].as_str().unwrap_or("" )
             } else {
                 user_role
             };
-            let status = req["status"].as_i64().unwrap_or(-1);
-            let time_start = req["time"]["start"].as_str().unwrap_or("");
-            let time_end = req["time"]["end"].as_str().unwrap_or("");
+            let status = req["status" ].as_i64().unwrap_or(-1);
+            let time_start = req["time" ]["start" ].as_str().unwrap_or("" );
+            let time_end = req["time" ]["end" ].as_str().unwrap_or("" );
             // 分页参数：默认每页 50 条，最大 500 条
-            let limit = req["limit"].as_i64().unwrap_or(50).clamp(1, 500);
-            let offset = req["offset"].as_i64().unwrap_or(0).max(0);
+            let limit = req["limit" ].as_i64().unwrap_or(50).clamp(1, 500);
+            let offset = req["offset" ].as_i64().unwrap_or(0).max(0);
 
             match state
                 .car_repo
@@ -291,27 +291,27 @@ pub async fn car(
                 .await
             {
                 Ok(cars) => common::ok_response(cars).into_response(),
-                Err(e) => common::internal_error_response(&format!("{e:?}")).into_response(),
+                Err(e) => common::internal_error_response(&format!("{e:?}" )).into_response(),
             }
         }
         "history" => {
-            let code = req["code"].as_str().unwrap_or("");
+            let code = req["code" ].as_str().unwrap_or("" );
             match state.car_repo.history(code).await {
                 Ok(cars) => common::ok_response(cars).into_response(),
-                Err(e) => common::internal_error_response(&format!("{e:?}")).into_response(),
+                Err(e) => common::internal_error_response(&format!("{e:?}" )).into_response(),
             }
         }
         "alert" => {
-            let code = req["code"].as_str().unwrap_or("");
+            let code = req["code" ].as_str().unwrap_or("" );
             let provide = if user_role == "admin" {
-                req["provide"].as_str().unwrap_or("")
+                req["provide" ].as_str().unwrap_or("" )
             } else {
                 user_role
             };
-            let status = req["status"].as_i64().unwrap_or(-1);
-            let time = req["time"].as_str().unwrap_or("");
-            let alert = req["alert"].as_str().unwrap_or("");
-            let remark = req["remark"].as_str().unwrap_or("");
+            let status = req["status" ].as_i64().unwrap_or(-1);
+            let time = req["time" ].as_str().unwrap_or("" );
+            let alert = req["alert" ].as_str().unwrap_or("" );
+            let remark = req["remark" ].as_str().unwrap_or("" );
 
             match state
                 .car_repo
@@ -320,33 +320,33 @@ pub async fn car(
             {
                 // car_alert 返回 CarListResponse（告警后的车辆列表），与 car_query 语义一致
                 Ok(cars) => common::ok_response(cars).into_response(),
-                Err(e) => common::internal_error_response(&format!("{e:?}")).into_response(),
+                Err(e) => common::internal_error_response(&format!("{e:?}" )).into_response(),
             }
         }
         // 违停管理
         "violations" => {
             let provide = if user_role == "admin" {
-                req["provide"].as_str().unwrap_or("")
+                req["provide" ].as_str().unwrap_or("" )
             } else {
                 user_role
             };
-            let status = req["status"].as_i64().unwrap_or(-1);
+            let status = req["status" ].as_i64().unwrap_or(-1);
             match state.car_repo.list_violations(provide, status).await {
                 Ok(list) => common::ok_response(list).into_response(),
-                Err(e) => common::internal_error_response(&format!("{e:?}")).into_response(),
+                Err(e) => common::internal_error_response(&format!("{e:?}" )).into_response(),
             }
         }
         "resolve_violation" => {
             if user_role != "admin" {
-                return common::unauthorized_response("仅管理员可处理违停").into_response();
+                return common::unauthorized_response("仅管理员可处理违停" ).into_response();
             }
-            let id = req["id"].as_i64();
-            let remark = req["remark"].as_str().unwrap_or("");
+            let id = req["id" ].as_i64();
+            let remark = req["remark" ].as_str().unwrap_or("" );
             match state.car_repo.resolve_violation(id.unwrap_or(0), remark).await {
-                Ok(_) => common::success_with_message_response("违停已处理").into_response(),
-                Err(e) => common::internal_error_response(&format!("{e:?}")).into_response(),
+                Ok(_) => common::success_with_message_response("违停已处理" ).into_response(),
+                Err(e) => common::internal_error_response(&format!("{e:?}" )).into_response(),
             }
         }
-        _ => common::bad_request_response("unknown method ").into_response(),
+        _ => common::bad_request_response("unknown method " ).into_response(),
     }
 }

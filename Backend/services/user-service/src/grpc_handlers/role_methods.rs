@@ -67,7 +67,7 @@
                     user_count: 0,
                 }),
             })),
-            None => Err(Status::not_found("角色不存在")),
+            None => Err(Status::not_found("角色不存在" )),
         }
     }
 
@@ -78,10 +78,10 @@
         let req = request.into_inner();
 
         if req.name.is_empty() {
-            return Err(Status::invalid_argument("角色名称不能为空"));
+            return Err(Status::invalid_argument("角色名称不能为空" ));
         }
 
-        let code = req.name.to_lowercase().replace([' ', '\t'], "-");
+        let code = req.name.to_lowercase().replace([' ', '\t'], "-" );
 
         let role_id = self
             .state
@@ -96,9 +96,9 @@
             .await
             .map_err(|e| match e {
                 crate::repository::RoleRepositoryError::AlreadyExists => {
-                    Status::already_exists("角色已存在")
+                    Status::already_exists("角色已存在" )
                 }
-                other => Status::internal(format!("{:?}", other)),
+                other => Status::internal(format!("{:?}" , other)),
             })?;
 
         Ok(Response::new(CreateRoleResponse {
@@ -143,7 +143,7 @@
 
                 Ok(Response::new(UpdateRoleResponse { success: true }))
             }
-            None => Err(Status::not_found("角色不存在")),
+            None => Err(Status::not_found("角色不存在" )),
         }
     }
 
@@ -160,12 +160,12 @@
             .await
             .map_err(|e| match e {
                 crate::repository::RoleRepositoryError::HasAssociatedUsers => {
-                    Status::failed_precondition("角色有用户关联，无法删除")
+                    Status::failed_precondition("角色有用户关联，无法删除" )
                 }
                 crate::repository::RoleRepositoryError::HasChildRoles => {
-                    Status::failed_precondition("角色有子角色，无法删除")
+                    Status::failed_precondition("角色有子角色，无法删除" )
                 }
-                other => Status::internal(format!("{:?}", other)),
+                other => Status::internal(format!("{:?}" , other)),
             })?;
 
         Ok(Response::new(DeleteRoleResponse { success: result }))
@@ -183,7 +183,7 @@
             .find_by_code(&req.name)
             .await
             .map_err(|e| Status::internal(e.to_string()))?
-            .ok_or_else(|| Status::not_found("角色不存在"))?;
+            .ok_or_else(|| Status::not_found("角色不存在" ))?;
 
         let permissions = self
             .state
@@ -211,7 +211,7 @@
             .find_by_code(&req.name)
             .await
             .map_err(|e| Status::internal(e.to_string()))?
-            .ok_or_else(|| Status::not_found("角色不存在"))?;
+            .ok_or_else(|| Status::not_found("角色不存在" ))?;
 
         let permission_ids = self
             .state
@@ -243,7 +243,7 @@
             .find_by_code(&req.name)
             .await
             .map_err(|e| Status::internal(e.to_string()))?
-            .ok_or_else(|| Status::not_found("角色不存在"))?;
+            .ok_or_else(|| Status::not_found("角色不存在" ))?;
 
         let (user_ids, total) = self
             .state

@@ -33,14 +33,14 @@ pub async fn tenant_extraction_middleware(
     } else {
         request
             .headers()
-            .get("x-tenant-id")
+            .get("x-tenant-id" )
             .and_then(|v| v.to_str().ok())
             .and_then(|s| s.parse::<i64>().ok())
             .map(TenantId::new)
     };
 
     if let Some(tenant_id) = tenant_id {
-        debug!(tenant_id = %tenant_id, "Tenant context set");
+        debug!(tenant_id = %tenant_id, "Tenant context set" );
         
         // 创建租户上下文
         let user_id = request
@@ -67,7 +67,7 @@ pub async fn tenant_extraction_middleware(
 
         set_tenant_context(ctx);
     } else {
-        warn!("No tenant ID found in request");
+        warn!("No tenant ID found in request" );
     }
 
     let response = next.run(request).await;

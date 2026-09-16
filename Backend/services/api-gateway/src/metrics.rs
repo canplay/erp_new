@@ -154,35 +154,35 @@ impl MetricsCollector {
         let mut output = String::new();
 
         // 帮助文本
-        output.push_str("# HELP http_requests_total Total number of HTTP requests\n");
-        output.push_str("# TYPE http_requests_total counter\n");
+        output.push_str("# HELP http_requests_total Total number of HTTP requests\n" );
+        output.push_str("# TYPE http_requests_total counter\n" );
 
         // 请求计数器
         let requests = self.requests.read();
         for counter in requests.iter() {
             let labels = format!(
-                "method=\"{}\",path=\"{}\",status=\"{}\"",
+                "method=\"{}\",path=\"{}\",status=\"{}\"" ,
                 escape_label(&counter.method),
                 escape_label(&counter.path),
                 escape_label(&counter.status)
             );
             output.push_str(&format!(
-                "http_requests_total{{{}}} {}\n",
+                "http_requests_total{{{}}} {}\n" ,
                 labels,
                 counter.get()
             ));
         }
 
         output.push_str(
-            "\n# HELP http_request_duration_milliseconds HTTP request duration in milliseconds\n",
+            "\n# HELP http_request_duration_milliseconds HTTP request duration in milliseconds\n" ,
         );
-        output.push_str("# TYPE http_request_duration_milliseconds summary\n");
+        output.push_str("# TYPE http_request_duration_milliseconds summary\n" );
 
         // 延迟记录
         let latencies = self.latencies.read();
         for latency in latencies.iter() {
             let labels = format!(
-                "method=\"{}\",path=\"{}\"",
+                "method=\"{}\",path=\"{}\"" ,
                 escape_label(&latency.method),
                 escape_label(&latency.path)
             );
@@ -196,24 +196,24 @@ impl MetricsCollector {
             ));
         }
 
-        output.push_str("\n# HELP http_requests_active Current number of active requests\n");
-        output.push_str("# TYPE http_requests_active gauge\n");
+        output.push_str("\n# HELP http_requests_active Current number of active requests\n" );
+        output.push_str("# TYPE http_requests_active gauge\n" );
         output.push_str(&format!(
-            "http_requests_active {}\n",
+            "http_requests_active {}\n" ,
             self.active_requests.load(Ordering::Relaxed)
         ));
 
-        output.push_str("\n# HELP http_requests_total_count Total number of HTTP requests\n");
-        output.push_str("# TYPE http_requests_total_count counter\n");
+        output.push_str("\n# HELP http_requests_total_count Total number of HTTP requests\n" );
+        output.push_str("# TYPE http_requests_total_count counter\n" );
         output.push_str(&format!(
-            "http_requests_total_count {}\n",
+            "http_requests_total_count {}\n" ,
             self.total_requests.load(Ordering::Relaxed)
         ));
 
-        output.push_str("\n# HELP http_errors_total Total number of HTTP errors\n");
-        output.push_str("# TYPE http_errors_total counter\n");
+        output.push_str("\n# HELP http_errors_total Total number of HTTP errors\n" );
+        output.push_str("# TYPE http_errors_total counter\n" );
         output.push_str(&format!(
-            "http_errors_total {}\n",
+            "http_errors_total {}\n" ,
             self.total_errors.load(Ordering::Relaxed)
         ));
 
@@ -229,9 +229,9 @@ impl Default for MetricsCollector {
 
 /// 转义标签值中的特殊字符
 fn escape_label(s: &str) -> String {
-    s.replace('\\', "\\\\")
-        .replace('"', "\\\"")
-        .replace('\n', "\\n")
+    s.replace('\\', "\\\\" )
+        .replace('"', "\\\"" )
+        .replace('\n', "\\n" )
 }
 
 pub static METRICS: LazyLock<Arc<MetricsCollector>> = LazyLock::new(|| Arc::new(MetricsCollector::new()));

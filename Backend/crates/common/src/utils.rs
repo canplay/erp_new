@@ -10,7 +10,7 @@ use regex::Regex;
 lazy_static! {
     /// Regex pattern for valid SQL identifiers: starts with letter or underscore,
     /// followed by letters, digits, or underscores.
-    static ref IDENTIFIER_REGEX: Regex = Regex::new(r"^[a-zA-Z_][a-zA-Z0-9_]*$").unwrap();
+    static ref IDENTIFIER_REGEX: Regex = Regex::new(r"^[a-zA-Z_][a-zA-Z0-9_]*$" ).unwrap();
 
     /// Regex pattern for valid UUID strings.
     static ref UUID_REGEX: Regex = Regex::new(
@@ -34,13 +34,13 @@ lazy_static! {
 /// ```
 /// use common::sanitize_identifier;
 ///
-/// assert!(sanitize_identifier("users").is_ok());
-/// assert!(sanitize_identifier("tenant_data_2024").is_ok());
-/// assert!(sanitize_identifier("_private_table").is_ok());
-/// assert!(sanitize_identifier("table;DROP").is_err());
-/// assert!(sanitize_identifier("1table").is_err());
-/// assert!(sanitize_identifier("").is_err());
-/// assert!(sanitize_identifier("has space").is_err());
+/// assert!(sanitize_identifier("users" ).is_ok());
+/// assert!(sanitize_identifier("tenant_data_2024" ).is_ok());
+/// assert!(sanitize_identifier("_private_table" ).is_ok());
+/// assert!(sanitize_identifier("table;DROP" ).is_err());
+/// assert!(sanitize_identifier("1table" ).is_err());
+/// assert!(sanitize_identifier("" ).is_err());
+/// assert!(sanitize_identifier("has space" ).is_err());
 /// ```
 pub fn sanitize_identifier(ident: &str) -> Result<(), String> {
     if ident.is_empty() {
@@ -48,7 +48,7 @@ pub fn sanitize_identifier(ident: &str) -> Result<(), String> {
     }
     if !IDENTIFIER_REGEX.is_match(ident) {
         return Err(format!(
-            "Invalid SQL identifier '{}': must match pattern [a-zA-Z_][a-zA-Z0-9_]*",
+            "Invalid SQL identifier '{}': must match pattern [a-zA-Z_][a-zA-Z0-9_]*" ,
             ident
         ));
     }
@@ -59,9 +59,9 @@ pub fn sanitize_identifier(ident: &str) -> Result<(), String> {
 ///
 /// Only `public` or names starting with `tenant_` are allowed.
 pub fn sanitize_schema_name(schema: &str) -> Result<(), String> {
-    if schema != "public" && !schema.starts_with("tenant_") {
+    if schema != "public" && !schema.starts_with("tenant_" ) {
         return Err(format!(
-            "Invalid schema name '{}': must be 'public' or start with 'tenant_'",
+            "Invalid schema name '{}': must be 'public' or start with 'tenant_'" ,
             schema
         ));
     }
@@ -72,7 +72,7 @@ pub fn sanitize_schema_name(schema: &str) -> Result<(), String> {
 pub fn sanitize_uuid(uuid_str: &str) -> Result<(), String> {
     if !UUID_REGEX.is_match(uuid_str) {
         return Err(format!(
-            "Invalid UUID format '{}': expected xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+            "Invalid UUID format '{}': expected xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" ,
             uuid_str
         ));
     }
@@ -85,47 +85,47 @@ mod tests {
 
     #[test]
     fn test_valid_identifiers() {
-        assert!(sanitize_identifier("users").is_ok());
-        assert!(sanitize_identifier("tenant_data_2024").is_ok());
-        assert!(sanitize_identifier("_private").is_ok());
-        assert!(sanitize_identifier("order_2025_12").is_ok());
-        assert!(sanitize_identifier("a").is_ok());
+        assert!(sanitize_identifier("users" ).is_ok());
+        assert!(sanitize_identifier("tenant_data_2024" ).is_ok());
+        assert!(sanitize_identifier("_private" ).is_ok());
+        assert!(sanitize_identifier("order_2025_12" ).is_ok());
+        assert!(sanitize_identifier("a" ).is_ok());
     }
 
     #[test]
     fn test_invalid_identifiers() {
-        assert!(sanitize_identifier("").is_err());
-        assert!(sanitize_identifier("1table").is_err());
-        assert!(sanitize_identifier("table;DROP users").is_err());
-        assert!(sanitize_identifier("table name").is_err());
-        assert!(sanitize_identifier("table--comment").is_err());
-        assert!(sanitize_identifier("table/**/").is_err());
+        assert!(sanitize_identifier("" ).is_err());
+        assert!(sanitize_identifier("1table" ).is_err());
+        assert!(sanitize_identifier("table;DROP users" ).is_err());
+        assert!(sanitize_identifier("table name" ).is_err());
+        assert!(sanitize_identifier("table--comment" ).is_err());
+        assert!(sanitize_identifier("table/**/" ).is_err());
     }
 
     #[test]
     fn test_valid_schema_names() {
-        assert!(sanitize_schema_name("public").is_ok());
-        assert!(sanitize_schema_name("tenant_abc123").is_ok());
-        assert!(sanitize_schema_name("tenant_data").is_ok());
+        assert!(sanitize_schema_name("public" ).is_ok());
+        assert!(sanitize_schema_name("tenant_abc123" ).is_ok());
+        assert!(sanitize_schema_name("tenant_data" ).is_ok());
     }
 
     #[test]
     fn test_invalid_schema_names() {
-        assert!(sanitize_schema_name("information_schema").is_err());
-        assert!(sanitize_schema_name("pg_catalog").is_err());
-        assert!(sanitize_schema_name("hacked").is_err());
-        assert!(sanitize_schema_name("").is_err());
+        assert!(sanitize_schema_name("information_schema" ).is_err());
+        assert!(sanitize_schema_name("pg_catalog" ).is_err());
+        assert!(sanitize_schema_name("hacked" ).is_err());
+        assert!(sanitize_schema_name("" ).is_err());
     }
 
     #[test]
     fn test_valid_uuid() {
-        assert!(sanitize_uuid("550e8400-e29b-41d4-a716-446655440000").is_ok());
+        assert!(sanitize_uuid("550e8400-e29b-41d4-a716-446655440000" ).is_ok());
     }
 
     #[test]
     fn test_invalid_uuid() {
-        assert!(sanitize_uuid("").is_err());
-        assert!(sanitize_uuid("not-a-uuid").is_err());
-        assert!(sanitize_uuid("'; DROP TABLE users; --").is_err());
+        assert!(sanitize_uuid("" ).is_err());
+        assert!(sanitize_uuid("not-a-uuid" ).is_err());
+        assert!(sanitize_uuid("'; DROP TABLE users; --" ).is_err());
     }
 }

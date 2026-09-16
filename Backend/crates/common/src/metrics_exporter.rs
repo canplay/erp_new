@@ -53,5 +53,5 @@ pub fn metrics_router() -> Router {
     async fn metrics_handler() -> String {
         prometheus_output()
     }
-    Router::new().route("/metrics", get(metrics_handler))
+    Router::new().route("/metrics" , get(metrics_handler))
 }

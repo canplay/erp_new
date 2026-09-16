@@ -23,8 +23,8 @@ impl Default for CorsConfig {
     fn default() -> Self {
         Self {
             allowed_origins: vec![
-                HeaderValue::from_static("http://localhost:3000"),
-                HeaderValue::from_static("http://localhost:8090"),
+                HeaderValue::from_static("http://localhost:3000" ),
+                HeaderValue::from_static("http://localhost:8090" ),
             ],
         }
     }
@@ -36,7 +36,7 @@ impl CorsConfig {
     /// 安全修复: 当 CORS_ALLOWED_ORIGINS 未设置时，默认拒绝所有跨域请求（返回空列表），
     /// 而不是允许 localhost。这遵循最小权限原则。
     pub fn from_env() -> Self {
-        let allowed_origins = std::env::var("CORS_ALLOWED_ORIGINS")
+        let allowed_origins = std::env::var("CORS_ALLOWED_ORIGINS" )
             .ok()
             .map(|s| {
                 s.split(',')
@@ -72,7 +72,7 @@ pub fn cors_layer(config: &CorsConfig) -> CorsLayer {
         .expose_headers(Any)
         .max_age(Duration::from_hours(24));
 
-    if allowed_origins.len() == 1 && allowed_origins[0] == HeaderValue::from_static("*") {
+    if allowed_origins.len() == 1 && allowed_origins[0] == HeaderValue::from_static("*" ) {
         cors = cors.allow_origin(Any);
     } else {
         cors = cors.allow_origin(allowed_origins.iter().cloned().collect::<Vec<_>>());

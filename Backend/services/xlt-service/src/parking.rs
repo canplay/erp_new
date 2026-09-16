@@ -34,7 +34,7 @@ impl ParkingService {
             .await
             .map_err(AppError::from)?;
 
-        let vehicle_key = format!("xlt:parking:{}:{}", event.park_code, event.plate_no);
+        let vehicle_key = format!("xlt:parking:{}:{}" , event.park_code, event.plate_no);
         let now = chrono::Utc::now().to_rfc3339();
 
         let record = serde_json::json!({
@@ -45,7 +45,7 @@ impl ParkingService {
             "entryTime": event.event_time,
             "vehicleType": event.vehicle_type,
             "imageUrl": event.image_url,
-            "status": "parking",
+            "status": "parking" ,
             "createdAt": now,
         });
 
@@ -58,7 +58,7 @@ impl ParkingService {
         .map_err(AppError::from)?;
 
         tracing::info!(
-            "车辆入场: plate_no={}, park_code={}",
+            "车辆入场: plate_no={}, park_code={}" ,
             event.plate_no,
             event.park_code
         );
@@ -75,14 +75,14 @@ impl ParkingService {
             .await
             .map_err(AppError::from)?;
 
-        let vehicle_key = format!("xlt:parking:{}:{}", event.park_code, event.plate_no);
+        let vehicle_key = format!("xlt:parking:{}:{}" , event.park_code, event.plate_no);
 
         let _: () = redis::AsyncCommands::del(&mut conn, &vehicle_key)
             .await
             .map_err(AppError::from)?;
 
         tracing::info!(
-            "车辆出场: plate_no={}, park_code={}, amount={}",
+            "车辆出场: plate_no={}, park_code={}, amount={}" ,
             event.plate_no,
             event.park_code,
             event.amount
@@ -104,7 +104,7 @@ impl ParkingService {
             .await
             .map_err(AppError::from)?;
 
-        let vehicle_key = format!("xlt:parking:{park_code}:{plate_no}");
+        let vehicle_key = format!("xlt:parking:{park_code}:{plate_no}" );
         let data: Option<String> = redis::AsyncCommands::get(&mut conn, &vehicle_key)
             .await
             .map_err(AppError::from)?;
@@ -114,16 +114,16 @@ impl ParkingService {
                 let v: serde_json::Value =
                     serde_json::from_str(&json_str).map_err(|e| AppError::Internal(e.to_string()))?;
 
-                let entry_time = v["entryTime"].as_str().unwrap_or("").to_string();
+                let entry_time = v["entryTime" ].as_str().unwrap_or("" ).to_string();
                 let duration = Self::calc_duration_minutes(&entry_time);
 
                 Ok(ParkingVehicle {
-                    plate_no: v["plateNo"].as_str().unwrap_or("").to_string(),
-                    plate_color: v["plateColor"].as_str().unwrap_or("").to_string(),
-                    park_code: v["parkCode"].as_str().unwrap_or("").to_string(),
+                    plate_no: v["plateNo" ].as_str().unwrap_or("" ).to_string(),
+                    plate_color: v["plateColor" ].as_str().unwrap_or("" ).to_string(),
+                    park_code: v["parkCode" ].as_str().unwrap_or("" ).to_string(),
                     entry_time: entry_time.clone(),
-                    lane_code: v["laneCode"].as_str().unwrap_or("").to_string(),
-                    vehicle_type: v["vehicleType"].as_str().unwrap_or("").to_string(),
+                    lane_code: v["laneCode" ].as_str().unwrap_or("" ).to_string(),
+                    vehicle_type: v["vehicleType" ].as_str().unwrap_or("" ).to_string(),
                     duration_minutes: duration,
                     amount: Self::calc_billing_default(&entry_time),
                 })
@@ -195,7 +195,7 @@ mod tests {
 
     #[test]
     fn test_calc_duration_invalid_time_returns_zero() {
-        let duration = ParkingService::calc_duration_minutes("invalid-date");
+        let duration = ParkingService::calc_duration_minutes("invalid-date" );
         // Invalid dates default to Utc::now(), so duration is 0
         assert_eq!(duration, 0);
     }

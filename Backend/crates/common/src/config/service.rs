@@ -21,7 +21,7 @@ impl ServiceDiscoveryConfig {
     /// 从环境变量读取配置
     #[must_use]
     pub fn from_env() -> Self {
-        let reconnect_interval_secs = std::env::var("SERVICE_DISCOVERY_RECONNECT_INTERVAL")
+        let reconnect_interval_secs = std::env::var("SERVICE_DISCOVERY_RECONNECT_INTERVAL" )
             .ok()
             .and_then(|v| v.parse().ok())
             .unwrap_or(30);

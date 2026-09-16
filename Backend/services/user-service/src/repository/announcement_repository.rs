@@ -8,10 +8,10 @@ use thiserror::Error;
 /// 公告仓储错误类型
 #[derive(Error, Debug)]
 pub enum AnnouncementRepositoryError {
-    #[error("数据库错误: {0}")]
+    #[error("数据库错误: {0}" )]
     Database(#[from] sqlx::Error),
 
-    #[error("公告不存在")]
+    #[error("公告不存在" )]
     NotFound,
 }
 
@@ -183,7 +183,7 @@ impl AnnouncementRepository {
             r"INSERT INTO announcements
                (title, content, announcement_type, priority, is_pinned, is_active, start_time, end_time, created_by)
                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-               RETURNING id",
+               RETURNING id" ,
             title,
             content,
             announcement_type,
@@ -207,14 +207,14 @@ impl AnnouncementRepository {
     ) -> Result<Option<Announcement>, AnnouncementRepositoryError> {
         let row = sqlx::query!(
             r#"SELECT a.id, a.title, a.content,
-                      COALESCE(a.announcement_type, '') AS "announcement_type!",
-                      COALESCE(a.priority, 0) AS "priority!",
-                      COALESCE(a.is_pinned, false) AS "is_pinned!",
-                      COALESCE(a.is_active, false) AS "is_active!",
+                      COALESCE(a.announcement_type, '') AS "announcement_type!" ,
+                      COALESCE(a.priority, 0) AS "priority!" ,
+                      COALESCE(a.is_pinned, false) AS "is_pinned!" ,
+                      COALESCE(a.is_active, false) AS "is_active!" ,
                       a.start_time, a.end_time,
                       a.created_by,
-                      COALESCE(a.created_at, NOW()) AS "created_at!",
-                      COALESCE(a.updated_at, NOW()) AS "updated_at!",
+                      COALESCE(a.created_at, NOW()) AS "created_at!" ,
+                      COALESCE(a.updated_at, NOW()) AS "updated_at!" ,
                       u.nickname as created_by_name
                FROM announcements a
                LEFT JOIN users u ON a.created_by = u.id
@@ -266,7 +266,7 @@ impl AnnouncementRepository {
                    start_time = COALESCE($7, start_time),
                    end_time = COALESCE($8, end_time),
                    updated_at = NOW()
-               WHERE id = $9",
+               WHERE id = $9" ,
             title.as_deref(),
             content.as_deref(),
             announcement_type.as_deref(),
@@ -286,7 +286,7 @@ impl AnnouncementRepository {
     /// 删除公告
     pub async fn delete(&self, id: i64) -> Result<bool, AnnouncementRepositoryError> {
         let result = sqlx::query!(
-            "DELETE FROM announcements WHERE id = $1",
+            "DELETE FROM announcements WHERE id = $1" ,
             id,
         )
         .execute(&self.pool)
@@ -307,12 +307,12 @@ impl AnnouncementRepository {
         let rows = sqlx::query_as!(
             AnnouncementListItem,
             r#"SELECT a.id, a.title,
-                      COALESCE(a.announcement_type, '') AS "announcement_type!",
-                      COALESCE(a.priority, 0) AS "priority!",
-                      COALESCE(a.is_pinned, false) AS "is_pinned!",
-                      COALESCE(a.is_active, false) AS "is_active!",
+                      COALESCE(a.announcement_type, '') AS "announcement_type!" ,
+                      COALESCE(a.priority, 0) AS "priority!" ,
+                      COALESCE(a.is_pinned, false) AS "is_pinned!" ,
+                      COALESCE(a.is_active, false) AS "is_active!" ,
                       a.start_time, a.end_time,
-                      COALESCE(a.created_at, NOW()) AS "created_at!",
+                      COALESCE(a.created_at, NOW()) AS "created_at!" ,
                       u.nickname as created_by_name
                FROM announcements a
                LEFT JOIN users u ON a.created_by = u.id
@@ -328,7 +328,7 @@ impl AnnouncementRepository {
 
         // 获取总数
         let total_row = sqlx::query!(
-            "SELECT COUNT(*) as count FROM announcements WHERE ($1::boolean IS NULL OR is_active = $1)",
+            "SELECT COUNT(*) as count FROM announcements WHERE ($1::boolean IS NULL OR is_active = $1)" ,
             is_active,
         )
         .fetch_one(&self.pool)
@@ -365,12 +365,12 @@ impl AnnouncementRepository {
         let rows = sqlx::query_as!(
             AnnouncementListItem,
             r#"SELECT a.id, a.title,
-                      COALESCE(a.announcement_type, '') AS "announcement_type!",
-                      COALESCE(a.priority, 0) AS "priority!",
-                      COALESCE(a.is_pinned, false) AS "is_pinned!",
-                      COALESCE(a.is_active, false) AS "is_active!",
+                      COALESCE(a.announcement_type, '') AS "announcement_type!" ,
+                      COALESCE(a.priority, 0) AS "priority!" ,
+                      COALESCE(a.is_pinned, false) AS "is_pinned!" ,
+                      COALESCE(a.is_active, false) AS "is_active!" ,
                       a.start_time, a.end_time,
-                      COALESCE(a.created_at, NOW()) AS "created_at!",
+                      COALESCE(a.created_at, NOW()) AS "created_at!" ,
                       u.nickname as created_by_name
                FROM announcements a
                LEFT JOIN users u ON a.created_by = u.id
@@ -409,12 +409,12 @@ impl AnnouncementRepository {
         let rows = sqlx::query_as!(
             SystemConfig,
             r#"SELECT id, category, config_key, config_value,
-                      COALESCE(value_type, '') AS "value_type!",
-                      COALESCE(label, '') AS "label!",
+                      COALESCE(value_type, '') AS "value_type!" ,
+                      COALESCE(label, '') AS "label!" ,
                       description,
-                      COALESCE(sort_order, 0) AS "sort_order!",
-                      COALESCE(status, 1) AS "status!",
-                      COALESCE(created_at, NOW()) AS "created_at!",
+                      COALESCE(sort_order, 0) AS "sort_order!" ,
+                      COALESCE(status, 1) AS "status!" ,
+                      COALESCE(created_at, NOW()) AS "created_at!" ,
                       COALESCE(updated_at, NOW()) AS "updated_at!"
                FROM system_configs
                WHERE status = 1
@@ -451,12 +451,12 @@ impl AnnouncementRepository {
         let row = sqlx::query_as!(
             SystemConfig,
             r#"SELECT id, category, config_key, config_value,
-                      COALESCE(value_type, '') AS "value_type!",
-                      COALESCE(label, '') AS "label!",
+                      COALESCE(value_type, '') AS "value_type!" ,
+                      COALESCE(label, '') AS "label!" ,
                       description,
-                      COALESCE(sort_order, 0) AS "sort_order!",
-                      COALESCE(status, 1) AS "status!",
-                      COALESCE(created_at, NOW()) AS "created_at!",
+                      COALESCE(sort_order, 0) AS "sort_order!" ,
+                      COALESCE(status, 1) AS "status!" ,
+                      COALESCE(created_at, NOW()) AS "created_at!" ,
                       COALESCE(updated_at, NOW()) AS "updated_at!"
                FROM system_configs
                WHERE config_key = $1"#,
@@ -487,7 +487,7 @@ impl AnnouncementRepository {
         value: &str,
     ) -> Result<bool, AnnouncementRepositoryError> {
         let result = sqlx::query!(
-            "UPDATE system_configs SET config_value = $1, updated_at = NOW() WHERE config_key = $2",
+            "UPDATE system_configs SET config_value = $1, updated_at = NOW() WHERE config_key = $2" ,
             value,
             key,
         )
@@ -501,7 +501,7 @@ impl AnnouncementRepository {
     pub async fn reset_config(&self, key: &str) -> Result<bool, AnnouncementRepositoryError> {
         // 这里假设有默认值存储，简化处理：设置为 NULL
         let result = sqlx::query!(
-            "UPDATE system_configs SET config_value = NULL, updated_at = NOW() WHERE config_key = $1",
+            "UPDATE system_configs SET config_value = NULL, updated_at = NOW() WHERE config_key = $1" ,
             key,
         )
         .execute(&self.pool)
@@ -526,7 +526,7 @@ impl AnnouncementRepository {
             r"INSERT INTO sys_login_logs
                (user_id, username, ip_address, user_agent, login_status, fail_reason)
                VALUES ($1, $2, $3, $4, $5, $6)
-               RETURNING id",
+               RETURNING id" ,
             user_id,
             username,
             ip_address,
@@ -554,7 +554,7 @@ impl AnnouncementRepository {
         let rows = sqlx::query_as!(
             LoginLog,
             r#"SELECT id, user_id, username, ip_address, user_agent,
-                      login_status::int AS "login_status!",
+                      login_status::int AS "login_status!" ,
                       fail_reason,
                       COALESCE(created_at, NOW()) AS "created_at!"
                FROM sys_login_logs
@@ -572,7 +572,7 @@ impl AnnouncementRepository {
 
         // 获取总数
         let total_row = sqlx::query!(
-            "SELECT COUNT(*) as count FROM sys_login_logs WHERE ($1::bigint IS NULL OR user_id = $1) AND ($2::integer IS NULL OR login_status = $2)",
+            "SELECT COUNT(*) as count FROM sys_login_logs WHERE ($1::bigint IS NULL OR user_id = $1) AND ($2::integer IS NULL OR login_status = $2)" ,
             user_id,
             login_status,
         )
@@ -613,9 +613,9 @@ impl AnnouncementRepository {
         let rows = sqlx::query_as!(
             DictionaryType,
             r#"SELECT id, code, name, description,
-                      COALESCE(sort, 0) AS "sort!",
-                      COALESCE(status, 1) AS "status!",
-                      COALESCE(created_at, NOW()) AS "created_at!",
+                      COALESCE(sort, 0) AS "sort!" ,
+                      COALESCE(status, 1) AS "status!" ,
+                      COALESCE(created_at, NOW()) AS "created_at!" ,
                       COALESCE(updated_at, NOW()) AS "updated_at!"
                FROM dictionary_types
                WHERE ($1::text IS NULL OR name ILIKE '%' || $1 || '%' OR code ILIKE '%' || $1 || '%')
@@ -633,7 +633,7 @@ impl AnnouncementRepository {
         let total_row = sqlx::query!(
             r"SELECT COUNT(*) as count FROM dictionary_types
                WHERE ($1::text IS NULL OR name ILIKE '%' || $1 || '%' OR code ILIKE '%' || $1 || '%')
-                 AND ($2::integer IS NULL OR status = $2)",
+                 AND ($2::integer IS NULL OR status = $2)" ,
             keyword,
             status,
         )
@@ -667,9 +667,9 @@ impl AnnouncementRepository {
         let row = sqlx::query_as!(
             DictionaryType,
             r#"SELECT id, code, name, description,
-                      COALESCE(sort, 0) AS "sort!",
-                      COALESCE(status, 1) AS "status!",
-                      COALESCE(created_at, NOW()) AS "created_at!",
+                      COALESCE(sort, 0) AS "sort!" ,
+                      COALESCE(status, 1) AS "status!" ,
+                      COALESCE(created_at, NOW()) AS "created_at!" ,
                       COALESCE(updated_at, NOW()) AS "updated_at!"
                FROM dictionary_types WHERE id = $1"#,
             id,
@@ -700,7 +700,7 @@ impl AnnouncementRepository {
         let row = sqlx::query!(
             r"INSERT INTO dictionary_types (code, name, description, sort, status)
                VALUES ($1, $2, $3, $4, 1)
-               RETURNING id",
+               RETURNING id" ,
             code,
             name,
             description,
@@ -728,7 +728,7 @@ impl AnnouncementRepository {
                    sort = COALESCE($3, sort),
                    status = COALESCE($4, status),
                    updated_at = NOW()
-               WHERE id = $5",
+               WHERE id = $5" ,
              name.as_deref(),
              description.as_deref(),
              sort,
@@ -744,11 +744,11 @@ impl AnnouncementRepository {
     /// 删除字典类型
     pub async fn delete_dictionary_type(&self, id: i64) -> Result<bool, AnnouncementRepositoryError> {
         // 先删除该类型下的所有字典项
-        sqlx::query!("DELETE FROM dictionary_items WHERE type_id = $1", id)
+        sqlx::query!("DELETE FROM dictionary_items WHERE type_id = $1" , id)
             .execute(&self.pool)
             .await?;
 
-        let result = sqlx::query!("DELETE FROM dictionary_types WHERE id = $1", id)
+        let result = sqlx::query!("DELETE FROM dictionary_types WHERE id = $1" , id)
             .execute(&self.pool)
             .await?;
 
@@ -768,11 +768,11 @@ impl AnnouncementRepository {
         let rows = sqlx::query_as!(
             DictionaryItem,
             r#"SELECT di.id, di.type_id, di.label, di.value,
-                      COALESCE(di.sort, 0) AS "sort!",
-                      COALESCE(di.status, 1) AS "status!",
-                      COALESCE(di.is_default, false) AS "is_default!",
+                      COALESCE(di.sort, 0) AS "sort!" ,
+                      COALESCE(di.status, 1) AS "status!" ,
+                      COALESCE(di.is_default, false) AS "is_default!" ,
                       di.remark,
-                      COALESCE(di.created_at, NOW()) AS "created_at!",
+                      COALESCE(di.created_at, NOW()) AS "created_at!" ,
                       COALESCE(di.updated_at, NOW()) AS "updated_at!"
                FROM dictionary_items di
                JOIN dictionary_types dt ON di.type_id = dt.id
@@ -796,7 +796,7 @@ impl AnnouncementRepository {
                WHERE ($1::bigint IS NULL OR di.type_id = $1)
                  AND ($2::text IS NULL OR dt.code = $2)
                  AND ($3::text IS NULL OR di.label ILIKE '%' || $3 || '%' OR di.value ILIKE '%' || $3 || '%')
-                 AND ($4::integer IS NULL OR di.status = $4)",
+                 AND ($4::integer IS NULL OR di.status = $4)" ,
             type_id,
             type_code,
             keyword,
@@ -834,11 +834,11 @@ impl AnnouncementRepository {
         let row = sqlx::query_as!(
             DictionaryItem,
             r#"SELECT id, type_id, label, value,
-                      COALESCE(sort, 0) AS "sort!",
-                      COALESCE(status, 1) AS "status!",
-                      COALESCE(is_default, false) AS "is_default!",
+                      COALESCE(sort, 0) AS "sort!" ,
+                      COALESCE(status, 1) AS "status!" ,
+                      COALESCE(is_default, false) AS "is_default!" ,
                       remark,
-                      COALESCE(created_at, NOW()) AS "created_at!",
+                      COALESCE(created_at, NOW()) AS "created_at!" ,
                       COALESCE(updated_at, NOW()) AS "updated_at!"
                FROM dictionary_items WHERE id = $1"#,
             id,
@@ -869,7 +869,7 @@ impl AnnouncementRepository {
         let row = sqlx::query!(
             r"INSERT INTO dictionary_items (type_id, label, value, sort, status, is_default, remark)
                VALUES ($1, $2, $3, $4, $5, $6, $7)
-               RETURNING id",
+               RETURNING id" ,
             params.type_id,
             params.label,
             params.value,
@@ -899,7 +899,7 @@ impl AnnouncementRepository {
                    is_default = COALESCE($5, is_default),
                    remark = COALESCE($6, remark),
                    updated_at = NOW()
-               WHERE id = $7",
+               WHERE id = $7" ,
             params.label,
             params.value,
             params.sort,
@@ -919,7 +919,7 @@ impl AnnouncementRepository {
         &self,
         id: i64,
     ) -> Result<bool, AnnouncementRepositoryError> {
-        let result = sqlx::query!("DELETE FROM dictionary_items WHERE id = $1", id)
+        let result = sqlx::query!("DELETE FROM dictionary_items WHERE id = $1" , id)
             .execute(&self.pool)
             .await?;
 
@@ -936,12 +936,12 @@ impl AnnouncementRepository {
         let rows = sqlx::query_as!(
             SystemConfig,
             r#"SELECT id, category, config_key, config_value,
-                      COALESCE(value_type, '') AS "value_type!",
-                      COALESCE(label, '') AS "label!",
+                      COALESCE(value_type, '') AS "value_type!" ,
+                      COALESCE(label, '') AS "label!" ,
                       description,
-                      COALESCE(sort_order, 0) AS "sort_order!",
-                      COALESCE(status, 1) AS "status!",
-                      COALESCE(created_at, NOW()) AS "created_at!",
+                      COALESCE(sort_order, 0) AS "sort_order!" ,
+                      COALESCE(status, 1) AS "status!" ,
+                      COALESCE(created_at, NOW()) AS "created_at!" ,
                       COALESCE(updated_at, NOW()) AS "updated_at!"
                FROM system_configs
                WHERE ($1::text IS NULL OR category = $1)
@@ -981,7 +981,7 @@ impl AnnouncementRepository {
 
         for (key, value) in configs {
             sqlx::query!(
-                "UPDATE system_configs SET config_value = $1, updated_at = NOW() WHERE config_key = $2",
+                "UPDATE system_configs SET config_value = $1, updated_at = NOW() WHERE config_key = $2" ,
                 value,
                 key,
             )

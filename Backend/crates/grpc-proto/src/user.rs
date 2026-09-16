@@ -2,936 +2,936 @@
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct GetUserRequest {
-    #[prost(int64, tag = "1")]
+    #[prost(int64, tag = "1" )]
     pub user_id: i64,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct GetUserResponse {
-    #[prost(int64, tag = "1")]
+    #[prost(int64, tag = "1" )]
     pub id: i64,
-    #[prost(string, tag = "2")]
+    #[prost(string, tag = "2" )]
     pub username: ::prost::alloc::string::String,
-    #[prost(string, tag = "3")]
+    #[prost(string, tag = "3" )]
     pub nickname: ::prost::alloc::string::String,
-    #[prost(string, tag = "4")]
+    #[prost(string, tag = "4" )]
     pub avatar: ::prost::alloc::string::String,
-    #[prost(string, tag = "5")]
+    #[prost(string, tag = "5" )]
     pub phone: ::prost::alloc::string::String,
-    #[prost(string, tag = "6")]
+    #[prost(string, tag = "6" )]
     pub email: ::prost::alloc::string::String,
-    #[prost(int32, tag = "7")]
+    #[prost(int32, tag = "7" )]
     pub gender: i32,
-    #[prost(string, tag = "8")]
+    #[prost(string, tag = "8" )]
     pub address: ::prost::alloc::string::String,
-    #[prost(string, tag = "9")]
+    #[prost(string, tag = "9" )]
     pub role: ::prost::alloc::string::String,
-    #[prost(int32, tag = "10")]
+    #[prost(int32, tag = "10" )]
     pub status: i32,
-    #[prost(int64, tag = "11")]
+    #[prost(int64, tag = "11" )]
     pub created_at: i64,
-    #[prost(int64, tag = "12")]
+    #[prost(int64, tag = "12" )]
     pub updated_at: i64,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct CreateUserRequest {
-    #[prost(string, tag = "1")]
+    #[prost(string, tag = "1" )]
     pub username: ::prost::alloc::string::String,
-    #[prost(string, tag = "2")]
+    #[prost(string, tag = "2" )]
     pub password: ::prost::alloc::string::String,
-    #[prost(string, tag = "3")]
+    #[prost(string, tag = "3" )]
     pub email: ::prost::alloc::string::String,
-    #[prost(string, tag = "4")]
+    #[prost(string, tag = "4" )]
     pub nickname: ::prost::alloc::string::String,
-    #[prost(string, tag = "5")]
+    #[prost(string, tag = "5" )]
     pub phone: ::prost::alloc::string::String,
-    #[prost(int32, tag = "6")]
+    #[prost(int32, tag = "6" )]
     pub gender: i32,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct CreateUserResponse {
-    #[prost(int64, tag = "1")]
+    #[prost(int64, tag = "1" )]
     pub id: i64,
-    #[prost(string, tag = "2")]
+    #[prost(string, tag = "2" )]
     pub username: ::prost::alloc::string::String,
-    #[prost(string, tag = "3")]
+    #[prost(string, tag = "3" )]
     pub nickname: ::prost::alloc::string::String,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct UpdateUserRequest {
-    #[prost(int64, tag = "1")]
+    #[prost(int64, tag = "1" )]
     pub user_id: i64,
-    #[prost(string, tag = "2")]
+    #[prost(string, tag = "2" )]
     pub nickname: ::prost::alloc::string::String,
-    #[prost(string, tag = "3")]
+    #[prost(string, tag = "3" )]
     pub avatar: ::prost::alloc::string::String,
-    #[prost(int32, tag = "4")]
+    #[prost(int32, tag = "4" )]
     pub gender: i32,
-    #[prost(string, tag = "5")]
+    #[prost(string, tag = "5" )]
     pub address: ::prost::alloc::string::String,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct UpdateUserResponse {
-    #[prost(int64, tag = "1")]
+    #[prost(int64, tag = "1" )]
     pub id: i64,
-    #[prost(string, tag = "2")]
+    #[prost(string, tag = "2" )]
     pub username: ::prost::alloc::string::String,
-    #[prost(string, tag = "3")]
+    #[prost(string, tag = "3" )]
     pub nickname: ::prost::alloc::string::String,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct DeleteUserRequest {
-    #[prost(int64, tag = "1")]
+    #[prost(int64, tag = "1" )]
     pub user_id: i64,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct DeleteUserResponse {
-    #[prost(bool, tag = "1")]
+    #[prost(bool, tag = "1" )]
     pub success: bool,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct ListUsersRequest {
-    #[prost(int32, tag = "1")]
+    #[prost(int32, tag = "1" )]
     pub page: i32,
-    #[prost(int32, tag = "2")]
+    #[prost(int32, tag = "2" )]
     pub page_size: i32,
-    #[prost(string, tag = "3")]
+    #[prost(string, tag = "3" )]
     pub keyword: ::prost::alloc::string::String,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ListUsersResponse {
-    #[prost(message, repeated, tag = "1")]
+    #[prost(message, repeated, tag = "1" )]
     pub users: ::prost::alloc::vec::Vec<GetUserResponse>,
-    #[prost(int64, tag = "2")]
+    #[prost(int64, tag = "2" )]
     pub total: i64,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct UpdateUserStatusRequest {
-    #[prost(int64, tag = "1")]
+    #[prost(int64, tag = "1" )]
     pub user_id: i64,
-    #[prost(int32, tag = "2")]
+    #[prost(int32, tag = "2" )]
     pub status: i32,
-    #[prost(int32, tag = "3")]
+    #[prost(int32, tag = "3" )]
     pub lock_hours: i32,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct UpdateUserStatusResponse {
-    #[prost(bool, tag = "1")]
+    #[prost(bool, tag = "1" )]
     pub success: bool,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct UpdateUserRoleRequest {
-    #[prost(int64, tag = "1")]
+    #[prost(int64, tag = "1" )]
     pub user_id: i64,
-    #[prost(string, tag = "2")]
+    #[prost(string, tag = "2" )]
     pub role: ::prost::alloc::string::String,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct UpdateUserRoleResponse {
-    #[prost(bool, tag = "1")]
+    #[prost(bool, tag = "1" )]
     pub success: bool,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct ResetPasswordRequest {
-    #[prost(int64, tag = "1")]
+    #[prost(int64, tag = "1" )]
     pub user_id: i64,
-    #[prost(string, tag = "2")]
+    #[prost(string, tag = "2" )]
     pub new_password: ::prost::alloc::string::String,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct ResetPasswordResponse {
-    #[prost(bool, tag = "1")]
+    #[prost(bool, tag = "1" )]
     pub success: bool,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct BatchUpdateUserRoleRequest {
-    #[prost(int64, repeated, tag = "1")]
+    #[prost(int64, repeated, tag = "1" )]
     pub user_ids: ::prost::alloc::vec::Vec<i64>,
-    #[prost(string, tag = "2")]
+    #[prost(string, tag = "2" )]
     pub role: ::prost::alloc::string::String,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct BatchUpdateUserRoleResponse {
-    #[prost(bool, tag = "1")]
+    #[prost(bool, tag = "1" )]
     pub success: bool,
-    #[prost(int32, tag = "2")]
+    #[prost(int32, tag = "2" )]
     pub affected: i32,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct BatchUpdateUserStatusRequest {
-    #[prost(int64, repeated, tag = "1")]
+    #[prost(int64, repeated, tag = "1" )]
     pub user_ids: ::prost::alloc::vec::Vec<i64>,
-    #[prost(int32, tag = "2")]
+    #[prost(int32, tag = "2" )]
     pub status: i32,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct BatchUpdateUserStatusResponse {
-    #[prost(bool, tag = "1")]
+    #[prost(bool, tag = "1" )]
     pub success: bool,
-    #[prost(int32, tag = "2")]
+    #[prost(int32, tag = "2" )]
     pub affected: i32,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct BatchDeleteUsersRequest {
-    #[prost(int64, repeated, tag = "1")]
+    #[prost(int64, repeated, tag = "1" )]
     pub user_ids: ::prost::alloc::vec::Vec<i64>,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct BatchDeleteUsersResponse {
-    #[prost(bool, tag = "1")]
+    #[prost(bool, tag = "1" )]
     pub success: bool,
-    #[prost(int32, tag = "2")]
+    #[prost(int32, tag = "2" )]
     pub deleted: i32,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct RoleInfo {
-    #[prost(int64, tag = "1")]
+    #[prost(int64, tag = "1" )]
     pub id: i64,
-    #[prost(string, tag = "2")]
+    #[prost(string, tag = "2" )]
     pub name: ::prost::alloc::string::String,
-    #[prost(string, tag = "3")]
+    #[prost(string, tag = "3" )]
     pub description: ::prost::alloc::string::String,
-    #[prost(string, tag = "4")]
+    #[prost(string, tag = "4" )]
     pub r#type: ::prost::alloc::string::String,
-    #[prost(int32, tag = "5")]
+    #[prost(int32, tag = "5" )]
     pub status: i32,
-    #[prost(int64, tag = "6")]
+    #[prost(int64, tag = "6" )]
     pub created_at: i64,
-    #[prost(int64, tag = "7")]
+    #[prost(int64, tag = "7" )]
     pub updated_at: i64,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct ListRolesRequest {
-    #[prost(int32, tag = "1")]
+    #[prost(int32, tag = "1" )]
     pub page: i32,
-    #[prost(int32, tag = "2")]
+    #[prost(int32, tag = "2" )]
     pub page_size: i32,
-    #[prost(string, tag = "3")]
+    #[prost(string, tag = "3" )]
     pub keyword: ::prost::alloc::string::String,
-    #[prost(string, tag = "4")]
+    #[prost(string, tag = "4" )]
     pub r#type: ::prost::alloc::string::String,
-    #[prost(int32, tag = "5")]
+    #[prost(int32, tag = "5" )]
     pub status: i32,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ListRolesResponse {
-    #[prost(message, repeated, tag = "1")]
+    #[prost(message, repeated, tag = "1" )]
     pub roles: ::prost::alloc::vec::Vec<RoleInfo>,
-    #[prost(int64, tag = "2")]
+    #[prost(int64, tag = "2" )]
     pub total: i64,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct GetRoleRequest {
-    #[prost(string, tag = "1")]
+    #[prost(string, tag = "1" )]
     pub name: ::prost::alloc::string::String,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct GetRoleResponse {
-    #[prost(message, optional, tag = "1")]
+    #[prost(message, optional, tag = "1" )]
     pub role: ::core::option::Option<RoleInfo>,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct CreateRoleRequest {
-    #[prost(string, tag = "1")]
+    #[prost(string, tag = "1" )]
     pub name: ::prost::alloc::string::String,
-    #[prost(string, tag = "2")]
+    #[prost(string, tag = "2" )]
     pub description: ::prost::alloc::string::String,
-    #[prost(string, tag = "3")]
+    #[prost(string, tag = "3" )]
     pub r#type: ::prost::alloc::string::String,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct CreateRoleResponse {
-    #[prost(message, optional, tag = "1")]
+    #[prost(message, optional, tag = "1" )]
     pub role: ::core::option::Option<RoleInfo>,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct UpdateRoleRequest {
-    #[prost(string, tag = "1")]
+    #[prost(string, tag = "1" )]
     pub name: ::prost::alloc::string::String,
-    #[prost(string, tag = "2")]
+    #[prost(string, tag = "2" )]
     pub description: ::prost::alloc::string::String,
-    #[prost(string, tag = "3")]
+    #[prost(string, tag = "3" )]
     pub r#type: ::prost::alloc::string::String,
-    #[prost(int32, tag = "4")]
+    #[prost(int32, tag = "4" )]
     pub status: i32,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct UpdateRoleResponse {
-    #[prost(bool, tag = "1")]
+    #[prost(bool, tag = "1" )]
     pub success: bool,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct DeleteRoleRequest {
-    #[prost(string, tag = "1")]
+    #[prost(string, tag = "1" )]
     pub name: ::prost::alloc::string::String,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct DeleteRoleResponse {
-    #[prost(bool, tag = "1")]
+    #[prost(bool, tag = "1" )]
     pub success: bool,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct GetRolePermissionsRequest {
-    #[prost(string, tag = "1")]
+    #[prost(string, tag = "1" )]
     pub name: ::prost::alloc::string::String,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct GetRolePermissionsResponse {
-    #[prost(string, repeated, tag = "1")]
+    #[prost(string, repeated, tag = "1" )]
     pub permissions: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct SetRolePermissionsRequest {
-    #[prost(string, tag = "1")]
+    #[prost(string, tag = "1" )]
     pub name: ::prost::alloc::string::String,
-    #[prost(string, repeated, tag = "2")]
+    #[prost(string, repeated, tag = "2" )]
     pub permissions: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct SetRolePermissionsResponse {
-    #[prost(bool, tag = "1")]
+    #[prost(bool, tag = "1" )]
     pub success: bool,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct GetRoleUsersRequest {
-    #[prost(string, tag = "1")]
+    #[prost(string, tag = "1" )]
     pub name: ::prost::alloc::string::String,
-    #[prost(int32, tag = "2")]
+    #[prost(int32, tag = "2" )]
     pub page: i32,
-    #[prost(int32, tag = "3")]
+    #[prost(int32, tag = "3" )]
     pub page_size: i32,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct GetRoleUsersResponse {
-    #[prost(message, repeated, tag = "1")]
+    #[prost(message, repeated, tag = "1" )]
     pub users: ::prost::alloc::vec::Vec<GetUserResponse>,
-    #[prost(int64, tag = "2")]
+    #[prost(int64, tag = "2" )]
     pub total: i64,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct DepartmentInfo {
-    #[prost(int64, tag = "1")]
+    #[prost(int64, tag = "1" )]
     pub id: i64,
-    #[prost(string, tag = "2")]
+    #[prost(string, tag = "2" )]
     pub name: ::prost::alloc::string::String,
-    #[prost(int64, tag = "3")]
+    #[prost(int64, tag = "3" )]
     pub parent_id: i64,
-    #[prost(string, tag = "4")]
+    #[prost(string, tag = "4" )]
     pub description: ::prost::alloc::string::String,
-    #[prost(int32, tag = "5")]
+    #[prost(int32, tag = "5" )]
     pub sort_order: i32,
-    #[prost(int32, tag = "6")]
+    #[prost(int32, tag = "6" )]
     pub status: i32,
-    #[prost(int64, tag = "7")]
+    #[prost(int64, tag = "7" )]
     pub created_at: i64,
-    #[prost(int64, tag = "8")]
+    #[prost(int64, tag = "8" )]
     pub updated_at: i64,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct ListDepartmentsRequest {
-    #[prost(int32, tag = "1")]
+    #[prost(int32, tag = "1" )]
     pub page: i32,
-    #[prost(int32, tag = "2")]
+    #[prost(int32, tag = "2" )]
     pub page_size: i32,
-    #[prost(string, tag = "3")]
+    #[prost(string, tag = "3" )]
     pub keyword: ::prost::alloc::string::String,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ListDepartmentsResponse {
-    #[prost(message, repeated, tag = "1")]
+    #[prost(message, repeated, tag = "1" )]
     pub departments: ::prost::alloc::vec::Vec<DepartmentInfo>,
-    #[prost(int64, tag = "2")]
+    #[prost(int64, tag = "2" )]
     pub total: i64,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct GetDepartmentRequest {
-    #[prost(int64, tag = "1")]
+    #[prost(int64, tag = "1" )]
     pub id: i64,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct GetDepartmentResponse {
-    #[prost(message, optional, tag = "1")]
+    #[prost(message, optional, tag = "1" )]
     pub department: ::core::option::Option<DepartmentInfo>,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct CreateDepartmentRequest {
-    #[prost(string, tag = "1")]
+    #[prost(string, tag = "1" )]
     pub name: ::prost::alloc::string::String,
-    #[prost(int64, tag = "2")]
+    #[prost(int64, tag = "2" )]
     pub parent_id: i64,
-    #[prost(string, tag = "3")]
+    #[prost(string, tag = "3" )]
     pub description: ::prost::alloc::string::String,
-    #[prost(int32, tag = "4")]
+    #[prost(int32, tag = "4" )]
     pub sort_order: i32,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct CreateDepartmentResponse {
-    #[prost(message, optional, tag = "1")]
+    #[prost(message, optional, tag = "1" )]
     pub department: ::core::option::Option<DepartmentInfo>,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct UpdateDepartmentRequest {
-    #[prost(int64, tag = "1")]
+    #[prost(int64, tag = "1" )]
     pub id: i64,
-    #[prost(string, tag = "2")]
+    #[prost(string, tag = "2" )]
     pub name: ::prost::alloc::string::String,
-    #[prost(int64, tag = "3")]
+    #[prost(int64, tag = "3" )]
     pub parent_id: i64,
-    #[prost(string, tag = "4")]
+    #[prost(string, tag = "4" )]
     pub description: ::prost::alloc::string::String,
-    #[prost(int32, tag = "5")]
+    #[prost(int32, tag = "5" )]
     pub sort_order: i32,
-    #[prost(int32, tag = "6")]
+    #[prost(int32, tag = "6" )]
     pub status: i32,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct UpdateDepartmentResponse {
-    #[prost(bool, tag = "1")]
+    #[prost(bool, tag = "1" )]
     pub success: bool,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct DeleteDepartmentRequest {
-    #[prost(int64, tag = "1")]
+    #[prost(int64, tag = "1" )]
     pub id: i64,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct DeleteDepartmentResponse {
-    #[prost(bool, tag = "1")]
+    #[prost(bool, tag = "1" )]
     pub success: bool,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct GetDepartmentTreeRequest {
-    #[prost(int64, tag = "1")]
+    #[prost(int64, tag = "1" )]
     pub parent_id: i64,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct GetDepartmentTreeResponse {
-    #[prost(message, repeated, tag = "1")]
+    #[prost(message, repeated, tag = "1" )]
     pub tree: ::prost::alloc::vec::Vec<DepartmentInfo>,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct GetDepartmentUsersRequest {
-    #[prost(int64, tag = "1")]
+    #[prost(int64, tag = "1" )]
     pub department_id: i64,
-    #[prost(int32, tag = "2")]
+    #[prost(int32, tag = "2" )]
     pub page: i32,
-    #[prost(int32, tag = "3")]
+    #[prost(int32, tag = "3" )]
     pub page_size: i32,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct GetDepartmentUsersResponse {
-    #[prost(message, repeated, tag = "1")]
+    #[prost(message, repeated, tag = "1" )]
     pub users: ::prost::alloc::vec::Vec<GetUserResponse>,
-    #[prost(int64, tag = "2")]
+    #[prost(int64, tag = "2" )]
     pub total: i64,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct DictionaryTypeInfo {
-    #[prost(int64, tag = "1")]
+    #[prost(int64, tag = "1" )]
     pub id: i64,
-    #[prost(string, tag = "2")]
+    #[prost(string, tag = "2" )]
     pub code: ::prost::alloc::string::String,
-    #[prost(string, tag = "3")]
+    #[prost(string, tag = "3" )]
     pub name: ::prost::alloc::string::String,
-    #[prost(string, tag = "4")]
+    #[prost(string, tag = "4" )]
     pub description: ::prost::alloc::string::String,
-    #[prost(int32, tag = "5")]
+    #[prost(int32, tag = "5" )]
     pub sort: i32,
-    #[prost(int32, tag = "6")]
+    #[prost(int32, tag = "6" )]
     pub status: i32,
-    #[prost(int64, tag = "7")]
+    #[prost(int64, tag = "7" )]
     pub created_at: i64,
-    #[prost(int64, tag = "8")]
+    #[prost(int64, tag = "8" )]
     pub updated_at: i64,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct DictionaryItemInfo {
-    #[prost(int64, tag = "1")]
+    #[prost(int64, tag = "1" )]
     pub id: i64,
-    #[prost(int64, tag = "2")]
+    #[prost(int64, tag = "2" )]
     pub type_id: i64,
-    #[prost(string, tag = "3")]
+    #[prost(string, tag = "3" )]
     pub label: ::prost::alloc::string::String,
-    #[prost(string, tag = "4")]
+    #[prost(string, tag = "4" )]
     pub value: ::prost::alloc::string::String,
-    #[prost(int32, tag = "5")]
+    #[prost(int32, tag = "5" )]
     pub sort: i32,
-    #[prost(int32, tag = "6")]
+    #[prost(int32, tag = "6" )]
     pub status: i32,
-    #[prost(bool, tag = "7")]
+    #[prost(bool, tag = "7" )]
     pub is_default: bool,
-    #[prost(string, tag = "8")]
+    #[prost(string, tag = "8" )]
     pub remark: ::prost::alloc::string::String,
-    #[prost(int64, tag = "9")]
+    #[prost(int64, tag = "9" )]
     pub created_at: i64,
-    #[prost(int64, tag = "10")]
+    #[prost(int64, tag = "10" )]
     pub updated_at: i64,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct ListDictionaryTypesRequest {
-    #[prost(int32, tag = "1")]
+    #[prost(int32, tag = "1" )]
     pub page: i32,
-    #[prost(int32, tag = "2")]
+    #[prost(int32, tag = "2" )]
     pub page_size: i32,
-    #[prost(string, tag = "3")]
+    #[prost(string, tag = "3" )]
     pub keyword: ::prost::alloc::string::String,
-    #[prost(int32, tag = "4")]
+    #[prost(int32, tag = "4" )]
     pub status: i32,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ListDictionaryTypesResponse {
-    #[prost(message, repeated, tag = "1")]
+    #[prost(message, repeated, tag = "1" )]
     pub types: ::prost::alloc::vec::Vec<DictionaryTypeInfo>,
-    #[prost(int64, tag = "2")]
+    #[prost(int64, tag = "2" )]
     pub total: i64,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct GetDictionaryTypeRequest {
-    #[prost(int64, tag = "1")]
+    #[prost(int64, tag = "1" )]
     pub id: i64,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct GetDictionaryTypeResponse {
-    #[prost(message, optional, tag = "1")]
+    #[prost(message, optional, tag = "1" )]
     pub r#type: ::core::option::Option<DictionaryTypeInfo>,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct CreateDictionaryTypeRequest {
-    #[prost(string, tag = "1")]
+    #[prost(string, tag = "1" )]
     pub code: ::prost::alloc::string::String,
-    #[prost(string, tag = "2")]
+    #[prost(string, tag = "2" )]
     pub name: ::prost::alloc::string::String,
-    #[prost(string, tag = "3")]
+    #[prost(string, tag = "3" )]
     pub description: ::prost::alloc::string::String,
-    #[prost(int32, tag = "4")]
+    #[prost(int32, tag = "4" )]
     pub sort: i32,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct CreateDictionaryTypeResponse {
-    #[prost(message, optional, tag = "1")]
+    #[prost(message, optional, tag = "1" )]
     pub r#type: ::core::option::Option<DictionaryTypeInfo>,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct UpdateDictionaryTypeRequest {
-    #[prost(int64, tag = "1")]
+    #[prost(int64, tag = "1" )]
     pub id: i64,
-    #[prost(string, tag = "2")]
+    #[prost(string, tag = "2" )]
     pub name: ::prost::alloc::string::String,
-    #[prost(string, tag = "3")]
+    #[prost(string, tag = "3" )]
     pub description: ::prost::alloc::string::String,
-    #[prost(int32, tag = "4")]
+    #[prost(int32, tag = "4" )]
     pub sort: i32,
-    #[prost(int32, tag = "5")]
+    #[prost(int32, tag = "5" )]
     pub status: i32,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct UpdateDictionaryTypeResponse {
-    #[prost(bool, tag = "1")]
+    #[prost(bool, tag = "1" )]
     pub success: bool,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct DeleteDictionaryTypeRequest {
-    #[prost(int64, tag = "1")]
+    #[prost(int64, tag = "1" )]
     pub id: i64,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct DeleteDictionaryTypeResponse {
-    #[prost(bool, tag = "1")]
+    #[prost(bool, tag = "1" )]
     pub success: bool,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct ListDictionaryItemsRequest {
-    #[prost(int64, tag = "1")]
+    #[prost(int64, tag = "1" )]
     pub type_id: i64,
-    #[prost(string, tag = "2")]
+    #[prost(string, tag = "2" )]
     pub type_code: ::prost::alloc::string::String,
-    #[prost(string, tag = "3")]
+    #[prost(string, tag = "3" )]
     pub keyword: ::prost::alloc::string::String,
-    #[prost(int32, tag = "4")]
+    #[prost(int32, tag = "4" )]
     pub status: i32,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ListDictionaryItemsResponse {
-    #[prost(message, repeated, tag = "1")]
+    #[prost(message, repeated, tag = "1" )]
     pub items: ::prost::alloc::vec::Vec<DictionaryItemInfo>,
-    #[prost(int64, tag = "2")]
+    #[prost(int64, tag = "2" )]
     pub total: i64,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct GetDictionaryItemRequest {
-    #[prost(int64, tag = "1")]
+    #[prost(int64, tag = "1" )]
     pub id: i64,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct GetDictionaryItemResponse {
-    #[prost(message, optional, tag = "1")]
+    #[prost(message, optional, tag = "1" )]
     pub item: ::core::option::Option<DictionaryItemInfo>,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct CreateDictionaryItemRequest {
-    #[prost(int64, tag = "1")]
+    #[prost(int64, tag = "1" )]
     pub type_id: i64,
-    #[prost(string, tag = "2")]
+    #[prost(string, tag = "2" )]
     pub label: ::prost::alloc::string::String,
-    #[prost(string, tag = "3")]
+    #[prost(string, tag = "3" )]
     pub value: ::prost::alloc::string::String,
-    #[prost(int32, tag = "4")]
+    #[prost(int32, tag = "4" )]
     pub sort: i32,
-    #[prost(int32, tag = "5")]
+    #[prost(int32, tag = "5" )]
     pub status: i32,
-    #[prost(bool, tag = "6")]
+    #[prost(bool, tag = "6" )]
     pub is_default: bool,
-    #[prost(string, tag = "7")]
+    #[prost(string, tag = "7" )]
     pub remark: ::prost::alloc::string::String,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct CreateDictionaryItemResponse {
-    #[prost(message, optional, tag = "1")]
+    #[prost(message, optional, tag = "1" )]
     pub item: ::core::option::Option<DictionaryItemInfo>,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct UpdateDictionaryItemRequest {
-    #[prost(int64, tag = "1")]
+    #[prost(int64, tag = "1" )]
     pub id: i64,
-    #[prost(string, tag = "2")]
+    #[prost(string, tag = "2" )]
     pub label: ::prost::alloc::string::String,
-    #[prost(string, tag = "3")]
+    #[prost(string, tag = "3" )]
     pub value: ::prost::alloc::string::String,
-    #[prost(int32, tag = "4")]
+    #[prost(int32, tag = "4" )]
     pub sort: i32,
-    #[prost(int32, tag = "5")]
+    #[prost(int32, tag = "5" )]
     pub status: i32,
-    #[prost(bool, tag = "6")]
+    #[prost(bool, tag = "6" )]
     pub is_default: bool,
-    #[prost(string, tag = "7")]
+    #[prost(string, tag = "7" )]
     pub remark: ::prost::alloc::string::String,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct UpdateDictionaryItemResponse {
-    #[prost(bool, tag = "1")]
+    #[prost(bool, tag = "1" )]
     pub success: bool,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct DeleteDictionaryItemRequest {
-    #[prost(int64, tag = "1")]
+    #[prost(int64, tag = "1" )]
     pub id: i64,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct DeleteDictionaryItemResponse {
-    #[prost(bool, tag = "1")]
+    #[prost(bool, tag = "1" )]
     pub success: bool,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct AnnouncementInfo {
-    #[prost(int64, tag = "1")]
+    #[prost(int64, tag = "1" )]
     pub id: i64,
-    #[prost(string, tag = "2")]
+    #[prost(string, tag = "2" )]
     pub title: ::prost::alloc::string::String,
-    #[prost(string, tag = "3")]
+    #[prost(string, tag = "3" )]
     pub content: ::prost::alloc::string::String,
-    #[prost(string, tag = "4")]
+    #[prost(string, tag = "4" )]
     pub r#type: ::prost::alloc::string::String,
-    #[prost(int32, tag = "5")]
+    #[prost(int32, tag = "5" )]
     pub priority: i32,
-    #[prost(bool, tag = "6")]
+    #[prost(bool, tag = "6" )]
     pub is_pinned: bool,
-    #[prost(bool, tag = "7")]
+    #[prost(bool, tag = "7" )]
     pub is_active: bool,
-    #[prost(string, tag = "8")]
+    #[prost(string, tag = "8" )]
     pub created_by: ::prost::alloc::string::String,
-    #[prost(string, tag = "9")]
+    #[prost(string, tag = "9" )]
     pub start_time: ::prost::alloc::string::String,
-    #[prost(string, tag = "10")]
+    #[prost(string, tag = "10" )]
     pub end_time: ::prost::alloc::string::String,
-    #[prost(int64, tag = "11")]
+    #[prost(int64, tag = "11" )]
     pub created_at: i64,
-    #[prost(int64, tag = "12")]
+    #[prost(int64, tag = "12" )]
     pub updated_at: i64,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct ListAnnouncementsRequest {
-    #[prost(int32, tag = "1")]
+    #[prost(int32, tag = "1" )]
     pub page: i32,
-    #[prost(int32, tag = "2")]
+    #[prost(int32, tag = "2" )]
     pub page_size: i32,
-    #[prost(int32, tag = "3")]
+    #[prost(int32, tag = "3" )]
     pub is_active: i32,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ListAnnouncementsResponse {
-    #[prost(message, repeated, tag = "1")]
+    #[prost(message, repeated, tag = "1" )]
     pub announcements: ::prost::alloc::vec::Vec<AnnouncementInfo>,
-    #[prost(int64, tag = "2")]
+    #[prost(int64, tag = "2" )]
     pub total: i64,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct GetAnnouncementRequest {
-    #[prost(int64, tag = "1")]
+    #[prost(int64, tag = "1" )]
     pub id: i64,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct GetAnnouncementResponse {
-    #[prost(message, optional, tag = "1")]
+    #[prost(message, optional, tag = "1" )]
     pub announcement: ::core::option::Option<AnnouncementInfo>,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct CreateAnnouncementRequest {
-    #[prost(string, tag = "1")]
+    #[prost(string, tag = "1" )]
     pub title: ::prost::alloc::string::String,
-    #[prost(string, tag = "2")]
+    #[prost(string, tag = "2" )]
     pub content: ::prost::alloc::string::String,
-    #[prost(string, tag = "3")]
+    #[prost(string, tag = "3" )]
     pub r#type: ::prost::alloc::string::String,
-    #[prost(int32, tag = "4")]
+    #[prost(int32, tag = "4" )]
     pub priority: i32,
-    #[prost(bool, tag = "5")]
+    #[prost(bool, tag = "5" )]
     pub is_pinned: bool,
-    #[prost(bool, tag = "6")]
+    #[prost(bool, tag = "6" )]
     pub is_active: bool,
-    #[prost(string, tag = "7")]
+    #[prost(string, tag = "7" )]
     pub start_time: ::prost::alloc::string::String,
-    #[prost(string, tag = "8")]
+    #[prost(string, tag = "8" )]
     pub end_time: ::prost::alloc::string::String,
-    #[prost(string, tag = "9")]
+    #[prost(string, tag = "9" )]
     pub created_by: ::prost::alloc::string::String,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct CreateAnnouncementResponse {
-    #[prost(message, optional, tag = "1")]
+    #[prost(message, optional, tag = "1" )]
     pub announcement: ::core::option::Option<AnnouncementInfo>,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct UpdateAnnouncementRequest {
-    #[prost(int64, tag = "1")]
+    #[prost(int64, tag = "1" )]
     pub id: i64,
-    #[prost(string, tag = "2")]
+    #[prost(string, tag = "2" )]
     pub title: ::prost::alloc::string::String,
-    #[prost(string, tag = "3")]
+    #[prost(string, tag = "3" )]
     pub content: ::prost::alloc::string::String,
-    #[prost(string, tag = "4")]
+    #[prost(string, tag = "4" )]
     pub r#type: ::prost::alloc::string::String,
-    #[prost(int32, tag = "5")]
+    #[prost(int32, tag = "5" )]
     pub priority: i32,
-    #[prost(bool, tag = "6")]
+    #[prost(bool, tag = "6" )]
     pub is_pinned: bool,
-    #[prost(bool, tag = "7")]
+    #[prost(bool, tag = "7" )]
     pub is_active: bool,
-    #[prost(string, tag = "8")]
+    #[prost(string, tag = "8" )]
     pub start_time: ::prost::alloc::string::String,
-    #[prost(string, tag = "9")]
+    #[prost(string, tag = "9" )]
     pub end_time: ::prost::alloc::string::String,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct UpdateAnnouncementResponse {
-    #[prost(bool, tag = "1")]
+    #[prost(bool, tag = "1" )]
     pub success: bool,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct DeleteAnnouncementRequest {
-    #[prost(int64, tag = "1")]
+    #[prost(int64, tag = "1" )]
     pub id: i64,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct DeleteAnnouncementResponse {
-    #[prost(bool, tag = "1")]
+    #[prost(bool, tag = "1" )]
     pub success: bool,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct SystemConfigInfo {
-    #[prost(int64, tag = "1")]
+    #[prost(int64, tag = "1" )]
     pub id: i64,
-    #[prost(string, tag = "2")]
+    #[prost(string, tag = "2" )]
     pub category: ::prost::alloc::string::String,
-    #[prost(string, tag = "3")]
+    #[prost(string, tag = "3" )]
     pub key: ::prost::alloc::string::String,
-    #[prost(string, tag = "4")]
+    #[prost(string, tag = "4" )]
     pub value: ::prost::alloc::string::String,
-    #[prost(string, tag = "5")]
+    #[prost(string, tag = "5" )]
     pub r#type: ::prost::alloc::string::String,
-    #[prost(string, tag = "6")]
+    #[prost(string, tag = "6" )]
     pub label: ::prost::alloc::string::String,
-    #[prost(string, tag = "7")]
+    #[prost(string, tag = "7" )]
     pub description: ::prost::alloc::string::String,
-    #[prost(int32, tag = "8")]
+    #[prost(int32, tag = "8" )]
     pub sort: i32,
-    #[prost(int32, tag = "9")]
+    #[prost(int32, tag = "9" )]
     pub status: i32,
-    #[prost(int64, tag = "10")]
+    #[prost(int64, tag = "10" )]
     pub created_at: i64,
-    #[prost(int64, tag = "11")]
+    #[prost(int64, tag = "11" )]
     pub updated_at: i64,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct ListSystemConfigsRequest {
-    #[prost(string, tag = "1")]
+    #[prost(string, tag = "1" )]
     pub category: ::prost::alloc::string::String,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ListSystemConfigsResponse {
-    #[prost(message, repeated, tag = "1")]
+    #[prost(message, repeated, tag = "1" )]
     pub configs: ::prost::alloc::vec::Vec<SystemConfigInfo>,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct UpdateSystemConfigRequest {
-    #[prost(string, tag = "1")]
+    #[prost(string, tag = "1" )]
     pub key: ::prost::alloc::string::String,
-    #[prost(string, tag = "2")]
+    #[prost(string, tag = "2" )]
     pub value: ::prost::alloc::string::String,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct UpdateSystemConfigResponse {
-    #[prost(bool, tag = "1")]
+    #[prost(bool, tag = "1" )]
     pub success: bool,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct BatchUpdateSystemConfigsRequest {
-    #[prost(message, repeated, tag = "1")]
+    #[prost(message, repeated, tag = "1" )]
     pub configs: ::prost::alloc::vec::Vec<UpdateSystemConfigRequest>,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct BatchUpdateSystemConfigsResponse {
-    #[prost(bool, tag = "1")]
+    #[prost(bool, tag = "1" )]
     pub success: bool,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct ImportUsersRequest {
-    #[prost(string, tag = "1")]
+    #[prost(string, tag = "1" )]
     pub filename: ::prost::alloc::string::String,
-    #[prost(string, tag = "2")]
+    #[prost(string, tag = "2" )]
     pub format: ::prost::alloc::string::String,
-    #[prost(string, repeated, tag = "3")]
+    #[prost(string, repeated, tag = "3" )]
     pub headers: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
-    #[prost(string, tag = "4")]
+    #[prost(string, tag = "4" )]
     pub data_base64: ::prost::alloc::string::String,
     /// skip/overwrite
-    #[prost(string, tag = "5")]
+    #[prost(string, tag = "5" )]
     pub update_mode: ::prost::alloc::string::String,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct ImportUsersResponse {
-    #[prost(int32, tag = "1")]
+    #[prost(int32, tag = "1" )]
     pub total: i32,
-    #[prost(int32, tag = "2")]
+    #[prost(int32, tag = "2" )]
     pub success_count: i32,
-    #[prost(int32, tag = "3")]
+    #[prost(int32, tag = "3" )]
     pub fail_count: i32,
-    #[prost(string, repeated, tag = "4")]
+    #[prost(string, repeated, tag = "4" )]
     pub errors: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct ExportUsersRequest {
-    #[prost(string, tag = "1")]
+    #[prost(string, tag = "1" )]
     pub format: ::prost::alloc::string::String,
-    #[prost(string, tag = "2")]
+    #[prost(string, tag = "2" )]
     pub keyword: ::prost::alloc::string::String,
-    #[prost(int32, tag = "3")]
+    #[prost(int32, tag = "3" )]
     pub status: i32,
-    #[prost(string, tag = "4")]
+    #[prost(string, tag = "4" )]
     pub role: ::prost::alloc::string::String,
 }
 #[derive(serde::Serialize, serde::Deserialize)]
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct ExportUsersResponse {
-    #[prost(bytes = "vec", tag = "1")]
+    #[prost(bytes = "vec" , tag = "1" )]
     pub data: ::prost::alloc::vec::Vec<u8>,
-    #[prost(string, tag = "2")]
+    #[prost(string, tag = "2" )]
     pub filename: ::prost::alloc::string::String,
-    #[prost(string, tag = "3")]
+    #[prost(string, tag = "3" )]
     pub format: ::prost::alloc::string::String,
 }
 /// Generated client implementations.
@@ -1037,13 +1037,13 @@ pub mod user_service_client {
                 .await
                 .map_err(|e| {
                     tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
+                        format!("Service was not ready: {}" , e.into()),
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static("/user.UserService/GetUser");
+            let path = http::uri::PathAndQuery::from_static("/user.UserService/GetUser" );
             let mut req = request.into_request();
-            req.extensions_mut().insert(GrpcMethod::new("user.UserService", "GetUser"));
+            req.extensions_mut().insert(GrpcMethod::new("user.UserService" , "GetUser" ));
             self.inner.unary(req, path, codec).await
         }
         pub async fn create_user(
@@ -1058,16 +1058,16 @@ pub mod user_service_client {
                 .await
                 .map_err(|e| {
                     tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
+                        format!("Service was not ready: {}" , e.into()),
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/user.UserService/CreateUser",
+                "/user.UserService/CreateUser" ,
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("user.UserService", "CreateUser"));
+                .insert(GrpcMethod::new("user.UserService" , "CreateUser" ));
             self.inner.unary(req, path, codec).await
         }
         pub async fn update_user(
@@ -1082,16 +1082,16 @@ pub mod user_service_client {
                 .await
                 .map_err(|e| {
                     tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
+                        format!("Service was not ready: {}" , e.into()),
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/user.UserService/UpdateUser",
+                "/user.UserService/UpdateUser" ,
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("user.UserService", "UpdateUser"));
+                .insert(GrpcMethod::new("user.UserService" , "UpdateUser" ));
             self.inner.unary(req, path, codec).await
         }
         pub async fn delete_user(
@@ -1106,16 +1106,16 @@ pub mod user_service_client {
                 .await
                 .map_err(|e| {
                     tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
+                        format!("Service was not ready: {}" , e.into()),
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/user.UserService/DeleteUser",
+                "/user.UserService/DeleteUser" ,
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("user.UserService", "DeleteUser"));
+                .insert(GrpcMethod::new("user.UserService" , "DeleteUser" ));
             self.inner.unary(req, path, codec).await
         }
         pub async fn list_users(
@@ -1130,16 +1130,16 @@ pub mod user_service_client {
                 .await
                 .map_err(|e| {
                     tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
+                        format!("Service was not ready: {}" , e.into()),
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/user.UserService/ListUsers",
+                "/user.UserService/ListUsers" ,
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("user.UserService", "ListUsers"));
+                .insert(GrpcMethod::new("user.UserService" , "ListUsers" ));
             self.inner.unary(req, path, codec).await
         }
         pub async fn update_user_status(
@@ -1154,16 +1154,16 @@ pub mod user_service_client {
                 .await
                 .map_err(|e| {
                     tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
+                        format!("Service was not ready: {}" , e.into()),
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/user.UserService/UpdateUserStatus",
+                "/user.UserService/UpdateUserStatus" ,
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("user.UserService", "UpdateUserStatus"));
+                .insert(GrpcMethod::new("user.UserService" , "UpdateUserStatus" ));
             self.inner.unary(req, path, codec).await
         }
         pub async fn update_user_role(
@@ -1178,16 +1178,16 @@ pub mod user_service_client {
                 .await
                 .map_err(|e| {
                     tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
+                        format!("Service was not ready: {}" , e.into()),
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/user.UserService/UpdateUserRole",
+                "/user.UserService/UpdateUserRole" ,
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("user.UserService", "UpdateUserRole"));
+                .insert(GrpcMethod::new("user.UserService" , "UpdateUserRole" ));
             self.inner.unary(req, path, codec).await
         }
         pub async fn reset_password(
@@ -1202,16 +1202,16 @@ pub mod user_service_client {
                 .await
                 .map_err(|e| {
                     tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
+                        format!("Service was not ready: {}" , e.into()),
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/user.UserService/ResetPassword",
+                "/user.UserService/ResetPassword" ,
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("user.UserService", "ResetPassword"));
+                .insert(GrpcMethod::new("user.UserService" , "ResetPassword" ));
             self.inner.unary(req, path, codec).await
         }
         pub async fn batch_update_user_role(
@@ -1226,16 +1226,16 @@ pub mod user_service_client {
                 .await
                 .map_err(|e| {
                     tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
+                        format!("Service was not ready: {}" , e.into()),
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/user.UserService/BatchUpdateUserRole",
+                "/user.UserService/BatchUpdateUserRole" ,
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("user.UserService", "BatchUpdateUserRole"));
+                .insert(GrpcMethod::new("user.UserService" , "BatchUpdateUserRole" ));
             self.inner.unary(req, path, codec).await
         }
         pub async fn batch_update_user_status(
@@ -1250,16 +1250,16 @@ pub mod user_service_client {
                 .await
                 .map_err(|e| {
                     tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
+                        format!("Service was not ready: {}" , e.into()),
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/user.UserService/BatchUpdateUserStatus",
+                "/user.UserService/BatchUpdateUserStatus" ,
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("user.UserService", "BatchUpdateUserStatus"));
+                .insert(GrpcMethod::new("user.UserService" , "BatchUpdateUserStatus" ));
             self.inner.unary(req, path, codec).await
         }
         pub async fn batch_delete_users(
@@ -1274,16 +1274,16 @@ pub mod user_service_client {
                 .await
                 .map_err(|e| {
                     tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
+                        format!("Service was not ready: {}" , e.into()),
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/user.UserService/BatchDeleteUsers",
+                "/user.UserService/BatchDeleteUsers" ,
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("user.UserService", "BatchDeleteUsers"));
+                .insert(GrpcMethod::new("user.UserService" , "BatchDeleteUsers" ));
             self.inner.unary(req, path, codec).await
         }
         pub async fn list_roles(
@@ -1298,16 +1298,16 @@ pub mod user_service_client {
                 .await
                 .map_err(|e| {
                     tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
+                        format!("Service was not ready: {}" , e.into()),
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/user.UserService/ListRoles",
+                "/user.UserService/ListRoles" ,
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("user.UserService", "ListRoles"));
+                .insert(GrpcMethod::new("user.UserService" , "ListRoles" ));
             self.inner.unary(req, path, codec).await
         }
         pub async fn get_role(
@@ -1322,13 +1322,13 @@ pub mod user_service_client {
                 .await
                 .map_err(|e| {
                     tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
+                        format!("Service was not ready: {}" , e.into()),
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static("/user.UserService/GetRole");
+            let path = http::uri::PathAndQuery::from_static("/user.UserService/GetRole" );
             let mut req = request.into_request();
-            req.extensions_mut().insert(GrpcMethod::new("user.UserService", "GetRole"));
+            req.extensions_mut().insert(GrpcMethod::new("user.UserService" , "GetRole" ));
             self.inner.unary(req, path, codec).await
         }
         pub async fn create_role(
@@ -1343,16 +1343,16 @@ pub mod user_service_client {
                 .await
                 .map_err(|e| {
                     tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
+                        format!("Service was not ready: {}" , e.into()),
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/user.UserService/CreateRole",
+                "/user.UserService/CreateRole" ,
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("user.UserService", "CreateRole"));
+                .insert(GrpcMethod::new("user.UserService" , "CreateRole" ));
             self.inner.unary(req, path, codec).await
         }
         pub async fn update_role(
@@ -1367,16 +1367,16 @@ pub mod user_service_client {
                 .await
                 .map_err(|e| {
                     tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
+                        format!("Service was not ready: {}" , e.into()),
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/user.UserService/UpdateRole",
+                "/user.UserService/UpdateRole" ,
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("user.UserService", "UpdateRole"));
+                .insert(GrpcMethod::new("user.UserService" , "UpdateRole" ));
             self.inner.unary(req, path, codec).await
         }
         pub async fn delete_role(
@@ -1391,16 +1391,16 @@ pub mod user_service_client {
                 .await
                 .map_err(|e| {
                     tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
+                        format!("Service was not ready: {}" , e.into()),
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/user.UserService/DeleteRole",
+                "/user.UserService/DeleteRole" ,
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("user.UserService", "DeleteRole"));
+                .insert(GrpcMethod::new("user.UserService" , "DeleteRole" ));
             self.inner.unary(req, path, codec).await
         }
         pub async fn get_role_permissions(
@@ -1415,16 +1415,16 @@ pub mod user_service_client {
                 .await
                 .map_err(|e| {
                     tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
+                        format!("Service was not ready: {}" , e.into()),
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/user.UserService/GetRolePermissions",
+                "/user.UserService/GetRolePermissions" ,
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("user.UserService", "GetRolePermissions"));
+                .insert(GrpcMethod::new("user.UserService" , "GetRolePermissions" ));
             self.inner.unary(req, path, codec).await
         }
         pub async fn set_role_permissions(
@@ -1439,16 +1439,16 @@ pub mod user_service_client {
                 .await
                 .map_err(|e| {
                     tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
+                        format!("Service was not ready: {}" , e.into()),
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/user.UserService/SetRolePermissions",
+                "/user.UserService/SetRolePermissions" ,
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("user.UserService", "SetRolePermissions"));
+                .insert(GrpcMethod::new("user.UserService" , "SetRolePermissions" ));
             self.inner.unary(req, path, codec).await
         }
         pub async fn get_role_users(
@@ -1463,16 +1463,16 @@ pub mod user_service_client {
                 .await
                 .map_err(|e| {
                     tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
+                        format!("Service was not ready: {}" , e.into()),
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/user.UserService/GetRoleUsers",
+                "/user.UserService/GetRoleUsers" ,
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("user.UserService", "GetRoleUsers"));
+                .insert(GrpcMethod::new("user.UserService" , "GetRoleUsers" ));
             self.inner.unary(req, path, codec).await
         }
         pub async fn list_departments(
@@ -1487,16 +1487,16 @@ pub mod user_service_client {
                 .await
                 .map_err(|e| {
                     tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
+                        format!("Service was not ready: {}" , e.into()),
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/user.UserService/ListDepartments",
+                "/user.UserService/ListDepartments" ,
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("user.UserService", "ListDepartments"));
+                .insert(GrpcMethod::new("user.UserService" , "ListDepartments" ));
             self.inner.unary(req, path, codec).await
         }
         pub async fn get_department(
@@ -1511,16 +1511,16 @@ pub mod user_service_client {
                 .await
                 .map_err(|e| {
                     tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
+                        format!("Service was not ready: {}" , e.into()),
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/user.UserService/GetDepartment",
+                "/user.UserService/GetDepartment" ,
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("user.UserService", "GetDepartment"));
+                .insert(GrpcMethod::new("user.UserService" , "GetDepartment" ));
             self.inner.unary(req, path, codec).await
         }
         pub async fn create_department(
@@ -1535,16 +1535,16 @@ pub mod user_service_client {
                 .await
                 .map_err(|e| {
                     tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
+                        format!("Service was not ready: {}" , e.into()),
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/user.UserService/CreateDepartment",
+                "/user.UserService/CreateDepartment" ,
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("user.UserService", "CreateDepartment"));
+                .insert(GrpcMethod::new("user.UserService" , "CreateDepartment" ));
             self.inner.unary(req, path, codec).await
         }
         pub async fn update_department(
@@ -1559,16 +1559,16 @@ pub mod user_service_client {
                 .await
                 .map_err(|e| {
                     tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
+                        format!("Service was not ready: {}" , e.into()),
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/user.UserService/UpdateDepartment",
+                "/user.UserService/UpdateDepartment" ,
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("user.UserService", "UpdateDepartment"));
+                .insert(GrpcMethod::new("user.UserService" , "UpdateDepartment" ));
             self.inner.unary(req, path, codec).await
         }
         pub async fn delete_department(
@@ -1583,16 +1583,16 @@ pub mod user_service_client {
                 .await
                 .map_err(|e| {
                     tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
+                        format!("Service was not ready: {}" , e.into()),
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/user.UserService/DeleteDepartment",
+                "/user.UserService/DeleteDepartment" ,
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("user.UserService", "DeleteDepartment"));
+                .insert(GrpcMethod::new("user.UserService" , "DeleteDepartment" ));
             self.inner.unary(req, path, codec).await
         }
         pub async fn get_department_tree(
@@ -1607,16 +1607,16 @@ pub mod user_service_client {
                 .await
                 .map_err(|e| {
                     tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
+                        format!("Service was not ready: {}" , e.into()),
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/user.UserService/GetDepartmentTree",
+                "/user.UserService/GetDepartmentTree" ,
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("user.UserService", "GetDepartmentTree"));
+                .insert(GrpcMethod::new("user.UserService" , "GetDepartmentTree" ));
             self.inner.unary(req, path, codec).await
         }
         pub async fn get_department_users(
@@ -1631,16 +1631,16 @@ pub mod user_service_client {
                 .await
                 .map_err(|e| {
                     tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
+                        format!("Service was not ready: {}" , e.into()),
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/user.UserService/GetDepartmentUsers",
+                "/user.UserService/GetDepartmentUsers" ,
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("user.UserService", "GetDepartmentUsers"));
+                .insert(GrpcMethod::new("user.UserService" , "GetDepartmentUsers" ));
             self.inner.unary(req, path, codec).await
         }
         pub async fn list_dictionary_types(
@@ -1655,16 +1655,16 @@ pub mod user_service_client {
                 .await
                 .map_err(|e| {
                     tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
+                        format!("Service was not ready: {}" , e.into()),
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/user.UserService/ListDictionaryTypes",
+                "/user.UserService/ListDictionaryTypes" ,
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("user.UserService", "ListDictionaryTypes"));
+                .insert(GrpcMethod::new("user.UserService" , "ListDictionaryTypes" ));
             self.inner.unary(req, path, codec).await
         }
         pub async fn get_dictionary_type(
@@ -1679,16 +1679,16 @@ pub mod user_service_client {
                 .await
                 .map_err(|e| {
                     tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
+                        format!("Service was not ready: {}" , e.into()),
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/user.UserService/GetDictionaryType",
+                "/user.UserService/GetDictionaryType" ,
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("user.UserService", "GetDictionaryType"));
+                .insert(GrpcMethod::new("user.UserService" , "GetDictionaryType" ));
             self.inner.unary(req, path, codec).await
         }
         pub async fn create_dictionary_type(
@@ -1703,16 +1703,16 @@ pub mod user_service_client {
                 .await
                 .map_err(|e| {
                     tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
+                        format!("Service was not ready: {}" , e.into()),
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/user.UserService/CreateDictionaryType",
+                "/user.UserService/CreateDictionaryType" ,
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("user.UserService", "CreateDictionaryType"));
+                .insert(GrpcMethod::new("user.UserService" , "CreateDictionaryType" ));
             self.inner.unary(req, path, codec).await
         }
         pub async fn update_dictionary_type(
@@ -1727,16 +1727,16 @@ pub mod user_service_client {
                 .await
                 .map_err(|e| {
                     tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
+                        format!("Service was not ready: {}" , e.into()),
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/user.UserService/UpdateDictionaryType",
+                "/user.UserService/UpdateDictionaryType" ,
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("user.UserService", "UpdateDictionaryType"));
+                .insert(GrpcMethod::new("user.UserService" , "UpdateDictionaryType" ));
             self.inner.unary(req, path, codec).await
         }
         pub async fn delete_dictionary_type(
@@ -1751,16 +1751,16 @@ pub mod user_service_client {
                 .await
                 .map_err(|e| {
                     tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
+                        format!("Service was not ready: {}" , e.into()),
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/user.UserService/DeleteDictionaryType",
+                "/user.UserService/DeleteDictionaryType" ,
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("user.UserService", "DeleteDictionaryType"));
+                .insert(GrpcMethod::new("user.UserService" , "DeleteDictionaryType" ));
             self.inner.unary(req, path, codec).await
         }
         pub async fn list_dictionary_items(
@@ -1775,16 +1775,16 @@ pub mod user_service_client {
                 .await
                 .map_err(|e| {
                     tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
+                        format!("Service was not ready: {}" , e.into()),
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/user.UserService/ListDictionaryItems",
+                "/user.UserService/ListDictionaryItems" ,
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("user.UserService", "ListDictionaryItems"));
+                .insert(GrpcMethod::new("user.UserService" , "ListDictionaryItems" ));
             self.inner.unary(req, path, codec).await
         }
         pub async fn get_dictionary_item(
@@ -1799,16 +1799,16 @@ pub mod user_service_client {
                 .await
                 .map_err(|e| {
                     tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
+                        format!("Service was not ready: {}" , e.into()),
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/user.UserService/GetDictionaryItem",
+                "/user.UserService/GetDictionaryItem" ,
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("user.UserService", "GetDictionaryItem"));
+                .insert(GrpcMethod::new("user.UserService" , "GetDictionaryItem" ));
             self.inner.unary(req, path, codec).await
         }
         pub async fn create_dictionary_item(
@@ -1823,16 +1823,16 @@ pub mod user_service_client {
                 .await
                 .map_err(|e| {
                     tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
+                        format!("Service was not ready: {}" , e.into()),
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/user.UserService/CreateDictionaryItem",
+                "/user.UserService/CreateDictionaryItem" ,
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("user.UserService", "CreateDictionaryItem"));
+                .insert(GrpcMethod::new("user.UserService" , "CreateDictionaryItem" ));
             self.inner.unary(req, path, codec).await
         }
         pub async fn update_dictionary_item(
@@ -1847,16 +1847,16 @@ pub mod user_service_client {
                 .await
                 .map_err(|e| {
                     tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
+                        format!("Service was not ready: {}" , e.into()),
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/user.UserService/UpdateDictionaryItem",
+                "/user.UserService/UpdateDictionaryItem" ,
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("user.UserService", "UpdateDictionaryItem"));
+                .insert(GrpcMethod::new("user.UserService" , "UpdateDictionaryItem" ));
             self.inner.unary(req, path, codec).await
         }
         pub async fn delete_dictionary_item(
@@ -1871,16 +1871,16 @@ pub mod user_service_client {
                 .await
                 .map_err(|e| {
                     tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
+                        format!("Service was not ready: {}" , e.into()),
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/user.UserService/DeleteDictionaryItem",
+                "/user.UserService/DeleteDictionaryItem" ,
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("user.UserService", "DeleteDictionaryItem"));
+                .insert(GrpcMethod::new("user.UserService" , "DeleteDictionaryItem" ));
             self.inner.unary(req, path, codec).await
         }
         /// ============ 用户导入导出 ============
@@ -1896,16 +1896,16 @@ pub mod user_service_client {
                 .await
                 .map_err(|e| {
                     tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
+                        format!("Service was not ready: {}" , e.into()),
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/user.UserService/ImportUsers",
+                "/user.UserService/ImportUsers" ,
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("user.UserService", "ImportUsers"));
+                .insert(GrpcMethod::new("user.UserService" , "ImportUsers" ));
             self.inner.unary(req, path, codec).await
         }
         pub async fn export_users(
@@ -1920,16 +1920,16 @@ pub mod user_service_client {
                 .await
                 .map_err(|e| {
                     tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
+                        format!("Service was not ready: {}" , e.into()),
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/user.UserService/ExportUsers",
+                "/user.UserService/ExportUsers" ,
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("user.UserService", "ExportUsers"));
+                .insert(GrpcMethod::new("user.UserService" , "ExportUsers" ));
             self.inner.unary(req, path, codec).await
         }
         pub async fn list_announcements(
@@ -1944,16 +1944,16 @@ pub mod user_service_client {
                 .await
                 .map_err(|e| {
                     tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
+                        format!("Service was not ready: {}" , e.into()),
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/user.UserService/ListAnnouncements",
+                "/user.UserService/ListAnnouncements" ,
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("user.UserService", "ListAnnouncements"));
+                .insert(GrpcMethod::new("user.UserService" , "ListAnnouncements" ));
             self.inner.unary(req, path, codec).await
         }
         pub async fn get_announcement(
@@ -1968,16 +1968,16 @@ pub mod user_service_client {
                 .await
                 .map_err(|e| {
                     tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
+                        format!("Service was not ready: {}" , e.into()),
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/user.UserService/GetAnnouncement",
+                "/user.UserService/GetAnnouncement" ,
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("user.UserService", "GetAnnouncement"));
+                .insert(GrpcMethod::new("user.UserService" , "GetAnnouncement" ));
             self.inner.unary(req, path, codec).await
         }
         pub async fn create_announcement(
@@ -1992,16 +1992,16 @@ pub mod user_service_client {
                 .await
                 .map_err(|e| {
                     tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
+                        format!("Service was not ready: {}" , e.into()),
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/user.UserService/CreateAnnouncement",
+                "/user.UserService/CreateAnnouncement" ,
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("user.UserService", "CreateAnnouncement"));
+                .insert(GrpcMethod::new("user.UserService" , "CreateAnnouncement" ));
             self.inner.unary(req, path, codec).await
         }
         pub async fn update_announcement(
@@ -2016,16 +2016,16 @@ pub mod user_service_client {
                 .await
                 .map_err(|e| {
                     tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
+                        format!("Service was not ready: {}" , e.into()),
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/user.UserService/UpdateAnnouncement",
+                "/user.UserService/UpdateAnnouncement" ,
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("user.UserService", "UpdateAnnouncement"));
+                .insert(GrpcMethod::new("user.UserService" , "UpdateAnnouncement" ));
             self.inner.unary(req, path, codec).await
         }
         pub async fn delete_announcement(
@@ -2040,16 +2040,16 @@ pub mod user_service_client {
                 .await
                 .map_err(|e| {
                     tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
+                        format!("Service was not ready: {}" , e.into()),
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/user.UserService/DeleteAnnouncement",
+                "/user.UserService/DeleteAnnouncement" ,
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("user.UserService", "DeleteAnnouncement"));
+                .insert(GrpcMethod::new("user.UserService" , "DeleteAnnouncement" ));
             self.inner.unary(req, path, codec).await
         }
         pub async fn list_system_configs(
@@ -2064,16 +2064,16 @@ pub mod user_service_client {
                 .await
                 .map_err(|e| {
                     tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
+                        format!("Service was not ready: {}" , e.into()),
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/user.UserService/ListSystemConfigs",
+                "/user.UserService/ListSystemConfigs" ,
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("user.UserService", "ListSystemConfigs"));
+                .insert(GrpcMethod::new("user.UserService" , "ListSystemConfigs" ));
             self.inner.unary(req, path, codec).await
         }
         pub async fn update_system_config(
@@ -2088,16 +2088,16 @@ pub mod user_service_client {
                 .await
                 .map_err(|e| {
                     tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
+                        format!("Service was not ready: {}" , e.into()),
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/user.UserService/UpdateSystemConfig",
+                "/user.UserService/UpdateSystemConfig" ,
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("user.UserService", "UpdateSystemConfig"));
+                .insert(GrpcMethod::new("user.UserService" , "UpdateSystemConfig" ));
             self.inner.unary(req, path, codec).await
         }
         pub async fn batch_update_system_configs(
@@ -2112,16 +2112,16 @@ pub mod user_service_client {
                 .await
                 .map_err(|e| {
                     tonic::Status::unknown(
-                        format!("Service was not ready: {}", e.into()),
+                        format!("Service was not ready: {}" , e.into()),
                     )
                 })?;
             let codec = tonic_prost::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/user.UserService/BatchUpdateSystemConfigs",
+                "/user.UserService/BatchUpdateSystemConfigs" ,
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("user.UserService", "BatchUpdateSystemConfigs"));
+                .insert(GrpcMethod::new("user.UserService" , "BatchUpdateSystemConfigs" ));
             self.inner.unary(req, path, codec).await
         }
     }

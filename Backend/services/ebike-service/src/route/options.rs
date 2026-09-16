@@ -17,20 +17,20 @@ pub async fn options(
     State(state): State<AppState>,
     AxumJson(req): AxumJson<Value>,
 ) -> Response {
-    let method = req["method"].as_str().unwrap_or("");
+    let method = req["method" ].as_str().unwrap_or("" );
 
     match method {
         "query" => {
             match state.options_repo.query().await {
                 Ok(options) => common::ok_response(options).into_response(),
-                Err(e) => common::internal_error_response(&format!("{e:?}")).into_response(),
+                Err(e) => common::internal_error_response(&format!("{e:?}" )).into_response(),
             }
         }
         "update" => {
-            let name = req["name"].as_str().unwrap_or("");
-            let system = req["options"]["system"].as_i64().unwrap_or(0);
-            let alert = req["options"]["alert"].as_i64().unwrap_or(0);
-            let level = req["level"].as_i64().unwrap_or(5);
+            let name = req["name" ].as_str().unwrap_or("" );
+            let system = req["options" ]["system" ].as_i64().unwrap_or(0);
+            let alert = req["options" ]["alert" ].as_i64().unwrap_or(0);
+            let level = req["level" ].as_i64().unwrap_or(5);
 
             let info = OptionsInfo {
                 name: name.to_string(),
@@ -42,10 +42,10 @@ pub async fn options(
             };
 
             match state.options_repo.update(&info).await {
-                Ok(_) => common::success_with_message_response("success").into_response(),
-                Err(e) => common::internal_error_response(&format!("{e:?}")).into_response(),
+                Ok(_) => common::success_with_message_response("success" ).into_response(),
+                Err(e) => common::internal_error_response(&format!("{e:?}" )).into_response(),
             }
         }
-        _ => common::bad_request_response("unknown method").into_response(),
+        _ => common::bad_request_response("unknown method" ).into_response(),
     }
 }

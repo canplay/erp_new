@@ -39,16 +39,16 @@ pub async fn grpc_error_handler_middleware(
     let path = request.uri().path().to_string();
     let trace_id = request
         .headers()
-        .get("x-trace-id")
+        .get("x-trace-id" )
         .and_then(|v| v.to_str().ok())
-        .unwrap_or("unknown")
+        .unwrap_or("unknown" )
         .to_string();
 
     let response = next.run(request).await;
 
     if response.status().is_server_error() {
         tracing::error!(
-            "[gRPC] 上游服务返回服务端错误 | trace_id={} method={} path={} status={}",
+            "[gRPC] 上游服务返回服务端错误 | trace_id={} method={} path={} status={}" ,
             trace_id,
             method,
             path,
@@ -56,7 +56,7 @@ pub async fn grpc_error_handler_middleware(
         );
     } else if response.status().is_client_error() {
         tracing::warn!(
-            "[gRPC] 上游服务返回客户端错误 | trace_id={} method={} path={} status={}",
+            "[gRPC] 上游服务返回客户端错误 | trace_id={} method={} path={} status={}" ,
             trace_id,
             method,
             path,
@@ -74,11 +74,11 @@ pub async fn grpc_error_handler_middleware(
 #[must_use]
 pub fn grpc_unavailable_response(service_name: &str, err: &tonic::Status) -> Response {
     let (status_code, message) = if err.code() == tonic::Code::Unavailable {
-        (StatusCode::SERVICE_UNAVAILABLE, format!("服务不可用: {service_name}"))
+        (StatusCode::SERVICE_UNAVAILABLE, format!("服务不可用: {service_name}" ))
     } else {
         (
             StatusCode::BAD_GATEWAY,
-            format!("上游服务错误 ({}): {}", service_name, err.message()),
+            format!("上游服务错误 ({}): {}" , service_name, err.message()),
         )
     };
 

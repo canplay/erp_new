@@ -62,7 +62,7 @@ impl AuditRepository {
                WHERE ($1 = '' OR username ILIKE '%' || $1 || '%')
                  AND ($2::smallint IS NULL OR login_status = $2)
                  AND ($3::timestamptz IS NULL OR created_at >= $3)
-                 AND ($4::timestamptz IS NULL OR created_at <= $4)"#).bind(username.unwrap_or("")).bind(status).bind(start_dt).bind(end_dt).bind()
+                 AND ($4::timestamptz IS NULL OR created_at <= $4)"#).bind(username.unwrap_or(" ")).bind(status).bind(start_dt).bind(end_dt).bind()
         .fetch_one(&self.pool)
         .await?
         .unwrap_or(0);
@@ -78,7 +78,7 @@ impl AuditRepository {
               AND ($4::timestamptz IS NULL OR created_at <= $4)
             ORDER BY created_at DESC
             LIMIT $5 OFFSET $6
-            "#).bind(username.unwrap_or("")).bind(status).bind(start_dt).bind(end_dt).bind(i64::from(page_size)).bind(i64::from(offset)).bind()
+            "#).bind(username.unwrap_or(" ")).bind(status).bind(start_dt).bind(end_dt).bind(i64::from(page_size)).bind(i64::from(offset)).bind()
         .fetch_all(&self.pool)
         .await?;
 
@@ -87,19 +87,19 @@ impl AuditRepository {
 
     /// 获取登录统计
     pub async fn get_login_statistics(&self) -> AppResult<LoginStatistics> {
-        let total_count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM sys_login_logs")
+        let total_count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM sys_login_logs" )
             .fetch_one(&self.pool)
             .await?
             .unwrap_or(0);
 
         let success_count: i64 =
-            sqlx::query_scalar("SELECT COUNT(*) FROM sys_login_logs WHERE login_status = 1")
+            sqlx::query_scalar("SELECT COUNT(*) FROM sys_login_logs WHERE login_status = 1" )
                 .fetch_one(&self.pool)
                 .await?
                 .unwrap_or(0);
 
         let fail_count: i64 =
-            sqlx::query_scalar("SELECT COUNT(*) FROM sys_login_logs WHERE login_status = 2")
+            sqlx::query_scalar("SELECT COUNT(*) FROM sys_login_logs WHERE login_status = 2" )
                 .fetch_one(&self.pool)
                 .await?
                 .unwrap_or(0);
@@ -109,17 +109,17 @@ impl AuditRepository {
             .and_hms_opt(0, 0, 0)
             .map(|n| DateTime::<Utc>::from_naive_utc_and_offset(n, Utc))
             .ok_or_else(|| AppError::InvalidParam("无效的 HMS 时间".to_string()))?;
-        let today_count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM sys_login_logs WHERE created_at >= $1").bind(today_start).bind()
+        let today_count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM sys_login_logs WHERE created_at >= $1" ).bind(today_start).bind()
         .fetch_one(&self.pool)
         .await?
         .unwrap_or(0);
 
-        let today_success: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM sys_login_logs WHERE login_status = 1 AND created_at >= $1").bind(today_start).bind()
+        let today_success: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM sys_login_logs WHERE login_status = 1 AND created_at >= $1" ).bind(today_start).bind()
         .fetch_one(&self.pool)
         .await?
         .unwrap_or(0);
 
-        let today_fail: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM sys_login_logs WHERE login_status = 2 AND created_at >= $1").bind(today_start).bind()
+        let today_fail: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM sys_login_logs WHERE login_status = 2 AND created_at >= $1" ).bind(today_start).bind()
         .fetch_one(&self.pool)
         .await?
         .unwrap_or(0);
@@ -177,7 +177,7 @@ impl AuditRepository {
                  AND ($3 = '' OR business_type = $3)
                  AND ($4::smallint IS NULL OR status = $4)
                  AND ($5::timestamptz IS NULL OR created_at >= $5)
-                 AND ($6::timestamptz IS NULL OR created_at <= $6)"#).bind(username.unwrap_or("")).bind(module.unwrap_or("")).bind(business_type.unwrap_or("")).bind(status).bind(start_dt).bind(end_dt).bind()
+                 AND ($6::timestamptz IS NULL OR created_at <= $6)"#).bind(username.unwrap_or(" ")).bind(module.unwrap_or("" )).bind(business_type.unwrap_or("" )).bind(status).bind(start_dt).bind(end_dt).bind()
         .fetch_one(&self.pool)
         .await?
         .unwrap_or(0);
@@ -196,7 +196,7 @@ impl AuditRepository {
               AND ($6::timestamptz IS NULL OR created_at <= $6)
             ORDER BY created_at DESC
             LIMIT $7 OFFSET $8
-            "#).bind(username.unwrap_or("")).bind(module.unwrap_or("")).bind(business_type.unwrap_or("")).bind(status).bind(start_dt).bind(end_dt).bind(i64::from(page_size)).bind(i64::from(offset)).bind()
+            "#).bind(username.unwrap_or(" ")).bind(module.unwrap_or("" )).bind(business_type.unwrap_or("" )).bind(status).bind(start_dt).bind(end_dt).bind(i64::from(page_size)).bind(i64::from(offset)).bind()
         .fetch_all(&self.pool)
         .await?;
 
@@ -224,7 +224,7 @@ impl AuditRepository {
             return Ok(0);
         }
 
-        let result = sqlx::query("DELETE FROM sys_operation_logs WHERE id = ANY($1)").bind(ids)
+        let result = sqlx::query("DELETE FROM sys_operation_logs WHERE id = ANY($1)" ).bind(ids)
             .execute(&self.pool)
             .await?;
 
@@ -241,7 +241,7 @@ impl AuditRepository {
         let offset = (query.page.saturating_sub(1)) * query.page_size;
         let start_dt = query.start_date.as_deref().and_then(parse_datetime);
         let end_dt = query.end_date.as_deref().and_then(parse_datetime);
-        let path_keyword = query.path_keyword.as_deref().map(|p| format!("%{p}%"));
+        let path_keyword = query.path_keyword.as_deref().map(|p| format!("%{p}%" ));
         let (sc_low, sc_high) = match query.status_code {
             Some(2) => (Some(200), Some(300)),
             Some(4) => (Some(400), Some(500)),
@@ -260,7 +260,7 @@ impl AuditRepository {
                  AND ($6::timestamptz IS NULL OR created_at <= $6)
                  AND ($7::int IS NULL OR status_code >= $7)
                  AND ($8::int IS NULL OR status_code < $8)
-                 AND ($9 = false OR status_code >= 400)"#).bind(query.method.as_deref().unwrap_or("")).bind(path_keyword.as_deref().unwrap_or("")).bind(query.min_response_time).bind(query.max_response_time).bind(start_dt).bind(end_dt).bind(sc_low).bind(sc_high).bind(errors_only).bind()
+                 AND ($9 = false OR status_code >= 400)"#).bind(query.method.as_deref().unwrap_or(" ")).bind(path_keyword.as_deref().unwrap_or("" )).bind(query.min_response_time).bind(query.max_response_time).bind(start_dt).bind(end_dt).bind(sc_low).bind(sc_high).bind(errors_only).bind()
         .fetch_one(&self.pool)
         .await?
         .unwrap_or(0);
@@ -280,7 +280,7 @@ impl AuditRepository {
                  AND ($8::int IS NULL OR status_code < $8)
                  AND ($9 = false OR status_code >= 400)
                ORDER BY created_at DESC
-               LIMIT $10 OFFSET $11"#).bind(query.method.as_deref().unwrap_or("")).bind(path_keyword.as_deref().unwrap_or("")).bind(query.min_response_time).bind(query.max_response_time).bind(start_dt).bind(end_dt).bind(sc_low).bind(sc_high).bind(errors_only).bind(i64::from(query.page_size)).bind(i64::from(offset)).bind()
+               LIMIT $10 OFFSET $11"#).bind(query.method.as_deref().unwrap_or(" ")).bind(path_keyword.as_deref().unwrap_or("" )).bind(query.min_response_time).bind(query.max_response_time).bind(start_dt).bind(end_dt).bind(sc_low).bind(sc_high).bind(errors_only).bind(i64::from(query.page_size)).bind(i64::from(offset)).bind()
         .fetch_all(&self.pool)
         .await?;
 
@@ -289,11 +289,11 @@ impl AuditRepository {
 
     /// 获取 API 调用统计
     pub async fn get_api_call_statistics(&self) -> AppResult<ApiCallStatistics> {
-        let total_calls: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM sys_api_call_logs")
+        let total_calls: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM sys_api_call_logs" )
             .fetch_one(&self.pool)
             .await?
             .unwrap_or(0);
-        let success_calls: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM sys_api_call_logs WHERE status_code >= 200 AND status_code < 400").bind()
+        let success_calls: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM sys_api_call_logs WHERE status_code >= 200 AND status_code < 400" ).bind()
         .fetch_one(&self.pool)
         .await?
         .unwrap_or(0);
@@ -303,16 +303,16 @@ impl AuditRepository {
         } else {
             0.0
         };
-        let avg_response_time: Option<f64> = sqlx::query_scalar("SELECT AVG(response_time)::float8 FROM sys_api_call_logs").bind()
+        let avg_response_time: Option<f64> = sqlx::query_scalar("SELECT AVG(response_time)::float8 FROM sys_api_call_logs" ).bind()
         .fetch_one(&self.pool)
         .await?;
-        let max_response_time: Option<i64> = sqlx::query_scalar("SELECT MAX(response_time)::bigint FROM sys_api_call_logs").bind()
+        let max_response_time: Option<i64> = sqlx::query_scalar("SELECT MAX(response_time)::bigint FROM sys_api_call_logs" ).bind()
         .fetch_one(&self.pool)
         .await?;
-        let min_response_time: Option<i64> = sqlx::query_scalar("SELECT MIN(response_time)::bigint FROM sys_api_call_logs").bind()
+        let min_response_time: Option<i64> = sqlx::query_scalar("SELECT MIN(response_time)::bigint FROM sys_api_call_logs" ).bind()
         .fetch_one(&self.pool)
         .await?;
-        let total_data_size: Option<i64> = sqlx::query_scalar("SELECT COALESCE(SUM(response_size), 0)::bigint FROM sys_api_call_logs").bind()
+        let total_data_size: Option<i64> = sqlx::query_scalar("SELECT COALESCE(SUM(response_size), 0)::bigint FROM sys_api_call_logs" ).bind()
         .fetch_one(&self.pool)
         .await?;
 
@@ -335,11 +335,11 @@ impl AuditRepository {
 
     /// 获取 API 端点统计
     pub async fn get_api_endpoint_statistics(&self) -> AppResult<Vec<ApiEndpointStatistics>> {
-        let rows = sqlx::query(r#"SELECT COALESCE(path, '') AS "path!",
-                      COALESCE(method, '') AS "method!",
-                      COUNT(*) AS "call_count!",
-                      COUNT(*) FILTER (WHERE status_code >= 200 AND status_code < 400) AS "success_count!",
-                      COUNT(*) FILTER (WHERE status_code >= 400) AS "failed_count!",
+        let rows = sqlx::query(r#"SELECT COALESCE(path, '') AS "path!" ,
+                      COALESCE(method, '') AS "method!" ,
+                      COUNT(*) AS "call_count!" ,
+                      COUNT(*) FILTER (WHERE status_code >= 200 AND status_code < 400) AS "success_count!" ,
+                      COUNT(*) FILTER (WHERE status_code >= 400) AS "failed_count!" ,
                       AVG(response_time)::float8 AS avg_rt,
                       MAX(response_time) AS max_rt
                FROM sys_api_call_logs
@@ -376,8 +376,8 @@ impl AuditRepository {
     /// 获取 API 调用趋势（按小时）
     pub async fn get_api_call_trend(&self) -> AppResult<Vec<ApiTrendPoint>> {
         let rows = sqlx::query(r#"SELECT date_trunc('hour', created_at) AS ts,
-                      COUNT(*) AS "call_count!",
-                      COUNT(*) FILTER (WHERE status_code >= 400) AS "error_count!",
+                      COUNT(*) AS "call_count!" ,
+                      COUNT(*) FILTER (WHERE status_code >= 400) AS "error_count!" ,
                       AVG(response_time)::float8 AS avg_rt,
                       MAX(response_time) AS max_rt
                FROM sys_api_call_logs
@@ -403,7 +403,7 @@ impl AuditRepository {
     pub async fn get_api_response_distribution(
         &self,
     ) -> AppResult<Vec<ApiResponseTimeDistribution>> {
-        let total: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM sys_api_call_logs")
+        let total: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM sys_api_call_logs" )
             .fetch_one(&self.pool)
             .await?
             .unwrap_or(0);
@@ -412,17 +412,17 @@ impl AuditRepository {
         }
 
         let buckets = vec![
-            ("< 100ms", 0, 100),
-            ("100-300ms", 100, 300),
-            ("300-500ms", 300, 500),
-            ("500ms-1s", 500, 1000),
-            ("1-2s", 1000, 2000),
-            ("> 2s", 2000, i32::MAX),
+            ("< 100ms" , 0, 100),
+            ("100-300ms" , 100, 300),
+            ("300-500ms" , 300, 500),
+            ("500ms-1s" , 500, 1000),
+            ("1-2s" , 1000, 2000),
+            ("> 2s" , 2000, i32::MAX),
         ];
 
         let mut result = Vec::new();
         for (label, min, max) in &buckets {
-            let count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM sys_api_call_logs WHERE response_time >= $1 AND response_time < $2").bind(min).bind(max).bind()
+            let count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM sys_api_call_logs WHERE response_time >= $1 AND response_time < $2" ).bind(min).bind(max).bind()
             .fetch_one(&self.pool).await?
             .unwrap_or(0);
             result.push(ApiResponseTimeDistribution {
@@ -453,10 +453,10 @@ impl AuditRepository {
 
 /// 解析日期字符串（%Y-%m-%d %H:%M:%S 或 %Y-%m-%d）为 UTC 时间，解析失败返回 None
 fn parse_datetime(s: &str) -> Option<DateTime<Utc>> {
-    chrono::NaiveDateTime::parse_from_str(s, "%Y-%m-%d %H:%M:%S")
+    chrono::NaiveDateTime::parse_from_str(s, "%Y-%m-%d %H:%M:%S" )
         .ok()
         .or_else(|| {
-            chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d")
+            chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d" )
                 .ok()
                 .and_then(|d| d.and_hms_opt(0, 0, 0))
         })
@@ -465,26 +465,26 @@ fn parse_datetime(s: &str) -> Option<DateTime<Utc>> {
 
 /// 根据路径分类 API 端点
 fn categorize_path(path: &str) -> String {
-    if path.contains("/user") || path.contains("/auth") {
+    if path.contains("/user" ) || path.contains("/auth" ) {
         "用户管理".to_string()
-    } else if path.contains("/role") || path.contains("/permission") {
+    } else if path.contains("/role" ) || path.contains("/permission" ) {
         "角色权限".to_string()
-    } else if path.contains("/cms") || path.contains("/article") {
+    } else if path.contains("/cms" ) || path.contains("/article" ) {
         "内容管理".to_string()
-    } else if path.contains("/message")
-        || path.contains("/notification")
-        || path.contains("/announcement")
+    } else if path.contains("/message" )
+        || path.contains("/notification" )
+        || path.contains("/announcement" )
     {
         "消息通知".to_string()
-    } else if path.contains("/file") || path.contains("/upload") {
+    } else if path.contains("/file" ) || path.contains("/upload" ) {
         "文件管理".to_string()
-    } else if path.contains("/log") || path.contains("/audit") {
+    } else if path.contains("/log" ) || path.contains("/audit" ) {
         "日志审计".to_string()
-    } else if path.contains("/workflow") || path.contains("/task") {
+    } else if path.contains("/workflow" ) || path.contains("/task" ) {
         "工作流".to_string()
-    } else if path.contains("/report") || path.contains("/dashboard") {
+    } else if path.contains("/report" ) || path.contains("/dashboard" ) {
         "报表统计".to_string()
-    } else if path.contains("/config") || path.contains("/dict") || path.contains("/system") {
+    } else if path.contains("/config" ) || path.contains("/dict" ) || path.contains("/system" ) {
         "系统配置".to_string()
     } else {
         "其他".to_string()

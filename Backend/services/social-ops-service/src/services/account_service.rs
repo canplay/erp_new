@@ -57,7 +57,7 @@ impl AccountService {
     }
 
     pub async fn delete(&self, id: Uuid) -> Result<bool, sqlx::Error> {
-        let result = sqlx::query("DELETE FROM socialops.social_accounts WHERE id = $1").bind(id)
+        let result = sqlx::query("DELETE FROM socialops.social_accounts WHERE id = $1" ).bind(id)
             .execute(&self.db)
             .await?;
         Ok(result.rows_affected() > 0)

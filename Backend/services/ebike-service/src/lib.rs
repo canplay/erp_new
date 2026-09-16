@@ -57,24 +57,24 @@ impl AppState {
     /// 刷新停放区缓存（storage 增删后调用）
     pub async fn refresh_storage_cache(&self) {
         let mut cache = self.storage_cache.write().await;
-        if let Ok(storages) = self.storage_repo.query("", "", -1).await {
+        if let Ok(storages) = self.storage_repo.query("" , "" , -1).await {
             *cache = storages;
         }
     }
 }
 
 /// HTTP 路由已废弃，仅保留为内部兼容（所有流量经 api-gateway 转发至 gRPC）
-#[deprecated(since = "0.1.0", note = "HTTP 路由已废弃，请使用 api-gateway 的 gRPC 调用")]
+#[deprecated(since = "0.1.0" , note = "HTTP 路由已废弃，请使用 api-gateway 的 gRPC 调用" )]
 pub fn create_app(state: AppState) -> Router {
     Router::new()
         // All routes under /api/v1/ebike/ unified path
-        .route("/api/v1/ebike/login", axum::routing::post(login))
-        .route("/api/v1/ebike/info", axum::routing::get(route::auth::info))
-        .route("/api/v1/ebike/loginout", axum::routing::get(loginout))
-        .route("/api/v1/ebike/car", axum::routing::post(car))
-        .route("/api/v1/ebike/storage", axum::routing::post(storage))
-        .route("/api/v1/ebike/order", axum::routing::post(order))
-        .route("/api/v1/ebike/options", axum::routing::post(options))
+        .route("/api/v1/ebike/login" , axum::routing::post(login))
+        .route("/api/v1/ebike/info" , axum::routing::get(route::auth::info))
+        .route("/api/v1/ebike/loginout" , axum::routing::get(loginout))
+        .route("/api/v1/ebike/car" , axum::routing::post(car))
+        .route("/api/v1/ebike/storage" , axum::routing::post(storage))
+        .route("/api/v1/ebike/order" , axum::routing::post(order))
+        .route("/api/v1/ebike/options" , axum::routing::post(options))
         // State
         .with_state(state)
 }
@@ -88,12 +88,12 @@ fn env_u64(name: &str, default: u64) -> u64 {
 }
 
 pub async fn create_optimized_pool() -> Result<sqlx::PgPool, sqlx::Error> {
-    let url = common::config::ServiceDatabaseConfig::resolve_url("ebike-service");
-    let max_connections = env_u32("DB_POOL_MAX_CONNECTIONS", 15);
-    let min_connections = env_u32("DB_POOL_MIN_CONNECTIONS", 1);
-    let acquire_timeout = env_u64("DB_POOL_CONNECT_TIMEOUT", 30);
-    let idle_timeout = env_u64("DB_POOL_IDLE_TIMEOUT", 900);
-    let max_lifetime = env_u64("DB_POOL_MAX_LIFETIME", 3600);
+    let url = common::config::ServiceDatabaseConfig::resolve_url("ebike-service" );
+    let max_connections = env_u32("DB_POOL_MAX_CONNECTIONS" , 15);
+    let min_connections = env_u32("DB_POOL_MIN_CONNECTIONS" , 1);
+    let acquire_timeout = env_u64("DB_POOL_CONNECT_TIMEOUT" , 30);
+    let idle_timeout = env_u64("DB_POOL_IDLE_TIMEOUT" , 900);
+    let max_lifetime = env_u64("DB_POOL_MAX_LIFETIME" , 3600);
     sqlx::postgres::PgPoolOptions::new()
         .max_connections(max_connections)
         .min_connections(min_connections)
@@ -108,17 +108,17 @@ pub async fn create_optimized_pool() -> Result<sqlx::PgPool, sqlx::Error> {
 #[must_use]
 pub fn create_state(pool: sqlx::PgPool) -> AppState {
     // 审计修复 (B6): 删除硬编码兜底密钥, 缺失即启动失败(fail-fast)
-    let jwt_secret = std::env::var("JWT_SECRET")
-        .expect("JWT_SECRET 环境变量必须配置");
-    let jwt_issuer = std::env::var("JWT_ISSUER")
+    let jwt_secret = std::env::var("JWT_SECRET" )
+        .expect("JWT_SECRET 环境变量必须配置" );
+    let jwt_issuer = std::env::var("JWT_ISSUER" )
         .unwrap_or_else(|_| "myai".to_string()); // 审计修复 B7: 统一默认值
-    let jwt_audience = std::env::var("JWT_AUDIENCE")
+    let jwt_audience = std::env::var("JWT_AUDIENCE" )
         .unwrap_or_else(|_| "myai-users".to_string());
-    let access_expiry = std::env::var("JWT_ACCESS_EXPIRY_SECONDS")
+    let access_expiry = std::env::var("JWT_ACCESS_EXPIRY_SECONDS" )
         .ok()
         .and_then(|s| s.parse().ok())
         .unwrap_or(86400);
-    let refresh_expiry = std::env::var("JWT_REFRESH_EXPIRY_SECONDS")
+    let refresh_expiry = std::env::var("JWT_REFRESH_EXPIRY_SECONDS" )
         .ok()
         .and_then(|s| s.parse().ok())
         .unwrap_or(604800);

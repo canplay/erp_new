@@ -32,7 +32,7 @@ pub fn json_error(msg: &str) -> Json<Value> {
 
 /// Error response with formatted message
 pub fn json_error_fmt(msg: &str, e: &impl std::fmt::Display) -> Json<Value> {
-    Json(json!({"success": false, "error": format!("{}: {}", msg, e)}))
+    Json(json!({"success": false, "error": format!("{}: {}" , msg, e)}))
 }
 
 /// Error response with message field
@@ -42,12 +42,12 @@ pub fn json_error_msg(msg: &str) -> Json<Value> {
 
 /// Error response with formatted message field
 pub fn json_error_msg_fmt(msg: &str, e: &impl std::fmt::Display) -> Json<Value> {
-    Json(json!({"success": false, "message": format!("{}: {}", msg, e)}))
+    Json(json!({"success": false, "message": format!("{}: {}" , msg, e)}))
 }
 
 /// Health check response
 pub fn json_health(service_name: &str) -> Json<Value> {
-    Json(json!({"status": "healthy", "service": service_name}))
+    Json(json!({"status": "healthy" , "service": service_name}))
 }
 
 /// Created response with message
@@ -72,7 +72,7 @@ pub fn json_validation_error(msg: &str) -> Json<Value> {
 
 /// HIK success response
 pub fn json_hik_success() -> Json<Value> {
-    Json(json!({"message": "success", "status": 0}))
+    Json(json!({"message": "success" , "status": 0}))
 }
 
 /// Validation success response

@@ -25,12 +25,12 @@ pub enum InvoiceStatus {
 impl InvoiceStatus {
     pub fn as_str(&self) -> &'static str {
         match self {
-            Self::Draft => "draft",
-            Self::Pending => "pending",
-            Self::Paid => "paid",
-            Self::Failed => "failed",
-            Self::Void => "void",
-            Self::Refunded => "refunded",
+            Self::Draft => "draft" ,
+            Self::Pending => "pending" ,
+            Self::Paid => "paid" ,
+            Self::Failed => "failed" ,
+            Self::Void => "void" ,
+            Self::Refunded => "refunded" ,
         }
     }
 
@@ -83,7 +83,7 @@ impl Invoice {
     ) -> Self {
         Self {
             id: Uuid::new_v4(),
-            invoice_number: format!("INV-{}", Utc::now().format("%Y%m%d%H%M%S")),
+            invoice_number: format!("INV-{}" , Utc::now().format("%Y%m%d%H%M%S" )),
             subscription_id,
             tenant_id,
             status: InvoiceStatus::Draft,

@@ -97,14 +97,14 @@ impl DbHealthState {
         match self {
             Self::Pooled(pool) => {
                 let start = Instant::now();
-                match sqlx::raw_sql("SELECT 1").execute(pool).await {
+                match sqlx::raw_sql("SELECT 1" ).execute(pool).await {
                     Ok(_) => {
                         let latency = start.elapsed().as_millis() as u64;
                         DbConnectionHealth {
                             service: service_name.to_string(),
                             status: "healthy".to_string(),
                             latency_ms: latency,
-                            schema: std::env::var("SERVICE_SCHEMA").ok(),
+                            schema: std::env::var("SERVICE_SCHEMA" ).ok(),
                             pool_size: Some(pool.size()),
                             error: None,
                         }
@@ -115,7 +115,7 @@ impl DbHealthState {
                             service: service_name.to_string(),
                             status: "unhealthy".to_string(),
                             latency_ms: latency,
-                            schema: std::env::var("SERVICE_SCHEMA").ok(),
+                            schema: std::env::var("SERVICE_SCHEMA" ).ok(),
                             pool_size: None,
                             error: Some(e.to_string()),
                         }
@@ -145,15 +145,15 @@ impl RedisHealthState {
                 let result = tokio::spawn(async move {
                     let client = match redis::Client::open(url.as_str()) {
                         Ok(c) => c,
-                        Err(e) => return Err::<(), Box<dyn std::error::Error + Send + Sync>>(format!("Redis client error: {e}").into())
+                        Err(e) => return Err::<(), Box<dyn std::error::Error + Send + Sync>>(format!("Redis client error: {e}" ).into())
                     };
                     let mut conn = match client.get_multiplexed_async_connection().await {
                         Ok(c) => c,
-                        Err(e) => return Err(format!("Redis connect error: {e}").into())
+                        Err(e) => return Err(format!("Redis connect error: {e}" ).into())
                     };
-                    let _: () = match redis::cmd("PING").query_async(&mut conn).await {
+                    let _: () = match redis::cmd("PING" ).query_async(&mut conn).await {
                         Ok(r) => r,
-                        Err(e) => return Err(format!("Redis PING error: {e}").into())
+                        Err(e) => return Err(format!("Redis PING error: {e}" ).into())
                     };
                     Ok(())
                 })
@@ -200,8 +200,8 @@ impl RedisHealthState {
 /// - `GET /health/redis` - Redis 健康检查（可选，需传入连接状态）
 pub fn health_routes() -> Router {
     Router::new()
-        .route("/health", get(liveness_handler))
-        .route("/ready", get(readiness_handler))
+        .route("/health" , get(liveness_handler))
+        .route("/ready" , get(readiness_handler))
 }
 
 /// 创建带数据库和 Redis 健康检查的 HTTP 路由
@@ -212,11 +212,11 @@ pub fn health_routes_with_db_and_redis(
     let db_state = Arc::new(db_state);
     let redis_state = Arc::new(redis_state);
     Router::new()
-        .route("/health", get(liveness_handler))
-        .route("/ready", get(readiness_handler))
-        .route("/health/database", get(database_health_handler))
+        .route("/health" , get(liveness_handler))
+        .route("/ready" , get(readiness_handler))
+        .route("/health/database" , get(database_health_handler))
         .with_state(db_state)
-        .route("/health/redis", get(redis_health_handler))
+        .route("/health/redis" , get(redis_health_handler))
         .with_state(redis_state)
 }
 
@@ -225,9 +225,9 @@ pub fn health_routes_with_db_and_redis(
 async fn health_handler() -> impl IntoResponse {
     let status = HealthStatus {
         status: "healthy".to_string(),
-        service: std::env::var("SERVICE_NAME").unwrap_or_else(|_| "unknown".to_string()),
-        version: std::env::var("SERVICE_VERSION")
-            .unwrap_or_else(|_| env!("CARGO_PKG_VERSION").to_string()),
+        service: std::env::var("SERVICE_NAME" ).unwrap_or_else(|_| "unknown".to_string()),
+        version: std::env::var("SERVICE_VERSION" )
+            .unwrap_or_else(|_| env!("CARGO_PKG_VERSION" ).to_string()),
         timestamp: chrono::Utc::now().to_rfc3339(),
     };
     (axum::http::StatusCode::OK, Json(status)).into_response()
@@ -247,13 +247,13 @@ async fn readiness_handler() -> &'static str {
 async fn database_health_handler(
     State(state): State<Arc<DbHealthState>>,
 ) -> Json<DatabaseHealth> {
-    let service_name = std::env::var("SERVICE_NAME").unwrap_or_else(|_| "unknown".to_string());
+    let service_name = std::env::var("SERVICE_NAME" ).unwrap_or_else(|_| "unknown".to_string());
     let conn_health = state.check(&service_name).await;
 
     let status = match conn_health.status.as_str() {
-        "healthy" => "healthy",
-        "not_configured" => "not_configured",
-        _ => "degraded",
+        "healthy" => "healthy" ,
+        "not_configured" => "not_configured" ,
+        _ => "degraded" ,
     };
 
     Json(DatabaseHealth {
@@ -266,13 +266,13 @@ async fn database_health_handler(
 async fn redis_health_handler(
     State(state): State<Arc<RedisHealthState>>,
 ) -> Json<RedisHealth> {
-    let service_name = std::env::var("SERVICE_NAME").unwrap_or_else(|_| "unknown".to_string());
+    let service_name = std::env::var("SERVICE_NAME" ).unwrap_or_else(|_| "unknown".to_string());
     let conn_health = state.check(&service_name).await;
 
     let status = match conn_health.status.as_str() {
-        "healthy" => "healthy",
-        "not_configured" => "not_configured",
-        _ => "degraded",
+        "healthy" => "healthy" ,
+        "not_configured" => "not_configured" ,
+        _ => "degraded" ,
     };
 
     Json(RedisHealth {
@@ -291,7 +291,7 @@ pub async fn check_all_databases(
         results.push(health);
     }
 
-    let all_healthy = results.iter().all(|c| c.status == "healthy");
+    let all_healthy = results.iter().all(|c| c.status == "healthy" );
 
     let status = if all_healthy {
         "healthy"
@@ -315,7 +315,7 @@ pub async fn check_all_redis(
         results.push(health);
     }
 
-    let all_healthy = results.iter().all(|c| c.status == "healthy");
+    let all_healthy = results.iter().all(|c| c.status == "healthy" );
 
     let status = if all_healthy {
         "healthy"
@@ -342,24 +342,24 @@ mod tests {
             timestamp: "2024-01-01T00:00:00Z".to_string(),
         };
         let json = serde_json::to_string(&status).unwrap();
-        assert!(json.contains("healthy"));
+        assert!(json.contains("healthy" ));
     }
 
     #[tokio::test]
     async fn test_db_health_state_none() {
         let state = DbHealthState::None;
-        let health = state.check("test-service").await;
-        assert_eq!(health.status, "not_configured");
-        assert_eq!(health.service, "test-service");
+        let health = state.check("test-service" ).await;
+        assert_eq!(health.status, "not_configured" );
+        assert_eq!(health.service, "test-service" );
         assert!(health.error.is_none());
     }
 
     #[tokio::test]
     async fn test_redis_health_state_none() {
         let state = RedisHealthState::None;
-        let health = state.check("test-service").await;
-        assert_eq!(health.status, "not_configured");
-        assert_eq!(health.service, "test-service");
+        let health = state.check("test-service" ).await;
+        assert_eq!(health.status, "not_configured" );
+        assert_eq!(health.service, "test-service" );
         assert!(health.error.is_none());
     }
 }

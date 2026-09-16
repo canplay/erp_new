@@ -26,7 +26,7 @@
         let req = request.into_inner();
         let success = self.state.announcement_repository.update_config(&req.key, &req.value).await
             .map_err(|e| Status::internal(e.to_string()))?;
-        if !success { return Err(Status::not_found("配置不存在")); }
+        if !success { return Err(Status::not_found("配置不存在" )); }
         Ok(Response::new(UpdateSystemConfigResponse { success: true }))
     }
 

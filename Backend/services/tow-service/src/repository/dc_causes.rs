@@ -32,7 +32,7 @@ impl DcCausesRepository {
         let items: Vec<DcCauses> = sqlx::query_as!(
             DcCauses,
             r#"SELECT id,
-                COALESCE(name, '') AS "name!",
+                COALESCE(name, '') AS "name!" ,
                 type_id,
                 type_name,
                 remark,
@@ -53,7 +53,7 @@ impl DcCausesRepository {
         let item: Option<DcCauses> = sqlx::query_as!(
             DcCauses,
             r#"SELECT id,
-                COALESCE(name, '') AS "name!",
+                COALESCE(name, '') AS "name!" ,
                 type_id,
                 type_name,
                 remark,
@@ -76,7 +76,7 @@ impl DcCausesRepository {
         let items: Vec<DcCauses> = sqlx::query_as!(
             DcCauses,
             r#"SELECT id,
-                COALESCE(name, '') AS "name!",
+                COALESCE(name, '') AS "name!" ,
                 type_id,
                 type_name,
                 remark,

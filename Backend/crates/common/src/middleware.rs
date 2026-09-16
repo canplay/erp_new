@@ -83,12 +83,12 @@ impl Default for IpRateLimiter {
 /// 从请求中提取客户端 IP
 pub fn extract_client_ip(req: &Request) -> String {
     req.headers()
-        .get("x-forwarded-for")
+        .get("x-forwarded-for" )
         .and_then(|v| v.to_str().ok())
         .map(|s| s.split(',').next().unwrap_or(s).trim().to_string())
         .or_else(|| {
             req.headers()
-                .get("x-real-ip")
+                .get("x-real-ip" )
                 .and_then(|v| v.to_str().ok())
                 .map(std::string::ToString::to_string)
         })
@@ -127,8 +127,8 @@ pub fn tracing_layer()
 /// 等同于 `cors_layer_with_env()`，为方便调用保留。
 pub fn cors_layer() -> CorsLayer {
     cors_layer_with_config(
-        std::env::var("CORS_ALLOWED_ORIGINS").unwrap_or_else(|_| "*".to_string()),
-        std::env::var("CORS_MAX_AGE")
+        std::env::var("CORS_ALLOWED_ORIGINS" ).unwrap_or_else(|_| "*".to_string()),
+        std::env::var("CORS_MAX_AGE" )
             .ok()
             .and_then(|v| v.parse().ok())
             .unwrap_or(86400),
@@ -148,7 +148,7 @@ pub fn cors_layer_with_env() -> CorsLayer {
 ///
 /// 使用指定的域名列表。如需从环境变量读取，请使用 [`cors_layer`]。
 pub fn cors_layer_with_origins(origins: Vec<String>) -> CorsLayer {
-    cors_layer_with_config(origins.join(","), 86400)
+    cors_layer_with_config(origins.join("," ), 86400)
 }
 
 /// CORS 中间件工厂（完整配置）
@@ -259,7 +259,7 @@ pub async fn csrf_protection_middleware(
     let method = request.method().clone();
 
     // 仅对修改状态的请求进行 CSRF 验证
-    if matches!(method.as_str(), "POST" | "PUT" | "PATCH" | "DELETE") {
+    if matches!(method.as_str(), "POST" | "PUT" | "PATCH" | "DELETE" ) {
         let csrf_token = request
             .headers()
             .get(HEADER_CSRF_TOKEN)
@@ -269,7 +269,7 @@ pub async fn csrf_protection_middleware(
         // CSRF Token 为空或无效
         if csrf_token.is_none() || csrf_token.as_ref().is_some_and(std::string::String::is_empty) {
             tracing::info!(
-                "【CSRF验证】缺少 CSRF Token: method={}, uri={}",
+                "【CSRF验证】缺少 CSRF Token: method={}, uri={}" ,
                 method,
                 request.uri()
             );
@@ -279,7 +279,7 @@ pub async fn csrf_protection_middleware(
         // 已完成基本的 CSRF Token 验证
         // 扩展验证可考虑：Token 格式校验、Session 绑定、时间戳校验等
         tracing::debug!(
-            "【CSRF验证】Token 已验证: method={}, uri={}",
+            "【CSRF验证】Token 已验证: method={}, uri={}" ,
             method,
             request.uri()
         );
@@ -309,11 +309,11 @@ mod tests {
 
         let mut passed = 0;
         for _ in 0..20 {
-            if limiter.check("127.0.0.1") {
+            if limiter.check("127.0.0.1" ) {
                 passed += 1;
             }
         }
 
-        assert!(passed > 0, "至少应该有请求通过");
+        assert!(passed > 0, "至少应该有请求通过" );
     }
 }

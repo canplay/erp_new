@@ -13,7 +13,7 @@
 //!
 //! // 获取当前租户 ID
 //! if let Some(id) = current_tenant_id() {
-//!     println!("当前租户: {}", id);
+//!     println!("当前租户: {}" , id);
 //! }
 //! ```
 
@@ -77,7 +77,7 @@ impl TenantContext {
 
     /// 判断是否为平台管理员（root）
     pub fn is_platform_admin(&self) -> bool {
-        self.has_role("platform_admin") || self.has_role("root") || self.has_permission("platform")
+        self.has_role("platform_admin" ) || self.has_role("root" ) || self.has_permission("platform" )
     }
 }
 
@@ -177,16 +177,16 @@ mod tests {
             .with_user_id(42)
             .with_roles(vec!["admin".to_string()]);
         assert_eq!(ctx.user_id, Some(42));
-        assert!(ctx.has_role("admin"));
-        assert!(!ctx.has_role("user"));
+        assert!(ctx.has_role("admin" ));
+        assert!(!ctx.has_role("user" ));
     }
 
     #[test]
     fn test_tenant_context_permissions() {
         let ctx = TenantContext::new(TenantId::new(1))
             .with_permissions(vec!["tenant:read".to_string(), "tenant:write".to_string()]);
-        assert!(ctx.has_permission("tenant:read"));
-        assert!(!ctx.has_permission("tenant:delete"));
+        assert!(ctx.has_permission("tenant:read" ));
+        assert!(!ctx.has_permission("tenant:delete" ));
     }
 
     #[test]

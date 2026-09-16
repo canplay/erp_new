@@ -87,10 +87,10 @@ impl WorkflowService for WorkflowGrpcServer {
 
         // 将 WorkflowStatus 枚举转换为字符串
         let status_str = match req.status() {
-            ProtoWorkflowStatus::WorkflowDraft => "draft",
-            ProtoWorkflowStatus::WorkflowActive => "active",
-            ProtoWorkflowStatus::WorkflowSuspended => "suspended",
-            ProtoWorkflowStatus::WorkflowArchived => "archived",
+            ProtoWorkflowStatus::WorkflowDraft => "draft" ,
+            ProtoWorkflowStatus::WorkflowActive => "active" ,
+            ProtoWorkflowStatus::WorkflowSuspended => "suspended" ,
+            ProtoWorkflowStatus::WorkflowArchived => "archived" ,
         };
 
         let rows = sqlx::query!(
@@ -99,31 +99,31 @@ impl WorkflowService for WorkflowGrpcServer {
        FROM workflows
        WHERE ($1::text IS NULL OR $1 = '' OR status = $1)
        ORDER BY created_at DESC
-       LIMIT $2 OFFSET $3",
+       LIMIT $2 OFFSET $3" ,
             status_str,
             i64::from(page_size),
             i64::from(offset),
         )
             .fetch_all(&self.pool)
             .await
-            .map_err(|e| Status::internal(format!("Database error: {e}")))?;
+            .map_err(|e| Status::internal(format!("Database error: {e}" )))?;
 
         let workflows: Vec<WorkflowDefinition> = rows
             .iter()
             .map(|row| {
                 let nodes: Vec<WorkflowNode> = row
                     .definition
-                    .get("nodes")
+                    .get("nodes" )
                     .and_then(|n| n.as_array())
                     .map(|arr| {
                         arr.iter()
                             .filter_map(|n| {
                                 Some(WorkflowNode {
-                                    id: n.get("id")?.as_str()?.to_string(),
-                                    name: n.get("name")?.as_str()?.to_string(),
+                                    id: n.get("id" )?.as_str()?.to_string(),
+                                    name: n.get("name" )?.as_str()?.to_string(),
                                     node_type: ProtoNodeType::NodeTask as i32,
-                                    position_x: n.get("x")?.as_i64().unwrap_or(0) as i32,
-                                    position_y: n.get("y")?.as_i64().unwrap_or(0) as i32,
+                                    position_x: n.get("x" )?.as_i64().unwrap_or(0) as i32,
+                                    position_y: n.get("y" )?.as_i64().unwrap_or(0) as i32,
                                     config: std::collections::HashMap::new(),
                                     outputs: vec![],
                                 })
@@ -147,12 +147,12 @@ impl WorkflowService for WorkflowGrpcServer {
             .collect();
 
         let total: i64 = sqlx::query_scalar!(
-            "SELECT COUNT(*) FROM workflows WHERE ($1::text IS NULL OR $1 = '' OR status = $1)",
+            "SELECT COUNT(*) FROM workflows WHERE ($1::text IS NULL OR $1 = '' OR status = $1)" ,
             status_str,
         )
             .fetch_one(&self.pool)
             .await
-            .map_err(|e| Status::internal(format!("Database error: {e}")))?
+            .map_err(|e| Status::internal(format!("Database error: {e}" )))?
             .unwrap_or(0);
 
         Ok(Response::new(ListWorkflowsResponse { workflows, total }))
@@ -167,28 +167,28 @@ impl WorkflowService for WorkflowGrpcServer {
         let row = sqlx::query!(
             r"SELECT id, name, description, definition, status, version,
        created_by, created_at, updated_at
-       FROM workflows WHERE id = $1",
+       FROM workflows WHERE id = $1" ,
             req.id.to_string(),
         )
             .fetch_optional(&self.pool)
             .await
-            .map_err(|e| Status::internal(format!("Database error: {e}")))?;
+            .map_err(|e| Status::internal(format!("Database error: {e}" )))?;
 
         match row {
             Some(row) => {
                 let nodes: Vec<WorkflowNode> = row
                     .definition
-                    .get("nodes")
+                    .get("nodes" )
                     .and_then(|n| n.as_array())
                     .map(|arr| {
                         arr.iter()
                             .filter_map(|n| {
                                 Some(WorkflowNode {
-                                    id: n.get("id")?.as_str()?.to_string(),
-                                    name: n.get("name")?.as_str()?.to_string(),
+                                    id: n.get("id" )?.as_str()?.to_string(),
+                                    name: n.get("name" )?.as_str()?.to_string(),
                                     node_type: ProtoNodeType::NodeTask as i32,
-                                    position_x: n.get("x")?.as_i64().unwrap_or(0) as i32,
-                                    position_y: n.get("y")?.as_i64().unwrap_or(0) as i32,
+                                    position_x: n.get("x" )?.as_i64().unwrap_or(0) as i32,
+                                    position_y: n.get("y" )?.as_i64().unwrap_or(0) as i32,
                                     config: std::collections::HashMap::new(),
                                     outputs: vec![],
                                 })
@@ -213,7 +213,7 @@ impl WorkflowService for WorkflowGrpcServer {
                     workflow: Some(workflow),
                 }))
             }
-            None => Err(Status::not_found("Workflow not found")),
+            None => Err(Status::not_found("Workflow not found" )),
         }
     }
 
@@ -238,7 +238,7 @@ impl WorkflowService for WorkflowGrpcServer {
 
         sqlx::query!(
             r"INSERT INTO workflows (id, name, description, definition, status, version, created_by, created_at, updated_at)
-               VALUES ($1, $2, $3, $4, 'draft', 1, 'system', NOW(), NOW())",
+               VALUES ($1, $2, $3, $4, 'draft', 1, 'system', NOW(), NOW())" ,
             id.to_string(),
             &req.name,
             &req.description,
@@ -246,7 +246,7 @@ impl WorkflowService for WorkflowGrpcServer {
         )
             .execute(&self.pool)
             .await
-            .map_err(|e| Status::internal(format!("Database error: {e}")))?;
+            .map_err(|e| Status::internal(format!("Database error: {e}" )))?;
 
         Ok(Response::new(CreateWorkflowResponse { id, name: req.name }))
     }
@@ -275,7 +275,7 @@ impl WorkflowService for WorkflowGrpcServer {
                    description = COALESCE($3, description),
                    definition = COALESCE($4, definition),
                    updated_at = NOW()
-               WHERE id = $1",
+               WHERE id = $1" ,
             req.id.to_string(),
             &req.name,
             &req.description,
@@ -283,7 +283,7 @@ impl WorkflowService for WorkflowGrpcServer {
         )
             .execute(&self.pool)
             .await
-            .map_err(|e| Status::internal(format!("Database error: {e}")))?;
+            .map_err(|e| Status::internal(format!("Database error: {e}" )))?;
 
         if result.rows_affected() > 0 {
             Ok(Response::new(UpdateWorkflowResponse {
@@ -291,7 +291,7 @@ impl WorkflowService for WorkflowGrpcServer {
                 name: req.name,
             }))
         } else {
-            Err(Status::not_found("Workflow not found"))
+            Err(Status::not_found("Workflow not found" ))
         }
     }
 
@@ -302,12 +302,12 @@ impl WorkflowService for WorkflowGrpcServer {
         let req = request.into_inner();
 
         let result = sqlx::query!(
-            "DELETE FROM workflows WHERE id = $1",
+            "DELETE FROM workflows WHERE id = $1" ,
             req.id.to_string(),
         )
             .execute(&self.pool)
             .await
-            .map_err(|e| Status::internal(format!("Database error: {e}")))?;
+            .map_err(|e| Status::internal(format!("Database error: {e}" )))?;
 
         Ok(Response::new(DeleteWorkflowResponse {
             success: result.rows_affected() > 0,
@@ -325,16 +325,16 @@ impl WorkflowService for WorkflowGrpcServer {
         // 获取工作流信息
         let workflow = sqlx::query_as!(
             WorkflowIdName,
-            "SELECT id, name FROM workflows WHERE id = $1 AND status = 'active'",
+            "SELECT id, name FROM workflows WHERE id = $1 AND status = 'active'" ,
             req.workflow_id.to_string(),
         )
             .fetch_optional(&self.pool)
             .await
-            .map_err(|e| Status::internal(format!("Database error: {e}")))?;
+            .map_err(|e| Status::internal(format!("Database error: {e}" )))?;
 
         let (workflow_id, workflow_name) = workflow
             .map(|w| (w.id, w.name))
-            .ok_or_else(|| Status::not_found("Workflow not found or not active"))?;
+            .ok_or_else(|| Status::not_found("Workflow not found or not active" ))?;
 
         let instance_id = uuid::Uuid::new_v4().as_u64_pair().0 as i64;
         let now = chrono::Utc::now();
@@ -345,16 +345,16 @@ impl WorkflowService for WorkflowGrpcServer {
         sqlx::query!(
             r"INSERT INTO workflow_instances
                (id, workflow_id, workflow_version, status, variables, started_by, started_at)
-               VALUES ($1, $2, 1, 'running', $3, $4, $5)",
+               VALUES ($1, $2, 1, 'running', $3, $4, $5)" ,
             instance_id.to_string(),
             &workflow_id,
             &variables,
-            "0", // started_by 字段从 business_key 获取
+            "0" , // started_by 字段从 business_key 获取
             now,
         )
             .execute(&self.pool)
             .await
-            .map_err(|e| Status::internal(format!("Database error: {e}")))?;
+            .map_err(|e| Status::internal(format!("Database error: {e}" )))?;
 
         Ok(Response::new(StartWorkflowResponse {
             instance_id,
@@ -371,12 +371,12 @@ impl WorkflowService for WorkflowGrpcServer {
         let row = sqlx::query!(
             r"SELECT id, workflow_id, workflow_version, status, current_node_id,
        variables, started_by, started_at, completed_at
-       FROM workflow_instances WHERE id = $1",
+       FROM workflow_instances WHERE id = $1" ,
             req.id.to_string(),
         )
             .fetch_optional(&self.pool)
             .await
-            .map_err(|e| Status::internal(format!("Database error: {e}")))?;
+            .map_err(|e| Status::internal(format!("Database error: {e}" )))?;
 
         match row {
             Some(row) => {
@@ -402,7 +402,7 @@ impl WorkflowService for WorkflowGrpcServer {
                     instance: Some(instance),
                 }))
             }
-            None => Err(Status::not_found("Instance not found")),
+            None => Err(Status::not_found("Instance not found" )),
         }
     }
 
@@ -418,10 +418,10 @@ impl WorkflowService for WorkflowGrpcServer {
 
         // 将 InstanceStatus 枚举转换为字符串
         let status_str = match req.status() {
-            ProtoInstanceStatus::InstanceRunning => "running",
-            ProtoInstanceStatus::InstanceCompleted => "completed",
-            ProtoInstanceStatus::InstanceCancelled => "cancelled",
-            ProtoInstanceStatus::InstanceFailed => "failed",
+            ProtoInstanceStatus::InstanceRunning => "running" ,
+            ProtoInstanceStatus::InstanceCompleted => "completed" ,
+            ProtoInstanceStatus::InstanceCancelled => "cancelled" ,
+            ProtoInstanceStatus::InstanceFailed => "failed" ,
         };
 
         let workflow_filter = (req.workflow_id != 0).then(|| req.workflow_id.to_string());
@@ -433,7 +433,7 @@ impl WorkflowService for WorkflowGrpcServer {
        WHERE ($1::text IS NULL OR workflow_id = $1)
          AND ($2::text IS NULL OR $2 = '' OR status = $2)
        ORDER BY started_at DESC
-       LIMIT $3 OFFSET $4",
+       LIMIT $3 OFFSET $4" ,
             workflow_filter.as_deref(),
             status_str,
             i64::from(page_size),
@@ -441,7 +441,7 @@ impl WorkflowService for WorkflowGrpcServer {
         )
             .fetch_all(&self.pool)
             .await
-            .map_err(|e| Status::internal(format!("Database error: {e}")))?;
+            .map_err(|e| Status::internal(format!("Database error: {e}" )))?;
 
         let instances: Vec<ProtoWorkflowInstance> = rows
             .iter()
@@ -468,12 +468,12 @@ impl WorkflowService for WorkflowGrpcServer {
             .collect();
 
         let total: i64 = sqlx::query_scalar!(
-            "SELECT COUNT(*) FROM workflow_instances WHERE ($1::text IS NULL OR workflow_id = $1)",
+            "SELECT COUNT(*) FROM workflow_instances WHERE ($1::text IS NULL OR workflow_id = $1)" ,
             workflow_filter.as_deref(),
         )
             .fetch_one(&self.pool)
             .await
-            .map_err(|e| Status::internal(format!("Database error: {e}")))?
+            .map_err(|e| Status::internal(format!("Database error: {e}" )))?
             .unwrap_or(0);
 
         Ok(Response::new(ListInstancesResponse { instances, total }))
@@ -500,7 +500,7 @@ impl WorkflowService for WorkflowGrpcServer {
        WHERE ($1::text IS NULL OR instance_id = $1)
          AND ($2 = '' OR assignee = $2)
        ORDER BY started_at DESC
-       LIMIT $3 OFFSET $4",
+       LIMIT $3 OFFSET $4" ,
             instance_filter.as_deref(),
             &req.assignee,
             i64::from(page_size),
@@ -508,7 +508,7 @@ impl WorkflowService for WorkflowGrpcServer {
         )
             .fetch_all(&self.pool)
             .await
-            .map_err(|e| Status::internal(format!("Database error: {e}")))?;
+            .map_err(|e| Status::internal(format!("Database error: {e}" )))?;
 
         let tasks: Vec<WorkflowTask> = rows
             .iter()
@@ -532,12 +532,12 @@ impl WorkflowService for WorkflowGrpcServer {
             .collect();
 
         let total: i64 = sqlx::query_scalar!(
-            "SELECT COUNT(*) FROM task_records WHERE ($1::text IS NULL OR instance_id = $1)",
+            "SELECT COUNT(*) FROM task_records WHERE ($1::text IS NULL OR instance_id = $1)" ,
             instance_filter.as_deref(),
         )
             .fetch_one(&self.pool)
             .await
-            .map_err(|e| Status::internal(format!("Database error: {e}")))?
+            .map_err(|e| Status::internal(format!("Database error: {e}" )))?
             .unwrap_or(0);
 
         Ok(Response::new(ListTasksResponse { tasks, total }))
@@ -551,21 +551,21 @@ impl WorkflowService for WorkflowGrpcServer {
 
         // 将 action 转换为 status
         let new_status = match req.action.as_str() {
-            "approve" | "complete" => "completed",
-            "reject" => "rejected",
-            _ => "completed",
+            "approve" | "complete" => "completed" ,
+            "reject" => "rejected" ,
+            _ => "completed" ,
         };
 
         let result = sqlx::query!(
             r"UPDATE task_records
                SET status = $2, completed_at = NOW()
-               WHERE id = $1",
+               WHERE id = $1" ,
             req.task_id.to_string(),
             new_status,
         )
             .execute(&self.pool)
             .await
-            .map_err(|e| Status::internal(format!("Database error: {e}")))?;
+            .map_err(|e| Status::internal(format!("Database error: {e}" )))?;
 
         Ok(Response::new(CompleteTaskResponse {
             success: result.rows_affected() > 0,
@@ -582,12 +582,12 @@ impl WorkflowService for WorkflowGrpcServer {
         let result = sqlx::query!(
             r"UPDATE workflow_instances
                SET status = 'cancelled', completed_at = NOW()
-               WHERE id = $1",
+               WHERE id = $1" ,
             req.instance_id.to_string(),
         )
             .execute(&self.pool)
             .await
-            .map_err(|e| Status::internal(format!("Database error: {e}")))?;
+            .map_err(|e| Status::internal(format!("Database error: {e}" )))?;
 
         Ok(Response::new(CancelInstanceResponse {
             success: result.rows_affected() > 0,
@@ -599,12 +599,12 @@ impl common::service_bootstrap::GrpcServiceBuilder for WorkflowGrpcServer {
     fn build_grpc_server(&self, grpc_addr: &str) -> Result<tokio::task::JoinHandle<()>, Box<dyn std::error::Error + Send + Sync>> {
         use tonic::transport::Server;
 
-        let addr: SocketAddr = grpc_addr.parse().map_err(|e| format!("invalid grpc addr: {e}"))?;
+        let addr: SocketAddr = grpc_addr.parse().map_err(|e| format!("invalid grpc addr: {e}" ))?;
         let server = WorkflowServiceServer::new(WorkflowGrpcServer::new(&self.pool));
         let handle = tokio::spawn(async move {
             if let Err(e) = Server::builder()
                 .add_service(server).serve(addr).await {
-                tracing::error!("gRPC server error: {}", e);
+                tracing::error!("gRPC server error: {}" , e);
             }
         });
         Ok(handle)

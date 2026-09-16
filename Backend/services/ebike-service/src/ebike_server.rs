@@ -102,17 +102,17 @@ impl EbikeServiceTrait for EbikeGrpcService {
         let password = req.password;
 
         let user = self.state.user_repo.find_by_username(&username).await
-            .map_err(|e| Status::internal(format!("查询用户失败: {e}")))?
-            .ok_or_else(|| Status::unauthenticated("username or password error"))?;
+            .map_err(|e| Status::internal(format!("查询用户失败: {e}" )))?
+            .ok_or_else(|| Status::unauthenticated("username or password error" ))?;
 
         let pwd_ok = auth_core::PasswordService.verify_bcrypt(&password, &user.password_hash);
         if !pwd_ok {
-            return Err(Status::unauthenticated("username or password error"));
+            return Err(Status::unauthenticated("username or password error" ));
         }
 
         let token = self.state.jwt_service.generate_access_token(
             user.id, &user.username, &user.role
-        ).map_err(|e| Status::internal(format!("token generation failed: {e}")))?;
+        ).map_err(|e| Status::internal(format!("token generation failed: {e}" )))?;
 
         Ok(Response::new(LoginResponse {
             token,
@@ -132,8 +132,8 @@ impl EbikeServiceTrait for EbikeGrpcService {
     ) -> Result<Response<grpc_proto::ebike::UserInfo>, Status> {
         let req = request.into_inner();
         let user = self.state.user_repo.user_info(req.user_id).await
-            .map_err(|e| Status::internal(format!("{e}")))?
-            .ok_or_else(|| Status::not_found("user not found"))?;
+            .map_err(|e| Status::internal(format!("{e}" )))?
+            .ok_or_else(|| Status::not_found("user not found" ))?;
 
         Ok(Response::new(grpc_proto::ebike::UserInfo {
             id: user.id,
@@ -156,7 +156,7 @@ impl EbikeServiceTrait for EbikeGrpcService {
         Ok(Response::new(GenericResponse {
             code: 0,
             message: "ok".to_string(),
-            data: "".to_string(),
+            data: " ".to_string(),
         }))
     }
 
@@ -187,7 +187,7 @@ impl EbikeServiceTrait for EbikeGrpcService {
             gps_type: req.gps_type,
         };
         let success = self.state.car_repo.add(&car).await
-            .map_err(|e| Status::internal(format!("{e}")))?;
+            .map_err(|e| Status::internal(format!("{e}" )))?;
         Ok(Response::new(GenericResponse {
             code: if success { 0 } else { -1 },
             message: if success { "created".to_string() } else { "failed".to_string() },
@@ -223,8 +223,8 @@ impl EbikeServiceTrait for EbikeGrpcService {
         }
         Ok(Response::new(GenericResponse {
             code: if count > 0 { 0 } else { -1 },
-            message: format!("batch added {count} cars"),
-            data: format!("{count}"),
+            message: format!("batch added {count} cars" ),
+            data: format!("{count}" ),
         }))
     }
 
@@ -234,7 +234,7 @@ impl EbikeServiceTrait for EbikeGrpcService {
     ) -> Result<Response<GenericResponse>, Status> {
         let req = request.into_inner();
         let success = self.state.car_repo.del(&req.code, &req.provide).await
-            .map_err(|e| Status::internal(format!("{e}")))?;
+            .map_err(|e| Status::internal(format!("{e}" )))?;
         Ok(Response::new(GenericResponse {
             code: if success { 0 } else { -1 },
             message: if success { "deleted".to_string() } else { "not found".to_string() },
@@ -255,7 +255,7 @@ impl EbikeServiceTrait for EbikeGrpcService {
             &req.time_end,
             0,
             0,
-        ).await.map_err(|e| Status::internal(format!("{e}")))?;
+        ).await.map_err(|e| Status::internal(format!("{e}" )))?;
         let proto: Vec<CarInfo> = cars.iter().map(car_to_proto).collect();
         Ok(Response::new(CarListResponse { cars: proto }))
     }
@@ -266,7 +266,7 @@ impl EbikeServiceTrait for EbikeGrpcService {
     ) -> Result<Response<CarListResponse>, Status> {
         let req = request.into_inner();
         let cars = self.state.car_repo.history(&req.code)
-            .await.map_err(|e| Status::internal(format!("{e}")))?;
+            .await.map_err(|e| Status::internal(format!("{e}" )))?;
         let proto: Vec<CarInfo> = cars.iter().map(car_to_proto).collect();
         Ok(Response::new(CarListResponse { cars: proto }))
     }
@@ -283,7 +283,7 @@ impl EbikeServiceTrait for EbikeGrpcService {
             &req.time,
             &req.alert,
             &req.remark,
-        ).await.map_err(|e| Status::internal(format!("{e}")))?;
+        ).await.map_err(|e| Status::internal(format!("{e}" )))?;
         let proto: Vec<CarInfo> = cars.iter().map(car_to_proto).collect();
         Ok(Response::new(CarListResponse { cars: proto }))
     }
@@ -307,7 +307,7 @@ impl EbikeServiceTrait for EbikeGrpcService {
             &req.paytime,
             0,
             0,
-        ).await.map_err(|e| Status::internal(format!("{e}")))?;
+        ).await.map_err(|e| Status::internal(format!("{e}" )))?;
         let proto: Vec<OrderInfo> = orders.iter().map(order_to_proto).collect();
         Ok(Response::new(OrderListResponse { orders: proto }))
     }
@@ -332,7 +332,7 @@ impl EbikeServiceTrait for EbikeGrpcService {
                 delete: None,
                 alert: if item.alert.is_empty() { None } else { Some(item.alert) },
                 remark: if item.remark.is_empty() { None } else { Some(item.remark) },
-                hash: "".to_string(),
+                hash: " ".to_string(),
                 payable: item.payable as i64,
                 pay: item.pay as i64,
                 refund: item.refund,
@@ -351,8 +351,8 @@ impl EbikeServiceTrait for EbikeGrpcService {
         }
         Ok(Response::new(GenericResponse {
             code: if count > 0 { 0 } else { -1 },
-            message: format!("batch added {count} orders"),
-            data: format!("{count}"),
+            message: format!("batch added {count} orders" ),
+            data: format!("{count}" ),
         }))
     }
 
@@ -374,7 +374,7 @@ impl EbikeServiceTrait for EbikeGrpcService {
             delete: None,
             alert: if req.alert.is_empty() { None } else { Some(req.alert) },
             remark: if req.remark.is_empty() { None } else { Some(req.remark) },
-            hash: "".to_string(),
+            hash: " ".to_string(),
             payable: req.payable as i64,
             pay: req.pay as i64,
             refund: req.refund,
@@ -388,7 +388,7 @@ impl EbikeServiceTrait for EbikeGrpcService {
             paytime: None,
         };
         let hash = self.state.order_repo.add(&order).await
-            .map_err(|e| Status::internal(format!("{e}")))?;
+            .map_err(|e| Status::internal(format!("{e}" )))?;
         Ok(Response::new(grpc_proto::ebike::OrderAddResponse { hash }))
     }
 
@@ -416,7 +416,7 @@ impl EbikeServiceTrait for EbikeGrpcService {
             gps_type: req.gps_type,
         };
         let success = self.state.storage_repo.add(&storage).await
-            .map_err(|e| Status::internal(format!("{e}")))?;
+            .map_err(|e| Status::internal(format!("{e}" )))?;
         Ok(Response::new(GenericResponse {
             code: if success { 0 } else { -1 },
             message: if success { "created".to_string() } else { "failed".to_string() },
@@ -453,8 +453,8 @@ impl EbikeServiceTrait for EbikeGrpcService {
         }
         Ok(Response::new(GenericResponse {
             code: if count > 0 { 0 } else { -1 },
-            message: format!("batch added {count} storages"),
-            data: format!("{count}"),
+            message: format!("batch added {count} storages" ),
+            data: format!("{count}" ),
         }))
     }
 
@@ -464,7 +464,7 @@ impl EbikeServiceTrait for EbikeGrpcService {
     ) -> Result<Response<GenericResponse>, Status> {
         let req = request.into_inner();
         let success = self.state.storage_repo.del(&req.code).await
-            .map_err(|e| Status::internal(format!("{e}")))?;
+            .map_err(|e| Status::internal(format!("{e}" )))?;
         Ok(Response::new(GenericResponse {
             code: if success { 0 } else { -1 },
             message: if success { "deleted".to_string() } else { "not found".to_string() },
@@ -481,7 +481,7 @@ impl EbikeServiceTrait for EbikeGrpcService {
             &req.code,
             &req.provide,
             req.status,
-        ).await.map_err(|e| Status::internal(format!("{e}")))?;
+        ).await.map_err(|e| Status::internal(format!("{e}" )))?;
         let proto: Vec<StorageInfo> = storages.iter().map(storage_to_proto).collect();
         Ok(Response::new(StorageListResponse { storages: proto }))
     }
@@ -492,7 +492,7 @@ impl EbikeServiceTrait for EbikeGrpcService {
     ) -> Result<Response<StorageListResponse>, Status> {
         let req = request.into_inner();
         let storages = self.state.storage_repo.history(&req.code)
-            .await.map_err(|e| Status::internal(format!("{e}")))?;
+            .await.map_err(|e| Status::internal(format!("{e}" )))?;
         let proto: Vec<StorageInfo> = storages.iter().map(storage_to_proto).collect();
         Ok(Response::new(StorageListResponse { storages: proto }))
     }
@@ -504,14 +504,14 @@ impl EbikeServiceTrait for EbikeGrpcService {
         _request: Request<Empty>,
     ) -> Result<Response<OptionsInfo>, Status> {
         let options = self.state.options_repo.query()
-            .await.map_err(|e| Status::internal(format!("{e}")))?;
+            .await.map_err(|e| Status::internal(format!("{e}" )))?;
         if options.is_empty() {
             return Ok(Response::new(OptionsInfo {
                 name: "".to_string(),
-                options_json: "".to_string(),
+                options_json: " ".to_string(),
                 level: 0,
                 create_date: "".to_string(),
-                update_date: "".to_string(),
+                update_date: " ".to_string(),
                 delete: false,
             }));
         }
@@ -532,22 +532,22 @@ impl EbikeServiceTrait for EbikeGrpcService {
     ) -> Result<Response<GenericResponse>, Status> {
         let req = request.into_inner();
         let mut options = self.state.options_repo.query()
-            .await.map_err(|e| Status::internal(format!("{e}")))?;
+            .await.map_err(|e| Status::internal(format!("{e}" )))?;
         if options.is_empty() {
             return Ok(Response::new(GenericResponse {
                 code: -1,
                 message: "not found".to_string(),
-                data: "".to_string(),
+                data: " ".to_string(),
             }));
         }
         let options = &mut options[0];
         options.level = req.level;
         let mut opts: serde_json::Value = serde_json::from_str(&options.options.to_string()).unwrap_or_default();
-        opts["system"] = serde_json::json!(req.system);
-        opts["alert"] = serde_json::json!(req.alert);
+        opts["system" ] = serde_json::json!(req.system);
+        opts["alert" ] = serde_json::json!(req.alert);
         options.options = opts;
         let success = self.state.options_repo.update(options).await
-            .map_err(|e| Status::internal(format!("{e}")))?;
+            .map_err(|e| Status::internal(format!("{e}" )))?;
         Ok(Response::new(GenericResponse {
             code: if success { 0 } else { -1 },
             message: if success { "updated".to_string() } else { "not found".to_string() },

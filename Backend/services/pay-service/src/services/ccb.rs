@@ -13,7 +13,7 @@ pub struct CcbConfig {
     pub branchid: String,
     pub posid: String,
     pub qupwd: String,
-    #[serde(rename = "pub")]
+    #[serde(rename = "pub" )]
     pub pub_key: String,
 }
 
@@ -24,9 +24,9 @@ pub struct CcbQueryParams {
     pub date: Option<String>,
     pub time_start: Option<String>,
     pub time_end: Option<String>,
-    #[serde(rename = "order")]
+    #[serde(rename = "order" )]
     pub order_no: Option<String>,
-    #[serde(rename = "type")]
+    #[serde(rename = "type" )]
     pub query_type: Option<String>,
     pub kind: Option<String>,
     pub status: Option<String>,
@@ -69,7 +69,7 @@ pub struct CcbOrderParams {
     pub remark2: Option<String>,
     pub goods: Option<String>,
     pub date: Option<String>,
-    #[serde(rename = "order_pay")]
+    #[serde(rename = "order_pay" )]
     pub order_pay: Option<serde_json::Value>,
     pub no: Option<String>,
 }
@@ -99,8 +99,8 @@ impl CcbService {
     pub async fn query(&self, params: &CcbQueryParams) -> AppResult<CcbQueryResponse> {
         // 构建查询参数
         let mut query_str = format!(
-            "VERSION={}&GROUPID={}&MERCHANTID={}&BRANCHID={}&POSID={}&OPERATOR=WEB&WHTYPE=1",
-            "V1",
+            "VERSION={}&GROUPID={}&MERCHANTID={}&BRANCHID={}&POSID={}&OPERATOR=WEB&WHTYPE=1" ,
+            "V1" ,
             self.config.merchantid,
             self.config.merchantid,
             self.config.branchid,
@@ -108,13 +108,13 @@ impl CcbService {
         );
 
         if let Some(ref posid) = params.posid {
-            query_str.push_str(&format!("&POSID={posid}"));
+            query_str.push_str(&format!("&POSID={posid}" ));
         }
         if let Some(ref date) = params.date {
-            query_str.push_str(&format!("&TRANDATE={date}"));
+            query_str.push_str(&format!("&TRANDATE={date}" ));
         }
 
-        tracing::debug!("CCB 查询: {query_str}");
+        tracing::debug!("CCB 查询: {query_str}" );
 
         // 模拟响应
         Ok(CcbQueryResponse {
@@ -131,25 +131,25 @@ impl CcbService {
 
     /// 创建支付订单
     pub async fn create_order(&self, params: &CcbOrderParams) -> AppResult<CcbOrderResponse> {
-        tracing::info!("创建 CCB 订单: {} - {}", params.order, params.amount);
+        tracing::info!("创建 CCB 订单: {} - {}" , params.order, params.amount);
 
         Ok(CcbOrderResponse {
             success: true,
-            pay_url: Some(format!("https://pay.ccb.com/order/{}", params.order)),
-            qr_url: Some(format!("https://pay.ccb.com/qr/{}", params.order)),
+            pay_url: Some(format!("https://pay.ccb.com/order/{}" , params.order)),
+            qr_url: Some(format!("https://pay.ccb.com/qr/{}" , params.order)),
             message: Some("订单创建成功".to_string()),
         })
     }
 
     /// 验证支付结果
     pub async fn verify_payment(&self, order_id: &str) -> AppResult<bool> {
-        tracing::debug!("验证 CCB 支付: {order_id}");
+        tracing::debug!("验证 CCB 支付: {order_id}" );
         Ok(true)
     }
 
     /// 退款
     pub async fn refund(&self, order_id: &str, amount: i64) -> AppResult<bool> {
-        tracing::info!("CCB 退款: {order_id} - {amount}");
+        tracing::info!("CCB 退款: {order_id} - {amount}" );
         Ok(true)
     }
 }
@@ -160,19 +160,19 @@ mod tests {
 
     #[test]
     fn test_ccb_config_deserialize() {
-        let json = r#"{"merchantid": "M001", "branchid": "B001", "posid": "P001", "qupwd": "secret", "pub": "key123"}"#;
-        let config: CcbConfig = serde_json::from_str(json).expect("test assertion");
-        assert_eq!(config.merchantid, "M001");
-        assert_eq!(config.branchid, "B001");
-        assert_eq!(config.posid, "P001");
-        assert_eq!(config.qupwd, "secret");
-        assert_eq!(config.pub_key, "key123");
+        let json = r#"{"merchantid": "M001" , "branchid": "B001" , "posid": "P001" , "qupwd": "secret" , "pub": "key123" }"#;
+        let config: CcbConfig = serde_json::from_str(json).expect("test assertion" );
+        assert_eq!(config.merchantid, "M001" );
+        assert_eq!(config.branchid, "B001" );
+        assert_eq!(config.posid, "P001" );
+        assert_eq!(config.qupwd, "secret" );
+        assert_eq!(config.pub_key, "key123" );
     }
 
     #[test]
     fn test_ccb_query_params_deserialize() {
-        let json = r#"{"posid": "P001", "date": "20260618", "order": "ORDER001"}"#;
-        let params: CcbQueryParams = serde_json::from_str(json).expect("test assertion");
+        let json = r#"{"posid": "P001" , "date": "20260618" , "order": "ORDER001" }"#;
+        let params: CcbQueryParams = serde_json::from_str(json).expect("test assertion" );
         assert_eq!(params.posid, Some("P001".to_string()));
         assert_eq!(params.date, Some("20260618".to_string()));
         assert_eq!(params.order_no, Some("ORDER001".to_string()));
@@ -180,9 +180,9 @@ mod tests {
 
     #[test]
     fn test_ccb_order_params_deserialize() {
-        let json = r#"{"order": "ORDER001", "amount": 10050, "goods": "test goods"}"#;
-        let params: CcbOrderParams = serde_json::from_str(json).expect("test assertion");
-        assert_eq!(params.order, "ORDER001");
+        let json = r#"{"order": "ORDER001" , "amount": 10050, "goods": "test goods" }"#;
+        let params: CcbOrderParams = serde_json::from_str(json).expect("test assertion" );
+        assert_eq!(params.order, "ORDER001" );
         assert!((params.amount - 10050).abs() < 1);
         assert_eq!(params.goods, Some("test goods".to_string()));
     }
@@ -199,9 +199,9 @@ mod tests {
             refund_amount: Some("0".to_string()),
             query_order: vec![],
         };
-        let json = serde_json::to_string(&response).expect("test assertion");
-        assert!(json.contains("000000"));
-        assert!(json.contains("成功"));
+        let json = serde_json::to_string(&response).expect("test assertion" );
+        assert!(json.contains("000000" ));
+        assert!(json.contains("成功" ));
     }
 
     #[test]
@@ -212,8 +212,8 @@ mod tests {
             qr_url: None,
             message: Some("成功".to_string()),
         };
-        let json = serde_json::to_string(&response).expect("test assertion");
-        assert!(json.contains("true"));
-        assert!(json.contains("https://pay.ccb.com/order/ORDER001"));
+        let json = serde_json::to_string(&response).expect("test assertion" );
+        assert!(json.contains("true" ));
+        assert!(json.contains("https://pay.ccb.com/order/ORDER001" ));
     }
 }

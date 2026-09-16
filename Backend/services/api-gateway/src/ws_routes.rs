@@ -106,14 +106,14 @@ impl WsConnectionManager {
         let conn = Arc::new(WsConnection::new(user_id));
         self.connections
             .write()
-            .insert(format!("user_{user_id}"), conn.clone());
+            .insert(format!("user_{user_id}" ), conn.clone());
         conn
     }
 
     pub fn unregister(&self, user_id: i64) {
         self.connections
             .write()
-            .remove(&format!("user_{user_id}"));
+            .remove(&format!("user_{user_id}" ));
     }
 
     pub fn active_connections(&self) -> usize {
@@ -156,7 +156,7 @@ pub async fn ws_messages_handler(
     State(state): State<Arc<AppState>>,
     Query(query): Query<WsQuery>,
 ) -> impl IntoResponse {
-    info!("WS upgrade: /ws/messages");
+    info!("WS upgrade: /ws/messages" );
     ws.on_upgrade(move |socket| handle_ws_messages(socket, state, query.token))
 }
 
@@ -176,12 +176,12 @@ async fn handle_ws_messages(socket: WebSocket, state: Arc<AppState>, token: Opti
     let user_id = match receive_auth(&mut receiver, &state.jwt_service, token).await {
         Ok(uid) => uid,
         Err(e) => {
-            warn!("WS Auth failed: {}", e);
+            warn!("WS Auth failed: {}" , e);
             return;
         }
     };
 
-    info!("WS authenticated: user_id={}", user_id);
+    info!("WS authenticated: user_id={}" , user_id);
 
     let conn = Arc::new(WsConnection::new(user_id));
     conn.set_authenticated(true);
@@ -200,11 +200,11 @@ async fn handle_ws_messages(socket: WebSocket, state: Arc<AppState>, token: Opti
                         }
                     }
                     Some(Ok(Message::Close(_))) | None => {
-                        info!("WS closed: user_id={}", user_id);
+                        info!("WS closed: user_id={}" , user_id);
                         break;
                     }
                     Some(Err(e)) => {
-                        error!("WS error: {}", e);
+                        error!("WS error: {}" , e);
                         break;
                     }
                     _ => {}
@@ -237,7 +237,7 @@ async fn receive_auth(
             .flatten()
         && let Ok(req) = serde_json::from_str::<WsRequest>(&text)
             && req.action == "auth" {
-            let token = req.token.ok_or("Missing token")?;
+            let token = req.token.ok_or("Missing token" )?;
             // 验证真实 JWT(签名+过期), 从 claims.sub 取用户 ID
             let claims = jwt_service.verify_token(&token).map_err(|_| "Invalid token".to_string())?;
             return Ok(claims.sub);
@@ -250,7 +250,7 @@ fn handle_client_request(req: &WsRequest, user_id: i64) -> WsResponse {
     match req.action.as_str() {
         "auth" => WsResponse::ok(
             &req.action,
-            serde_json::json!({"status": "authenticated", "user_id": user_id}),
+            serde_json::json!({"status": "authenticated" , "user_id": user_id}),
         ),
         "ping" => WsResponse::ok(
             &req.action,
@@ -265,9 +265,9 @@ fn handle_client_request(req: &WsRequest, user_id: i64) -> WsResponse {
         }
         "send" => {
             // 通过 gRPC 调用 message-service 发送消息
-            WsResponse::ok(&req.action, serde_json::json!({"status": "queued"}))
+            WsResponse::ok(&req.action, serde_json::json!({"status": "queued" }))
         }
-        _ => WsResponse::error(&req.action, "Unknown action"),
+        _ => WsResponse::error(&req.action, "Unknown action" ),
     }
 }
 

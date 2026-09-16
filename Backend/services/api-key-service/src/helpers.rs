@@ -33,7 +33,7 @@ pub fn json_error(msg: &str) -> Json<Value> {
 
 /// Error response with formatted message
 pub fn json_error_fmt(msg: &str, e: &impl std::fmt::Display) -> Json<Value> {
-    Json(json!({"success": false, "error": format!("{}: {}", msg, e)}))
+    Json(json!({"success": false, "error": format!("{}: {}" , msg, e)}))
 }
 
 /// Error response with message field
@@ -43,12 +43,12 @@ pub fn json_error_msg(msg: &str) -> Json<Value> {
 
 /// Error response with formatted message field
 pub fn json_error_msg_fmt(msg: &str, e: &impl std::fmt::Display) -> Json<Value> {
-    Json(json!({"success": false, "message": format!("{}: {}", msg, e)}))
+    Json(json!({"success": false, "message": format!("{}: {}" , msg, e)}))
 }
 
 /// Health check response
 pub fn json_health(service_name: &str) -> Json<Value> {
-    Json(json!({"status": "healthy", "service": service_name}))
+    Json(json!({"status": "healthy" , "service": service_name}))
 }
 
 /// Created response with message
@@ -82,7 +82,7 @@ pub fn json_api_key_created(key_id: &str, key_secret: &str, name: &str, permissi
         StatusCode::CREATED,
         Json(json!({
             "code": 201,
-            "message": "密钥创建成功，请妥善保管密钥Secret，仅此次可见",
+            "message": "密钥创建成功，请妥善保管密钥Secret，仅此次可见" ,
             "data": {
                 "key_id": key_id,
                 "key_secret": key_secret,
@@ -98,7 +98,7 @@ pub fn json_api_key_created(key_id: &str, key_secret: &str, name: &str, permissi
 pub fn json_api_key_list(keys: Vec<serde_json::Value>, total: i64, page: i64, page_size: i64) -> Json<Value> {
     Json(json!({
         "code": 200,
-        "message": "操作成功",
+        "message": "操作成功" ,
         "data": {
             "records": keys,
             "total": total,
@@ -121,7 +121,7 @@ pub fn json_api_key_error(code: u16, message: &str) -> Json<Value> {
 pub fn json_api_key_detail(key: &crate::models::ApiKey) -> Json<Value> {
     Json(json!({
         "code": 200,
-        "message": "操作成功",
+        "message": "操作成功" ,
         "data": key
     }))
 }
@@ -130,7 +130,7 @@ pub fn json_api_key_detail(key: &crate::models::ApiKey) -> Json<Value> {
 pub fn json_api_key_updated(key: &crate::models::ApiKey) -> Json<Value> {
     Json(json!({
         "code": 200,
-        "message": "更新成功",
+        "message": "更新成功" ,
         "data": key
     }))
 }
@@ -196,7 +196,7 @@ pub fn json_api_key_simple(message: &str) -> Json<Value> {
 pub fn json_api_key_stats(total: i64) -> Json<Value> {
     Json(json!({
         "code": 200,
-        "message": "操作成功",
+        "message": "操作成功" ,
         "data": {
             "total_keys": total,
             "active_keys": total,

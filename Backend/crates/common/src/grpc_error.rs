@@ -40,14 +40,14 @@ fn map_tonic_code_to_app_error(code: tonic::Code, message: String) -> AppError {
         tonic::Code::OutOfRange => AppError::BadRequest(message),
         tonic::Code::DeadlineExceeded => AppError::ServiceUnavailable(message),
         tonic::Code::Unavailable => AppError::ServiceUnavailable(message),
-        tonic::Code::Cancelled => AppError::NotFound(format!("请求已取消: {message}")),
-        tonic::Code::Aborted => AppError::Internal(format!("操作已中止: {message}")),
+        tonic::Code::Cancelled => AppError::NotFound(format!("请求已取消: {message}" )),
+        tonic::Code::Aborted => AppError::Internal(format!("操作已中止: {message}" )),
         tonic::Code::Unimplemented => {
-            AppError::Internal(format!("不支持的操作: {message}"))
+            AppError::Internal(format!("不支持的操作: {message}" ))
         }
-        tonic::Code::DataLoss => AppError::Internal(format!("数据丢失: {message}")),
+        tonic::Code::DataLoss => AppError::Internal(format!("数据丢失: {message}" )),
         // Unknown / Internal / 其他未显式匹配的
-        _ => AppError::Internal(format!("gRPC 错误: {message}")),
+        _ => AppError::Internal(format!("gRPC 错误: {message}" )),
     }
 }
 
@@ -89,40 +89,40 @@ fn map_app_error_to_tonic_status(err: &AppError) -> tonic::Status {
         // 认证授权
         AppError::Unauthorized(msg) => Status::unauthenticated(msg),
         AppError::Forbidden(msg) => Status::permission_denied(msg),
-        AppError::TokenExpired => Status::unauthenticated("Token 已过期"),
-        AppError::TokenInvalid(msg) => Status::unauthenticated(format!("Token 无效: {msg}")),
+        AppError::TokenExpired => Status::unauthenticated("Token 已过期" ),
+        AppError::TokenInvalid(msg) => Status::unauthenticated(format!("Token 无效: {msg}" )),
 
         // 参数校验
         AppError::BadRequest(msg) => Status::invalid_argument(msg),
-        AppError::InvalidUsername => Status::invalid_argument("用户名不能为空"),
+        AppError::InvalidUsername => Status::invalid_argument("用户名不能为空" ),
         AppError::InvalidUsernameFormat => {
-            Status::invalid_argument("用户名格式不正确（长度 3-50 位字母数字下划线）")
+            Status::invalid_argument("用户名格式不正确（长度 3-50 位字母数字下划线）" )
         }
-        AppError::InvalidPassword => Status::invalid_argument("密码长度至少 8 位"),
-        AppError::InvalidEmail => Status::invalid_argument("邮箱格式不正确"),
-        AppError::InvalidPhone => Status::invalid_argument("手机号格式不正确"),
-        AppError::InvalidRole(role) => Status::invalid_argument(format!("无效的角色值: {role}")),
+        AppError::InvalidPassword => Status::invalid_argument("密码长度至少 8 位" ),
+        AppError::InvalidEmail => Status::invalid_argument("邮箱格式不正确" ),
+        AppError::InvalidPhone => Status::invalid_argument("手机号格式不正确" ),
+        AppError::InvalidRole(role) => Status::invalid_argument(format!("无效的角色值: {role}" )),
         AppError::InvalidStatus(status) => {
-            Status::invalid_argument(format!("无效的状态值: {status}"))
+            Status::invalid_argument(format!("无效的状态值: {status}" ))
         }
 
         // 业务逻辑
         AppError::NotFound(msg) => Status::not_found(msg),
-        AppError::UserNotFound => Status::not_found("用户不存在"),
+        AppError::UserNotFound => Status::not_found("用户不存在" ),
         AppError::UserAlreadyExists(username) => {
-            Status::already_exists(format!("用户已存在: {username}"))
+            Status::already_exists(format!("用户已存在: {username}" ))
         }
-        AppError::RoleNotFound(role) => Status::not_found(format!("角色不存在: {role}")),
+        AppError::RoleNotFound(role) => Status::not_found(format!("角色不存在: {role}" )),
         AppError::RoleAlreadyExists(role) => {
-            Status::already_exists(format!("角色已存在: {role}"))
+            Status::already_exists(format!("角色已存在: {role}" ))
         }
-        AppError::DepartmentNotFound => Status::not_found("部门不存在"),
+        AppError::DepartmentNotFound => Status::not_found("部门不存在" ),
 
         // 系统错误
         AppError::Internal(msg) => Status::internal(msg),
-        AppError::Database(e) => Status::internal(format!("数据库错误: {e}")),
-        AppError::Config(msg) => Status::internal(format!("配置错误: {msg}")),
-        AppError::Token(msg) => Status::internal(format!("Token 错误: {msg}")),
+        AppError::Database(e) => Status::internal(format!("数据库错误: {e}" )),
+        AppError::Config(msg) => Status::internal(format!("配置错误: {msg}" )),
+        AppError::Token(msg) => Status::internal(format!("Token 错误: {msg}" )),
         AppError::RateLimit(msg) => Status::resource_exhausted(msg),
         AppError::ServiceUnavailable(msg) => Status::unavailable(msg),
         AppError::CsrfError(msg) => Status::permission_denied(msg),
@@ -135,7 +135,7 @@ fn map_app_error_to_tonic_status(err: &AppError) -> tonic::Status {
             "部分操作失败: 成功 {success_count} 个, 失败 {fail_count} 个"
         )),
         // 其他未明确映射的错误变体（API Key, Billing, File 等服务特定错误）
-        _ => Status::internal(format!("Internal error: {err}")),
+        _ => Status::internal(format!("Internal error: {err}" )),
     }
 }
 
@@ -211,58 +211,58 @@ mod tests {
 
     #[test]
     fn test_status_to_app_error_invalid_argument() {
-        let status = Status::invalid_argument("username is empty");
+        let status = Status::invalid_argument("username is empty" );
         let err: AppError = status.into();
-        assert!(matches!(err, AppError::BadRequest(msg) if msg == "username is empty"));
+        assert!(matches!(err, AppError::BadRequest(msg) if msg == "username is empty" ));
     }
 
     #[test]
     fn test_status_to_app_error_not_found() {
-        let status = Status::not_found("user not found");
+        let status = Status::not_found("user not found" );
         let err: AppError = status.into();
-        assert!(matches!(err, AppError::NotFound(msg) if msg == "user not found"));
+        assert!(matches!(err, AppError::NotFound(msg) if msg == "user not found" ));
     }
 
     #[test]
     fn test_status_to_app_error_unauthenticated() {
-        let status = Status::unauthenticated("invalid token");
+        let status = Status::unauthenticated("invalid token" );
         let err: AppError = status.into();
-        assert!(matches!(err, AppError::Unauthorized(msg) if msg == "invalid token"));
+        assert!(matches!(err, AppError::Unauthorized(msg) if msg == "invalid token" ));
     }
 
     #[test]
     fn test_status_to_app_error_permission_denied() {
-        let status = Status::permission_denied("no access");
+        let status = Status::permission_denied("no access" );
         let err: AppError = status.into();
-        assert!(matches!(err, AppError::Forbidden(msg) if msg == "no access"));
+        assert!(matches!(err, AppError::Forbidden(msg) if msg == "no access" ));
     }
 
     #[test]
     fn test_status_to_app_error_already_exists() {
-        let status = Status::already_exists("user exists");
+        let status = Status::already_exists("user exists" );
         let err: AppError = status.into();
-        assert!(matches!(err, AppError::UserAlreadyExists(msg) if msg == "user exists"));
+        assert!(matches!(err, AppError::UserAlreadyExists(msg) if msg == "user exists" ));
     }
 
     #[test]
     fn test_status_to_app_error_resource_exhausted() {
-        let status = Status::resource_exhausted("rate limit");
+        let status = Status::resource_exhausted("rate limit" );
         let err: AppError = status.into();
-        assert!(matches!(err, AppError::RateLimit(msg) if msg == "rate limit"));
+        assert!(matches!(err, AppError::RateLimit(msg) if msg == "rate limit" ));
     }
 
     #[test]
     fn test_status_to_app_error_unavailable() {
-        let status = Status::unavailable("service down");
+        let status = Status::unavailable("service down" );
         let err: AppError = status.into();
-        assert!(matches!(err, AppError::ServiceUnavailable(msg) if msg == "service down"));
+        assert!(matches!(err, AppError::ServiceUnavailable(msg) if msg == "service down" ));
     }
 
     #[test]
     fn test_status_to_app_error_internal() {
-        let status = Status::internal("db error");
+        let status = Status::internal("db error" );
         let err: AppError = status.into();
-        assert!(matches!(err, AppError::Internal(msg) if msg == "gRPC 错误: db error"));
+        assert!(matches!(err, AppError::Internal(msg) if msg == "gRPC 错误: db error" ));
     }
 
     #[test]
@@ -270,7 +270,7 @@ mod tests {
         let err = AppError::Unauthorized("bad credentials".into());
         let status: tonic::Status = err.into();
         assert_eq!(status.code(), tonic::Code::Unauthenticated);
-        assert_eq!(status.message(), "bad credentials");
+        assert_eq!(status.message(), "bad credentials" );
     }
 
     #[test]
@@ -278,7 +278,7 @@ mod tests {
         let err = AppError::NotFound("user".into());
         let status: tonic::Status = err.into();
         assert_eq!(status.code(), tonic::Code::NotFound);
-        assert_eq!(status.message(), "user");
+        assert_eq!(status.message(), "user" );
     }
 
     #[test]
@@ -286,7 +286,7 @@ mod tests {
         let err = AppError::BadRequest("invalid param".into());
         let status: tonic::Status = err.into();
         assert_eq!(status.code(), tonic::Code::InvalidArgument);
-        assert_eq!(status.message(), "invalid param");
+        assert_eq!(status.message(), "invalid param" );
     }
 
     #[test]
@@ -294,7 +294,7 @@ mod tests {
         let err = AppError::Internal("server error".into());
         let status: tonic::Status = err.into();
         assert_eq!(status.code(), tonic::Code::Internal);
-        assert_eq!(status.message(), "server error");
+        assert_eq!(status.message(), "server error" );
     }
 
     #[test]
@@ -313,9 +313,9 @@ mod tests {
 
     #[test]
     fn test_status_ext_trait() {
-        let status = Status::not_found("test");
+        let status = Status::not_found("test" );
         let err = status.into_app_error();
-        assert!(matches!(err, AppError::NotFound(msg) if msg == "test"));
+        assert!(matches!(err, AppError::NotFound(msg) if msg == "test" ));
     }
 
     #[test]
@@ -327,9 +327,9 @@ mod tests {
 
     #[test]
     fn test_ref_from_impl() {
-        let status = Status::invalid_argument("bad");
+        let status = Status::invalid_argument("bad" );
         let err = AppError::from(&status);
-        assert!(matches!(err, AppError::BadRequest(msg) if msg == "bad"));
+        assert!(matches!(err, AppError::BadRequest(msg) if msg == "bad" ));
     }
 
     #[test]
@@ -348,8 +348,8 @@ mod tests {
         let status: tonic::Status = err.into();
         assert_eq!(status.code(), tonic::Code::Internal);
         let msg = status.message();
-        assert!(msg.contains("5"), "message should contain success_count");
-        assert!(msg.contains("2"), "message should contain fail_count");
+        assert!(msg.contains("5" ), "message should contain success_count" );
+        assert!(msg.contains("2" ), "message should contain fail_count" );
     }
 
     #[test]

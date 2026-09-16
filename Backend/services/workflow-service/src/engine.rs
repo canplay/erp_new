@@ -132,14 +132,14 @@ impl WorkflowEngine {
         definition: serde_json::Value,
     ) -> EngineResult<WorkflowDefinition> {
         // 支持 BPMN 格式和简单 JSON 格式
-        if let Some(nodes) = definition.get("nodes").and_then(|v| v.as_array()) {
+        if let Some(nodes) = definition.get("nodes" ).and_then(|v| v.as_array()) {
             let node_defs: Vec<NodeDefinition> = nodes
                 .iter()
                 .filter_map(|n| serde_json::from_value(n.clone()).ok())
                 .collect();
 
             let edges: Vec<EdgeDefinition> = definition
-                .get("edges")
+                .get("edges" )
                 .and_then(|v| v.as_array())
                 .map(|arr| {
                     arr.iter()
@@ -151,12 +151,12 @@ impl WorkflowEngine {
             // 找出起始节点和结束节点
             let start_node_id = node_defs
                 .iter()
-                .find(|n| n.node_type == "start")
+                .find(|n| n.node_type == "start" )
                 .map(|n| n.id.clone());
 
             let end_node_ids: Vec<String> = node_defs
                 .iter()
-                .filter(|n| n.node_type == "end")
+                .filter(|n| n.node_type == "end" )
                 .map(|n| n.id.clone())
                 .collect();
 
@@ -190,7 +190,7 @@ impl WorkflowEngine {
         // 查询工作流
         let workflow: Option<WorkflowRow> = sqlx::query_as!(
             WorkflowRow,
-            r"SELECT status, version FROM workflows WHERE id = $1",
+            r"SELECT status, version FROM workflows WHERE id = $1" ,
             workflow_id,
         )
         .fetch_optional(&mut *tx)
@@ -214,11 +214,11 @@ impl WorkflowEngine {
 
         sqlx::query!(
             r"INSERT INTO workflow_instances (id, workflow_id, workflow_version, status, variables, started_by, started_at)
-              VALUES ($1, $2, $3, $4, $5, $6, $7)",
+              VALUES ($1, $2, $3, $4, $5, $6, $7)" ,
             &instance_id,
             workflow_id,
             workflow.version,
-            "running",
+            "running" ,
             &variables,
             &started_by,
             now,
@@ -231,12 +231,12 @@ impl WorkflowEngine {
             let task_id = Uuid::new_v4().to_string();
             sqlx::query!(
                 r"INSERT INTO task_records (id, instance_id, node_id, node_name, status, started_at)
-                  VALUES ($1, $2, $3, $4, $5, $6)",
+                  VALUES ($1, $2, $3, $4, $5, $6)" ,
                 &task_id,
                 &instance_id,
                 start_node_id,
                 start_node_id, // 暂时使用 ID 作为名称
-                "running",
+                "running" ,
                 now,
             )
             .execute(&mut *tx)
@@ -244,7 +244,7 @@ impl WorkflowEngine {
 
             // 更新实例当前节点
             sqlx::query!(
-                "UPDATE workflow_instances SET current_node_id = $1 WHERE id = $2",
+                "UPDATE workflow_instances SET current_node_id = $1 WHERE id = $2" ,
                 start_node_id,
                 &instance_id,
             )
@@ -283,8 +283,8 @@ impl WorkflowEngine {
         let _ = sqlx::query!(
             r"UPDATE task_records
               SET status = $1, completed_at = $2
-              WHERE instance_id = $3 AND node_id = $4 AND status = 'running'",
-            "completed",
+              WHERE instance_id = $3 AND node_id = $4 AND status = 'running'" ,
+            "completed" ,
             now,
             instance_id,
             node_id,
@@ -296,7 +296,7 @@ impl WorkflowEngine {
         if let Some(ref vars) = _variables {
             let vars_json = serde_json::to_string(vars).unwrap_or_else(|_| "{}".to_string());
             sqlx::query!(
-                r"UPDATE workflow_instances SET variables = $1::jsonb WHERE id = $2",
+                r"UPDATE workflow_instances SET variables = $1::jsonb WHERE id = $2" ,
                 vars_json.as_str(),
                 instance_id,
             )
@@ -310,7 +310,7 @@ impl WorkflowEngine {
             r"SELECT id, workflow_id, workflow_version, status, current_node_id,
                       COALESCE(variables, '{}'::jsonb) AS variables,
                       started_by, started_at, completed_at
-             FROM workflow_instances WHERE id = $1",
+             FROM workflow_instances WHERE id = $1" ,
             instance_id,
         )
         .fetch_optional(&mut *tx)
@@ -321,7 +321,7 @@ impl WorkflowEngine {
 
         // 从工作流表获取定义
         let workflow_def: Option<serde_json::Value> =
-            sqlx::query_scalar!("SELECT definition FROM workflows WHERE id = $1", &instance.workflow_id)
+            sqlx::query_scalar!("SELECT definition FROM workflows WHERE id = $1" , &instance.workflow_id)
                 .fetch_optional(&mut *tx)
                 .await?;
 
@@ -333,7 +333,7 @@ impl WorkflowEngine {
             let outgoing_edges: Vec<&EdgeDefinition> = definition
                 .edges
                 .iter()
-                .filter(|e| e.source.as_str() == instance.current_node_id.as_ref().map(|s| s.as_str()).unwrap_or(""))
+                .filter(|e| e.source.as_str() == instance.current_node_id.as_ref().map(|s| s.as_str()).unwrap_or("" ))
                 .collect();
 
             let mut result = None;
@@ -359,8 +359,8 @@ impl WorkflowEngine {
             if definition.end_node_ids.contains(next_id) {
                 // 完成工作流实例
                 sqlx::query!(
-                    r"UPDATE workflow_instances SET status = $1, completed_at = $2 WHERE id = $3",
-                    "completed",
+                    r"UPDATE workflow_instances SET status = $1, completed_at = $2 WHERE id = $3" ,
+                    "completed" ,
                     now,
                     instance_id,
                 )
@@ -375,12 +375,12 @@ impl WorkflowEngine {
             let task_id = Uuid::new_v4().to_string();
             sqlx::query!(
                 r"INSERT INTO task_records (id, instance_id, node_id, node_name, status, started_at)
-                  VALUES ($1, $2, $3, $4, $5, $6)",
+                  VALUES ($1, $2, $3, $4, $5, $6)" ,
                 &task_id,
                 instance_id,
                 next_id,
                 next_id,
-                "running",
+                "running" ,
                 now,
             )
             .execute(&mut *tx)
@@ -388,7 +388,7 @@ impl WorkflowEngine {
 
             // 更新实例当前节点
             sqlx::query!(
-                "UPDATE workflow_instances SET current_node_id = $1 WHERE id = $2",
+                "UPDATE workflow_instances SET current_node_id = $1 WHERE id = $2" ,
                 next_id,
                 instance_id,
             )
@@ -407,7 +407,7 @@ impl WorkflowEngine {
         // 格式: ${key} operator value 或 ${key} == "string"
 
         // 解析变量引用
-        if let Some(start_idx) = condition.find("${")
+        if let Some(start_idx) = condition.find("${" )
             && let Some(end_idx) = condition.find('}') {
                 let var_path = &condition[start_idx + 2..end_idx];
 
@@ -454,19 +454,19 @@ impl WorkflowEngine {
         let operator_expr = operator_expr.trim();
 
         // 处理 == 运算符
-        if let Some(rest) = operator_expr.strip_prefix("==") {
+        if let Some(rest) = operator_expr.strip_prefix("==" ) {
             let expected = rest.trim().trim_matches('"').trim_matches('\'');
             return var_value == expected;
         }
 
         // 处理 != 运算符
-        if let Some(rest) = operator_expr.strip_prefix("!=") {
+        if let Some(rest) = operator_expr.strip_prefix("!=" ) {
             let expected = rest.trim().trim_matches('"').trim_matches('\'');
             return var_value != expected;
         }
 
         // 处理 > 运算符
-        if let Some(rest) = operator_expr.strip_prefix(">") {
+        if let Some(rest) = operator_expr.strip_prefix(">" ) {
             if let (Ok(v1), Ok(v2)) = (var_value.parse::<f64>(), rest.trim().parse::<f64>()) {
                 return v1 > v2;
             }
@@ -474,13 +474,13 @@ impl WorkflowEngine {
         }
 
         // 处理 >= 运算符
-        if let Some(rest) = operator_expr.strip_prefix(">=")
+        if let Some(rest) = operator_expr.strip_prefix(">=" )
             && let (Ok(v1), Ok(v2)) = (var_value.parse::<f64>(), rest.trim().parse::<f64>()) {
                 return v1 >= v2;
             }
 
         // 处理 < 运算符
-        if let Some(rest) = operator_expr.strip_prefix("<") {
+        if let Some(rest) = operator_expr.strip_prefix("<" ) {
             if let (Ok(v1), Ok(v2)) = (var_value.parse::<f64>(), rest.trim().parse::<f64>()) {
                 return v1 < v2;
             }
@@ -488,7 +488,7 @@ impl WorkflowEngine {
         }
 
         // 处理 <= 运算符
-        if let Some(rest) = operator_expr.strip_prefix("<=")
+        if let Some(rest) = operator_expr.strip_prefix("<=" )
             && let (Ok(v1), Ok(v2)) = (var_value.parse::<f64>(), rest.trim().parse::<f64>()) {
                 return v1 <= v2;
             }
@@ -507,8 +507,8 @@ impl WorkflowEngine {
 
         // 更新实例状态
         let affected = sqlx::query!(
-            r"UPDATE workflow_instances SET status = $1, completed_at = $2 WHERE id = $3 AND status = 'running'",
-            "cancelled",
+            r"UPDATE workflow_instances SET status = $1, completed_at = $2 WHERE id = $3 AND status = 'running'" ,
+            "cancelled" ,
             now,
             instance_id,
         )
@@ -522,8 +522,8 @@ impl WorkflowEngine {
 
         // 更新所有待处理任务
         sqlx::query!(
-            r"UPDATE task_records SET status = $1, completed_at = $2 WHERE instance_id = $3 AND status = 'pending'",
-            "skipped",
+            r"UPDATE task_records SET status = $1, completed_at = $2 WHERE instance_id = $3 AND status = 'pending'" ,
+            "skipped" ,
             now,
             instance_id,
         )
@@ -558,14 +558,14 @@ impl TaskScheduler {
             r"SELECT id, name, task_handler AS action_type,
                       COALESCE(task_params, '{}'::jsonb) AS action_params
             FROM schedule_tasks
-            WHERE status = 'active' AND next_run_time <= $1",
+            WHERE status = 'active' AND next_run_time <= $1" ,
             now,
         )
         .fetch_all(&self.pool)
         .await?;
 
         for task in tasks {
-            tracing::info!("触发定时任务: {} ({})", task.name, task.id);
+            tracing::info!("触发定时任务: {} ({})" , task.name, task.id);
 
             // 执行任务动作
             self.execute_task_action(&task.action_type, &task.action_params)
@@ -577,7 +577,7 @@ impl TaskScheduler {
             sqlx::query!(
                 r"UPDATE schedule_tasks
                   SET last_run_time = $1, next_run_time = $2
-                  WHERE id = $3",
+                  WHERE id = $3" ,
                 now,
                 next_run_at,
                 &task.id,
@@ -601,43 +601,43 @@ impl TaskScheduler {
             "workflow" => {
                 // 触发工作流
                 let workflow_id = action_params
-                    .get("workflow_id")
+                    .get("workflow_id" )
                     .and_then(|v| v.as_str())
                     .ok_or_else(|| AppError::ExecutionFailed("缺少 workflow_id".to_string()))?;
 
                 self.execute_workflow_action(workflow_id, action_params)
                     .await?;
-                tracing::info!("执行工作流: {workflow_id}");
+                tracing::info!("执行工作流: {workflow_id}" );
             }
             "report" => {
                 // 生成报表
                 let report_id = action_params
-                    .get("report_id")
+                    .get("report_id" )
                     .and_then(|v| v.as_str())
                     .ok_or_else(|| AppError::ExecutionFailed("缺少 report_id".to_string()))?;
 
                 self.execute_report_action(report_id).await?;
-                tracing::info!("生成报表: {report_id}");
+                tracing::info!("生成报表: {report_id}" );
             }
             "webhook" => {
                 // 发送 Webhook 请求
                 let url = action_params
-                    .get("url")
+                    .get("url" )
                     .and_then(|v| v.as_str())
                     .ok_or_else(|| AppError::ExecutionFailed("缺少 webhook url".to_string()))?;
 
                 self.execute_webhook_action(url, action_params).await?;
-                tracing::info!("发送 Webhook: {url}");
+                tracing::info!("发送 Webhook: {url}" );
             }
             "script" => {
                 // 执行脚本
                 let script = action_params
-                    .get("script")
+                    .get("script" )
                     .and_then(|v| v.as_str())
                     .ok_or_else(|| AppError::ExecutionFailed("缺少 script 内容".to_string()))?;
 
                 self.execute_script_action(script).await?;
-                tracing::info!("执行自定义脚本");
+                tracing::info!("执行自定义脚本" );
             }
             _ => {
                 return Err(AppError::ExecutionFailed(format!(
@@ -657,7 +657,7 @@ impl TaskScheduler {
         // 查询工作流定义
         let workflow: Option<WorkflowMeta> = sqlx::query_as!(
             WorkflowMeta,
-            r"SELECT status, definition FROM workflows WHERE id = $1",
+            r"SELECT status, definition FROM workflows WHERE id = $1" ,
             workflow_id,
         )
         .fetch_optional(&self.pool)
@@ -684,7 +684,7 @@ impl TaskScheduler {
             ReportMeta,
             r"SELECT id, name, report_type,
                       COALESCE(config, '{}'::jsonb) AS query_params
-            FROM reports WHERE id = $1",
+            FROM reports WHERE id = $1" ,
             report_id,
         )
         .fetch_optional(&self.pool)
@@ -700,15 +700,15 @@ impl TaskScheduler {
 
                 // 更新报表状态（reports 表无 result 列，结果不落库）
                 sqlx::query!(
-                    r"UPDATE reports SET status = $1, updated_at = $2 WHERE id = $3",
-                    "generated",
+                    r"UPDATE reports SET status = $1, updated_at = $2 WHERE id = $3" ,
+                    "generated" ,
                     now,
                     &r.id,
                 )
                 .execute(&self.pool)
                 .await?;
 
-                tracing::info!("报表生成成功: {} ({})", r.name, r.id);
+                tracing::info!("报表生成成功: {} ({})" , r.name, r.id);
                 let _ = result;
                 Ok(())
             }
@@ -728,12 +728,12 @@ impl TaskScheduler {
             "table" => {
                 // 表格报表：返回示例数据
                 Ok(serde_json::json!({
-                    "type": "table",
-                    "columns": ["名称", "数量", "金额"],
+                    "type": "table" ,
+                    "columns": ["名称" , "数量" , "金额" ],
                     "rows": [
-                        ["项目A", 100, 10000],
-                        ["项目B", 200, 20000],
-                        ["项目C", 150, 15000]
+                        ["项目A" , 100, 10000],
+                        ["项目B" , 200, 20000],
+                        ["项目C" , 150, 15000]
                     ],
                     "summary": {
                         "total_rows": 3,
@@ -744,11 +744,11 @@ impl TaskScheduler {
             "chart" => {
                 // 图表报表：返回图表数据
                 Ok(serde_json::json!({
-                    "type": "chart",
-                    "chart_type": "bar",
-                    "labels": ["1月", "2月", "3月", "4月", "5月"],
+                    "type": "chart" ,
+                    "chart_type": "bar" ,
+                    "labels": ["1月" , "2月" , "3月" , "4月" , "5月" ],
                     "datasets": [{
-                        "label": "销售额",
+                        "label": "销售额" ,
                         "data": [120, 190, 300, 500, 200]
                     }]
                 }))
@@ -756,15 +756,15 @@ impl TaskScheduler {
             "dashboard" => {
                 // 仪表盘报表：返回多个指标
                 Ok(serde_json::json!({
-                    "type": "dashboard",
+                    "type": "dashboard" ,
                     "metrics": [
-                        {"name": "总用户数", "value": 1000, "change": 10.5},
-                        {"name": "日活用户", "value": 500, "change": -2.3},
-                        {"name": "总收入", "value": 50000, "change": 15.2}
+                        {"name": "总用户数" , "value": 1000, "change": 10.5},
+                        {"name": "日活用户" , "value": 500, "change": -2.3},
+                        {"name": "总收入" , "value": 50000, "change": 15.2}
                     ],
                     "charts": [
-                        {"name": "用户趋势", "type": "line", "data": [100, 120, 150, 180, 200]},
-                        {"name": "收入构成", "type": "pie", "data": [30, 40, 30]}
+                        {"name": "用户趋势" , "type": "line" , "data": [100, 120, 150, 180, 200]},
+                        {"name": "收入构成" , "type": "pie" , "data": [30, 40, 30]}
                     ]
                 }))
             }
@@ -783,13 +783,13 @@ impl TaskScheduler {
     ) -> EngineResult<()> {
         // 获取请求方法
         let method = params
-            .get("method")
+            .get("method" )
             .and_then(|v| v.as_str())
-            .unwrap_or("POST");
+            .unwrap_or("POST" );
 
         // 获取 headers - 使用 HeaderName 和 HeaderValue 需要 'static 生命周期
         let mut headers = reqwest::header::HeaderMap::new();
-        if let Some(headers_obj) = params.get("headers").and_then(|v| v.as_object()) {
+        if let Some(headers_obj) = params.get("headers" ).and_then(|v| v.as_object()) {
             for (k, v) in headers_obj {
                 // 使用 HeaderName 解析，失败则跳过
                 let header_name = match reqwest::header::HeaderName::from_bytes(k.as_bytes()) {
@@ -807,7 +807,7 @@ impl TaskScheduler {
 
         // 构建请求体
         let body = params
-            .get("body")
+            .get("body" )
             .cloned()
             .map(|v| serde_json::to_string(&v))
             .transpose()
@@ -817,12 +817,12 @@ impl TaskScheduler {
         let client = reqwest::Client::builder()
             .timeout(std::time::Duration::from_secs(WEBHOOK_TIMEOUT_SECS as u64))
             .build()
-            .map_err(|e| AppError::ExecutionFailed(format!("创建HTTP客户端失败: {e}")))?;
+            .map_err(|e| AppError::ExecutionFailed(format!("创建HTTP客户端失败: {e}" )))?;
 
         // 构建带签名的 payload
         let timestamp = Utc::now().timestamp();
         let payload = serde_json::json!({
-            "event": "workflow.webhook",
+            "event": "workflow.webhook" ,
             "timestamp": timestamp,
             "data": params,
         });
@@ -830,10 +830,10 @@ impl TaskScheduler {
 
         // 添加 HMAC 签名 header
         headers.insert(
-            reqwest::header::HeaderName::from_bytes(b"X-Webhook-Signature")
+            reqwest::header::HeaderName::from_bytes(b"X-Webhook-Signature" )
                 .map_err(|e| AppError::ExecutionFailed(e.to_string()))?,
-            format!("sha256={signature}").parse().map_err(|e| {
-                AppError::ExecutionFailed(format!("签名解析失败: {e}"))
+            format!("sha256={signature}" ).parse().map_err(|e| {
+                AppError::ExecutionFailed(format!("签名解析失败: {e}" ))
             })?,
         );
 
@@ -862,15 +862,15 @@ impl TaskScheduler {
                 Ok(response) => {
                     let status = response.status();
                     let body_text = response.text().await.unwrap_or_default();
-                    tracing::info!("Webhook 响应: {method} {url} - 状态: {status}");
+                    tracing::info!("Webhook 响应: {method} {url} - 状态: {status}" );
                     if status.is_success() {
                         return Ok(());
                     }
-                    tracing::warn!("Webhook 返回非成功状态: {status} - body: {body_text}");
-                    last_error = Some(format!("HTTP {status}: {body_text}"));
+                    tracing::warn!("Webhook 返回非成功状态: {status} - body: {body_text}" );
+                    last_error = Some(format!("HTTP {status}: {body_text}" ));
                 }
                 Err(e) => {
-                    tracing::warn!("Webhook 请求失败 (尝试 {}/{}): {method} {url} - 错误: {e}", attempt + 1, WEBHOOK_MAX_RETRIES);
+                    tracing::warn!("Webhook 请求失败 (尝试 {}/{}): {method} {url} - 错误: {e}" , attempt + 1, WEBHOOK_MAX_RETRIES);
                     last_error = Some(e.to_string());
                 }
             }
@@ -883,7 +883,7 @@ impl TaskScheduler {
         }
 
         Err(AppError::ExecutionFailed(format!(
-            "Webhook 请求失败 (已重试 {} 次): {}",
+            "Webhook 请求失败 (已重试 {} 次): {}" ,
             WEBHOOK_MAX_RETRIES,
             last_error.unwrap_or_default()
         )))
@@ -891,9 +891,9 @@ impl TaskScheduler {
 
     /// 使用 HMAC-SHA256 对 payload 进行签名
     fn sign_payload(&self, payload: &serde_json::Value) -> EngineResult<String> {
-        let secret = std::env::var("WEBHOOK_SECRET").unwrap_or_default();
+        let secret = std::env::var("WEBHOOK_SECRET" ).unwrap_or_default();
         let mut mac = HmacSha256::new_from_slice(secret.as_bytes())
-            .map_err(|e| AppError::Internal(format!("HMAC key initialization failed: {e}")))?;
+            .map_err(|e| AppError::Internal(format!("HMAC key initialization failed: {e}" )))?;
         mac.update(payload.to_string().as_bytes());
         let result = mac.finalize();
         Ok(hex::encode(result.into_bytes()))
@@ -904,7 +904,7 @@ impl TaskScheduler {
         // 简单的脚本执行框架
         // 实际生产环境应该使用沙箱执行器
 
-        tracing::info!("执行脚本: {}", &script[..script.len().min(100)]);
+        tracing::info!("执行脚本: {}" , &script[..script.len().min(100)]);
 
         // 这里可以实现简单的表达式求值
         // 例如: ${env.VAR_NAME} -> 获取环境变量
@@ -946,7 +946,7 @@ FROM schedule_tasks WHERE id = $1"#,
     /// 暂停定时任务
     pub async fn pause_task(&self, task_id: &str) -> EngineResult<()> {
         let affected = sqlx::query!(
-            r"UPDATE schedule_tasks SET status = 'paused' WHERE id = $1",
+            r"UPDATE schedule_tasks SET status = 'paused' WHERE id = $1" ,
             task_id,
         )
         .execute(&self.pool)
@@ -962,7 +962,7 @@ FROM schedule_tasks WHERE id = $1"#,
     /// 恢复定时任务
     pub async fn resume_task(&self, task_id: &str) -> EngineResult<()> {
         let affected = sqlx::query!(
-            r"UPDATE schedule_tasks SET status = 'active' WHERE id = $1",
+            r"UPDATE schedule_tasks SET status = 'active' WHERE id = $1" ,
             task_id,
         )
         .execute(&self.pool)
@@ -983,32 +983,32 @@ mod tests {
         // 模拟解析简单工作流定义
         let definition = serde_json::json!({
             "nodes": [
-                {"id": "start", "name": "开始", "node_type": "start", "config": {}, "timeout": null, "auto_complete": true},
-                {"id": "task1", "name": "任务1", "node_type": "task", "config": {}, "timeout": 3600, "auto_complete": false},
-                {"id": "end", "name": "结束", "node_type": "end", "config": {}, "timeout": null, "auto_complete": true}
+                {"id": "start" , "name": "开始" , "node_type": "start" , "config": {}, "timeout": null, "auto_complete": true},
+                {"id": "task1" , "name": "任务1" , "node_type": "task" , "config": {}, "timeout": 3600, "auto_complete": false},
+                {"id": "end" , "name": "结束" , "node_type": "end" , "config": {}, "timeout": null, "auto_complete": true}
             ],
             "edges": [
-                {"id": "e1", "source": "start", "target": "task1", "edge_type": "normal"},
-                {"id": "e2", "source": "task1", "target": "end", "edge_type": "normal"}
+                {"id": "e1" , "source": "start" , "target": "task1" , "edge_type": "normal" },
+                {"id": "e2" , "source": "task1" , "target": "end" , "edge_type": "normal" }
             ]
         });
 
         // 手动验证解析逻辑
-        let nodes = definition.get("nodes").expect("test assertion").as_array().expect("test assertion");
+        let nodes = definition.get("nodes" ).expect("test assertion" ).as_array().expect("test assertion" );
         let start_node_id = nodes
             .iter()
-            .find(|n| n.get("node_type").expect("test assertion").as_str().expect("test assertion") == "start")
-            .map(|n| n.get("id").expect("test assertion").as_str().expect("test assertion").to_string());
+            .find(|n| n.get("node_type" ).expect("test assertion" ).as_str().expect("test assertion" ) == "start" )
+            .map(|n| n.get("id" ).expect("test assertion" ).as_str().expect("test assertion" ).to_string());
 
         let end_node_ids: Vec<String> = nodes
             .iter()
-            .filter(|n| n.get("node_type").expect("test assertion").as_str().expect("test assertion") == "end")
-            .filter_map(|n| n.get("id").expect("test assertion").as_str())
+            .filter(|n| n.get("node_type" ).expect("test assertion" ).as_str().expect("test assertion" ) == "end" )
+            .filter_map(|n| n.get("id" ).expect("test assertion" ).as_str())
             .map(String::from)
             .collect();
 
         assert_eq!(start_node_id, Some("start".to_string()));
-        assert_eq!(end_node_ids, vec!["end"]);
+        assert_eq!(end_node_ids, vec!["end" ]);
         assert_eq!(nodes.len(), 3);
     }
 }

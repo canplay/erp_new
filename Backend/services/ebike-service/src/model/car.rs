@@ -15,7 +15,7 @@ pub struct CarInfo {
     /// 车辆类型（预留字段，当前所有写入路径均硬编码为 0，暂不使用）。
     /// 用途：未来可能区分共享单车/电单车/摩托车等车型。
     /// 状态：已文档化，等待业务需求。
-    #[sqlx(rename = "type")]
+    #[sqlx(rename = "type" )]
     pub r#type: i64,
     pub time: Option<Value>,
     pub create_date: Option<NaiveDateTime>,
@@ -48,11 +48,11 @@ mod tests {
             gps_type: 1,
         };
 
-        let json = serde_json::to_string(&car).expect("test assertion");
-        let deserialized: CarInfo = serde_json::from_str(&json).expect("deserialization should not fail");
-        assert_eq!(deserialized.code, "CAR001");
+        let json = serde_json::to_string(&car).expect("test assertion" );
+        let deserialized: CarInfo = serde_json::from_str(&json).expect("deserialization should not fail" );
+        assert_eq!(deserialized.code, "CAR001" );
         assert_eq!(deserialized.status, 1);
-        assert_eq!(deserialized.provide, "provider_a");
+        assert_eq!(deserialized.provide, "provider_a" );
         assert!((deserialized.speed - 25.5).abs() < f64::EPSILON);
         assert_eq!(deserialized.r#type, 2);
         assert_eq!(deserialized.gps_type, 1);
@@ -62,9 +62,9 @@ mod tests {
 
     #[test]
     fn test_car_info_minimal_deserialization() {
-        let json = r#"{"code": "CAR002", "status": 0, "provide": "", "speed": 0.0, "type": 0, "gps_type": 0}"#;
-        let car: CarInfo = serde_json::from_str(json).expect("test assertion");
-        assert_eq!(car.code, "CAR002");
+        let json = r#"{"code": "CAR002" , "status": 0, "provide": " ", "speed": 0.0, "type": 0, "gps_type": 0}"#;
+        let car: CarInfo = serde_json::from_str(json).expect("test assertion" );
+        assert_eq!(car.code, "CAR002" );
         assert!(car.gps.is_none());
         assert!(car.remark.is_none());
     }
@@ -72,7 +72,7 @@ mod tests {
     #[test]
     fn test_car_info_json_output_contains_type() {
         let car = CarInfo::default();
-        let json = serde_json::to_string(&car).expect("test assertion");
-        assert!(json.contains("\"type\""));
+        let json = serde_json::to_string(&car).expect("test assertion" );
+        assert!(json.contains("\"type\"" ));
     }
 }

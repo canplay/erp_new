@@ -18,19 +18,19 @@ pub fn grpc_auth_interceptor(
     req: tonic::Request<()>,
 ) -> Result<tonic::Request<()>, tonic::Status> {
     // Secret中的值可能包含尾部CRLF, trim避免比较失败
-    let expected = std::env::var("GRPC_AUTH_TOKEN").unwrap_or_default().trim().to_string();
+    let expected = std::env::var("GRPC_AUTH_TOKEN" ).unwrap_or_default().trim().to_string();
     if expected.is_empty() {
-        tracing::warn!("GRPC_AUTH_TOKEN 未配置, gRPC 服务间鉴权未启用(生产必须配置)");
+        tracing::warn!("GRPC_AUTH_TOKEN 未配置, gRPC 服务间鉴权未启用(生产必须配置)" );
         return Ok(req);
     }
     match req
         .metadata()
-        .get("x-grpc-token")
+        .get("x-grpc-token" )
         .and_then(|v| v.to_str().ok())
     {
         Some(token) if token == expected => Ok(req),
         _ => Err(tonic::Status::unauthenticated(
-            "missing or invalid gRPC auth token",
+            "missing or invalid gRPC auth token" ,
         )),
     }
 }

@@ -70,27 +70,27 @@ impl AuthService for AuthServiceImpl {
             Some(user) => {
                 // 审计修复 (B4): 校验账号状态, 禁用(0)/锁定账号不允许登录
                 if user.status != 1 {
-                    log::warn!("登录被拒绝: 账号状态异常 username={}", user.username);
-                    return Err(tonic::Status::unauthenticated("账号已被禁用"));
+                    log::warn!("登录被拒绝: 账号状态异常 username={}" , user.username);
+                    return Err(tonic::Status::unauthenticated("账号已被禁用" ));
                 }
 
                 // 密码校验: 严格 bcrypt 校验。must_change_password 仅控制
-                // "登录后强制跳转改密", 不豁免密码验证(修复: 原实现任意密码可登录)
+                // "登录后强制跳转改密" , 不豁免密码验证(修复: 原实现任意密码可登录)
                 if !self
                     .state
                     .password_service
                     .verify_bcrypt(&req.password, &user.password_hash)
                 {
-                    return Err(tonic::Status::unauthenticated("Invalid credentials"));
+                    return Err(tonic::Status::unauthenticated("Invalid credentials" ));
                 }
 
                 // 生成 Token
                 let token = self
                     .state
                     .jwt_service
-                    .generate_access_token(user.id, &user.username, "user")
+                    .generate_access_token(user.id, &user.username, "user" )
                     .map_err(|e| {
-                        tonic::Status::internal(format!("Token generation error: {e}"))
+                        tonic::Status::internal(format!("Token generation error: {e}" ))
                     })?;
 
                 Ok(tonic::Response::new(LoginResponse {
@@ -101,7 +101,7 @@ impl AuthService for AuthServiceImpl {
                     must_change_password: user.must_change_password,
                 }))
             }
-            None => Err(tonic::Status::unauthenticated("Invalid credentials")),
+            None => Err(tonic::Status::unauthenticated("Invalid credentials" )),
         }
     }
 
@@ -119,7 +119,7 @@ impl AuthService for AuthServiceImpl {
             .state
             .password_service
             .hash_bcrypt(&req.password)
-            .map_err(|e| tonic::Status::internal(format!("Password hash error: {e}")))?;
+            .map_err(|e| tonic::Status::internal(format!("Password hash error: {e}" )))?;
 
         // 使用 Repository 创建用户
         let user_id = self
@@ -133,8 +133,8 @@ impl AuthService for AuthServiceImpl {
         let token = self
             .state
             .jwt_service
-            .generate_access_token(user_id, &req.username, "user")
-            .map_err(|e| tonic::Status::internal(format!("Token generation error: {e}")))?;
+            .generate_access_token(user_id, &req.username, "user" )
+            .map_err(|e| tonic::Status::internal(format!("Token generation error: {e}" )))?;
 
         Ok(tonic::Response::new(RegisterResponse {
             token,
@@ -176,7 +176,7 @@ impl AuthService for AuthServiceImpl {
             .state
             .jwt_service
             .verify_refresh_token(&req.refresh_token)
-            .map_err(|_| tonic::Status::unauthenticated("Invalid refresh token"))?;
+            .map_err(|_| tonic::Status::unauthenticated("Invalid refresh token" ))?;
 
         // 使用 Repository 查询用户
         let user = self
@@ -191,9 +191,9 @@ impl AuthService for AuthServiceImpl {
                 let token = self
                     .state
                     .jwt_service
-                    .generate_access_token(user_id, &user.username, "user")
+                    .generate_access_token(user_id, &user.username, "user" )
                     .map_err(|e| {
-                        tonic::Status::internal(format!("Token generation error: {e}"))
+                        tonic::Status::internal(format!("Token generation error: {e}" ))
                     })?;
 
                 Ok(tonic::Response::new(RefreshResponse {
@@ -203,7 +203,7 @@ impl AuthService for AuthServiceImpl {
                     role: "user".to_string(),
                 }))
             }
-            None => Err(tonic::Status::not_found("User not found")),
+            None => Err(tonic::Status::not_found("User not found" )),
         }
     }
 }
@@ -214,23 +214,23 @@ impl AuthService for AuthServiceImpl {
 fn validate_password_strength(password: &str) -> Result<(), tonic::Status> {
     if password.len() < 8 {
         return Err(tonic::Status::invalid_argument(
-            "密码长度不能少于 8 位",
+            "密码长度不能少于 8 位" ,
         ));
     }
     let has_letter = password.chars().any(|c| c.is_ascii_alphabetic());
     let has_digit = password.chars().any(|c| c.is_ascii_digit());
     if !has_letter || !has_digit {
         return Err(tonic::Status::invalid_argument(
-            "密码必须同时包含字母和数字",
+            "密码必须同时包含字母和数字" ,
         ));
     }
     const WEAK: &[&str] = &[
-        "12345678", "123456789", "password", "admin123", "12345678a", "a12345678",
+        "12345678" , "123456789" , "password" , "admin123" , "12345678a" , "a12345678" ,
     ];
     let lower = password.to_lowercase();
     if WEAK.contains(&lower.as_str()) {
         return Err(tonic::Status::invalid_argument(
-            "密码过于简单, 请更换",
+            "密码过于简单, 请更换" ,
         ));
     }
     Ok(())
@@ -240,12 +240,12 @@ impl common::service_bootstrap::GrpcServiceBuilder for AuthServiceImpl {
     fn build_grpc_server(&self, grpc_addr: &str) -> Result<tokio::task::JoinHandle<()>, Box<dyn std::error::Error + Send + Sync>> {
         use tonic::transport::Server;
 
-        let addr: SocketAddr = grpc_addr.parse().map_err(|e| -> Box<dyn std::error::Error + Send + Sync> { format!("invalid grpc addr: {e}").into() })?;
+        let addr: SocketAddr = grpc_addr.parse().map_err(|e| -> Box<dyn std::error::Error + Send + Sync> { format!("invalid grpc addr: {e}" ).into() })?;
         let server = AuthServiceServer::new(AuthServiceImpl::new(self.state.clone()));
         let handle = tokio::spawn(async move {
             if let Err(e) = Server::builder()
                 .add_service(server).serve(addr).await {
-                tracing::error!("gRPC server error: {}", e);
+                tracing::error!("gRPC server error: {}" , e);
             }
         });
         Ok(handle)

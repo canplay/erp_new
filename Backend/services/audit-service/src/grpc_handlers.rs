@@ -154,7 +154,7 @@ pub async fn list_login_logs(
             end_date.as_deref(),
         )
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))?;
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))?;
 
     Ok(PaginatedLoginLogsInfo {
         logs: result.0.into_iter().map(LoginLogInfo::from).collect(),
@@ -173,7 +173,7 @@ pub async fn get_login_statistics(
         .get_login_statistics()
         .await
         .map(LoginStatisticsInfo::from)
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 /// 创建登录日志参数
@@ -209,7 +209,7 @@ pub async fn create_login_log(
         .repository
         .insert_login_log(&log)
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 // ============== 操作日志接口 ==============
@@ -246,7 +246,7 @@ pub async fn list_operation_logs(
             params.end_date.as_deref(),
         )
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))?;
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))?;
 
     Ok(PaginatedOperationLogsInfo {
         logs: result.0.into_iter().map(OperationLogInfo::from).collect(),
@@ -266,7 +266,7 @@ pub async fn get_operation_log(
         .find_operation_log_by_id(id)
         .await
         .map(|opt| opt.map(OperationLogInfo::from))
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 /// 创建操作日志参数
@@ -314,7 +314,7 @@ pub async fn create_operation_log(
         .repository
         .insert_operation_log(&log)
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 /// 批量删除操作日志
@@ -327,7 +327,7 @@ pub async fn batch_delete_operation_logs(
         .batch_delete_operation_logs(&ids)
         .await
         .map(|count| count as i64)
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 // ============== API 调用日志接口 ==============
@@ -363,7 +363,7 @@ pub async fn list_api_call_logs(
         .repository
         .find_api_call_logs(&query)
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 /// 获取 API 调用日志详情
@@ -382,7 +382,7 @@ pub async fn get_api_call_log_by_id(
         .bind(id)
         .fetch_optional(state.repository.pool())
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 /// 创建 API 调用日志（内部调用）
@@ -394,7 +394,7 @@ pub async fn create_api_call_log(
         .repository
         .insert_api_call_log(&params)
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 // ============== 导出服务实现 ==============
@@ -436,7 +436,7 @@ impl grpc_proto::audit::audit_service_server::AuditService for AuditGrpcService 
         request: tonic::Request<grpc_proto::audit::LogActionRequest>,
     ) -> Result<tonic::Response<grpc_proto::audit::LogActionResponse>, tonic::Status> {
         let req = request.into_inner();
-        let action_str = format!("{:?}", req.action());
+        let action_str = format!("{:?}" , req.action());
         let params = CreateOperationLogParams {
             user_id: Some(req.user_id),
             username: Some(req.username.clone()),
@@ -492,7 +492,7 @@ impl grpc_proto::audit::audit_service_server::AuditService for AuditGrpcService 
             Some(_) => Ok(tonic::Response::new(grpc_proto::audit::GetLogResponse {
                 log: None,
             })),
-            None => Err(tonic::Status::not_found("log not found")),
+            None => Err(tonic::Status::not_found("log not found" )),
         }
     }
 
@@ -572,7 +572,7 @@ impl grpc_proto::audit::audit_service_server::AuditService for AuditGrpcService 
             .bind(req.id)
             .fetch_optional(self.state.repository.pool())
             .await
-            .map_err(|e| tonic::Status::internal(format!("Database error: {e}")))?;
+            .map_err(|e| tonic::Status::internal(format!("Database error: {e}" )))?;
         match log {
             Some(l) => {
                 let info = LoginLogInfo::from(l);
@@ -590,7 +590,7 @@ impl grpc_proto::audit::audit_service_server::AuditService for AuditGrpcService 
                     }),
                 }))
             }
-            None => Err(tonic::Status::not_found("login log not found")),
+            None => Err(tonic::Status::not_found("login log not found" )),
         }
     }
 
@@ -599,17 +599,17 @@ impl grpc_proto::audit::audit_service_server::AuditService for AuditGrpcService 
         request: tonic::Request<grpc_proto::audit::ClearLoginLogsRequest>,
     ) -> Result<tonic::Response<grpc_proto::audit::ClearLoginLogsResponse>, tonic::Status> {
         let req = request.into_inner();
-        let cutoff_dt = chrono::NaiveDate::parse_from_str(&req.before_date, "%Y-%m-%d")
+        let cutoff_dt = chrono::NaiveDate::parse_from_str(&req.before_date, "%Y-%m-%d" )
             .ok()
             .and_then(|d| d.and_hms_opt(0, 0, 0))
             .map(|n| chrono::DateTime::<chrono::Utc>::from_naive_utc_and_offset(n, chrono::Utc));
         let result = sqlx::query_scalar::<_, i64>(
-            "DELETE FROM sys_login_logs WHERE created_at < $1",
+            "DELETE FROM sys_login_logs WHERE created_at < $1" ,
         )
         .bind(cutoff_dt)
         .fetch_one(self.state.repository.pool())
         .await
-        .map_err(|e| tonic::Status::internal(format!("Database error: {e}")))?;
+        .map_err(|e| tonic::Status::internal(format!("Database error: {e}" )))?;
         Ok(tonic::Response::new(grpc_proto::audit::ClearLoginLogsResponse {
             cleared_count: result,
         }))
@@ -675,7 +675,7 @@ impl grpc_proto::audit::audit_service_server::AuditService for AuditGrpcService 
                     created_at: log.created_at.map(|t| t.timestamp()).unwrap_or(0),
                 }),
             })),
-            None => Err(tonic::Status::not_found("api call log not found")),
+            None => Err(tonic::Status::not_found("api call log not found" )),
         }
     }
 
@@ -692,10 +692,10 @@ impl grpc_proto::audit::audit_service_server::AuditService for AuditGrpcService 
         by_action.insert(3, stats.success_count); // LOGIN success
         by_action.insert(99, stats.fail_count);   // LOGIN fail (OTHER)
         // Count API operations by resource type
-        let total_op_count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM sys_operation_logs")
+        let total_op_count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM sys_operation_logs" )
             .fetch_one(self.state.repository.pool())
             .await
-            .map_err(|e| tonic::Status::internal(format!("Database error: {e}")))?.unwrap_or(0);
+            .map_err(|e| tonic::Status::internal(format!("Database error: {e}" )))?.unwrap_or(0);
         by_resource.insert("operation_log".to_string(), total_op_count);
         by_resource.insert("login_log".to_string(), stats.total_count);
 
@@ -721,13 +721,13 @@ impl grpc_proto::audit::audit_service_server::AuditService for AuditGrpcService 
     ) -> Result<tonic::Response<grpc_proto::audit::ArchiveLogsResponse>, tonic::Status> {
         let req = request.into_inner();
         let start_dt = req.start_time.as_ref().and_then(|s| {
-            chrono::NaiveDateTime::parse_from_str(s, "%Y-%m-%d %H:%M:%S").ok().or_else(|| {
-                chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d").ok().and_then(|d| d.and_hms_opt(0, 0, 0))
+            chrono::NaiveDateTime::parse_from_str(s, "%Y-%m-%d %H:%M:%S" ).ok().or_else(|| {
+                chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d" ).ok().and_then(|d| d.and_hms_opt(0, 0, 0))
             }).map(|n| chrono::DateTime::<chrono::Utc>::from_naive_utc_and_offset(n, chrono::Utc))
         });
         let end_dt = req.end_time.as_ref().and_then(|s| {
-            chrono::NaiveDateTime::parse_from_str(s, "%Y-%m-%d %H:%M:%S").ok().or_else(|| {
-                chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d").ok().and_then(|d| d.and_hms_opt(0, 0, 0))
+            chrono::NaiveDateTime::parse_from_str(s, "%Y-%m-%d %H:%M:%S" ).ok().or_else(|| {
+                chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d" ).ok().and_then(|d| d.and_hms_opt(0, 0, 0))
             }).map(|n| chrono::DateTime::<chrono::Utc>::from_naive_utc_and_offset(n, chrono::Utc))
         });
 
@@ -746,12 +746,12 @@ impl grpc_proto::audit::audit_service_server::AuditService for AuditGrpcService 
             FROM archived"#).bind(start_dt).bind(end_dt).bind()
         .fetch_one(self.state.repository.pool())
         .await
-        .map_err(|e| tonic::Status::internal(format!("Database error: {e}")))?
+        .map_err(|e| tonic::Status::internal(format!("Database error: {e}" )))?
         .unwrap_or(0);
 
         Ok(tonic::Response::new(grpc_proto::audit::ArchiveLogsResponse {
             archived_count: count,
-            archive_path: format!("sys_login_logs_archive/{}", chrono::Utc::now().format("%Y%m%d_%H%M%S")),
+            archive_path: format!("sys_login_logs_archive/{}" , chrono::Utc::now().format("%Y%m%d_%H%M%S" )),
         }))
     }
 
@@ -761,13 +761,13 @@ impl grpc_proto::audit::audit_service_server::AuditService for AuditGrpcService 
     ) -> Result<tonic::Response<grpc_proto::audit::ExportLogsResponse>, tonic::Status> {
         let req = request.into_inner();
         let start_dt = req.start_time.as_ref().and_then(|s| {
-            chrono::NaiveDateTime::parse_from_str(s, "%Y-%m-%d %H:%M:%S").ok().or_else(|| {
-                chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d").ok().and_then(|d| d.and_hms_opt(0, 0, 0))
+            chrono::NaiveDateTime::parse_from_str(s, "%Y-%m-%d %H:%M:%S" ).ok().or_else(|| {
+                chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d" ).ok().and_then(|d| d.and_hms_opt(0, 0, 0))
             }).map(|n| chrono::DateTime::<chrono::Utc>::from_naive_utc_and_offset(n, chrono::Utc))
         });
         let end_dt = req.end_time.as_ref().and_then(|s| {
-            chrono::NaiveDateTime::parse_from_str(s, "%Y-%m-%d %H:%M:%S").ok().or_else(|| {
-                chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d").ok().and_then(|d| d.and_hms_opt(0, 0, 0))
+            chrono::NaiveDateTime::parse_from_str(s, "%Y-%m-%d %H:%M:%S" ).ok().or_else(|| {
+                chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d" ).ok().and_then(|d| d.and_hms_opt(0, 0, 0))
             }).map(|n| chrono::DateTime::<chrono::Utc>::from_naive_utc_and_offset(n, chrono::Utc))
         });
 
@@ -785,7 +785,7 @@ impl grpc_proto::audit::audit_service_server::AuditService for AuditGrpcService 
         .bind(end_dt)
         .fetch_all(self.state.repository.pool())
         .await
-        .map_err(|e| tonic::Status::internal(format!("Database error: {e}")))?;
+        .map_err(|e| tonic::Status::internal(format!("Database error: {e}" )))?;
 
         let format = req.format.to_lowercase();
         let data = if format == "json" {
@@ -805,24 +805,24 @@ impl grpc_proto::audit::audit_service_server::AuditService for AuditGrpcService 
             serde_json::to_vec(&entries).unwrap_or_default()
         } else {
             // CSV format (default)
-            let mut csv = String::from("id,user_id,username,ip_address,user_agent,login_status,login_type,created_at\n");
+            let mut csv = String::from("id,user_id,username,ip_address,user_agent,login_status,login_type,created_at\n" );
             for l in &logs {
                 csv.push_str(&format!(
-                    "{},{},{},{},{},{},{},{}\n",
+                    "{},{},{},{},{},{},{},{}\n" ,
                     l.id,
                     l.user_id.unwrap_or(0),
-                    l.username.as_deref().unwrap_or(""),
-                    l.ip_address.as_deref().unwrap_or(""),
-                    l.user_agent.as_deref().unwrap_or(""),
+                    l.username.as_deref().unwrap_or("" ),
+                    l.ip_address.as_deref().unwrap_or("" ),
+                    l.user_agent.as_deref().unwrap_or("" ),
                     l.login_status.unwrap_or(0),
-                    l.login_type.as_deref().unwrap_or(""),
+                    l.login_type.as_deref().unwrap_or("" ),
                     l.created_at.map(|t| t.to_rfc3339()).unwrap_or_default()
                 ));
             }
             csv.into_bytes()
         };
 
-        let filename = format!("login_logs_export_{}.{}", chrono::Utc::now().format("%Y%m%d_%H%M%S"), if format == "json" { "json" } else { "csv" });
+        let filename = format!("login_logs_export_{}.{}" , chrono::Utc::now().format("%Y%m%d_%H%M%S" ), if format == "json" { "json" } else { "csv" });
 
         Ok(tonic::Response::new(grpc_proto::audit::ExportLogsResponse {
             data,
@@ -835,12 +835,12 @@ impl common::service_bootstrap::GrpcServiceBuilder for AuditGrpcService {
     fn build_grpc_server(&self, grpc_addr: &str) -> Result<tokio::task::JoinHandle<()>, Box<dyn std::error::Error + Send + Sync>> {
         use tonic::transport::Server;
 
-        let addr: SocketAddr = grpc_addr.parse().map_err(|e| -> Box<dyn std::error::Error + Send + Sync> { format!("invalid grpc addr: {e}").into() })?;
+        let addr: SocketAddr = grpc_addr.parse().map_err(|e| -> Box<dyn std::error::Error + Send + Sync> { format!("invalid grpc addr: {e}" ).into() })?;
         let server = AuditServiceServer::new(AuditGrpcService::new(self.state.clone()));
         let handle = tokio::spawn(async move {
             if let Err(e) = Server::builder()
                 .add_service(server).serve(addr).await {
-                tracing::error!("gRPC server error: {}", e);
+                tracing::error!("gRPC server error: {}" , e);
             }
         });
         Ok(handle)

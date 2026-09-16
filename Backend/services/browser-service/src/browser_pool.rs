@@ -27,18 +27,18 @@ impl BrowserPool {
 
         let mut browsers = Vec::with_capacity(size);
         for i in 0..size {
-            tracing::info!("[BrowserPool] launching browser #{}/{}", i + 1, size);
+            tracing::info!("[BrowserPool] launching browser #{}/{}" , i + 1, size);
             match ChromiumPage::with(opts.clone()).await {
                 Ok(page) => {
-                    tracing::info!("[BrowserPool] browser #{} ready", i + 1);
+                    tracing::info!("[BrowserPool] browser #{} ready" , i + 1);
                     browsers.push(Arc::new(Mutex::new(page)));
                 }
                 Err(e) => {
-                    tracing::error!("[BrowserPool] failed to launch browser #{}: {}", i + 1, e);
+                    tracing::error!("[BrowserPool] failed to launch browser #{}: {}" , i + 1, e);
                     if browsers.is_empty() {
-                        anyhow::bail!("无法启动任何浏览器: {e}");
+                        anyhow::bail!("无法启动任何浏览器: {e}" );
                     }
-                    tracing::warn!("[BrowserPool] continuing with {} browsers", browsers.len());
+                    tracing::warn!("[BrowserPool] continuing with {} browsers" , browsers.len());
                 }
             }
         }

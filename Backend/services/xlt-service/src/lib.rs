@@ -43,19 +43,19 @@ use crate::parking::ParkingService;
 
 pub fn create_app(state: AppState) -> Router {
     Router::new()
-        .route("/api/xlt/parking/entry", post(xlt::vehicle_entry))
-        .route("/api/xlt/parking/exit", post(xlt::vehicle_exit))
+        .route("/api/xlt/parking/entry" , post(xlt::vehicle_entry))
+        .route("/api/xlt/parking/exit" , post(xlt::vehicle_exit))
         .route(
-            "/api/xlt/parking/vehicle/{park_code}/{plate_no}",
+            "/api/xlt/parking/vehicle/{park_code}/{plate_no}" ,
             get(xlt::get_parking_vehicle),
         )
-        .route("/api/xlt/parking/billing", post(xlt::calc_billing))
-        .route("/api/xlt/parking/records", get(xlt::list_records))
-        .route("/api/xlt/mqtt/callback", post(xlt::mqtt_callback))
-        .route("/api/xlt/device/list", get(xlt::list_devices))
-        .route("/api/xlt/device/open", post(xlt::open_barrier))
-        .route("/api/xlt/device/close", post(xlt::close_barrier))
-        .route("/health", get(xlt::health))
+        .route("/api/xlt/parking/billing" , post(xlt::calc_billing))
+        .route("/api/xlt/parking/records" , get(xlt::list_records))
+        .route("/api/xlt/mqtt/callback" , post(xlt::mqtt_callback))
+        .route("/api/xlt/device/list" , get(xlt::list_devices))
+        .route("/api/xlt/device/open" , post(xlt::open_barrier))
+        .route("/api/xlt/device/close" , post(xlt::close_barrier))
+        .route("/health" , get(xlt::health))
         .with_state(state)
 }
 

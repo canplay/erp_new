@@ -145,45 +145,45 @@ mod tests {
     #[test]
     fn test_signo_config_contains_all_lots() {
         let config = SignoConfig::new();
-        assert!(config.tags.contains_key("双桥花园地下停车场"));
-        assert!(config.tags.contains_key("琵琶岛停车场"));
-        assert!(config.tags.contains_key("秀峰路中行停车场"));
-        assert!(config.tags.contains_key("民族村停车场"));
-        assert!(config.tags.contains_key("文化广场停车场"));
-        assert!(config.tags.contains_key("四小停车场"));
-        assert!(config.tags.contains_key("示例停车场A"));
+        assert!(config.tags.contains_key("双桥花园地下停车场" ));
+        assert!(config.tags.contains_key("琵琶岛停车场" ));
+        assert!(config.tags.contains_key("秀峰路中行停车场" ));
+        assert!(config.tags.contains_key("民族村停车场" ));
+        assert!(config.tags.contains_key("文化广场停车场" ));
+        assert!(config.tags.contains_key("四小停车场" ));
+        assert!(config.tags.contains_key("示例停车场A" ));
     }
 
     #[test]
     fn test_signo_config_tags_have_phone_and_key() {
         let config = SignoConfig::new();
-        let tag = config.tags.get("双桥花园地下停车场").expect("tag should exist");
-        assert_eq!(tag.phone, "13800000001");
-        assert_eq!(tag.key, "F7A1C5BA");
+        let tag = config.tags.get("双桥花园地下停车场" ).expect("tag should exist" );
+        assert_eq!(tag.phone, "13800000001" );
+        assert_eq!(tag.key, "F7A1C5BA" );
     }
 
     #[test]
     fn test_hik_request_deserialize() {
-        let json = r#"{"method": "test", "phone": 13800000001}"#;
-        let req: HikRequest = serde_json::from_str(json).expect("JSON deserialization should not fail");
-        assert_eq!(req.method, "test");
+        let json = r#"{"method": "test" , "phone": 13800000001}"#;
+        let req: HikRequest = serde_json::from_str(json).expect("JSON deserialization should not fail" );
+        assert_eq!(req.method, "test" );
         assert_eq!(req.phone, Some(13800000001));
     }
 
     #[test]
     fn test_coupon_request_deserialize() {
-        let json = r#"{"phone": "13800000001", "amount": 500, "start": 1000, "end": "2026-01-01", "type": "discount"}"#;
-        let req: CouponRequest = serde_json::from_str(json).expect("JSON deserialization should not fail");
-        assert_eq!(req.phone, "13800000001");
+        let json = r#"{"phone": "13800000001" , "amount": 500, "start": 1000, "end": "2026-01-01" , "type": "discount" }"#;
+        let req: CouponRequest = serde_json::from_str(json).expect("JSON deserialization should not fail" );
+        assert_eq!(req.phone, "13800000001" );
         assert_eq!(req.amount, 500);
-        assert_eq!(req.r#type, "discount");
+        assert_eq!(req.r#type, "discount" );
     }
 
     #[test]
     fn test_hik_request_defaults() {
-        let json = r#"{"method": "test"}"#;
-        let req: HikRequest = serde_json::from_str(json).expect("JSON deserialization should not fail");
-        assert_eq!(req.method, "test");
+        let json = r#"{"method": "test" }"#;
+        let req: HikRequest = serde_json::from_str(json).expect("JSON deserialization should not fail" );
+        assert_eq!(req.method, "test" );
         assert!(req.phone.is_none());
         assert!(req.plate_no.is_none());
     }

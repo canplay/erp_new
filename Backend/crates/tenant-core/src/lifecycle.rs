@@ -31,7 +31,7 @@ pub enum LifecycleState {
 
 impl fmt::Display for LifecycleState {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.as_str())
+        write!(f, "{}" , self.as_str())
     }
 }
 
@@ -39,13 +39,13 @@ impl LifecycleState {
     /// 获取状态的字符串表示
     pub fn as_str(&self) -> &'static str {
         match self {
-            Self::Provisioning => "provisioning",
-            Self::Active => "active",
-            Self::Trial => "trial",
-            Self::Suspended => "suspended",
-            Self::GracePeriod => "grace_period",
-            Self::Expired => "expired",
-            Self::Deleted => "deleted",
+            Self::Provisioning => "provisioning" ,
+            Self::Active => "active" ,
+            Self::Trial => "trial" ,
+            Self::Suspended => "suspended" ,
+            Self::GracePeriod => "grace_period" ,
+            Self::Expired => "expired" ,
+            Self::Deleted => "deleted" ,
         }
     }
 
@@ -269,9 +269,9 @@ mod tests {
 
     #[test]
     fn test_lifecycle_state_str() {
-        assert_eq!(LifecycleState::Active.as_str(), "active");
-        assert_eq!(LifecycleState::from_str("active"), Some(LifecycleState::Active));
-        assert_eq!(LifecycleState::from_str("invalid"), None);
+        assert_eq!(LifecycleState::Active.as_str(), "active" );
+        assert_eq!(LifecycleState::from_str("active" ), Some(LifecycleState::Active));
+        assert_eq!(LifecycleState::from_str("invalid" ), None);
     }
 
     #[test]

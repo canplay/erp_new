@@ -31,13 +31,13 @@ pub enum ProvisioningState {
 impl ProvisioningState {
     pub fn as_str(&self) -> &'static str {
         match self {
-            Self::Pending => "pending",
-            Self::InProgress => "in_progress",
-            Self::CreatingDatabase => "creating_database",
-            Self::RunningMigrations => "running_migrations",
-            Self::SeedingData => "seeding_data",
-            Self::Completed => "completed",
-            Self::Failed => "failed",
+            Self::Pending => "pending" ,
+            Self::InProgress => "in_progress" ,
+            Self::CreatingDatabase => "creating_database" ,
+            Self::RunningMigrations => "running_migrations" ,
+            Self::SeedingData => "seeding_data" ,
+            Self::Completed => "completed" ,
+            Self::Failed => "failed" ,
         }
     }
 

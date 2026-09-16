@@ -17,19 +17,19 @@ use crate::repository::TenantRepository;
 /// Onboarding error types
 #[derive(Error, Debug)]
 pub enum OnboardingError {
-    #[error("Tenant creation failed: {0}")]
+    #[error("Tenant creation failed: {0}" )]
     TenantCreation(String),
 
-    #[error("Schema provisioning failed: {0}")]
+    #[error("Schema provisioning failed: {0}" )]
     SchemaProvisioning(String),
 
-    #[error("Admin user creation failed: {0}")]
+    #[error("Admin user creation failed: {0}" )]
     AdminUserCreation(String),
 
-    #[error("Notification failed: {0}")]
+    #[error("Notification failed: {0}" )]
     Notification(String),
 
-    #[error("Rollback failed: {0}")]
+    #[error("Rollback failed: {0}" )]
     Rollback(String),
 }
 
@@ -178,7 +178,7 @@ impl OnboardingService {
         tenant_code: &str,
     ) -> OnboardingResult<String> {
         // Generate schema name from tenant code
-        let schema_name = format!("tenant_{tenant_code}");
+        let schema_name = format!("tenant_{tenant_code}" );
 
         // In a real implementation, this would:
         // 1. Create the schema in the database
@@ -187,14 +187,14 @@ impl OnboardingService {
 
         // For now, we simulate schema provisioning
         tracing::info!(
-            "Provisioning schema '{}' for tenant {} (ID: {})",
+            "Provisioning schema '{}' for tenant {} (ID: {})" ,
             schema_name,
             tenant_code,
             tenant_id
         );
 
         // Simulate schema creation (in production, execute SQL)
-        // sqlx::query(&format!("CREATE SCHEMA IF NOT EXISTS {}", schema_name))
+        // sqlx::query(&format!("CREATE SCHEMA IF NOT EXISTS {}" , schema_name))
         //     .execute(&self.repository.pool())
         //     .await
         //     .map_err(|e| OnboardingError::SchemaProvisioning(e.to_string()))?;
@@ -215,7 +215,7 @@ impl OnboardingService {
         // 4. Link user to tenant via tenant_users table
 
         tracing::info!(
-            "Creating admin user '{}' for tenant {} (ID: {})",
+            "Creating admin user '{}' for tenant {} (ID: {})" ,
             request.admin_username,
             request.tenant_code,
             tenant_id
@@ -238,7 +238,7 @@ impl OnboardingService {
         // 1. Call messaging-service gRPC to send a welcome message
         // 2. Send email via email provider
         tracing::info!(
-            "Sending welcome notification for tenant {} to {}",
+            "Sending welcome notification for tenant {} to {}" ,
             tenant_id,
             admin_email
         );
@@ -257,22 +257,22 @@ impl OnboardingService {
             match step {
                 OnboardingStep::NotificationSent => {
                     // Notification sent - no rollback needed (idempotent)
-                    tracing::info!("Rolling back: notification (no-op)");
+                    tracing::info!("Rolling back: notification (no-op)" );
                 }
                 OnboardingStep::AdminUserCreated(user_id) => {
                     // Rollback admin user creation
-                    tracing::info!("Rolling back: admin user {}", user_id);
+                    tracing::info!("Rolling back: admin user {}" , user_id);
                     // In production: call user-service to delete user
                 }
                 OnboardingStep::SchemaProvisioned(schema_name) => {
                     // Rollback schema provisioning
-                    tracing::info!("Rolling back: schema {}", schema_name);
+                    tracing::info!("Rolling back: schema {}" , schema_name);
                     // In production: DROP SCHEMA IF EXISTS schema_name CASCADE
                     let _ = schema_name;
                 }
                 OnboardingStep::TenantCreated(tenant_id) => {
                     // Rollback tenant creation
-                    tracing::info!("Rolling back: tenant {}", tenant_id);
+                    tracing::info!("Rolling back: tenant {}" , tenant_id);
                     self.repository
                         .delete(*tenant_id)
                         .await
@@ -368,15 +368,15 @@ mod tests {
     #[test]
     fn test_onboarding_step_serialization() {
         let step = OnboardingStep::TenantCreated(42);
-        let json = serde_json::to_string(&step).expect("test assertion");
-        assert!(json.contains("42"));
+        let json = serde_json::to_string(&step).expect("test assertion" );
+        assert!(json.contains("42" ));
     }
 
     #[test]
     fn test_onboarding_status_serialization() {
         let status = OnboardingStatus::Completed;
-        let json = serde_json::to_string(&status).expect("test assertion");
-        assert!(json.contains("Completed"));
+        let json = serde_json::to_string(&status).expect("test assertion" );
+        assert!(json.contains("Completed" ));
     }
 
     #[test]

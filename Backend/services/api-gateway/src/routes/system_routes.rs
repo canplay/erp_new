@@ -9,7 +9,7 @@ use serde_json::{Value, json};
 
 /// 获取当前追踪上下文
 async fn trace_context_handler() -> Json<ApiResponse<common::otel::TraceContext>> {
-    let ctx = common::otel::get_trace_context("api-gateway");
+    let ctx = common::otel::get_trace_context("api-gateway" );
     Json(ApiResponse::success(ctx))
 }
 
@@ -43,16 +43,16 @@ async fn circuit_breaker_status_handler(
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     let services = [
-        ("auth", "auth-service"),
-        ("user", "user-service"),
-        ("cms", "cms-service"),
-        ("message", "message-service"),
-        ("feedback", "feedback-service"),
-        ("tenant", "tenant-service"),
-        ("file", "file-service"),
-        ("workflow", "workflow-service"),
-        ("audit", "audit-service"),
-        ("api-key", "api-key-service"),
+        ("auth" , "auth-service" ),
+        ("user" , "user-service" ),
+        ("cms" , "cms-service" ),
+        ("message" , "message-service" ),
+        ("feedback" , "feedback-service" ),
+        ("tenant" , "tenant-service" ),
+        ("file" , "file-service" ),
+        ("workflow" , "workflow-service" ),
+        ("audit" , "audit-service" ),
+        ("api-key" , "api-key-service" ),
     ];
 
     let mut statuses = Vec::new();
@@ -75,7 +75,7 @@ async fn circuit_breaker_status_handler(
         });
     }
 
-    tracing::debug!("【熔断器】获取状态: {} 服务", statuses.len());
+    tracing::debug!("【熔断器】获取状态: {} 服务" , statuses.len());
     Json(ApiResponse::success(statuses))
 }
 
@@ -84,26 +84,26 @@ async fn circuit_breaker_reset_handler(
     Path(service): Path<String>,
 ) -> Json<ApiResponse<Value>> {
     let service_key = match service.as_str() {
-        "auth-service" => "auth",
-        "user-service" => "user",
-        "cms-service" => "cms",
-        "message-service" => "message",
-        "feedback-service" => "feedback",
-        "tenant-service" => "tenant",
-        "file-service" => "file",
-        "workflow-service" => "workflow",
-        "audit-service" => "audit",
-        "api-key-service" => "api-key",
+        "auth-service" => "auth" ,
+        "user-service" => "user" ,
+        "cms-service" => "cms" ,
+        "message-service" => "message" ,
+        "feedback-service" => "feedback" ,
+        "tenant-service" => "tenant" ,
+        "file-service" => "file" ,
+        "workflow-service" => "workflow" ,
+        "audit-service" => "audit" ,
+        "api-key-service" => "api-key" ,
         _ => {
-            return Json(ApiResponse::error(&format!("未知服务: {service}")));
+            return Json(ApiResponse::error(&format!("未知服务: {service}" )));
         }
     };
 
     state.circuit_breaker_manager.reset(service_key);
-    tracing::info!("【熔断器】重置服务: {service}");
+    tracing::info!("【熔断器】重置服务: {service}" );
 
     Json(ApiResponse::success(json!({
-        "message": format!("熔断器已重置: {}", service)
+        "message": format!("熔断器已重置: {}" , service)
     })))
 }
 
@@ -111,7 +111,7 @@ async fn circuit_breaker_reset_all_handler(
     State(state): State<Arc<AppState>>,
 ) -> Json<ApiResponse<Value>> {
     state.circuit_breaker_manager.reset_all();
-    tracing::info!("【熔断器】重置所有熔断器");
+    tracing::info!("【熔断器】重置所有熔断器" );
 
     Json(ApiResponse::success(json!({
         "message": "所有熔断器已重置"
@@ -224,30 +224,30 @@ async fn export_perm_change_logs() -> Json<Value> {
 
 pub fn routes() -> Router<Arc<AppState>> {
     Router::new()
-        .route("/rate-limit", get(rate_limit_info_handler))
-        .route("/metrics", get(metrics_handler))
-        .route("/api/admin/stats", get(stats_handler))
-        .route("/trace", get(trace_context_handler))
-        .route("/circuit-breaker/status", get(circuit_breaker_status_handler))
-        .route("/circuit-breaker/reset/{service}", post(circuit_breaker_reset_handler))
-        .route("/circuit-breaker/reset-all", post(circuit_breaker_reset_all_handler))
+        .route("/rate-limit" , get(rate_limit_info_handler))
+        .route("/metrics" , get(metrics_handler))
+        .route("/api/admin/stats" , get(stats_handler))
+        .route("/trace" , get(trace_context_handler))
+        .route("/circuit-breaker/status" , get(circuit_breaker_status_handler))
+        .route("/circuit-breaker/reset/{service}" , post(circuit_breaker_reset_handler))
+        .route("/circuit-breaker/reset-all" , post(circuit_breaker_reset_all_handler))
         // 系统监控
-        .route("/api/admin/monitor", get(monitor_handler))
+        .route("/api/admin/monitor" , get(monitor_handler))
         // 权限管理
-        .route("/api/admin/permissions", get(list_permissions).post(create_permission))
-        .route("/api/admin/permissions/{key}", get(get_permission).put(update_permission).delete(delete_permission))
-        .route("/api/admin/permissions/batch", post(batch_create_permissions))
-        .route("/api/admin/roles/{role_name}/permission-config", get(get_role_perm_config).put(update_role_perm_config))
-        .route("/api/admin/roles/{role_name}/data-permissions", get(get_role_data_perms).put(set_role_data_perms))
-        .route("/api/admin/roles/{role_name}/field-permissions", get(get_role_field_perms).put(set_role_field_perms))
-        .route("/api/admin/roles/{role_name}/inherit", get(get_role_inherit).post(set_role_inherit).delete(remove_role_inherit))
-        .route("/api/admin/roles/{role_name}/accessible-departments", get(get_accessible_depts))
-        .route("/api/admin/roles/{role_name}/accessible-tenants", get(get_accessible_tenants))
-        .route("/api/permissions/validate-data", post(validate_data_perm))
-        .route("/api/permissions/check-sensitive", post(check_sensitive_perm))
-        .route("/api/permissions/refresh-cache", post(refresh_perm_cache))
-        .route("/api/permissions/batch-assign", post(batch_assign_perms))
-        .route("/api/permissions/copy", post(copy_role_perms))
-        .route("/api/permission-change-logs", get(list_perm_change_logs))
-        .route("/api/permission-change-logs/export", get(export_perm_change_logs))
+        .route("/api/admin/permissions" , get(list_permissions).post(create_permission))
+        .route("/api/admin/permissions/{key}" , get(get_permission).put(update_permission).delete(delete_permission))
+        .route("/api/admin/permissions/batch" , post(batch_create_permissions))
+        .route("/api/admin/roles/{role_name}/permission-config" , get(get_role_perm_config).put(update_role_perm_config))
+        .route("/api/admin/roles/{role_name}/data-permissions" , get(get_role_data_perms).put(set_role_data_perms))
+        .route("/api/admin/roles/{role_name}/field-permissions" , get(get_role_field_perms).put(set_role_field_perms))
+        .route("/api/admin/roles/{role_name}/inherit" , get(get_role_inherit).post(set_role_inherit).delete(remove_role_inherit))
+        .route("/api/admin/roles/{role_name}/accessible-departments" , get(get_accessible_depts))
+        .route("/api/admin/roles/{role_name}/accessible-tenants" , get(get_accessible_tenants))
+        .route("/api/permissions/validate-data" , post(validate_data_perm))
+        .route("/api/permissions/check-sensitive" , post(check_sensitive_perm))
+        .route("/api/permissions/refresh-cache" , post(refresh_perm_cache))
+        .route("/api/permissions/batch-assign" , post(batch_assign_perms))
+        .route("/api/permissions/copy" , post(copy_role_perms))
+        .route("/api/permission-change-logs" , get(list_perm_change_logs))
+        .route("/api/permission-change-logs/export" , get(export_perm_change_logs))
 }

@@ -32,7 +32,7 @@ impl MqttGateway {
 
     /// 通过 EMQX HTTP API 发布 MQTT 消息到设备
     pub async fn publish(&self, topic: &str, payload: &str, qos: i32) -> AppResult<()> {
-        let url = format!("http://{}:{}/api/v5/publish", self.config.host, self.config.http_port);
+        let url = format!("http://{}:{}/api/v5/publish" , self.config.host, self.config.http_port);
 
         let body = serde_json::json!({
             "topic": topic,
@@ -51,18 +51,18 @@ impl MqttGateway {
             .await?;
 
         if resp.status().is_success() {
-            tracing::info!("MQTT发布成功: topic={topic}, qos={qos}");
+            tracing::info!("MQTT发布成功: topic={topic}, qos={qos}" );
         } else {
-            tracing::warn!("MQTT发布失败: HTTP {}, topic={}", resp.status(), topic);
+            tracing::warn!("MQTT发布失败: HTTP {}, topic={}" , resp.status(), topic);
         }
 
         Ok(())
     }
 
     async fn send_device_command(&self, envelope: &MqttEnvelope) -> AppResult<()> {
-        let topic = format!("download/{}", envelope.sn);
+        let topic = format!("download/{}" , envelope.sn);
         let payload = serde_json::to_string(envelope)
-            .map_err(|e| AppError::Internal(format!("序列化失败: {e}")))?;
+            .map_err(|e| AppError::Internal(format!("序列化失败: {e}" )))?;
         self.publish(&topic, &payload, 1).await
     }
 
@@ -74,7 +74,7 @@ impl MqttGateway {
         let envelope = MqttEnvelope {
             command: command.to_string(),
             request_id: request_id.to_string(),
-            time: chrono::Utc::now().format("%Y-%m-%d %H:%M:%S").to_string(),
+            time: chrono::Utc::now().format("%Y-%m-%d %H:%M:%S" ).to_string(),
             version: "1.0.1".to_string(),
             sn: sn.to_string(),
             data: serde_json::to_string(&data).unwrap_or_default(),
@@ -86,7 +86,7 @@ impl MqttGateway {
         let envelope = MqttEnvelope {
             command: "Open".to_string(),
             request_id: request_id.to_string(),
-            time: chrono::Utc::now().format("%Y-%m-%d %H:%M:%S").to_string(),
+            time: chrono::Utc::now().format("%Y-%m-%d %H:%M:%S" ).to_string(),
             version: "1.0.1".to_string(),
             sn: sn.to_string(),
             data: String::new(),
@@ -98,7 +98,7 @@ impl MqttGateway {
         let envelope = MqttEnvelope {
             command: "Close".to_string(),
             request_id: request_id.to_string(),
-            time: chrono::Utc::now().format("%Y-%m-%d %H:%M:%S").to_string(),
+            time: chrono::Utc::now().format("%Y-%m-%d %H:%M:%S" ).to_string(),
             version: "1.0.1".to_string(),
             sn: sn.to_string(),
             data: String::new(),
@@ -111,7 +111,7 @@ impl MqttGateway {
         let envelope = MqttEnvelope {
             command: "LongOpen".to_string(),
             request_id: request_id.to_string(),
-            time: chrono::Utc::now().format("%Y-%m-%d %H:%M:%S").to_string(),
+            time: chrono::Utc::now().format("%Y-%m-%d %H:%M:%S" ).to_string(),
             version: "1.0.1".to_string(),
             sn: sn.to_string(),
             data: data.to_string(),
@@ -124,7 +124,7 @@ impl MqttGateway {
         let envelope = MqttEnvelope {
             command: "EnableUpdate".to_string(),
             request_id: request_id.to_string(),
-            time: chrono::Utc::now().format("%Y-%m-%d %H:%M:%S").to_string(),
+            time: chrono::Utc::now().format("%Y-%m-%d %H:%M:%S" ).to_string(),
             version: "1.0.1".to_string(),
             sn: sn.to_string(),
             data: data.to_string(),
@@ -137,7 +137,7 @@ impl MqttGateway {
         let envelope = MqttEnvelope {
             command: "SnapshotPic".to_string(),
             request_id: request_id.to_string(),
-            time: chrono::Utc::now().format("%Y-%m-%d %H:%M:%S").to_string(),
+            time: chrono::Utc::now().format("%Y-%m-%d %H:%M:%S" ).to_string(),
             version: "1.0.1".to_string(),
             sn: sn.to_string(),
             data: data.to_string(),
@@ -149,7 +149,7 @@ impl MqttGateway {
         let envelope = MqttEnvelope {
             command: "ResetDevice".to_string(),
             request_id: request_id.to_string(),
-            time: chrono::Utc::now().format("%Y-%m-%d %H:%M:%S").to_string(),
+            time: chrono::Utc::now().format("%Y-%m-%d %H:%M:%S" ).to_string(),
             version: "1.0.1".to_string(),
             sn: sn.to_string(),
             data: String::new(),
@@ -159,11 +159,11 @@ impl MqttGateway {
 
     pub async fn send_image_config(&self, sn: &str, request_id: &str, config: &crate::models::ImageConfig) -> AppResult<()> {
         let data = serde_json::to_string(config)
-            .map_err(|e| AppError::Internal(format!("序列化失败: {e}")))?;
+            .map_err(|e| AppError::Internal(format!("序列化失败: {e}" )))?;
         let envelope = MqttEnvelope {
             command: "Image".to_string(),
             request_id: request_id.to_string(),
-            time: chrono::Utc::now().format("%Y-%m-%d %H:%M:%S").to_string(),
+            time: chrono::Utc::now().format("%Y-%m-%d %H:%M:%S" ).to_string(),
             version: "1.0.1".to_string(),
             sn: sn.to_string(),
             data,
@@ -173,11 +173,11 @@ impl MqttGateway {
 
     pub async fn send_dl_pass_rule<T: Serialize>(&self, sn: &str, request_id: &str, rule: &T) -> AppResult<()> {
         let data = serde_json::to_string(rule)
-            .map_err(|e| AppError::Internal(format!("序列化失败: {e}")))?;
+            .map_err(|e| AppError::Internal(format!("序列化失败: {e}" )))?;
         let envelope = MqttEnvelope {
             command: "DlPassRule".to_string(),
             request_id: request_id.to_string(),
-            time: chrono::Utc::now().format("%Y-%m-%d %H:%M:%S").to_string(),
+            time: chrono::Utc::now().format("%Y-%m-%d %H:%M:%S" ).to_string(),
             version: "1.0.1".to_string(),
             sn: sn.to_string(),
             data,
@@ -190,7 +190,7 @@ impl MqttGateway {
         let envelope = MqttEnvelope {
             command: "DlCarInfo".to_string(),
             request_id: request_id.to_string(),
-            time: chrono::Utc::now().format("%Y-%m-%d %H:%M:%S").to_string(),
+            time: chrono::Utc::now().format("%Y-%m-%d %H:%M:%S" ).to_string(),
             version: "1.0.1".to_string(),
             sn: sn.to_string(),
             data: data.to_string(),
@@ -203,7 +203,7 @@ impl MqttGateway {
         let envelope = MqttEnvelope {
             command: "EncryptDevice".to_string(),
             request_id: request_id.to_string(),
-            time: chrono::Utc::now().format("%Y-%m-%d %H:%M:%S").to_string(),
+            time: chrono::Utc::now().format("%Y-%m-%d %H:%M:%S" ).to_string(),
             version: "1.0.1".to_string(),
             sn: sn.to_string(),
             data: data.to_string(),
@@ -213,11 +213,11 @@ impl MqttGateway {
 
     pub async fn send_config(&self, sn: &str, request_id: &str, config: &crate::models::ConfigData) -> AppResult<()> {
         let data = serde_json::to_string(config)
-            .map_err(|e| AppError::Internal(format!("序列化失败: {e}")))?;
+            .map_err(|e| AppError::Internal(format!("序列化失败: {e}" )))?;
         let envelope = MqttEnvelope {
             command: "Config".to_string(),
             request_id: request_id.to_string(),
-            time: chrono::Utc::now().format("%Y-%m-%d %H:%M:%S").to_string(),
+            time: chrono::Utc::now().format("%Y-%m-%d %H:%M:%S" ).to_string(),
             version: "1.0.1".to_string(),
             sn: sn.to_string(),
             data,
@@ -227,11 +227,11 @@ impl MqttGateway {
 
     pub async fn send_clear_data(&self, sn: &str, request_id: &str, clear: &crate::models::ClearDataMsg) -> AppResult<()> {
         let data = serde_json::to_string(clear)
-            .map_err(|e| AppError::Internal(format!("序列化失败: {e}")))?;
+            .map_err(|e| AppError::Internal(format!("序列化失败: {e}" )))?;
         let envelope = MqttEnvelope {
             command: "ClearData".to_string(),
             request_id: request_id.to_string(),
-            time: chrono::Utc::now().format("%Y-%m-%d %H:%M:%S").to_string(),
+            time: chrono::Utc::now().format("%Y-%m-%d %H:%M:%S" ).to_string(),
             version: "1.0.1".to_string(),
             sn: sn.to_string(),
             data,
@@ -241,11 +241,11 @@ impl MqttGateway {
 
     pub async fn send_serial_config(&self, sn: &str, request_id: &str, sc: &crate::models::SerialConfigData) -> AppResult<()> {
         let data = serde_json::to_string(sc)
-            .map_err(|e| AppError::Internal(format!("序列化失败: {e}")))?;
+            .map_err(|e| AppError::Internal(format!("序列化失败: {e}" )))?;
         let envelope = MqttEnvelope {
             command: "SerialConfig".to_string(),
             request_id: request_id.to_string(),
-            time: chrono::Utc::now().format("%Y-%m-%d %H:%M:%S").to_string(),
+            time: chrono::Utc::now().format("%Y-%m-%d %H:%M:%S" ).to_string(),
             version: "1.0.1".to_string(),
             sn: sn.to_string(),
             data,
@@ -255,11 +255,11 @@ impl MqttGateway {
 
     pub async fn send_serial_data(&self, sn: &str, request_id: &str, sd: &crate::models::SerialDataMsg) -> AppResult<()> {
         let data = serde_json::to_string(sd)
-            .map_err(|e| AppError::Internal(format!("序列化失败: {e}")))?;
+            .map_err(|e| AppError::Internal(format!("序列化失败: {e}" )))?;
         let envelope = MqttEnvelope {
             command: "SerialData".to_string(),
             request_id: request_id.to_string(),
-            time: chrono::Utc::now().format("%Y-%m-%d %H:%M:%S").to_string(),
+            time: chrono::Utc::now().format("%Y-%m-%d %H:%M:%S" ).to_string(),
             version: "1.0.1".to_string(),
             sn: sn.to_string(),
             data,
@@ -272,7 +272,7 @@ impl MqttGateway {
         let envelope = MqttEnvelope {
             command: "EnableReply".to_string(),
             request_id: request_id.to_string(),
-            time: chrono::Utc::now().format("%Y-%m-%d %H:%M:%S").to_string(),
+            time: chrono::Utc::now().format("%Y-%m-%d %H:%M:%S" ).to_string(),
             version: "1.0.1".to_string(),
             sn: sn.to_string(),
             data: data.to_string(),
@@ -286,7 +286,7 @@ impl MqttGateway {
     /// 对应信路通协议 4.4.3 `SetLCDItems`。
     pub async fn send_set_lcd_items(&self, sn: &str, request_id: &str, template: i32, items: &str, voice: &str, action: i32) -> AppResult<()> {
         let data = serde_json::json!({
-            "cmdName": "SetLCDItems",
+            "cmdName": "SetLCDItems" ,
             "template": template,
             "adID": 0,
             "items": items,
@@ -296,7 +296,7 @@ impl MqttGateway {
         let envelope = MqttEnvelope {
             command: "SetLCDItems".to_string(),
             request_id: request_id.to_string(),
-            time: chrono::Utc::now().format("%Y-%m-%d %H:%M:%S").to_string(),
+            time: chrono::Utc::now().format("%Y-%m-%d %H:%M:%S" ).to_string(),
             version: "1.0.1".to_string(),
             sn: sn.to_string(),
             data: data.to_string(),
@@ -312,7 +312,7 @@ impl MqttGateway {
         let envelope = MqttEnvelope {
             command: "AddCarInfo".to_string(),
             request_id: request_id.to_string(),
-            time: chrono::Utc::now().format("%Y-%m-%d %H:%M:%S").to_string(),
+            time: chrono::Utc::now().format("%Y-%m-%d %H:%M:%S" ).to_string(),
             version: "1.0.1".to_string(),
             sn: sn.to_string(),
             data: data.to_string(),
@@ -326,7 +326,7 @@ impl MqttGateway {
         let envelope = MqttEnvelope {
             command: "DeleteCarInfo".to_string(),
             request_id: request_id.to_string(),
-            time: chrono::Utc::now().format("%Y-%m-%d %H:%M:%S").to_string(),
+            time: chrono::Utc::now().format("%Y-%m-%d %H:%M:%S" ).to_string(),
             version: "1.0.1".to_string(),
             sn: sn.to_string(),
             data: data.to_string(),
@@ -340,7 +340,7 @@ impl MqttGateway {
         let envelope = MqttEnvelope {
             command: "QueryCarInfo".to_string(),
             request_id: request_id.to_string(),
-            time: chrono::Utc::now().format("%Y-%m-%d %H:%M:%S").to_string(),
+            time: chrono::Utc::now().format("%Y-%m-%d %H:%M:%S" ).to_string(),
             version: "1.0.1".to_string(),
             sn: sn.to_string(),
             data: data.to_string(),

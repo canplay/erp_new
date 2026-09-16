@@ -24,7 +24,7 @@ impl GrpcServiceBuilder for GrpcServerBuilder {
 
         let handle = tokio::spawn(async move {
             if let Err(e) = server.serve(addr).await {
-                tracing::error!("[ebike-service] gRPC server error: {}", e);
+                tracing::error!("[ebike-service] gRPC server error: {}" , e);
             }
         });
 

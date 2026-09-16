@@ -13,7 +13,7 @@ struct LogQuery { page: Option<i32>, page_size: Option<i32>, user_id: Option<i64
 /// 获取 audit-service gRPC 客户端
 async fn get_audit_client(state: &Arc<AppState>) -> Result<crate::grpc_clients::AuditGrpcClient, Json<Value>> {
     state.grpc_clients.read().await.audit_client().await
-        .map_err(|e| json_error(&format!("audit-service 不可用: {e}")))
+        .map_err(|e| json_error(&format!("audit-service 不可用: {e}" )))
 }
 
 /// proto AuditLog → JSON
@@ -88,7 +88,7 @@ async fn list_operation_logs(
             "page": q.page.unwrap_or(1),
             "page_size": q.page_size.unwrap_or(20),
         })),
-        Err(e) => json_error(&format!("查询失败: {e}")),
+        Err(e) => json_error(&format!("查询失败: {e}" )),
     }
 }
 
@@ -102,10 +102,10 @@ async fn get_operation_log(
             if let Some(log) = resp.log {
                 json_success(audit_log_to_json(&log))
             } else {
-                json_error("日志不存在")
+                json_error("日志不存在" )
             }
         }
-        Err(e) => json_error(&format!("查询失败: {e}")),
+        Err(e) => json_error(&format!("查询失败: {e}" )),
     }
 }
 
@@ -129,7 +129,7 @@ async fn list_login_logs(
             "page": q.page.unwrap_or(1),
             "page_size": q.page_size.unwrap_or(20),
         })),
-        Err(e) => json_error(&format!("查询失败: {e}")),
+        Err(e) => json_error(&format!("查询失败: {e}" )),
     }
 }
 
@@ -143,10 +143,10 @@ async fn get_login_log(
             if let Some(log) = resp.log {
                 json_success(login_log_to_json(&log))
             } else {
-                json_error("日志不存在")
+                json_error("日志不存在" )
             }
         }
-        Err(e) => json_error(&format!("查询失败: {e}")),
+        Err(e) => json_error(&format!("查询失败: {e}" )),
     }
 }
 
@@ -171,7 +171,7 @@ async fn list_api_call_logs(
             "page": q.page.unwrap_or(1),
             "page_size": q.page_size.unwrap_or(20),
         })),
-        Err(e) => json_error(&format!("查询失败: {e}")),
+        Err(e) => json_error(&format!("查询失败: {e}" )),
     }
 }
 
@@ -185,10 +185,10 @@ async fn get_api_call_log(
             if let Some(log) = resp.log {
                 json_success(api_call_log_to_json(&log))
             } else {
-                json_error("日志不存在")
+                json_error("日志不存在" )
             }
         }
-        Err(e) => json_error(&format!("查询失败: {e}")),
+        Err(e) => json_error(&format!("查询失败: {e}" )),
     }
 }
 
@@ -211,7 +211,7 @@ async fn get_operation_stats(
                 json_success(json!({"total_calls": 0, "today_count": 0, "week_count": 0}))
             }
         }
-        Err(e) => json_error(&format!("查询失败: {e}")),
+        Err(e) => json_error(&format!("查询失败: {e}" )),
     }
 }
 
@@ -232,7 +232,7 @@ async fn get_api_call_statistics(
                 json_success(json!({"total_requests": 0, "today_count": 0, "week_count": 0}))
             }
         }
-        Err(e) => json_error(&format!("查询失败: {e}")),
+        Err(e) => json_error(&format!("查询失败: {e}" )),
     }
 }
 
@@ -260,23 +260,23 @@ async fn export_logs_fn() -> Json<Value> {
 pub fn routes() -> Router<Arc<AppState>> {
     Router::new()
         // 操作日志
-        .route("/api/audit/operation-logs", get(list_operation_logs))
-        .route("/api/audit/operation-logs/{id}", get(get_operation_log))
-        .route("/api/audit/operation-logs/export", get(export_logs_fn))
-        .route("/api/audit/operation-stats", get(get_operation_stats))
+        .route("/api/audit/operation-logs" , get(list_operation_logs))
+        .route("/api/audit/operation-logs/{id}" , get(get_operation_log))
+        .route("/api/audit/operation-logs/export" , get(export_logs_fn))
+        .route("/api/audit/operation-stats" , get(get_operation_stats))
         // 登录日志
-        .route("/api/audit/login-logs", get(list_login_logs))
-        .route("/api/audit/login-logs/{id}", get(get_login_log))
-        .route("/api/audit/login-logs/export", get(export_logs_fn))
+        .route("/api/audit/login-logs" , get(list_login_logs))
+        .route("/api/audit/login-logs/{id}" , get(get_login_log))
+        .route("/api/audit/login-logs/export" , get(export_logs_fn))
         // API调用日志
-        .route("/api/audit/api-call-logs", get(list_api_call_logs))
-        .route("/api/audit/api-call-logs/{id}", get(get_api_call_log))
-        .route("/api/audit/api-call-logs/export", get(export_logs_fn))
+        .route("/api/audit/api-call-logs" , get(list_api_call_logs))
+        .route("/api/audit/api-call-logs/{id}" , get(get_api_call_log))
+        .route("/api/audit/api-call-logs/export" , get(export_logs_fn))
         // API治理统计
-        .route("/api/audit/api-call-statistics", get(get_api_call_statistics))
-        .route("/api/audit/api-endpoint-statistics", get(get_api_endpoint_statistics))
-        .route("/api/audit/api-trend", get(get_api_trend))
-        .route("/api/audit/api-response-distribution", get(get_api_response_distribution))
-        .route("/api/audit/api-category-statistics", get(get_api_category_statistics))
-        .route("/api/audit/api-performance-baseline", get(get_api_performance_baseline))
+        .route("/api/audit/api-call-statistics" , get(get_api_call_statistics))
+        .route("/api/audit/api-endpoint-statistics" , get(get_api_endpoint_statistics))
+        .route("/api/audit/api-trend" , get(get_api_trend))
+        .route("/api/audit/api-response-distribution" , get(get_api_response_distribution))
+        .route("/api/audit/api-category-statistics" , get(get_api_category_statistics))
+        .route("/api/audit/api-performance-baseline" , get(get_api_performance_baseline))
 }

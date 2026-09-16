@@ -30,9 +30,9 @@ impl DcTypeRepository {
         let items: Vec<DcType> = sqlx::query_as!(
             DcType,
             r#"SELECT id,
-                COALESCE(cpt, '') AS "cpt!",
-                COALESCE(unit_id, '') AS "unit_id!",
-                COALESCE(py, '') AS "py!",
+                COALESCE(cpt, '') AS "cpt!" ,
+                COALESCE(unit_id, '') AS "unit_id!" ,
+                COALESCE(py, '') AS "py!" ,
                 COALESCE("index"::int, 0) AS "index!"
             FROM tow_dc_type"#,
         )
@@ -46,9 +46,9 @@ impl DcTypeRepository {
         let item: Option<DcType> = sqlx::query_as!(
             DcType,
             r#"SELECT id,
-                COALESCE(cpt, '') AS "cpt!",
-                COALESCE(unit_id, '') AS "unit_id!",
-                COALESCE(py, '') AS "py!",
+                COALESCE(cpt, '') AS "cpt!" ,
+                COALESCE(unit_id, '') AS "unit_id!" ,
+                COALESCE(py, '') AS "py!" ,
                 COALESCE("index"::int, 0) AS "index!"
             FROM tow_dc_type
             WHERE id = $1"#,

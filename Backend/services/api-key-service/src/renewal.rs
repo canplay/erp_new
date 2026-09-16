@@ -376,7 +376,7 @@ impl ApiKeyManager {
 
             let backup = ApiKey {
                 key_id: generate_key_id(),
-                name: format!("{}_backup", old_key.name),
+                name: format!("{}_backup" , old_key.name),
                 key_type: old_key.key_type,
                 state: KeyState::Active,
                 user_id: old_key.user_id.clone(),
@@ -555,11 +555,11 @@ fn generate_key_id() -> String {
     let timestamp = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap_or_else(|_| {
-            tracing::error!("系统时间早于 UNIX epoch");
+            tracing::error!("系统时间早于 UNIX epoch" );
             std::time::Duration::from_secs(0)
         })
         .as_nanos();
-    format!("key_{timestamp:016x}")
+    format!("key_{timestamp:016x}" )
 }
 
 /// 生成 Key 对（哈希和前缀）
@@ -568,12 +568,12 @@ fn generate_key_pair() -> (String, String) {
     let timestamp = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap_or_else(|_| {
-            tracing::error!("系统时间早于 UNIX epoch");
+            tracing::error!("系统时间早于 UNIX epoch" );
             std::time::Duration::from_secs(0)
         })
         .as_nanos();
-    let hash = format!("{timestamp:032x}");
-    let prefix = format!("{:08}", timestamp % 100000000);
+    let hash = format!("{timestamp:032x}" );
+    let prefix = format!("{:08}" , timestamp % 100000000);
     (hash, prefix)
 }
 
@@ -587,15 +587,15 @@ mod tests {
 
         let key = manager
             .create_key(
-                "测试 Key",
+                "测试 Key" ,
                 KeyType::Primary,
-                "user_001",
+                "user_001" ,
                 vec!["read".to_string(), "write".to_string()],
                 Some(365),
             )
             .await;
 
-        assert_eq!(key.name, "测试 Key");
+        assert_eq!(key.name, "测试 Key" );
         assert_eq!(key.state, KeyState::Active);
         assert_eq!(key.key_type, KeyType::Primary);
     }
@@ -605,7 +605,7 @@ mod tests {
         let manager = ApiKeyManager::default_manager();
 
         let key = manager
-            .create_key("测试 Key", KeyType::Primary, "user_001", vec![], Some(30))
+            .create_key("测试 Key" , KeyType::Primary, "user_001" , vec![], Some(30))
             .await;
 
         let request = RenewalRequest {
@@ -623,7 +623,7 @@ mod tests {
         let manager = ApiKeyManager::default_manager();
 
         let key = manager
-            .create_key("测试 Key", KeyType::Primary, "user_001", vec![], None)
+            .create_key("测试 Key" , KeyType::Primary, "user_001" , vec![], None)
             .await;
 
         let request = RotationRequest {
@@ -643,7 +643,7 @@ mod tests {
         let manager = ApiKeyManager::default_manager();
 
         let key = manager
-            .create_key("测试 Key", KeyType::Primary, "user_001", vec![], None)
+            .create_key("测试 Key" , KeyType::Primary, "user_001" , vec![], None)
             .await;
 
         let revoked = manager
@@ -652,7 +652,7 @@ mod tests {
         assert!(revoked);
 
         let fetched = manager.get_key(&key.key_id).await;
-        assert_eq!(fetched.expect("fetched key should exist").state, KeyState::Revoked);
+        assert_eq!(fetched.expect("fetched key should exist" ).state, KeyState::Revoked);
     }
 
     #[tokio::test]
@@ -660,7 +660,7 @@ mod tests {
         let manager = ApiKeyManager::default_manager();
 
         let key = manager
-            .create_key("测试 Key", KeyType::Primary, "user_001", vec![], None)
+            .create_key("测试 Key" , KeyType::Primary, "user_001" , vec![], None)
             .await;
 
         // 验证 Key
@@ -673,16 +673,16 @@ mod tests {
         let manager = ApiKeyManager::default_manager();
 
         manager
-            .create_key("Key1", KeyType::Primary, "user_001", vec![], None)
+            .create_key("Key1" , KeyType::Primary, "user_001" , vec![], None)
             .await;
         manager
-            .create_key("Key2", KeyType::Secondary, "user_001", vec![], None)
+            .create_key("Key2" , KeyType::Secondary, "user_001" , vec![], None)
             .await;
         manager
-            .create_key("Key3", KeyType::Primary, "user_002", vec![], None)
+            .create_key("Key3" , KeyType::Primary, "user_002" , vec![], None)
             .await;
 
-        let user_keys = manager.get_user_keys("user_001").await;
+        let user_keys = manager.get_user_keys("user_001" ).await;
         assert_eq!(user_keys.len(), 2);
     }
 
@@ -691,10 +691,10 @@ mod tests {
         let manager = ApiKeyManager::default_manager();
 
         manager
-            .create_key("Key1", KeyType::Primary, "user_001", vec![], None)
+            .create_key("Key1" , KeyType::Primary, "user_001" , vec![], None)
             .await;
         manager
-            .create_key("Key2", KeyType::Secondary, "user_001", vec![], None)
+            .create_key("Key2" , KeyType::Secondary, "user_001" , vec![], None)
             .await;
 
         let stats = manager.get_stats().await;

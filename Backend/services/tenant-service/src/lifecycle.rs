@@ -93,7 +93,7 @@ impl TenantLifecycleService {
         .await
         .map_err(|e| TenantError::DatabaseError(e.to_string()))?;
 
-        info!(tenant_id = %tenant_id, name = %name, "Tenant created");
+        info!(tenant_id = %tenant_id, name = %name, "Tenant created" );
 
         Ok(TenantContext::new(tenant_id))
     }
@@ -140,7 +140,7 @@ impl TenantLifecycleService {
         .await
         .map_err(|e| TenantError::DatabaseError(e.to_string()))?;
 
-        info!(tenant_id = %tenant_id, "Tenant activated");
+        info!(tenant_id = %tenant_id, "Tenant activated" );
 
         Ok(())
     }
@@ -187,7 +187,7 @@ impl TenantLifecycleService {
         .await
         .map_err(|e| TenantError::DatabaseError(e.to_string()))?;
 
-        warn!(tenant_id = %tenant_id, reason = %reason, "Tenant suspended");
+        warn!(tenant_id = %tenant_id, reason = %reason, "Tenant suspended" );
 
         Ok(())
     }
@@ -212,12 +212,12 @@ impl TenantLifecycleService {
              VALUES ($1, 'tenant_renewed', 'active', $2)"
         )
         .bind(tenant_id.value())
-        .bind(format!("Renewed for {} days", days))
+        .bind(format!("Renewed for {} days" , days))
         .execute(&self.pool)
         .await
         .map_err(|e| TenantError::DatabaseError(e.to_string()))?;
 
-        info!(tenant_id = %tenant_id, days = days, "Tenant renewed");
+        info!(tenant_id = %tenant_id, days = days, "Tenant renewed" );
 
         Ok(())
     }
@@ -241,7 +241,7 @@ impl TenantLifecycleService {
         .await
         .map_err(|e| TenantError::DatabaseError(e.to_string()))?;
 
-        info!(tenant_id = %tenant_id, "Tenant deleted");
+        info!(tenant_id = %tenant_id, "Tenant deleted" );
 
         Ok(())
     }
@@ -257,7 +257,7 @@ impl TenantLifecycleService {
         .map_err(|e| TenantError::DatabaseError(e.to_string()))?;
 
         let lifecycle_state = LifecycleState::from_str(&state)
-            .ok_or_else(|| TenantError::ConfigurationError(format!("Unknown state: {}", state)))?;
+            .ok_or_else(|| TenantError::ConfigurationError(format!("Unknown state: {}" , state)))?;
 
         Ok(TenantState {
             tenant_id,

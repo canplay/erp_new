@@ -33,28 +33,28 @@ impl UserServiceClient {
 
     /// 根据用户ID获取用户信息
     pub async fn get_user_by_id(&self, user_id: i64) -> Option<UserInfo> {
-        let url = format!("{}/api/internal/users/{}", self.user_service_url, user_id);
+        let url = format!("{}/api/internal/users/{}" , self.user_service_url, user_id);
 
         match reqwest::get(&url).await {
             Ok(response) => {
                 if response.status().is_success() {
                     match response.json::<serde_json::Value>().await {
                         Ok(json) => {
-                            let data = json.get("data")?;
+                            let data = json.get("data" )?;
                             Some(UserInfo {
-                                id: data.get("id")?.as_i64()?,
-                                username: data.get("username")?.as_str()?.to_string(),
+                                id: data.get("id" )?.as_i64()?,
+                                username: data.get("username" )?.as_str()?.to_string(),
                                 real_name: data
-                                    .get("real_name")
+                                    .get("real_name" )
                                     .and_then(|v| v.as_str())
                                     .map(String::from),
                                 avatar: data
-                                    .get("avatar")
+                                    .get("avatar" )
                                     .and_then(|v| v.as_str())
                                     .map(String::from),
-                                email: data.get("email").and_then(|v| v.as_str()).map(String::from),
-                                phone: data.get("phone").and_then(|v| v.as_str()).map(String::from),
-                                role: data.get("role").and_then(|v| v.as_str()).map(String::from),
+                                email: data.get("email" ).and_then(|v| v.as_str()).map(String::from),
+                                phone: data.get("phone" ).and_then(|v| v.as_str()).map(String::from),
+                                role: data.get("role" ).and_then(|v| v.as_str()).map(String::from),
                             })
                         }
                         Err(_) => None,
@@ -73,7 +73,7 @@ impl UserServiceClient {
             return vec![];
         }
 
-        let url = format!("{}/api/internal/users/batch", self.user_service_url);
+        let url = format!("{}/api/internal/users/batch" , self.user_service_url);
         let body = serde_json::json!({ "ids": user_ids });
 
         match reqwest::Client::new().post(&url).json(&body).send().await {
@@ -81,31 +81,31 @@ impl UserServiceClient {
                 if response.status().is_success() {
                     match response.json::<serde_json::Value>().await {
                         Ok(json) => {
-                            let data = json.get("data").and_then(|v| v.as_array());
+                            let data = json.get("data" ).and_then(|v| v.as_array());
                             data.map(|arr| {
                                 arr.iter()
                                     .filter_map(|item| {
                                         Some(UserInfo {
-                                            id: item.get("id")?.as_i64()?,
-                                            username: item.get("username")?.as_str()?.to_string(),
+                                            id: item.get("id" )?.as_i64()?,
+                                            username: item.get("username" )?.as_str()?.to_string(),
                                             real_name: item
-                                                .get("real_name")
+                                                .get("real_name" )
                                                 .and_then(|v| v.as_str())
                                                 .map(String::from),
                                             avatar: item
-                                                .get("avatar")
+                                                .get("avatar" )
                                                 .and_then(|v| v.as_str())
                                                 .map(String::from),
                                             email: item
-                                                .get("email")
+                                                .get("email" )
                                                 .and_then(|v| v.as_str())
                                                 .map(String::from),
                                             phone: item
-                                                .get("phone")
+                                                .get("phone" )
                                                 .and_then(|v| v.as_str())
                                                 .map(String::from),
                                             role: item
-                                                .get("role")
+                                                .get("role" )
                                                 .and_then(|v| v.as_str())
                                                 .map(String::from),
                                         })

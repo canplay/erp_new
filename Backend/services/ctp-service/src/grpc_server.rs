@@ -13,7 +13,7 @@ use crate::ctp::AppState;
 use crate::models::{CmdType, DeviceDataUpload as ServiceDeviceDataUpload};
 
 pub async fn start_grpc_server(addr: SocketAddr, state: AppState) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    tracing::info!("[CtpService] gRPC listening on {addr}");
+    tracing::info!("[CtpService] gRPC listening on {addr}" );
     Server::builder().layer(tonic::service::interceptor::InterceptorLayer::new(common::grpc_auth_interceptor))
         .add_service(CtpServiceServer::new(GrpcCtpService { state: Arc::new(state) }))
         .serve_with_shutdown(addr, shutdown_signal())
@@ -58,7 +58,7 @@ impl CtpService for GrpcCtpService {
             }
             Err(e) => Ok(Response::new(ProtoCtpResponse {
                 error_code: 1,
-                error_msg: format!("{e}"),
+                error_msg: format!("{e}" ),
             })),
         }
     }
@@ -72,7 +72,7 @@ impl CtpService for GrpcCtpService {
             "up" => CmdType::Up,
             "down" => CmdType::Down,
             "syn" => CmdType::Syn,
-            _ => return Err(Status::invalid_argument("unknown cmd_type")),
+            _ => return Err(Status::invalid_argument("unknown cmd_type" )),
         };
         match self.state.ctp_service.send_lock_command(&req.device_no, &cmd_type, req.data.as_deref()).await {
             Ok(resp) => Ok(Response::new(CommandResult {
@@ -83,7 +83,7 @@ impl CtpService for GrpcCtpService {
             })),
             Err(e) => Ok(Response::new(CommandResult {
                 success: false,
-                message: format!("{e}"),
+                message: format!("{e}" ),
                 device_no: req.device_no,
                 action: req.cmd_type,
             })),
@@ -97,7 +97,7 @@ impl CtpService for GrpcCtpService {
                 id: device.id,
                 device_no: device.device_no,
                 factory_id: device.factory_id,
-                status: format!("{:?}", device.status).to_lowercase(),
+                status: format!("{:?}" , device.status).to_lowercase(),
                 battery: device.battery,
                 signal: device.signal,
                 voltage: device.voltage,
@@ -105,7 +105,7 @@ impl CtpService for GrpcCtpService {
                 created_at: device.created_at,
                 updated_at: device.updated_at,
             })),
-            Err(e) => Err(Status::not_found(format!("{e}"))),
+            Err(e) => Err(Status::not_found(format!("{e}" ))),
         }
     }
 
@@ -116,28 +116,28 @@ impl CtpService for GrpcCtpService {
         let req = request.into_inner();
         match self.state.ctp_service.list_devices(req.park_code.as_deref(), req.page, req.page_size).await {
             Ok(json) => {
-                let devices = json["devices"].as_array().map(|arr| {
+                let devices = json["devices" ].as_array().map(|arr| {
                     arr.iter().map(|d| ProtoLockDevice {
-                        id: d["id"].as_str().unwrap_or_default().to_string(),
-                        device_no: d["device_no"].as_str().unwrap_or_default().to_string(),
-                        factory_id: d["factory_id"].as_str().unwrap_or_default().to_string(),
-                        status: d["status"].as_str().unwrap_or_default().to_string(),
-                        battery: d["battery"].as_i64().map(|v| v as i32),
-                        signal: d["signal"].as_i64().map(|v| v as i32),
-                        voltage: d["voltage"].as_str().map(std::string::ToString::to_string),
-                        park_code: d["park_code"].as_str().unwrap_or_default().to_string(),
-                        created_at: d["created_at"].as_str().unwrap_or_default().to_string(),
-                        updated_at: d["updated_at"].as_str().unwrap_or_default().to_string(),
+                        id: d["id" ].as_str().unwrap_or_default().to_string(),
+                        device_no: d["device_no" ].as_str().unwrap_or_default().to_string(),
+                        factory_id: d["factory_id" ].as_str().unwrap_or_default().to_string(),
+                        status: d["status" ].as_str().unwrap_or_default().to_string(),
+                        battery: d["battery" ].as_i64().map(|v| v as i32),
+                        signal: d["signal" ].as_i64().map(|v| v as i32),
+                        voltage: d["voltage" ].as_str().map(std::string::ToString::to_string),
+                        park_code: d["park_code" ].as_str().unwrap_or_default().to_string(),
+                        created_at: d["created_at" ].as_str().unwrap_or_default().to_string(),
+                        updated_at: d["updated_at" ].as_str().unwrap_or_default().to_string(),
                     }).collect()
                 }).unwrap_or_default();
                 Ok(Response::new(DeviceListResponse {
                     devices,
-                    total: json["total"].as_i64().unwrap_or(0),
+                    total: json["total" ].as_i64().unwrap_or(0),
                     page: req.page,
                     page_size: req.page_size,
                 }))
             }
-            Err(e) => Err(Status::internal(format!("{e}"))),
+            Err(e) => Err(Status::internal(format!("{e}" ))),
         }
     }
 }

@@ -8,25 +8,25 @@ use thiserror::Error;
 /// 部门仓储错误类型
 #[derive(Error, Debug)]
 pub enum DepartmentRepositoryError {
-    #[error("数据库错误: {0}")]
+    #[error("数据库错误: {0}" )]
     Database(#[from] sqlx::Error),
 
-    #[error("部门不存在")]
+    #[error("部门不存在" )]
     NotFound,
 
-    #[error("部门已存在")]
+    #[error("部门已存在" )]
     AlreadyExists,
 
-    #[error("部门有用户关联，无法删除")]
+    #[error("部门有用户关联，无法删除" )]
     HasAssociatedUsers,
 
-    #[error("部门有子部门，无法删除")]
+    #[error("部门有子部门，无法删除" )]
     HasChildDepartments,
 
-    #[error("不能将自己设置为父部门")]
+    #[error("不能将自己设置为父部门" )]
     CircularReference,
 
-    #[error("部门层级不能超过5级")]
+    #[error("部门层级不能超过5级" )]
     MaxLevelExceeded,
 }
 
@@ -109,7 +109,7 @@ impl DepartmentRepository {
     ) -> Result<i64, DepartmentRepositoryError> {
         if let Some(c) = code {
             let exists = sqlx::query!(
-                r##"SELECT EXISTS(SELECT 1 FROM departments WHERE code = $1) AS "exists!""##,
+                r##"SELECT EXISTS(SELECT 1 FROM departments WHERE code = $1) AS "exists!" "##,
                 c
             )
             .fetch_one(&self.pool)
@@ -123,7 +123,7 @@ impl DepartmentRepository {
 
         let level = if let Some(pid) = parent_id {
             let row = sqlx::query!(
-                "SELECT level FROM departments WHERE id = $1",
+                "SELECT level FROM departments WHERE id = $1" ,
                 pid
             )
             .fetch_optional(&self.pool)
@@ -144,7 +144,7 @@ impl DepartmentRepository {
         let row = sqlx::query!(
             r"INSERT INTO departments (name, code, parent_id, level, leader_id, description, sort_order, status)
                VALUES ($1, $2, $3, $4, $5, $6, $7, 1)
-               RETURNING id",
+               RETURNING id" ,
             name,
             code,
             parent_id,
@@ -167,12 +167,12 @@ impl DepartmentRepository {
         let row = sqlx::query_as!(
             Department,
             r##"SELECT d.id, d.name, d.code, d.parent_id,
-                      COALESCE(d.level, 0) AS "level!",
-                      COALESCE(d.sort_order, 0) AS "sort_order!",
+                      COALESCE(d.level, 0) AS "level!" ,
+                      COALESCE(d.sort_order, 0) AS "sort_order!" ,
                       d.leader_id, d.description,
-                      COALESCE(d.status, 1) AS "status!",
-                      COALESCE(d.created_at, NOW()) AS "created_at!",
-                      COALESCE(d.updated_at, NOW()) AS "updated_at!",
+                      COALESCE(d.status, 1) AS "status!" ,
+                      COALESCE(d.created_at, NOW()) AS "created_at!" ,
+                      COALESCE(d.updated_at, NOW()) AS "updated_at!" ,
                       u.nickname as leader_name
                FROM departments d
                LEFT JOIN users u ON d.leader_id = u.id
@@ -206,12 +206,12 @@ impl DepartmentRepository {
         let row = sqlx::query_as!(
             Department,
             r##"SELECT d.id, d.name, d.code, d.parent_id,
-                      COALESCE(d.level, 0) AS "level!",
-                      COALESCE(d.sort_order, 0) AS "sort_order!",
+                      COALESCE(d.level, 0) AS "level!" ,
+                      COALESCE(d.sort_order, 0) AS "sort_order!" ,
                       d.leader_id, d.description,
-                      COALESCE(d.status, 1) AS "status!",
-                      COALESCE(d.created_at, NOW()) AS "created_at!",
-                      COALESCE(d.updated_at, NOW()) AS "updated_at!",
+                      COALESCE(d.status, 1) AS "status!" ,
+                      COALESCE(d.created_at, NOW()) AS "created_at!" ,
+                      COALESCE(d.updated_at, NOW()) AS "updated_at!" ,
                       u.nickname as leader_name
                FROM departments d
                LEFT JOIN users u ON d.leader_id = u.id
@@ -262,7 +262,7 @@ impl DepartmentRepository {
 
         let level = if let Some(pid) = parent_id {
             let row = sqlx::query!(
-                "SELECT level FROM departments WHERE id = $1",
+                "SELECT level FROM departments WHERE id = $1" ,
                 pid
             )
             .fetch_optional(&self.pool)
@@ -293,11 +293,11 @@ impl DepartmentRepository {
                    updated_at = NOW()
                WHERE id = $9
                RETURNING id, name, code, parent_id,
-                          COALESCE(level, 0) AS "level!",
-                          COALESCE(sort_order, 0) AS "sort_order!",
+                          COALESCE(level, 0) AS "level!" ,
+                          COALESCE(sort_order, 0) AS "sort_order!" ,
                           leader_id, description,
-                          COALESCE(status, 1) AS "status!",
-                          COALESCE(created_at, NOW()) AS "created_at!",
+                          COALESCE(status, 1) AS "status!" ,
+                          COALESCE(created_at, NOW()) AS "created_at!" ,
                           COALESCE(updated_at, NOW()) AS "updated_at!"
 "##,
             name.as_deref(),
@@ -339,7 +339,7 @@ impl DepartmentRepository {
 
         while let Some(id) = current_id {
             let row = sqlx::query!(
-                "SELECT parent_id FROM departments WHERE id = $1",
+                "SELECT parent_id FROM departments WHERE id = $1" ,
                 id
             )
             .fetch_optional(&self.pool)
@@ -362,7 +362,7 @@ impl DepartmentRepository {
     /// 删除部门
     pub async fn delete(&self, dept_id: i64) -> Result<bool, DepartmentRepositoryError> {
         let child_count =
-            sqlx::query!("SELECT COUNT(*) as count FROM departments WHERE parent_id = $1", dept_id)
+            sqlx::query!("SELECT COUNT(*) as count FROM departments WHERE parent_id = $1" , dept_id)
                 .fetch_one(&self.pool)
                 .await?
                 .count
@@ -373,7 +373,7 @@ impl DepartmentRepository {
         }
 
         let user_count =
-            sqlx::query!("SELECT COUNT(*) as count FROM user_departments WHERE department_id = $1", dept_id)
+            sqlx::query!("SELECT COUNT(*) as count FROM user_departments WHERE department_id = $1" , dept_id)
                 .fetch_one(&self.pool)
                 .await?
                 .count
@@ -383,7 +383,7 @@ impl DepartmentRepository {
             return Err(DepartmentRepositoryError::HasAssociatedUsers);
         }
 
-        let result = sqlx::query!("DELETE FROM departments WHERE id = $1", dept_id)
+        let result = sqlx::query!("DELETE FROM departments WHERE id = $1" , dept_id)
             .execute(&self.pool)
             .await?;
 
@@ -402,11 +402,11 @@ impl DepartmentRepository {
         let rows = sqlx::query_as!(
             DepartmentListItem,
             r##"SELECT d.id, d.name, d.code, d.parent_id,
-                      COALESCE(d.level, 0) AS "level!",
-                      COALESCE(d.sort_order, 0) AS "sort_order!",
+                      COALESCE(d.level, 0) AS "level!" ,
+                      COALESCE(d.sort_order, 0) AS "sort_order!" ,
                       d.leader_id,
-                      COALESCE(d.status, 1) AS "status!",
-                      COALESCE(d.created_at, NOW()) AS "created_at!",
+                      COALESCE(d.status, 1) AS "status!" ,
+                      COALESCE(d.created_at, NOW()) AS "created_at!" ,
                       u.nickname as leader_name,
                       COUNT(ud.id) AS "user_count!"
                FROM departments d
@@ -426,7 +426,7 @@ impl DepartmentRepository {
 
         let total_row = sqlx::query!(
             r"SELECT COUNT(*) as count FROM departments
-               WHERE ($1::text IS NULL OR name ILIKE '%' || $1 || '%' OR code ILIKE '%' || $1 || '%')",
+               WHERE ($1::text IS NULL OR name ILIKE '%' || $1 || '%' OR code ILIKE '%' || $1 || '%')" ,
             keyword,
         )
         .fetch_one(&self.pool)
@@ -458,8 +458,8 @@ impl DepartmentRepository {
     pub async fn get_tree(&self) -> Result<Vec<DepartmentTreeNode>, DepartmentRepositoryError> {
         let rows = sqlx::query!(
             r##"SELECT d.id, d.name, d.code, d.parent_id,
-                      COALESCE(d.level, 0) AS "level!",
-                      COALESCE(d.sort_order, 0) AS "sort_order!",
+                      COALESCE(d.level, 0) AS "level!" ,
+                      COALESCE(d.sort_order, 0) AS "sort_order!" ,
                       d.leader_id,
                       u.nickname as leader_name,
                       COUNT(ud.id) AS "user_count!"
@@ -521,7 +521,7 @@ impl DepartmentRepository {
                 let mut node = all_nodes[idx].clone();
 
                 let child_rows = sqlx::query!(
-                    "SELECT id FROM departments WHERE parent_id = $1 AND status = 1 ORDER BY sort_order",
+                    "SELECT id FROM departments WHERE parent_id = $1 AND status = 1 ORDER BY sort_order" ,
                     parent_id
                 )
                 .fetch_all(&self.pool)
@@ -552,7 +552,7 @@ impl DepartmentRepository {
         let offset = (page - 1).max(0) * page_size;
 
         let rows = sqlx::query!(
-            "SELECT user_id FROM user_departments WHERE department_id = $1\n               ORDER BY is_primary DESC, created_at DESC\n               LIMIT $2 OFFSET $3",
+            "SELECT user_id FROM user_departments WHERE department_id = $1\n               ORDER BY is_primary DESC, created_at DESC\n               LIMIT $2 OFFSET $3" ,
             dept_id,
             i64::from(page_size),
             i64::from(offset),
@@ -561,7 +561,7 @@ impl DepartmentRepository {
         .await?;
 
         let total_row =
-            sqlx::query!("SELECT COUNT(*) as count FROM user_departments WHERE department_id = $1", dept_id)
+            sqlx::query!("SELECT COUNT(*) as count FROM user_departments WHERE department_id = $1" , dept_id)
                 .fetch_one(&self.pool)
                 .await?;
 
@@ -589,7 +589,7 @@ impl DepartmentRepository {
 
         let level = if let Some(pid) = new_parent_id {
             let row = sqlx::query!(
-                "SELECT level FROM departments WHERE id = $1",
+                "SELECT level FROM departments WHERE id = $1" ,
                 pid
             )
             .fetch_optional(&self.pool)
@@ -612,7 +612,7 @@ impl DepartmentRepository {
                SET parent_id = $1,
                    level = $2,
                    updated_at = NOW()
-               WHERE id = $3",
+               WHERE id = $3" ,
             new_parent_id,
             level,
             dept_id,

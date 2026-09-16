@@ -31,7 +31,7 @@
                 };
                 Ok(Response::new(response))
             }
-            None => Err(Status::not_found("User not found")),
+            None => Err(Status::not_found("User not found" )),
         }
     }
 
@@ -42,13 +42,13 @@
         let req = request.into_inner();
 
         if req.username.is_empty() {
-            return Err(Status::invalid_argument("用户名不能为空"));
+            return Err(Status::invalid_argument("用户名不能为空" ));
         }
         if req.username.len() > 50 {
-            return Err(Status::invalid_argument("用户名长度不能超过50个字符"));
+            return Err(Status::invalid_argument("用户名长度不能超过50个字符" ));
         }
         if req.password.len() < 8 {
-            return Err(Status::invalid_argument("密码长度至少8位"));
+            return Err(Status::invalid_argument("密码长度至少8位" ));
         }
 
         let username = req.username.clone();
@@ -120,7 +120,7 @@
                 };
                 Ok(Response::new(response))
             }
-            None => Err(Status::not_found("User not found")),
+            None => Err(Status::not_found("User not found" )),
         }
     }
 
@@ -197,7 +197,7 @@
             .map_err(|e| Status::internal(e.to_string()))?;
 
         if !found {
-            return Err(Status::not_found("用户不存在"));
+            return Err(Status::not_found("用户不存在" ));
         }
 
         Ok(Response::new(UpdateUserStatusResponse { success: true }))
@@ -210,7 +210,7 @@
         let req = request.into_inner();
 
         if req.role.is_empty() {
-            return Err(Status::invalid_argument("角色不能为空"));
+            return Err(Status::invalid_argument("角色不能为空" ));
         }
 
         let found = self
@@ -221,7 +221,7 @@
             .map_err(|e| Status::internal(e.to_string()))?;
 
         if !found {
-            return Err(Status::not_found("用户不存在"));
+            return Err(Status::not_found("用户不存在" ));
         }
 
         Ok(Response::new(UpdateUserRoleResponse { success: true }))
@@ -235,10 +235,10 @@
 
         // Security fix: 不允许默认密码，必须提供 new_password
         if req.new_password.is_empty() {
-            return Err(Status::invalid_argument("new_password is required"));
+            return Err(Status::invalid_argument("new_password is required" ));
         }
         if req.new_password.len() < 8 {
-            return Err(Status::invalid_argument("new_password must be at least 8 characters"));
+            return Err(Status::invalid_argument("new_password must be at least 8 characters" ));
         }
 
         use argon2::password_hash::{SaltString, rand_core::OsRng};
@@ -248,7 +248,7 @@
         let argon2 = argon2::Argon2::default();
         let password_hash = argon2
             .hash_password(password_to_hash.as_bytes(), &salt)
-            .map_err(|e| Status::internal(format!("密码哈希失败: {e}")))?
+            .map_err(|e| Status::internal(format!("密码哈希失败: {e}" )))?
             .to_string();
 
         let found = self
@@ -259,7 +259,7 @@
             .map_err(|e| Status::internal(e.to_string()))?;
 
         if !found {
-            return Err(Status::not_found("用户不存在"));
+            return Err(Status::not_found("用户不存在" ));
         }
 
         Ok(Response::new(ResetPasswordResponse { success: true }))

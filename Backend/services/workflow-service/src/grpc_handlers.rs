@@ -147,20 +147,20 @@ pub async fn get_workflow(
     state: Arc<WorkflowAppState>,
     id: String,
 ) -> Result<Option<WorkflowInfo>, Status> {
-    tracing::info!("【gRPC】获取工作流: {id}");
+    tracing::info!("【gRPC】获取工作流: {id}" );
 
     match state.repository.find_by_id(&id).await {
         Ok(Some(workflow)) => {
-            tracing::info!("【gRPC】工作流已找到: {}", workflow.name);
+            tracing::info!("【gRPC】工作流已找到: {}" , workflow.name);
             Ok(Some(workflow.into()))
         }
         Ok(None) => {
-            tracing::warn!("【gRPC】工作流不存在: {id}");
+            tracing::warn!("【gRPC】工作流不存在: {id}" );
             Ok(None)
         }
         Err(e) => {
-            tracing::error!("【gRPC】获取工作流失败: {e}");
-            Err(Status::internal(format!("获取工作流失败: {e}")))
+            tracing::error!("【gRPC】获取工作流失败: {e}" );
+            Err(Status::internal(format!("获取工作流失败: {e}" )))
         }
     }
 }
@@ -187,7 +187,7 @@ pub async fn list_workflows(
         Ok((workflows, total)) => {
             let workflow_infos: Vec<WorkflowInfo> =
                 workflows.into_iter().map(std::convert::Into::into).collect();
-            tracing::info!("【gRPC】获取到 {} 个工作流", workflow_infos.len());
+            tracing::info!("【gRPC】获取到 {} 个工作流" , workflow_infos.len());
             Ok(PaginatedWorkflowsInfo {
                 workflows: workflow_infos,
                 total,
@@ -196,8 +196,8 @@ pub async fn list_workflows(
             })
         }
         Err(e) => {
-            tracing::error!("【gRPC】获取工作流列表失败: {e}");
-            Err(Status::internal(format!("获取工作流列表失败: {e}")))
+            tracing::error!("【gRPC】获取工作流列表失败: {e}" );
+            Err(Status::internal(format!("获取工作流列表失败: {e}" )))
         }
     }
 }
@@ -218,12 +218,12 @@ pub async fn create_workflow(
 
     match state.repository.create(&workflow).await {
         Ok(()) => {
-            tracing::info!("【gRPC】工作流创建成功: {}", workflow.id);
+            tracing::info!("【gRPC】工作流创建成功: {}" , workflow.id);
             Ok(workflow.id.clone())
         }
         Err(e) => {
-            tracing::error!("【gRPC】创建工作流失败: {e}");
-            Err(Status::internal(format!("创建工作流失败: {e}")))
+            tracing::error!("【gRPC】创建工作流失败: {e}" );
+            Err(Status::internal(format!("创建工作流失败: {e}" )))
         }
     }
 }
@@ -237,7 +237,7 @@ pub async fn update_workflow(
     definition: Option<String>,
     status: Option<String>,
 ) -> Result<bool, Status> {
-    tracing::info!("【gRPC】更新工作流: id={id}");
+    tracing::info!("【gRPC】更新工作流: id={id}" );
 
     // 获取现有工作流
     match state.repository.find_by_id(&id).await {
@@ -260,29 +260,29 @@ pub async fn update_workflow(
 
             match state.repository.update(&workflow).await {
                 Ok(()) => {
-                    tracing::info!("【gRPC】工作流更新成功: {id}");
+                    tracing::info!("【gRPC】工作流更新成功: {id}" );
                     Ok(true)
                 }
                 Err(e) => {
-                    tracing::error!("【gRPC】更新工作流失败: {e}");
-                    Err(Status::internal(format!("更新工作流失败: {e}")))
+                    tracing::error!("【gRPC】更新工作流失败: {e}" );
+                    Err(Status::internal(format!("更新工作流失败: {e}" )))
                 }
             }
         }
         Ok(None) => {
-            tracing::warn!("【gRPC】工作流不存在: {id}");
-            Err(Status::not_found(format!("工作流不存在: {id}")))
+            tracing::warn!("【gRPC】工作流不存在: {id}" );
+            Err(Status::not_found(format!("工作流不存在: {id}" )))
         }
         Err(e) => {
-            tracing::error!("【gRPC】获取工作流失败: {e}");
-            Err(Status::internal(format!("获取工作流失败: {e}")))
+            tracing::error!("【gRPC】获取工作流失败: {e}" );
+            Err(Status::internal(format!("获取工作流失败: {e}" )))
         }
     }
 }
 
 /// 发布工作流
 pub async fn publish_workflow(state: Arc<WorkflowAppState>, id: String) -> Result<bool, Status> {
-    tracing::info!("【gRPC】发布工作流: {id}");
+    tracing::info!("【gRPC】发布工作流: {id}" );
 
     match state.repository.find_by_id(&id).await {
         Ok(Some(mut workflow)) => {
@@ -291,38 +291,38 @@ pub async fn publish_workflow(state: Arc<WorkflowAppState>, id: String) -> Resul
 
             match state.repository.update(&workflow).await {
                 Ok(()) => {
-                    tracing::info!("【gRPC】工作流发布成功: {id}");
+                    tracing::info!("【gRPC】工作流发布成功: {id}" );
                     Ok(true)
                 }
                 Err(e) => {
-                    tracing::error!("【gRPC】发布工作流失败: {e}");
-                    Err(Status::internal(format!("发布工作流失败: {e}")))
+                    tracing::error!("【gRPC】发布工作流失败: {e}" );
+                    Err(Status::internal(format!("发布工作流失败: {e}" )))
                 }
             }
         }
         Ok(None) => {
-            tracing::warn!("【gRPC】工作流不存在: {id}");
-            Err(Status::not_found(format!("工作流不存在: {id}")))
+            tracing::warn!("【gRPC】工作流不存在: {id}" );
+            Err(Status::not_found(format!("工作流不存在: {id}" )))
         }
         Err(e) => {
-            tracing::error!("【gRPC】获取工作流失败: {e}");
-            Err(Status::internal(format!("获取工作流失败: {e}")))
+            tracing::error!("【gRPC】获取工作流失败: {e}" );
+            Err(Status::internal(format!("获取工作流失败: {e}" )))
         }
     }
 }
 
 /// 删除工作流
 pub async fn delete_workflow(state: Arc<WorkflowAppState>, id: String) -> Result<bool, Status> {
-    tracing::info!("【gRPC】删除工作流: {id}");
+    tracing::info!("【gRPC】删除工作流: {id}" );
 
     match state.repository.delete(&id).await {
         Ok(()) => {
-            tracing::info!("【gRPC】工作流删除成功: {id}");
+            tracing::info!("【gRPC】工作流删除成功: {id}" );
             Ok(true)
         }
         Err(e) => {
-            tracing::error!("【gRPC】删除工作流失败: {e}");
-            Err(Status::internal(format!("删除工作流失败: {e}")))
+            tracing::error!("【gRPC】删除工作流失败: {e}" );
+            Err(Status::internal(format!("删除工作流失败: {e}" )))
         }
     }
 }
@@ -344,7 +344,7 @@ pub async fn start_workflow_instance(
     match state.repository.find_by_id(&workflow_id).await {
         Ok(Some(workflow)) => {
             if workflow.status != "published" {
-                return Err(Status::failed_precondition("工作流未发布"));
+                return Err(Status::failed_precondition("工作流未发布" ));
             }
 
             let instance = WorkflowInstance {
@@ -365,22 +365,22 @@ pub async fn start_workflow_instance(
 
             match state.repository.create_instance(&instance).await {
                 Ok(()) => {
-                    tracing::info!("【gRPC】实例启动成功: {instance_id}");
+                    tracing::info!("【gRPC】实例启动成功: {instance_id}" );
                     Ok(instance_id)
                 }
                 Err(e) => {
-                    tracing::error!("【gRPC】启动实例失败: {e}");
-                    Err(Status::internal(format!("启动实例失败: {e}")))
+                    tracing::error!("【gRPC】启动实例失败: {e}" );
+                    Err(Status::internal(format!("启动实例失败: {e}" )))
                 }
             }
         }
         Ok(None) => {
-            tracing::warn!("【gRPC】工作流不存在: {workflow_id}");
-            Err(Status::not_found(format!("工作流不存在: {workflow_id}")))
+            tracing::warn!("【gRPC】工作流不存在: {workflow_id}" );
+            Err(Status::not_found(format!("工作流不存在: {workflow_id}" )))
         }
         Err(e) => {
-            tracing::error!("【gRPC】获取工作流失败: {e}");
-            Err(Status::internal(format!("获取工作流失败: {e}")))
+            tracing::error!("【gRPC】获取工作流失败: {e}" );
+            Err(Status::internal(format!("获取工作流失败: {e}" )))
         }
     }
 }
@@ -413,7 +413,7 @@ pub async fn list_instances(
         Ok((instances, total)) => {
             let instance_infos: Vec<WorkflowInstanceInfo> =
                 instances.into_iter().map(std::convert::Into::into).collect();
-            tracing::info!("【gRPC】获取到 {} 个实例", instance_infos.len());
+            tracing::info!("【gRPC】获取到 {} 个实例" , instance_infos.len());
             Ok(PaginatedInstancesInfo {
                 instances: instance_infos,
                 total,
@@ -422,8 +422,8 @@ pub async fn list_instances(
             })
         }
         Err(e) => {
-            tracing::error!("【gRPC】获取实例列表失败: {e}");
-            Err(Status::internal(format!("获取实例列表失败: {e}")))
+            tracing::error!("【gRPC】获取实例列表失败: {e}" );
+            Err(Status::internal(format!("获取实例列表失败: {e}" )))
         }
     }
 }
@@ -433,20 +433,20 @@ pub async fn get_instance(
     state: Arc<WorkflowAppState>,
     id: String,
 ) -> Result<Option<WorkflowInstanceInfo>, Status> {
-    tracing::info!("【gRPC】获取实例: {id}");
+    tracing::info!("【gRPC】获取实例: {id}" );
 
     match state.repository.get_instance(&id).await {
         Ok(Some(instance)) => {
-            tracing::info!("【gRPC】实例已找到: {}", instance.id);
+            tracing::info!("【gRPC】实例已找到: {}" , instance.id);
             Ok(Some(instance.into()))
         }
         Ok(None) => {
-            tracing::warn!("【gRPC】实例不存在: {id}");
+            tracing::warn!("【gRPC】实例不存在: {id}" );
             Ok(None)
         }
         Err(e) => {
-            tracing::error!("【gRPC】获取实例失败: {e}");
-            Err(Status::internal(format!("获取实例失败: {e}")))
+            tracing::error!("【gRPC】获取实例失败: {e}" );
+            Err(Status::internal(format!("获取实例失败: {e}" )))
         }
     }
 }
@@ -480,7 +480,7 @@ pub async fn execute_instance_action(
                     instance.completed_at = Some(Utc::now());
                 }
                 _ => {
-                    return Err(Status::invalid_argument(format!("未知的动作: {action}")));
+                    return Err(Status::invalid_argument(format!("未知的动作: {action}" )));
                 }
             }
 
@@ -492,22 +492,22 @@ pub async fn execute_instance_action(
 
             match state.repository.update_instance(&instance).await {
                 Ok(()) => {
-                    tracing::info!("【gRPC】实例动作执行成功: {instance_id}");
+                    tracing::info!("【gRPC】实例动作执行成功: {instance_id}" );
                     Ok(true)
                 }
                 Err(e) => {
-                    tracing::error!("【gRPC】执行实例动作失败: {e}");
-                    Err(Status::internal(format!("执行实例动作失败: {e}")))
+                    tracing::error!("【gRPC】执行实例动作失败: {e}" );
+                    Err(Status::internal(format!("执行实例动作失败: {e}" )))
                 }
             }
         }
         Ok(None) => {
-            tracing::warn!("【gRPC】实例不存在: {instance_id}");
-            Err(Status::not_found(format!("实例不存在: {instance_id}")))
+            tracing::warn!("【gRPC】实例不存在: {instance_id}" );
+            Err(Status::not_found(format!("实例不存在: {instance_id}" )))
         }
         Err(e) => {
-            tracing::error!("【gRPC】获取实例失败: {e}");
-            Err(Status::internal(format!("获取实例失败: {e}")))
+            tracing::error!("【gRPC】获取实例失败: {e}" );
+            Err(Status::internal(format!("获取实例失败: {e}" )))
         }
     }
 }
@@ -519,12 +519,12 @@ pub async fn cancel_instance(
     _user: String,
     _reason: Option<String>,
 ) -> Result<bool, Status> {
-    tracing::info!("【gRPC】取消实例: id={id}");
+    tracing::info!("【gRPC】取消实例: id={id}" );
 
     match state.repository.get_instance(&id).await {
         Ok(Some(mut instance)) => {
             if instance.status == "completed" || instance.status == "cancelled" {
-                return Err(Status::failed_precondition("实例已结束，无法取消"));
+                return Err(Status::failed_precondition("实例已结束，无法取消" ));
             }
 
             instance.status = "cancelled".to_string();
@@ -532,22 +532,22 @@ pub async fn cancel_instance(
 
             match state.repository.update_instance(&instance).await {
                 Ok(()) => {
-                    tracing::info!("【gRPC】实例取消成功: {id}");
+                    tracing::info!("【gRPC】实例取消成功: {id}" );
                     Ok(true)
                 }
                 Err(e) => {
-                    tracing::error!("【gRPC】取消实例失败: {e}");
-                    Err(Status::internal(format!("取消实例失败: {e}")))
+                    tracing::error!("【gRPC】取消实例失败: {e}" );
+                    Err(Status::internal(format!("取消实例失败: {e}" )))
                 }
             }
         }
         Ok(None) => {
-            tracing::warn!("【gRPC】实例不存在: {id}");
-            Err(Status::not_found(format!("实例不存在: {id}")))
+            tracing::warn!("【gRPC】实例不存在: {id}" );
+            Err(Status::not_found(format!("实例不存在: {id}" )))
         }
         Err(e) => {
-            tracing::error!("【gRPC】获取实例失败: {e}");
-            Err(Status::internal(format!("获取实例失败: {e}")))
+            tracing::error!("【gRPC】获取实例失败: {e}" );
+            Err(Status::internal(format!("获取实例失败: {e}" )))
         }
     }
 }
@@ -583,7 +583,7 @@ pub async fn list_tasks(
     {
         Ok((tasks, total)) => {
             let task_infos: Vec<TaskRecordInfo> = tasks.into_iter().map(std::convert::Into::into).collect();
-            tracing::info!("【gRPC】获取到 {} 个任务", task_infos.len());
+            tracing::info!("【gRPC】获取到 {} 个任务" , task_infos.len());
             Ok(PaginatedTasksInfo {
                 tasks: task_infos,
                 total,
@@ -592,8 +592,8 @@ pub async fn list_tasks(
             })
         }
         Err(e) => {
-            tracing::error!("【gRPC】获取任务列表失败: {e}");
-            Err(Status::internal(format!("获取任务列表失败: {e}")))
+            tracing::error!("【gRPC】获取任务列表失败: {e}" );
+            Err(Status::internal(format!("获取任务列表失败: {e}" )))
         }
     }
 }
@@ -605,7 +605,7 @@ pub async fn list_todo_tasks(
     page: i32,
     page_size: i32,
 ) -> Result<PaginatedTasksInfo, Status> {
-    tracing::info!("【gRPC】获取待办任务: user_id={user_id}");
+    tracing::info!("【gRPC】获取待办任务: user_id={user_id}" );
 
     let page = page.max(1);
     let page_size = page_size.clamp(1, 100);
@@ -617,7 +617,7 @@ pub async fn list_todo_tasks(
     {
         Ok((tasks, total)) => {
             let task_infos: Vec<TaskRecordInfo> = tasks.into_iter().map(std::convert::Into::into).collect();
-            tracing::info!("【gRPC】获取到 {} 个待办任务", task_infos.len());
+            tracing::info!("【gRPC】获取到 {} 个待办任务" , task_infos.len());
             Ok(PaginatedTasksInfo {
                 tasks: task_infos,
                 total,
@@ -626,8 +626,8 @@ pub async fn list_todo_tasks(
             })
         }
         Err(e) => {
-            tracing::error!("【gRPC】获取待办任务失败: {e}");
-            Err(Status::internal(format!("获取待办任务失败: {e}")))
+            tracing::error!("【gRPC】获取待办任务失败: {e}" );
+            Err(Status::internal(format!("获取待办任务失败: {e}" )))
         }
     }
 }
@@ -640,17 +640,17 @@ pub async fn complete_task(
     comment: Option<String>,
     _variables: Option<String>,
 ) -> Result<bool, Status> {
-    tracing::info!("【gRPC】完成任务: task_id={task_id}, user={user}");
+    tracing::info!("【gRPC】完成任务: task_id={task_id}, user={user}" );
 
     match state.repository.get_task(&task_id).await {
         Ok(Some(mut task)) => {
             // 验证任务是否分配给该用户
             if task.assignee.as_ref() != Some(&user) {
-                return Err(Status::permission_denied("任务未分配给该用户"));
+                return Err(Status::permission_denied("任务未分配给该用户" ));
             }
 
             if task.status == "completed" {
-                return Err(Status::failed_precondition("任务已完成"));
+                return Err(Status::failed_precondition("任务已完成" ));
             }
 
             task.status = "completed".to_string();
@@ -661,22 +661,22 @@ pub async fn complete_task(
 
             match state.repository.update_task(&task).await {
                 Ok(()) => {
-                    tracing::info!("【gRPC】任务完成成功: {task_id}");
+                    tracing::info!("【gRPC】任务完成成功: {task_id}" );
                     Ok(true)
                 }
                 Err(e) => {
-                    tracing::error!("【gRPC】完成任务失败: {e}");
-                    Err(Status::internal(format!("完成任务失败: {e}")))
+                    tracing::error!("【gRPC】完成任务失败: {e}" );
+                    Err(Status::internal(format!("完成任务失败: {e}" )))
                 }
             }
         }
         Ok(None) => {
-            tracing::warn!("【gRPC】任务不存在: {task_id}");
-            Err(Status::not_found(format!("任务不存在: {task_id}")))
+            tracing::warn!("【gRPC】任务不存在: {task_id}" );
+            Err(Status::not_found(format!("任务不存在: {task_id}" )))
         }
         Err(e) => {
-            tracing::error!("【gRPC】获取任务失败: {e}");
-            Err(Status::internal(format!("获取任务失败: {e}")))
+            tracing::error!("【gRPC】获取任务失败: {e}" );
+            Err(Status::internal(format!("获取任务失败: {e}" )))
         }
     }
 }
@@ -697,32 +697,32 @@ pub async fn reassign_task(
         Ok(Some(mut task)) => {
             // 验证任务当前分配者
             if task.assignee.as_ref() != Some(&from_user) {
-                return Err(Status::permission_denied("任务未分配给指定用户"));
+                return Err(Status::permission_denied("任务未分配给指定用户" ));
             }
 
             task.assignee = Some(to_user);
             if let Some(r) = reason {
-                task.comment = Some(format!("转派原因: {r}"));
+                task.comment = Some(format!("转派原因: {r}" ));
             }
 
             match state.repository.update_task(&task).await {
                 Ok(()) => {
-                    tracing::info!("【gRPC】任务转派成功: {task_id}");
+                    tracing::info!("【gRPC】任务转派成功: {task_id}" );
                     Ok(true)
                 }
                 Err(e) => {
-                    tracing::error!("【gRPC】转派任务失败: {e}");
-                    Err(Status::internal(format!("转派任务失败: {e}")))
+                    tracing::error!("【gRPC】转派任务失败: {e}" );
+                    Err(Status::internal(format!("转派任务失败: {e}" )))
                 }
             }
         }
         Ok(None) => {
-            tracing::warn!("【gRPC】任务不存在: {task_id}");
-            Err(Status::not_found(format!("任务不存在: {task_id}")))
+            tracing::warn!("【gRPC】任务不存在: {task_id}" );
+            Err(Status::not_found(format!("任务不存在: {task_id}" )))
         }
         Err(e) => {
-            tracing::error!("【gRPC】获取任务失败: {e}");
-            Err(Status::internal(format!("获取任务失败: {e}")))
+            tracing::error!("【gRPC】获取任务失败: {e}" );
+            Err(Status::internal(format!("获取任务失败: {e}" )))
         }
     }
 }
@@ -733,68 +733,68 @@ pub async fn claim_task(
     task_id: String,
     user: String,
 ) -> Result<bool, Status> {
-    tracing::info!("【gRPC】领取任务: task_id={task_id}, user={user}");
+    tracing::info!("【gRPC】领取任务: task_id={task_id}, user={user}" );
 
     match state.repository.get_task(&task_id).await {
         Ok(Some(mut task)) => {
             if task.assignee.is_some() {
-                return Err(Status::failed_precondition("任务已被领取"));
+                return Err(Status::failed_precondition("任务已被领取" ));
             }
 
             task.assignee = Some(user);
 
             match state.repository.update_task(&task).await {
                 Ok(()) => {
-                    tracing::info!("【gRPC】任务领取成功: {task_id}");
+                    tracing::info!("【gRPC】任务领取成功: {task_id}" );
                     Ok(true)
                 }
                 Err(e) => {
-                    tracing::error!("【gRPC】领取任务失败: {e}");
-                    Err(Status::internal(format!("领取任务失败: {e}")))
+                    tracing::error!("【gRPC】领取任务失败: {e}" );
+                    Err(Status::internal(format!("领取任务失败: {e}" )))
                 }
             }
         }
         Ok(None) => {
-            tracing::warn!("【gRPC】任务不存在: {task_id}");
-            Err(Status::not_found(format!("任务不存在: {task_id}")))
+            tracing::warn!("【gRPC】任务不存在: {task_id}" );
+            Err(Status::not_found(format!("任务不存在: {task_id}" )))
         }
         Err(e) => {
-            tracing::error!("【gRPC】获取任务失败: {e}");
-            Err(Status::internal(format!("获取任务失败: {e}")))
+            tracing::error!("【gRPC】获取任务失败: {e}" );
+            Err(Status::internal(format!("获取任务失败: {e}" )))
         }
     }
 }
 
 /// 归还任务
 pub async fn unclaim_task(state: Arc<WorkflowAppState>, task_id: String) -> Result<bool, Status> {
-    tracing::info!("【gRPC】归还任务: task_id={task_id}");
+    tracing::info!("【gRPC】归还任务: task_id={task_id}" );
 
     match state.repository.get_task(&task_id).await {
         Ok(Some(mut task)) => {
             if task.status == "completed" {
-                return Err(Status::failed_precondition("任务已完成，无法归还"));
+                return Err(Status::failed_precondition("任务已完成，无法归还" ));
             }
 
             task.assignee = None;
 
             match state.repository.update_task(&task).await {
                 Ok(()) => {
-                    tracing::info!("【gRPC】任务归还成功: {task_id}");
+                    tracing::info!("【gRPC】任务归还成功: {task_id}" );
                     Ok(true)
                 }
                 Err(e) => {
-                    tracing::error!("【gRPC】归还任务失败: {e}");
-                    Err(Status::internal(format!("归还任务失败: {e}")))
+                    tracing::error!("【gRPC】归还任务失败: {e}" );
+                    Err(Status::internal(format!("归还任务失败: {e}" )))
                 }
             }
         }
         Ok(None) => {
-            tracing::warn!("【gRPC】任务不存在: {task_id}");
-            Err(Status::not_found(format!("任务不存在: {task_id}")))
+            tracing::warn!("【gRPC】任务不存在: {task_id}" );
+            Err(Status::not_found(format!("任务不存在: {task_id}" )))
         }
         Err(e) => {
-            tracing::error!("【gRPC】获取任务失败: {e}");
-            Err(Status::internal(format!("获取任务失败: {e}")))
+            tracing::error!("【gRPC】获取任务失败: {e}" );
+            Err(Status::internal(format!("获取任务失败: {e}" )))
         }
     }
 }
@@ -806,13 +806,13 @@ pub async fn reject_task(
     user: String,
     reason: Option<String>,
 ) -> Result<bool, Status> {
-    tracing::info!("【gRPC】驳回任务: task_id={task_id}, user={user}");
+    tracing::info!("【gRPC】驳回任务: task_id={task_id}, user={user}" );
 
     match state.repository.get_task(&task_id).await {
         Ok(Some(mut task)) => {
             // 验证任务是否分配给该用户
             if task.assignee.as_ref() != Some(&user) {
-                return Err(Status::permission_denied("任务未分配给该用户"));
+                return Err(Status::permission_denied("任务未分配给该用户" ));
             }
 
             task.status = "rejected".to_string();
@@ -823,22 +823,22 @@ pub async fn reject_task(
 
             match state.repository.update_task(&task).await {
                 Ok(()) => {
-                    tracing::info!("【gRPC】任务驳回成功: {task_id}");
+                    tracing::info!("【gRPC】任务驳回成功: {task_id}" );
                     Ok(true)
                 }
                 Err(e) => {
-                    tracing::error!("【gRPC】驳回任务失败: {e}");
-                    Err(Status::internal(format!("驳回任务失败: {e}")))
+                    tracing::error!("【gRPC】驳回任务失败: {e}" );
+                    Err(Status::internal(format!("驳回任务失败: {e}" )))
                 }
             }
         }
         Ok(None) => {
-            tracing::warn!("【gRPC】任务不存在: {task_id}");
-            Err(Status::not_found(format!("任务不存在: {task_id}")))
+            tracing::warn!("【gRPC】任务不存在: {task_id}" );
+            Err(Status::not_found(format!("任务不存在: {task_id}" )))
         }
         Err(e) => {
-            tracing::error!("【gRPC】获取任务失败: {e}");
-            Err(Status::internal(format!("获取任务失败: {e}")))
+            tracing::error!("【gRPC】获取任务失败: {e}" );
+            Err(Status::internal(format!("获取任务失败: {e}" )))
         }
     }
 }
@@ -848,17 +848,17 @@ pub async fn get_task_history(
     state: Arc<WorkflowAppState>,
     instance_id: String,
 ) -> Result<Vec<TaskRecordInfo>, Status> {
-    tracing::info!("【gRPC】获取任务历史: instance_id={instance_id}");
+    tracing::info!("【gRPC】获取任务历史: instance_id={instance_id}" );
 
     match state.repository.get_task_history(&instance_id).await {
         Ok(tasks) => {
             let task_infos: Vec<TaskRecordInfo> = tasks.into_iter().map(std::convert::Into::into).collect();
-            tracing::info!("【gRPC】获取到 {} 条历史记录", task_infos.len());
+            tracing::info!("【gRPC】获取到 {} 条历史记录" , task_infos.len());
             Ok(task_infos)
         }
         Err(e) => {
-            tracing::error!("【gRPC】获取任务历史失败: {e}");
-            Err(Status::internal(format!("获取任务历史失败: {e}")))
+            tracing::error!("【gRPC】获取任务历史失败: {e}" );
+            Err(Status::internal(format!("获取任务历史失败: {e}" )))
         }
     }
 }

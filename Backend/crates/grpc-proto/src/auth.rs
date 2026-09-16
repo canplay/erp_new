@@ -2,80 +2,80 @@
 /// 登录请求
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct LoginRequest {
-    #[prost(string, tag = "1")]
+    #[prost(string, tag = "1" )]
     pub username: ::prost::alloc::string::String,
-    #[prost(string, tag = "2")]
+    #[prost(string, tag = "2" )]
     pub password: ::prost::alloc::string::String,
 }
 /// 登录响应
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct LoginResponse {
-    #[prost(string, tag = "1")]
+    #[prost(string, tag = "1" )]
     pub token: ::prost::alloc::string::String,
-    #[prost(int64, tag = "2")]
+    #[prost(int64, tag = "2" )]
     pub user_id: i64,
-    #[prost(string, tag = "3")]
+    #[prost(string, tag = "3" )]
     pub username: ::prost::alloc::string::String,
-    #[prost(string, tag = "4")]
+    #[prost(string, tag = "4" )]
     pub role: ::prost::alloc::string::String,
 }
 /// 注册请求
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct RegisterRequest {
-    #[prost(string, tag = "1")]
+    #[prost(string, tag = "1" )]
     pub username: ::prost::alloc::string::String,
-    #[prost(string, tag = "2")]
+    #[prost(string, tag = "2" )]
     pub password: ::prost::alloc::string::String,
-    #[prost(string, tag = "3")]
+    #[prost(string, tag = "3" )]
     pub email: ::prost::alloc::string::String,
-    #[prost(string, tag = "4")]
+    #[prost(string, tag = "4" )]
     pub phone: ::prost::alloc::string::String,
-    #[prost(string, tag = "5")]
+    #[prost(string, tag = "5" )]
     pub nickname: ::prost::alloc::string::String,
 }
 /// 注册响应
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct RegisterResponse {
-    #[prost(string, tag = "1")]
+    #[prost(string, tag = "1" )]
     pub token: ::prost::alloc::string::String,
-    #[prost(int64, tag = "2")]
+    #[prost(int64, tag = "2" )]
     pub user_id: i64,
-    #[prost(string, tag = "3")]
+    #[prost(string, tag = "3" )]
     pub username: ::prost::alloc::string::String,
 }
 /// Token 验证请求
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct TokenRequest {
-    #[prost(string, tag = "1")]
+    #[prost(string, tag = "1" )]
     pub token: ::prost::alloc::string::String,
 }
 /// Token 验证响应
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct TokenResponse {
-    #[prost(bool, tag = "1")]
+    #[prost(bool, tag = "1" )]
     pub valid: bool,
-    #[prost(int64, tag = "2")]
+    #[prost(int64, tag = "2" )]
     pub user_id: i64,
-    #[prost(string, tag = "3")]
+    #[prost(string, tag = "3" )]
     pub username: ::prost::alloc::string::String,
-    #[prost(string, tag = "4")]
+    #[prost(string, tag = "4" )]
     pub role: ::prost::alloc::string::String,
 }
 /// 刷新令牌请求
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct RefreshRequest {
-    #[prost(string, tag = "1")]
+    #[prost(string, tag = "1" )]
     pub refresh_token: ::prost::alloc::string::String,
 }
 /// 刷新令牌响应
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct RefreshResponse {
-    #[prost(string, tag = "1")]
+    #[prost(string, tag = "1" )]
     pub token: ::prost::alloc::string::String,
-    #[prost(int64, tag = "2")]
+    #[prost(int64, tag = "2" )]
     pub user_id: i64,
-    #[prost(string, tag = "3")]
+    #[prost(string, tag = "3" )]
     pub username: ::prost::alloc::string::String,
-    #[prost(string, tag = "4")]
+    #[prost(string, tag = "4" )]
     pub role: ::prost::alloc::string::String,
 }

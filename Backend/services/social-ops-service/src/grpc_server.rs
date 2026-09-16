@@ -30,7 +30,7 @@ pub async fn start_grpc_server(
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let state = Arc::new(app_state);
 
-    tracing::info!("Starting gRPC server on {}", addr);
+    tracing::info!("Starting gRPC server on {}" , addr);
 
     Server::builder().layer(tonic::service::interceptor::InterceptorLayer::new(common::grpc_auth_interceptor))
         .add_service(AccountServiceServer::new(GrpcAccountService::new(state.clone())))

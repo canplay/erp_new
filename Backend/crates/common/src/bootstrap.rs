@@ -16,7 +16,7 @@
 //!
 //! #[tokio::main]
 //! async fn main() -> Result<(), Box<dyn std::error::Error>> {
-//!     Bootstrap::new("user-service", ServerType::GrpcHttp { grpc_port: 9090, http_port: 8080 })
+//!     Bootstrap::new("user-service" , ServerType::GrpcHttp { grpc_port: 9090, http_port: 8080 })
 //!         .with_database()
 //!         .run(|state| create_router(state))
 //!         .await
@@ -149,7 +149,7 @@ impl Bootstrap {
         crate::init::init_env();
         crate::init::init_tracing(&self.service_name);
 
-        tracing::info!("=== {} 启动中 ===", self.service_name);
+        tracing::info!("=== {} 启动中 ===" , self.service_name);
 
         // 2. 加载配置
         let config = AppConfig::load().unwrap_or_default();
@@ -161,24 +161,24 @@ impl Bootstrap {
                     ServiceDatabaseConfig::for_service(&self.service_name)
                 });
                 tracing::info!(
-                    "服务数据库连接: service={}, url={}",
+                    "服务数据库连接: service={}, url={}" ,
                     self.service_name,
-                    sd_config.connection_url().split('@').next_back().unwrap_or("***")
+                    sd_config.connection_url().split('@').next_back().unwrap_or("***" )
                 );
                 if let Some(ref schema) = sd_config.schema {
-                    tracing::info!("Schema 隔离启用: {schema}");
+                    tracing::info!("Schema 隔离启用: {schema}" );
                 }
                 let p = create_service_db_pool(&sd_config).await?;
-                tracing::info!("数据库连接池创建成功 (服务专用)");
+                tracing::info!("数据库连接池创建成功 (服务专用)" );
                 Some(Arc::new(DbPool(p)))
             } else {
                 let db_config = self.db_config.unwrap_or_else(|| config.database.clone());
                 tracing::info!(
-                    "连接数据库: {}",
-                    db_config.url.split('@').next_back().unwrap_or("***")
+                    "连接数据库: {}" ,
+                    db_config.url.split('@').next_back().unwrap_or("***" )
                 );
                 let p = create_db_pool(&db_config).await?;
-                tracing::info!("数据库连接池创建成功");
+                tracing::info!("数据库连接池创建成功" );
                 Some(Arc::new(DbPool(p)))
             }
         } else {
@@ -187,11 +187,11 @@ impl Bootstrap {
 
         // 4. 获取端口
         let http_port = self.server_type.http_port();
-        let http_addr = format!("0.0.0.0:{http_port}");
+        let http_addr = format!("0.0.0.0:{http_port}" );
 
-        tracing::info!("HTTP 服务地址: {http_addr}");
+        tracing::info!("HTTP 服务地址: {http_addr}" );
         if let Some(grpc_port) = self.server_type.grpc_port() {
-            tracing::info!("gRPC 服务地址: 0.0.0.0:{grpc_port}");
+            tracing::info!("gRPC 服务地址: 0.0.0.0:{grpc_port}" );
         }
 
         // 5. 创建 HTTP 路由
@@ -202,7 +202,7 @@ impl Bootstrap {
         let mut shutdown_rx = Self::setup_shutdown_handler();
 
         // 7. 启动 HTTP 服务
-        tracing::info!("HTTP 服务启动...");
+        tracing::info!("HTTP 服务启动..." );
         let listener = tokio::net::TcpListener::bind(&http_addr).await?;
 
         axum::serve(listener, router)
@@ -213,11 +213,11 @@ impl Bootstrap {
 
         // 8. 关闭数据库连接池
         if let Some(pool) = &pool {
-            tracing::info!("关闭数据库连接池...");
+            tracing::info!("关闭数据库连接池..." );
             pool.close().await;
         }
 
-        tracing::info!("=== {} 已优雅关闭 ===", self.service_name);
+        tracing::info!("=== {} 已优雅关闭 ===" , self.service_name);
         Ok(())
     }
 
@@ -228,11 +228,11 @@ impl Bootstrap {
         tokio::spawn(async move {
             match signal::ctrl_c().await {
                 Ok(()) => {
-                    tracing::info!("收到 Ctrl+C 信号，正在关闭服务...");
+                    tracing::info!("收到 Ctrl+C 信号，正在关闭服务..." );
                     let _ = shutdown_tx.send(());
                 }
                 Err(e) => {
-                    tracing::error!("监听信号失败: {e}");
+                    tracing::error!("监听信号失败: {e}" );
                 }
             }
         });
@@ -243,7 +243,7 @@ impl Bootstrap {
 
 /// 添加健康检查路由
 fn add_health_routes(router: Router) -> Router {
-    router.route("/health", axum::routing::get(health_handler))
+    router.route("/health" , axum::routing::get(health_handler))
 }
 
 async fn health_handler() -> &'static str {
@@ -263,18 +263,18 @@ pub async fn run_http_service(
     crate::init::init_env();
     let _ = crate::init::init_logging();
 
-    tracing::info!("=== {service_name} 启动中 ===");
+    tracing::info!("=== {service_name} 启动中 ===" );
 
     // 创建池包装
     let wrapped_pool = pool.map(|p| Arc::new(DbPool(p)));
 
     if wrapped_pool.is_some() {
-        tracing::info!("数据库连接池已准备");
+        tracing::info!("数据库连接池已准备" );
     }
 
     // 获取地址
-    let addr = format!("0.0.0.0:{port}");
-    tracing::info!("监听地址: {addr}");
+    let addr = format!("0.0.0.0:{port}" );
+    tracing::info!("监听地址: {addr}" );
 
     // 创建路由
     let router = router_fn(wrapped_pool.clone());
@@ -285,13 +285,13 @@ pub async fn run_http_service(
 
     tokio::spawn(async move {
         if matches!(signal::ctrl_c().await, Ok(())) {
-            tracing::info!("收到 Ctrl+C 信号，正在关闭服务...");
+            tracing::info!("收到 Ctrl+C 信号，正在关闭服务..." );
             let _ = shutdown_tx.send(());
         }
     });
 
     // 启动服务
-    tracing::info!("HTTP 服务启动...");
+    tracing::info!("HTTP 服务启动..." );
     let listener = tokio::net::TcpListener::bind(&addr).await?;
 
     axum::serve(listener, router)
@@ -302,11 +302,11 @@ pub async fn run_http_service(
 
     // 关闭连接池
     if let Some(pool) = &wrapped_pool {
-        tracing::info!("关闭数据库连接池...");
+        tracing::info!("关闭数据库连接池..." );
         pool.close().await;
     }
 
-    tracing::info!("=== {service_name} 已优雅关闭 ===");
+    tracing::info!("=== {service_name} 已优雅关闭 ===" );
     Ok(())
 }
 
@@ -323,29 +323,29 @@ pub async fn run_dual_service(
     crate::init::init_env();
     let _ = crate::init::init_logging();
 
-    tracing::info!("=== {service_name} 启动中 (gRPC + HTTP) ===");
+    tracing::info!("=== {service_name} 启动中 (gRPC + HTTP) ===" );
 
     let wrapped_pool = Arc::new(DbPool(pool));
-    tracing::info!("数据库连接池已准备");
+    tracing::info!("数据库连接池已准备" );
 
     // 如果配置了 schema 隔离，设置 search_path
     let sd_config = ServiceDatabaseConfig::for_service(service_name);
     if let Some(ref schema) = sd_config.schema {
-        tracing::info!("Schema 隔离已启用: service={service_name}, schema={schema}");
+        tracing::info!("Schema 隔离已启用: service={service_name}, schema={schema}" );
     }
 
     // gRPC 地址
-    let grpc_addr = format!("0.0.0.0:{grpc_port}");
-    let http_addr = format!("0.0.0.0:{http_port}");
-    tracing::info!("gRPC 监听: {grpc_addr}");
-    tracing::info!("HTTP 监听: {http_addr}");
+    let grpc_addr = format!("0.0.0.0:{grpc_port}" );
+    let http_addr = format!("0.0.0.0:{http_port}" );
+    tracing::info!("gRPC 监听: {grpc_addr}" );
+    tracing::info!("HTTP 监听: {http_addr}" );
 
     // 创建 shutdown 信号
     let (shutdown_tx, mut shutdown_rx) = tokio::sync::broadcast::channel::<()>(1);
 
     tokio::spawn(async move {
         if matches!(signal::ctrl_c().await, Ok(())) {
-            tracing::info!("收到 Ctrl+C 信号，正在关闭服务...");
+            tracing::info!("收到 Ctrl+C 信号，正在关闭服务..." );
             let _ = shutdown_tx.send(());
         }
     });
@@ -357,45 +357,45 @@ pub async fn run_dual_service(
 
     // 并行启动两个服务
     let http_handle = tokio::spawn(async move {
-        tracing::info!("HTTP 服务启动...");
+        tracing::info!("HTTP 服务启动..." );
         let listener = tokio::net::TcpListener::bind(&http_addr)
             .await
-            .expect("HTTP 监听端口绑定失败 — 检查端口是否被占用");
+            .expect("HTTP 监听端口绑定失败 — 检查端口是否被占用" );
         axum::serve(listener, router)
             .await
-            .expect("HTTP 服务运行失败");
+            .expect("HTTP 服务运行失败" );
     });
 
     // 启动 gRPC 服务
     let grpc_state = wrapped_pool.clone();
     if let Err(e) = grpc_factory(grpc_state) {
-        tracing::error!("gRPC 服务启动失败: {e}");
+        tracing::error!("gRPC 服务启动失败: {e}" );
     }
 
     // 等待任一服务结束
     tokio::select! {
         result = http_handle => {
             if let Err(e) = result {
-                tracing::error!("HTTP 服务出错: {e}");
+                tracing::error!("HTTP 服务出错: {e}" );
             }
         }
         _ = shutdown_rx.recv() => {
-            tracing::info!("收到关闭信号...");
+            tracing::info!("收到关闭信号..." );
         }
     }
 
     // 关闭连接池
-    tracing::info!("关闭数据库连接池...");
+    tracing::info!("关闭数据库连接池..." );
     wrapped_pool.close().await;
 
-    tracing::info!("=== {service_name} 已优雅关闭 ===");
+    tracing::info!("=== {service_name} 已优雅关闭 ===" );
     Ok(())
 }
 
 /// 获取端口的辅助函数
 #[must_use]
 pub fn get_port_from_env(default_port: u16) -> u16 {
-    std::env::var("HTTP_PORT")
+    std::env::var("HTTP_PORT" )
         .unwrap_or_else(|_| default_port.to_string())
         .parse()
         .unwrap_or(default_port)
@@ -422,7 +422,7 @@ mod tests {
     #[test]
     fn test_get_port_from_env() {
         // 默认值测试
-        unsafe { std::env::remove_var("HTTP_PORT") };
+        unsafe { std::env::remove_var("HTTP_PORT" ) };
         assert_eq!(get_port_from_env(8080), 8080);
     }
 }

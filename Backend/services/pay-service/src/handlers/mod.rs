@@ -23,17 +23,17 @@ pub struct AppState {
 
 impl AppState {
     pub fn new() -> Result<Self, AppError> {
-        let pool = PgPool::connect_lazy(&std::env::var("DATABASE_URL").unwrap_or_default())
+        let pool = PgPool::connect_lazy(&std::env::var("DATABASE_URL" ).unwrap_or_default())
             .map_err(AppError::Database)?;
         Ok(Self {
             pool: pool.clone(),
-            pay_service: Arc::new(PayService::new(pool, std::env::var("REDIS_URL").unwrap_or_default())),
+            pay_service: Arc::new(PayService::new(pool, std::env::var("REDIS_URL" ).unwrap_or_default())),
         })
     }
 }
 
 impl Default for AppState {
     fn default() -> Self {
-        Self::new().expect("Failed to create AppState")
+        Self::new().expect("Failed to create AppState" )
     }
 }

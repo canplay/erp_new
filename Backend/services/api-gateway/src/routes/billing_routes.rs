@@ -6,9 +6,9 @@ use super::helpers::json_success;
 
 pub fn routes() -> Router<Arc<AppState>> {
     Router::new()
-        .route("/api/v1/billing/plans", get(list_plans))
-        .route("/api/v1/billing/subscriptions", get(list_subscriptions))
-        .route("/api/v1/billing/invoices", get(list_invoices))
+        .route("/api/v1/billing/plans" , get(list_plans))
+        .route("/api/v1/billing/subscriptions" , get(list_subscriptions))
+        .route("/api/v1/billing/invoices" , get(list_invoices))
 }
 
 async fn list_plans(State(_state): State<Arc<AppState>>) -> Json<Value> {

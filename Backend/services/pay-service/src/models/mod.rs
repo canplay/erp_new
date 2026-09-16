@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Deserialize)]
 pub struct PayQuery {
     pub status: Option<String>,
-    #[serde(rename = "type")]
+    #[serde(rename = "type" )]
     pub pay_type: Option<String>,
     pub remark: Option<String>,
     pub sort_by: Option<String>,
@@ -40,7 +40,7 @@ pub struct PayOrder {
     pub id: String,
     pub order: String,
     pub status: String,
-    #[serde(rename = "type")]
+    #[serde(rename = "type" )]
     pub pay_type: String,
     pub order_pay: Option<serde_json::Value>,
     pub amount: i32,
@@ -80,7 +80,7 @@ pub struct PayDetailResponse {
 pub struct PayCreateParams {
     pub order: String,
     pub status: Option<String>,
-    #[serde(rename = "type")]
+    #[serde(rename = "type" )]
     pub pay_type: Option<String>,
     pub order_pay: Option<serde_json::Value>,
     pub amount: Option<i32>,

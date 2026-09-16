@@ -12,9 +12,9 @@ pub struct BillingService;
 impl BillingService {
     pub async fn calculate(&self, req: &BillingRequest) -> AppResult<BillingResult> {
         let entry = chrono::DateTime::parse_from_rfc3339(&req.entry_time)
-            .map_err(|e| AppError::BillingCalculationError(format!("入场时间格式错误: {e}")))?;
+            .map_err(|e| AppError::BillingCalculationError(format!("入场时间格式错误: {e}" )))?;
         let exit = chrono::DateTime::parse_from_rfc3339(&req.exit_time)
-            .map_err(|e| AppError::BillingCalculationError(format!("出场时间格式错误: {e}")))?;
+            .map_err(|e| AppError::BillingCalculationError(format!("出场时间格式错误: {e}" )))?;
 
         if exit <= entry {
             return Err(AppError::BillingCalculationError("出场时间必须晚于入场时间".to_string()));
@@ -31,7 +31,7 @@ impl BillingService {
             exit_time: req.exit_time.clone(),
             duration_minutes,
             total_amount,
-            rule: format!("首{}分钟免费，首小时{}元，之后{}元/小时",
+            rule: format!("首{}分钟免费，首小时{}元，之后{}元/小时" ,
                 rule.free_minutes,
                 rule.first_hour_fee / 100,
                 rule.hourly_fee / 100),
@@ -178,9 +178,9 @@ mod tests {
 
         let result = service.calculate(&req).await;
         assert!(result.is_ok());
-        let result = result.expect("billing result should exist");
-        assert_eq!(result.plate_no, "粤A12345");
-        assert_eq!(result.park_code, "P001");
+        let result = result.expect("billing result should exist" );
+        assert_eq!(result.plate_no, "粤A12345" );
+        assert_eq!(result.park_code, "P001" );
         assert_eq!(result.duration_minutes, 150); // 2.5 hours
         // 15 free + 135 billable = ceil(135/60)=3 hours
         // first_hour: 500 + (3-1)*200 = 900
@@ -199,7 +199,7 @@ mod tests {
 
         let result = service.calculate(&req).await;
         assert!(result.is_err());
-        assert!(result.unwrap_err().to_string().contains("出场时间必须晚于入场时间"));
+        assert!(result.unwrap_err().to_string().contains("出场时间必须晚于入场时间" ));
     }
 
     #[tokio::test]
@@ -214,7 +214,7 @@ mod tests {
 
         let result = service.calculate(&req).await;
         assert!(result.is_err());
-        assert!(result.unwrap_err().to_string().contains("入场时间格式错误"));
+        assert!(result.unwrap_err().to_string().contains("入场时间格式错误" ));
     }
 
     #[tokio::test]
@@ -229,14 +229,14 @@ mod tests {
 
         let result = service.calculate(&req).await;
         assert!(result.is_err());
-        assert!(result.unwrap_err().to_string().contains("出场时间格式错误"));
+        assert!(result.unwrap_err().to_string().contains("出场时间格式错误" ));
     }
 
     #[test]
     fn test_get_rule_returns_default() {
         let service = BillingService;
-        let rule = service.get_rule("P001");
-        assert_eq!(rule.park_code, "P001");
+        let rule = service.get_rule("P001" );
+        assert_eq!(rule.park_code, "P001" );
         assert_eq!(rule.free_minutes, 15);
         assert_eq!(rule.first_hour_fee, 500);
         assert_eq!(rule.hourly_fee, 200);

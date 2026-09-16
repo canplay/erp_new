@@ -33,12 +33,12 @@ impl CarClassRepository {
         let items: Vec<CarClass> = sqlx::query_as!(
             CarClass,
             r#"SELECT id,
-                COALESCE(cpt, '') AS "cpt!",
-                COALESCE(remark, '') AS "remark!",
-                COALESCE(free_time, 0) AS "free_time!",
-                COALESCE(hm10, '') AS "hm10!",
-                COALESCE(hm24, '') AS "hm24!",
-                COALESCE(gratis_day, 0) AS "gratis_day!",
+                COALESCE(cpt, '') AS "cpt!" ,
+                COALESCE(remark, '') AS "remark!" ,
+                COALESCE(free_time, 0) AS "free_time!" ,
+                COALESCE(hm10, '') AS "hm10!" ,
+                COALESCE(hm24, '') AS "hm24!" ,
+                COALESCE(gratis_day, 0) AS "gratis_day!" ,
                 COALESCE(cost_day, '') AS "cost_day!"
             FROM tow_car_class"#,
         )
@@ -55,12 +55,12 @@ impl CarClassRepository {
         let item: Option<CarClass> = sqlx::query_as!(
             CarClass,
             r#"SELECT id,
-                COALESCE(cpt, '') AS "cpt!",
-                COALESCE(remark, '') AS "remark!",
-                COALESCE(free_time, 0) AS "free_time!",
-                COALESCE(hm10, '') AS "hm10!",
-                COALESCE(hm24, '') AS "hm24!",
-                COALESCE(gratis_day, 0) AS "gratis_day!",
+                COALESCE(cpt, '') AS "cpt!" ,
+                COALESCE(remark, '') AS "remark!" ,
+                COALESCE(free_time, 0) AS "free_time!" ,
+                COALESCE(hm10, '') AS "hm10!" ,
+                COALESCE(hm24, '') AS "hm24!" ,
+                COALESCE(gratis_day, 0) AS "gratis_day!" ,
                 COALESCE(cost_day, '') AS "cost_day!"
             FROM tow_car_class
             WHERE id = $1"#,

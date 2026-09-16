@@ -31,9 +31,9 @@ impl IsolationLevel {
     /// 获取隔离级别的字符串表示
     pub fn as_str(&self) -> &'static str {
         match self {
-            Self::Full => "full",
-            Self::Schema => "schema",
-            Self::RowLevel => "row_level",
+            Self::Full => "full" ,
+            Self::Schema => "schema" ,
+            Self::RowLevel => "row_level" ,
         }
     }
 
@@ -66,10 +66,10 @@ impl TenantState {
     /// 获取状态的字符串表示
     pub fn as_str(&self) -> &'static str {
         match self {
-            Self::Active => "active",
-            Self::Suspended => "suspended",
-            Self::Trial => "trial",
-            Self::Deleted => "deleted",
+            Self::Active => "active" ,
+            Self::Suspended => "suspended" ,
+            Self::Trial => "trial" ,
+            Self::Deleted => "deleted" ,
         }
     }
 
@@ -221,12 +221,12 @@ impl TenantIsolationManager {
                 }
                 IsolationLevel::RowLevel => {
                     // tenant_id.value() 是 i64 类型，不存在 SQL 注入风险
-                    format!("tenant_id = {}", tenant_id.value())
+                    format!("tenant_id = {}" , tenant_id.value())
                 }
             }
         } else {
             // tenant_id.value() 是 i64 类型
-            format!("tenant_id = {}", tenant_id.value())
+            format!("tenant_id = {}" , tenant_id.value())
         }
     }
 
@@ -239,16 +239,16 @@ impl TenantIsolationManager {
     pub async fn build_filtered_query(&self, table: &str, base_query: Option<&str>, tenant_id: Option<TenantId>) -> String {
         // FIX [SQL-INJ-005]: 校验表名格式
         if let Err(e) = common::sanitize_identifier(table) {
-            panic!("Invalid table name in build_filtered_query: {e}");
+            panic!("Invalid table name in build_filtered_query: {e}" );
         }
         if let Some(tid) = tenant_id {
             let tenant_filter = self.generate_filter(tid, table).await;
             match base_query {
-                Some(query) => format!("{} AND {}", query, tenant_filter),
-                None => format!("SELECT * FROM {} WHERE {}", table, tenant_filter),
+                Some(query) => format!("{} AND {}" , query, tenant_filter),
+                None => format!("SELECT * FROM {} WHERE {}" , table, tenant_filter),
             }
         } else {
-            base_query.map_or_else(|| format!("SELECT * FROM {}", table), std::string::ToString::to_string)
+            base_query.map_or_else(|| format!("SELECT * FROM {}" , table), std::string::ToString::to_string)
         }
     }
 
@@ -372,7 +372,7 @@ mod tests {
 
         let fetched = manager.get_tenant(TenantId::new(1)).await;
         assert!(fetched.is_some());
-        assert_eq!(fetched.unwrap().name, "Test Tenant");
+        assert_eq!(fetched.unwrap().name, "Test Tenant" );
     }
 
     #[tokio::test]
@@ -400,8 +400,8 @@ mod tests {
         let manager = TenantIsolationManager::new();
 
         // 默认行级隔离
-        let filter = manager.generate_filter(TenantId::new(1), "users").await;
-        assert_eq!(filter, "tenant_id = 1");
+        let filter = manager.generate_filter(TenantId::new(1), "users" ).await;
+        assert_eq!(filter, "tenant_id = 1" );
 
         // 设置 schema 隔离
         let policy = IsolationPolicy {
@@ -411,9 +411,9 @@ mod tests {
         };
         manager.set_isolation_policy(policy).await;
 
-        let filter = manager.generate_filter(TenantId::new(1), "users").await;
+        let filter = manager.generate_filter(TenantId::new(1), "users" ).await;
         // FIX: 使用固定 schema 名模板，不再拼接 tenant_id
-        assert_eq!(filter, "schema = 'tenant_schema'");
+        assert_eq!(filter, "schema = 'tenant_schema'" );
     }
 
     #[tokio::test]
@@ -421,16 +421,16 @@ mod tests {
         let manager = TenantIsolationManager::new();
 
         let query = manager.build_filtered_query(
-            "users",
-            Some("status = 'active'"),
+            "users" ,
+            Some("status = 'active'" ),
             Some(TenantId::new(1)),
         ).await;
-        assert!(query.contains("tenant_id = 1"));
-        assert!(query.contains("status = 'active'"));
+        assert!(query.contains("tenant_id = 1" ));
+        assert!(query.contains("status = 'active'" ));
 
         // 无租户上下文
-        let query = manager.build_filtered_query("users", None, None).await;
-        assert_eq!(query, "SELECT * FROM users");
+        let query = manager.build_filtered_query("users" , None, None).await;
+        assert_eq!(query, "SELECT * FROM users" );
     }
 
     #[tokio::test]
@@ -497,8 +497,8 @@ mod tests {
         for i in 1..=5 {
             let tenant = TenantInfo {
                 id: TenantId::new(i),
-                name: format!("Tenant {}", i),
-                code: format!("t{}", i),
+                name: format!("Tenant {}" , i),
+                code: format!("t{}" , i),
                 isolation_level: IsolationLevel::RowLevel,
                 state: if i <= 3 {
                     TenantState::Active
@@ -522,14 +522,14 @@ mod tests {
 
     #[test]
     fn test_isolation_level_str() {
-        assert_eq!(IsolationLevel::Full.as_str(), "full");
-        assert_eq!(IsolationLevel::Schema.as_str(), "schema");
-        assert_eq!(IsolationLevel::RowLevel.as_str(), "row_level");
+        assert_eq!(IsolationLevel::Full.as_str(), "full" );
+        assert_eq!(IsolationLevel::Schema.as_str(), "schema" );
+        assert_eq!(IsolationLevel::RowLevel.as_str(), "row_level" );
 
-        assert_eq!(IsolationLevel::from_str("full"), Some(IsolationLevel::Full));
-        assert_eq!(IsolationLevel::from_str("schema"), Some(IsolationLevel::Schema));
-        assert_eq!(IsolationLevel::from_str("row_level"), Some(IsolationLevel::RowLevel));
-        assert_eq!(IsolationLevel::from_str("invalid"), None);
+        assert_eq!(IsolationLevel::from_str("full" ), Some(IsolationLevel::Full));
+        assert_eq!(IsolationLevel::from_str("schema" ), Some(IsolationLevel::Schema));
+        assert_eq!(IsolationLevel::from_str("row_level" ), Some(IsolationLevel::RowLevel));
+        assert_eq!(IsolationLevel::from_str("invalid" ), None);
     }
 
     #[test]

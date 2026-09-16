@@ -30,15 +30,15 @@ pub struct CircuitBreakerConfigBundle {
 impl CircuitBreakerConfigBundle {
     /// Build a `CircuitBreakerConfigBundle` from environment variables.
     pub fn from_env() -> Self {
-        let failure_threshold: u32 = std::env::var("CIRCUIT_BREAKER_FAILURE_THRESHOLD")
+        let failure_threshold: u32 = std::env::var("CIRCUIT_BREAKER_FAILURE_THRESHOLD" )
             .unwrap_or_else(|_| "5".to_string())
             .parse()
             .unwrap_or(5);
-        let timeout_secs: u64 = std::env::var("CIRCUIT_BREAKER_TIMEOUT_SECS")
+        let timeout_secs: u64 = std::env::var("CIRCUIT_BREAKER_TIMEOUT_SECS" )
             .unwrap_or_else(|_| "60".to_string())
             .parse()
             .unwrap_or(60);
-        let half_open_requests: u32 = std::env::var("CIRCUIT_BREAKER_HALF_OPEN_REQUESTS")
+        let half_open_requests: u32 = std::env::var("CIRCUIT_BREAKER_HALF_OPEN_REQUESTS" )
             .unwrap_or_else(|_| "3".to_string())
             .parse()
             .unwrap_or(3);

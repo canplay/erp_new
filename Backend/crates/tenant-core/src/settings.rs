@@ -185,7 +185,7 @@ impl TenantTheme {
 
     /// 应用主题到设置
     pub fn apply_to_settings(&self, settings: &mut TenantSettings) -> Result<(), serde_json::Error> {
-        settings.set("theme", self)
+        settings.set("theme" , self)
     }
 }
 

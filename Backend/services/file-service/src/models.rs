@@ -6,7 +6,7 @@ use sqlx::FromRow;
 
 /// 文件存储类型
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "lowercase")]
+#[serde(rename_all = "lowercase" )]
 pub enum StorageType {
     Local,
     S3,
@@ -54,7 +54,7 @@ pub struct FileUploadRequest {
     #[serde(default)]
     pub file_name: Option<String>,
     /// 文件类别（用于分组）
-    #[serde(default = "default_category")]
+    #[serde(default = "default_category" )]
     pub category: String,
     /// 租户ID（可选）
     #[serde(default)]
@@ -88,10 +88,10 @@ pub struct FileUploadResponse {
 #[derive(Debug, Clone, Deserialize, Default)]
 pub struct FileListQuery {
     /// 页码
-    #[serde(default = "default_page")]
+    #[serde(default = "default_page" )]
     pub page: u32,
     /// 每页数量
-    #[serde(default = "default_page_size")]
+    #[serde(default = "default_page_size" )]
     pub page_size: u32,
     /// 文件类别
     #[serde(default)]

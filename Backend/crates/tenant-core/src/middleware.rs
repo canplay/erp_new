@@ -17,7 +17,7 @@ use tower::{Layer, Service};
 /// 从请求头中提取租户 ID（通用版本，支持任意 body 类型）
 pub fn extract_tenant_id_from_request<B>(req: &Request<B>) -> Option<TenantId> {
     // 优先从 x-tenant-id 头获取
-    if let Some(value) = req.headers().get("x-tenant-id") {
+    if let Some(value) = req.headers().get("x-tenant-id" ) {
         if let Ok(s) = value.to_str() {
             if let Ok(id) = s.parse::<i64>() {
                 return Some(TenantId::new(id));
@@ -26,9 +26,9 @@ pub fn extract_tenant_id_from_request<B>(req: &Request<B>) -> Option<TenantId> {
     }
 
     // 从 authorization JWT 中提取 tenant_id claim
-    if let Some(auth) = req.headers().get("authorization") {
+    if let Some(auth) = req.headers().get("authorization" ) {
         if let Ok(auth_str) = auth.to_str() {
-            if let Some(token) = auth_str.strip_prefix("Bearer ") {
+            if let Some(token) = auth_str.strip_prefix("Bearer " ) {
                 if let Some(tenant_id) = extract_from_jwt(token) {
                     return Some(tenant_id);
                 }
@@ -50,19 +50,19 @@ fn extract_from_jwt(token: &str) -> Option<TenantId> {
     let decoded = decode_base64_url(payload).ok()?;
     let json_str = String::from_utf8(decoded).ok()?;
     let value: serde_json::Value = serde_json::from_str(&json_str).ok()?;
-    value.get("tenant_id")?.as_i64().map(TenantId::new)
+    value.get("tenant_id" )?.as_i64().map(TenantId::new)
 }
 
 /// Base64 URL 解码
 fn decode_base64_url(input: &str) -> Result<Vec<u8>, ()> {
-    let input = input.replace('-', "+").replace('_', "/");
+    let input = input.replace('-', "+" ).replace('_', "/" );
     let len = input.len();
     let padding = if len.is_multiple_of(4) {
         0
     } else {
         4 - len % 4
     };
-    let padded = format!("{}{}", input, "=".repeat(padding));
+    let padded = format!("{}{}" , input, "=".repeat(padding));
 
     use base64::Engine;
     base64::engine::general_purpose::STANDARD
@@ -79,7 +79,7 @@ fn decode_base64_url(input: &str) -> Result<Vec<u8>, ()> {
 /// use tenant_core::middleware::tenant_extraction_middleware;
 ///
 /// let app = Router::new()
-///     .route("/api/data", get(handler))
+///     .route("/api/data" , get(handler))
 ///     .layer(tenant_extraction_middleware());
 /// ```
 #[derive(Clone)]
@@ -196,8 +196,8 @@ where
                 None => {
                     let response = Response::builder()
                         .status(StatusCode::BAD_REQUEST)
-                        .body(Body::from("Missing x-tenant-id header"))
-                        .unwrap_or_else(|_| Response::new(Body::from("Bad Request")));
+                        .body(Body::from("Missing x-tenant-id header" ))
+                        .unwrap_or_else(|_| Response::new(Body::from("Bad Request" )));
                     Ok(response)
                 }
             }
@@ -212,7 +212,7 @@ mod tests {
     #[test]
     fn test_extract_tenant_id_from_header() {
         let req = Request::builder()
-            .header("x-tenant-id", "42")
+            .header("x-tenant-id" , "42" )
             .body(())
             .unwrap();
         let id = extract_tenant_id_from_request(&req);
@@ -223,10 +223,10 @@ mod tests {
     fn test_extract_tenant_id_from_jwt() {
         let payload = r#"{"tenant_id": 123, "sub": 1}"#;
         let encoded = base64_url_encode(payload.as_bytes());
-        let token = format!("header.{}.signature", encoded);
+        let token = format!("header.{}.signature" , encoded);
 
         let req = Request::builder()
-            .header("authorization", format!("Bearer {}", token))
+            .header("authorization" , format!("Bearer {}" , token))
             .body(())
             .unwrap();
         let id = extract_tenant_id_from_request(&req);
@@ -243,7 +243,7 @@ mod tests {
     #[test]
     fn test_extract_tenant_id_invalid() {
         let req = Request::builder()
-            .header("x-tenant-id", "not_a_number")
+            .header("x-tenant-id" , "not_a_number" )
             .body(())
             .unwrap();
         let id = extract_tenant_id_from_request(&req);
@@ -254,8 +254,8 @@ mod tests {
         use base64::Engine;
         base64::engine::general_purpose::STANDARD
             .encode(input)
-            .replace('+', "-")
-            .replace('/', "_")
-            .replace('=', "")
+            .replace('+', "-" )
+            .replace('/', "_" )
+            .replace('=', "" )
     }
 }

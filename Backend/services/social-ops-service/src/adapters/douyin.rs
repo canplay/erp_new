@@ -25,11 +25,11 @@ impl CrawlerAdapter for DouyinCrawler {
         keyword: &str,
         client: &BrowserClient,
     ) -> anyhow::Result<Vec<RawContent>> {
-        tracing::info!("[DouyinCrawler] crawling '{}' via browser-service", keyword);
+        tracing::info!("[DouyinCrawler] crawling '{}' via browser-service" , keyword);
 
         let session_id = client.create_session().await?;
 
-        let search_url = format!("https://www.douyin.com/search/{keyword}?type=general");
+        let search_url = format!("https://www.douyin.com/search/{keyword}?type=general" );
         client.navigate(&session_id, &search_url).await?;
 
         // 等待页面加载
@@ -41,7 +41,7 @@ impl CrawlerAdapter for DouyinCrawler {
 
         let _ = client.close_session(&session_id).await;
 
-        tracing::info!("[DouyinCrawler] found {} results", results.len());
+        tracing::info!("[DouyinCrawler] found {} results" , results.len());
         Ok(results)
     }
 }
@@ -56,7 +56,7 @@ fn parse_douyin_text(text: &str, keyword: &str) -> Vec<RawContent> {
                 text: trimmed.to_string(),
                 images: vec![],
                 source: "douyin".to_string(),
-                url: format!("https://www.douyin.com/search/{}?type=general", urlencoding::encode(keyword)),
+                url: format!("https://www.douyin.com/search/{}?type=general" , urlencoding::encode(keyword)),
             });
         }
         if results.len() >= 20 {

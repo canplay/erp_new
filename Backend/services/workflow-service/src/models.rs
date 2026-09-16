@@ -33,13 +33,13 @@ pub enum NodeType {
 impl std::fmt::Display for NodeType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Start => write!(f, "start"),
-            Self::End => write!(f, "end"),
-            Self::Task => write!(f, "task"),
-            Self::Approval => write!(f, "approval"),
-            Self::Condition => write!(f, "condition"),
-            Self::Parallel => write!(f, "parallel"),
-            Self::Merge => write!(f, "merge"),
+            Self::Start => write!(f, "start" ),
+            Self::End => write!(f, "end" ),
+            Self::Task => write!(f, "task" ),
+            Self::Approval => write!(f, "approval" ),
+            Self::Condition => write!(f, "condition" ),
+            Self::Parallel => write!(f, "parallel" ),
+            Self::Merge => write!(f, "merge" ),
         }
     }
 }
@@ -260,9 +260,9 @@ pub enum ReportStatus {
 impl std::fmt::Display for ReportStatus {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Draft => write!(f, "draft"),
-            Self::Generated => write!(f, "generated"),
-            Self::Failed => write!(f, "failed"),
+            Self::Draft => write!(f, "draft" ),
+            Self::Generated => write!(f, "generated" ),
+            Self::Failed => write!(f, "failed" ),
         }
     }
 }
@@ -345,9 +345,9 @@ pub enum ScheduledTaskStatus {
 impl std::fmt::Display for ScheduledTaskStatus {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Active => write!(f, "active"),
-            Self::Paused => write!(f, "paused"),
-            Self::Stopped => write!(f, "stopped"),
+            Self::Active => write!(f, "active" ),
+            Self::Paused => write!(f, "paused" ),
+            Self::Stopped => write!(f, "stopped" ),
         }
     }
 }

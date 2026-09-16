@@ -53,25 +53,25 @@ impl UserServiceImpl {
 
 #[tonic::async_trait]
 impl UserService for UserServiceImpl {
-    include!("user_methods.rs");
-  include!("role_methods.rs");
-  include!("department_methods.rs");
-  include!("dictionary_methods.rs");
-  include!("announcement_methods.rs");
-  include!("system_config_methods.rs");
-  include!("permission_methods.rs");
+    include!("user_methods.rs" );
+  include!("role_methods.rs" );
+  include!("department_methods.rs" );
+  include!("dictionary_methods.rs" );
+  include!("announcement_methods.rs" );
+  include!("system_config_methods.rs" );
+  include!("permission_methods.rs" );
 }
 
 impl common::service_bootstrap::GrpcServiceBuilder for UserServiceImpl {
     fn build_grpc_server(&self, grpc_addr: &str) -> Result<tokio::task::JoinHandle<()>, Box<dyn std::error::Error + Send + Sync>> {
         use tonic::transport::Server;
 
-        let addr: SocketAddr = grpc_addr.parse().map_err(|e| -> Box<dyn std::error::Error + Send + Sync> { format!("invalid grpc addr: {e}").into() })?;
+        let addr: SocketAddr = grpc_addr.parse().map_err(|e| -> Box<dyn std::error::Error + Send + Sync> { format!("invalid grpc addr: {e}" ).into() })?;
         let server = UserServiceServer::new(UserServiceImpl::new(self.state.clone()));
         let handle = tokio::spawn(async move {
             if let Err(e) = Server::builder()
                 .add_service(server).serve(addr).await {
-                tracing::error!("gRPC server error: {}", e);
+                tracing::error!("gRPC server error: {}" , e);
             }
         });
         Ok(handle)

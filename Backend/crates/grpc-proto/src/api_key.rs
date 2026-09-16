@@ -2,214 +2,214 @@
 /// API Key 信息
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct ApiKeyInfo {
-    #[prost(int64, tag = "1")]
+    #[prost(int64, tag = "1" )]
     pub id: i64,
-    #[prost(string, tag = "2")]
+    #[prost(string, tag = "2" )]
     pub name: ::prost::alloc::string::String,
     /// Key ID（用于识别）
-    #[prost(string, tag = "3")]
+    #[prost(string, tag = "3" )]
     pub key_id: ::prost::alloc::string::String,
     /// Key 提示（最后4位）
-    #[prost(string, tag = "4")]
+    #[prost(string, tag = "4" )]
     pub key_hint: ::prost::alloc::string::String,
     /// 权限级别
-    #[prost(int32, tag = "5")]
+    #[prost(int32, tag = "5" )]
     pub permission_level: i32,
-    #[prost(string, repeated, tag = "6")]
+    #[prost(string, repeated, tag = "6" )]
     pub allowed_ips: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
-    #[prost(int64, tag = "7")]
+    #[prost(int64, tag = "7" )]
     pub rate_limit: i64,
-    #[prost(int64, tag = "8")]
+    #[prost(int64, tag = "8" )]
     pub tenant_id: i64,
-    #[prost(int64, tag = "9")]
+    #[prost(int64, tag = "9" )]
     pub user_id: i64,
-    #[prost(string, tag = "10")]
+    #[prost(string, tag = "10" )]
     pub status: ::prost::alloc::string::String,
-    #[prost(int64, tag = "11")]
+    #[prost(int64, tag = "11" )]
     pub created_at: i64,
-    #[prost(int64, tag = "12")]
+    #[prost(int64, tag = "12" )]
     pub expires_at: i64,
-    #[prost(int64, tag = "13")]
+    #[prost(int64, tag = "13" )]
     pub last_used_at: i64,
 }
 /// 创建 API Key 请求
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct CreateApiKeyRequest {
-    #[prost(string, tag = "1")]
+    #[prost(string, tag = "1" )]
     pub name: ::prost::alloc::string::String,
-    #[prost(string, tag = "2")]
+    #[prost(string, tag = "2" )]
     pub description: ::prost::alloc::string::String,
-    #[prost(int32, tag = "3")]
+    #[prost(int32, tag = "3" )]
     pub permission_level: i32,
-    #[prost(string, repeated, tag = "4")]
+    #[prost(string, repeated, tag = "4" )]
     pub allowed_ips: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
-    #[prost(int64, tag = "5")]
+    #[prost(int64, tag = "5" )]
     pub rate_limit: i64,
-    #[prost(int64, tag = "6")]
+    #[prost(int64, tag = "6" )]
     pub expires_at: i64,
-    #[prost(int64, tag = "7")]
+    #[prost(int64, tag = "7" )]
     pub tenant_id: i64,
-    #[prost(int64, tag = "8")]
+    #[prost(int64, tag = "8" )]
     pub user_id: i64,
 }
 /// 创建 API Key 响应
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct CreateApiKeyResponse {
-    #[prost(int64, tag = "1")]
+    #[prost(int64, tag = "1" )]
     pub id: i64,
-    #[prost(string, tag = "2")]
+    #[prost(string, tag = "2" )]
     pub key_id: ::prost::alloc::string::String,
     /// 仅在创建时返回
-    #[prost(string, tag = "3")]
+    #[prost(string, tag = "3" )]
     pub secret_key: ::prost::alloc::string::String,
-    #[prost(string, tag = "4")]
+    #[prost(string, tag = "4" )]
     pub name: ::prost::alloc::string::String,
 }
 /// 列出 API Keys 请求
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct ListApiKeysRequest {
-    #[prost(int32, tag = "1")]
+    #[prost(int32, tag = "1" )]
     pub page: i32,
-    #[prost(int32, tag = "2")]
+    #[prost(int32, tag = "2" )]
     pub page_size: i32,
-    #[prost(int64, tag = "3")]
+    #[prost(int64, tag = "3" )]
     pub user_id: i64,
-    #[prost(int64, tag = "4")]
+    #[prost(int64, tag = "4" )]
     pub tenant_id: i64,
-    #[prost(string, tag = "5")]
+    #[prost(string, tag = "5" )]
     pub status: ::prost::alloc::string::String,
 }
 /// 列出 API Keys 响应
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ListApiKeysResponse {
-    #[prost(message, repeated, tag = "1")]
+    #[prost(message, repeated, tag = "1" )]
     pub keys: ::prost::alloc::vec::Vec<ApiKeyInfo>,
-    #[prost(int64, tag = "2")]
+    #[prost(int64, tag = "2" )]
     pub total: i64,
 }
 /// 获取 API Key 请求
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct GetApiKeyRequest {
-    #[prost(int64, tag = "1")]
+    #[prost(int64, tag = "1" )]
     pub id: i64,
 }
 /// 获取 API Key 响应
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct GetApiKeyResponse {
-    #[prost(message, optional, tag = "1")]
+    #[prost(message, optional, tag = "1" )]
     pub key: ::core::option::Option<ApiKeyInfo>,
 }
 /// 更新 API Key 请求
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct UpdateApiKeyRequest {
-    #[prost(int64, tag = "1")]
+    #[prost(int64, tag = "1" )]
     pub id: i64,
-    #[prost(string, tag = "2")]
+    #[prost(string, tag = "2" )]
     pub name: ::prost::alloc::string::String,
-    #[prost(string, tag = "3")]
+    #[prost(string, tag = "3" )]
     pub description: ::prost::alloc::string::String,
-    #[prost(int32, tag = "4")]
+    #[prost(int32, tag = "4" )]
     pub permission_level: i32,
-    #[prost(string, repeated, tag = "5")]
+    #[prost(string, repeated, tag = "5" )]
     pub allowed_ips: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
-    #[prost(int64, tag = "6")]
+    #[prost(int64, tag = "6" )]
     pub rate_limit: i64,
-    #[prost(int64, tag = "7")]
+    #[prost(int64, tag = "7" )]
     pub expires_at: i64,
-    #[prost(string, tag = "8")]
+    #[prost(string, tag = "8" )]
     pub status: ::prost::alloc::string::String,
 }
 /// 更新 API Key 响应
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct UpdateApiKeyResponse {
-    #[prost(bool, tag = "1")]
+    #[prost(bool, tag = "1" )]
     pub success: bool,
 }
 /// 删除 API Key 请求
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct DeleteApiKeyRequest {
-    #[prost(int64, tag = "1")]
+    #[prost(int64, tag = "1" )]
     pub id: i64,
 }
 /// 删除 API Key 响应
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct DeleteApiKeyResponse {
-    #[prost(bool, tag = "1")]
+    #[prost(bool, tag = "1" )]
     pub success: bool,
 }
 /// 验证 API Key 请求
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct ValidateApiKeyRequest {
-    #[prost(string, tag = "1")]
+    #[prost(string, tag = "1" )]
     pub key_id: ::prost::alloc::string::String,
-    #[prost(string, tag = "2")]
+    #[prost(string, tag = "2" )]
     pub secret_key: ::prost::alloc::string::String,
-    #[prost(string, tag = "3")]
+    #[prost(string, tag = "3" )]
     pub ip_address: ::prost::alloc::string::String,
 }
 /// 验证 API Key 响应
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct ValidateApiKeyResponse {
-    #[prost(bool, tag = "1")]
+    #[prost(bool, tag = "1" )]
     pub valid: bool,
-    #[prost(int64, tag = "2")]
+    #[prost(int64, tag = "2" )]
     pub user_id: i64,
-    #[prost(int64, tag = "3")]
+    #[prost(int64, tag = "3" )]
     pub tenant_id: i64,
-    #[prost(int32, tag = "4")]
+    #[prost(int32, tag = "4" )]
     pub permission_level: i32,
-    #[prost(string, tag = "5")]
+    #[prost(string, tag = "5" )]
     pub message: ::prost::alloc::string::String,
 }
 /// 获取 Key 使用统计请求
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct GetKeyUsageRequest {
-    #[prost(int64, tag = "1")]
+    #[prost(int64, tag = "1" )]
     pub key_id: i64,
-    #[prost(string, tag = "2")]
+    #[prost(string, tag = "2" )]
     pub start_date: ::prost::alloc::string::String,
-    #[prost(string, tag = "3")]
+    #[prost(string, tag = "3" )]
     pub end_date: ::prost::alloc::string::String,
 }
 /// 获取 Key 使用统计响应
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct GetKeyUsageResponse {
-    #[prost(int64, tag = "1")]
+    #[prost(int64, tag = "1" )]
     pub total_requests: i64,
-    #[prost(int64, tag = "2")]
+    #[prost(int64, tag = "2" )]
     pub successful_requests: i64,
-    #[prost(int64, tag = "3")]
+    #[prost(int64, tag = "3" )]
     pub failed_requests: i64,
-    #[prost(int64, tag = "4")]
+    #[prost(int64, tag = "4" )]
     pub total_latency_ms: i64,
-    #[prost(message, repeated, tag = "5")]
+    #[prost(message, repeated, tag = "5" )]
     pub daily_usages: ::prost::alloc::vec::Vec<DailyUsage>,
 }
 /// 每日使用统计
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct DailyUsage {
-    #[prost(string, tag = "1")]
+    #[prost(string, tag = "1" )]
     pub date: ::prost::alloc::string::String,
-    #[prost(int64, tag = "2")]
+    #[prost(int64, tag = "2" )]
     pub requests: i64,
-    #[prost(int64, tag = "3")]
+    #[prost(int64, tag = "3" )]
     pub errors: i64,
-    #[prost(int64, tag = "4")]
+    #[prost(int64, tag = "4" )]
     pub avg_latency_ms: i64,
 }
 /// 轮换 API Key 请求
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct RotateApiKeyRequest {
-    #[prost(int64, tag = "1")]
+    #[prost(int64, tag = "1" )]
     pub id: i64,
 }
 /// 轮换 API Key 响应
 #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct RotateApiKeyResponse {
-    #[prost(int64, tag = "1")]
+    #[prost(int64, tag = "1" )]
     pub id: i64,
-    #[prost(string, tag = "2")]
+    #[prost(string, tag = "2" )]
     pub key_id: ::prost::alloc::string::String,
-    #[prost(string, tag = "3")]
+    #[prost(string, tag = "3" )]
     pub new_secret_key: ::prost::alloc::string::String,
 }

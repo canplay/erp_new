@@ -25,10 +25,10 @@ impl HikService {
     #[must_use]
     pub fn new() -> Self {
         Self {
-            base_url: std::env::var("HIK_URL").unwrap_or_default(),
-            client_id: std::env::var("HIK_CLIENT_ID").unwrap_or_default(),
-            client_secret: std::env::var("HIK_CLIENT_SECRET").unwrap_or_default(),
-            redis_url: std::env::var("REDIS_URL").unwrap_or_default(),
+            base_url: std::env::var("HIK_URL" ).unwrap_or_default(),
+            client_id: std::env::var("HIK_CLIENT_ID" ).unwrap_or_default(),
+            client_secret: std::env::var("HIK_CLIENT_SECRET" ).unwrap_or_default(),
+            redis_url: std::env::var("REDIS_URL" ).unwrap_or_default(),
         }
     }
 
@@ -42,7 +42,7 @@ impl HikService {
 
         // 尝试从Redis获取缓存的token
         let cached_token: Option<String> =
-            conn.get("hik_token").await.map_err(AppError::Redis)?;
+            conn.get("hik_token" ).await.map_err(AppError::Redis)?;
 
         if let Some(token) = cached_token
             && !token.is_empty() {
@@ -51,12 +51,12 @@ impl HikService {
 
         // 获取新token
         let params = [
-            ("client_id", self.client_id.as_str()),
-            ("client_secret", self.client_secret.as_str()),
+            ("client_id" , self.client_id.as_str()),
+            ("client_secret" , self.client_secret.as_str()),
         ];
 
         let client = reqwest::Client::new();
-        let url = format!("{}/artemis/oauth/token", self.base_url);
+        let url = format!("{}/artemis/oauth/token" , self.base_url);
 
         let resp = client
             .post(&url)
@@ -68,12 +68,12 @@ impl HikService {
         if resp.status().is_success() {
             let body: serde_json::Value = resp.json().await.map_err(AppError::HttpError)?;
 
-            if let Some(access_token) = body["access_token"].as_str() {
-                let expires_in = body["expires_in"].as_i64().unwrap_or(3600);
+            if let Some(access_token) = body["access_token" ].as_str() {
+                let expires_in = body["expires_in" ].as_i64().unwrap_or(3600);
 
                 // 缓存token
                 let _: () = conn
-                    .set_ex("hik_token", access_token, expires_in as u64)
+                    .set_ex("hik_token" , access_token, expires_in as u64)
                     .await
                     .map_err(AppError::Redis)?;
 
@@ -180,7 +180,7 @@ impl HikService {
             ),
             "parkinfo" => (
                 format!(
-                    "/artemis/api/v1/dealer/parkinfo/{}",
+                    "/artemis/api/v1/dealer/parkinfo/{}" ,
                     request.park_code.as_ref().unwrap_or(&String::new())
                 ),
                 json!({}),
@@ -188,12 +188,12 @@ impl HikService {
             _ => return Err(AppError::HikInvalidMethod),
         };
 
-        let url = format!("{}{}", self.base_url, path);
+        let url = format!("{}{}" , self.base_url, path);
 
         let resp = client
             .post(&url)
-            .header("access_token", &token)
-            .header("Content-Type", "application/json")
+            .header("access_token" , &token)
+            .header("Content-Type" , "application/json" )
             .json(&body)
             .send()
             .await
@@ -203,7 +203,7 @@ impl HikService {
             let body: serde_json::Value = resp.json().await.map_err(AppError::HttpError)?;
             Ok(body)
         } else {
-            Err(AppError::HikApiError(format!("HTTP {}", resp.status())))
+            Err(AppError::HikApiError(format!("HTTP {}" , resp.status())))
         }
     }
 
@@ -219,7 +219,7 @@ impl HikService {
         let client = reqwest::Client::new();
 
         // 先获取停车场列表
-        let url = format!("{}/artemis/api/v1/dealer/parkinfos", self.base_url);
+        let url = format!("{}/artemis/api/v1/dealer/parkinfos" , self.base_url);
         let body = json!({
             "pageNo": 1,
             "pageSize": 50
@@ -227,8 +227,8 @@ impl HikService {
 
         let resp = client
             .post(&url)
-            .header("access_token", &token)
-            .header("Content-Type", "application/json")
+            .header("access_token" , &token)
+            .header("Content-Type" , "application/json" )
             .json(&body)
             .send()
             .await
@@ -240,19 +240,19 @@ impl HikService {
 
         let park_data: serde_json::Value = resp.json().await.map_err(AppError::HttpError)?;
 
-        let results = park_data["data"]["results"]
+        let results = park_data["data" ]["results" ]
             .as_array()
             .ok_or_else(|| AppError::HikApiError("Invalid park data".to_string()))?;
 
         // 构建停车场编码列表
         let park_codes: Vec<String> = results
             .iter()
-            .filter_map(|p| p["parkCode"].as_str().map(String::from))
+            .filter_map(|p| p["parkCode" ].as_str().map(String::from))
             .collect();
-        let park_codes_str = park_codes.join(",");
+        let park_codes_str = park_codes.join("," );
 
         // 发送优惠券
-        let url = format!("{}/artemis/api/v1/sendCoupon", self.base_url);
+        let url = format!("{}/artemis/api/v1/sendCoupon" , self.base_url);
         let coupon_body = json!({
             "parkCodes": park_codes_str,
             "generateObj": 2,
@@ -266,8 +266,8 @@ impl HikService {
 
         let resp = client
             .post(&url)
-            .header("access_token", &token)
-            .header("Content-Type", "application/json")
+            .header("access_token" , &token)
+            .header("Content-Type" , "application/json" )
             .json(&coupon_body)
             .send()
             .await

@@ -12,7 +12,7 @@ pub struct StorageInfo {
     pub provide: String,
     pub gps: Option<Value>,
     /// 存储类型（预留字段，当前所有写入路径均硬编码为 0，暂不使用）
-    #[sqlx(rename = "type")]
+    #[sqlx(rename = "type" )]
     pub r#type: i64,
     pub sum: i64,
     pub cur: i64,
@@ -48,9 +48,9 @@ mod tests {
             gps_type: 1,
         };
 
-        let json = serde_json::to_string(&storage).expect("test assertion");
-        let deserialized: StorageInfo = serde_json::from_str(&json).expect("test assertion");
-        assert_eq!(deserialized.code, "ST001");
+        let json = serde_json::to_string(&storage).expect("test assertion" );
+        let deserialized: StorageInfo = serde_json::from_str(&json).expect("test assertion" );
+        assert_eq!(deserialized.code, "ST001" );
         assert_eq!(deserialized.sum, 100);
         assert_eq!(deserialized.cur, 45);
         assert_eq!(deserialized.points, Some("POLYGON(...)".to_string()));
@@ -59,9 +59,9 @@ mod tests {
 
     #[test]
     fn test_storage_info_minimal_deserialization() {
-        let json = r#"{"code": "ST002", "status": 0, "provide": "", "speed": 0.0, "type": 0, "sum": 0, "cur": 0, "gps_type": 0}"#;
-        let storage: StorageInfo = serde_json::from_str(json).expect("test assertion");
-        assert_eq!(storage.code, "ST002");
+        let json = r#"{"code": "ST002" , "status": 0, "provide": " ", "speed": 0.0, "type": 0, "sum": 0, "cur": 0, "gps_type": 0}"#;
+        let storage: StorageInfo = serde_json::from_str(json).expect("test assertion" );
+        assert_eq!(storage.code, "ST002" );
         assert_eq!(storage.sum, 0);
         assert_eq!(storage.cur, 0);
     }

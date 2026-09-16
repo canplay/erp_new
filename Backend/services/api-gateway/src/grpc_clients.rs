@@ -64,34 +64,34 @@ pub struct UpdateArticleParams {
 
 /// 所有 gRPC 上游服务的定义
 pub const SERVICE_DEFS: &[ServiceDef] = &[
-    ServiceDef { key: "auth", name: "auth-service", env_var: "AUTH_SERVICE_GRPC_URL", default_url: "http://auth-service:9091" },
-    ServiceDef { key: "user", name: "user-service", env_var: "USER_SERVICE_GRPC_URL", default_url: "http://user-service:9090" },
-    ServiceDef { key: "cms", name: "cms-service", env_var: "CMS_SERVICE_GRPC_URL", default_url: "http://cms-service:9082" },
-    ServiceDef { key: "workflow", name: "workflow-service", env_var: "WORKFLOW_SERVICE_GRPC_URL", default_url: "http://workflow-service:9088" },
-    ServiceDef { key: "audit", name: "audit-service", env_var: "AUDIT_SERVICE_GRPC_URL", default_url: "http://audit-service:9010" },
-    ServiceDef { key: "tenant", name: "tenant-service", env_var: "TENANT_SERVICE_GRPC_URL", default_url: "http://tenant-service:9095" },
-    ServiceDef { key: "feedback", name: "feedback-service", env_var: "FEEDBACK_SERVICE_GRPC_URL", default_url: "http://feedback-service:9085" },
-    ServiceDef { key: "message", name: "message-service", env_var: "MESSAGE_SERVICE_GRPC_URL", default_url: "http://messaging-service:9083" },
-    ServiceDef { key: "file", name: "file-service", env_var: "FILE_SERVICE_GRPC_URL", default_url: "http://file-service:9084" },
-    ServiceDef { key: "api-key", name: "api-key-service", env_var: "API_KEY_SERVICE_GRPC_URL", default_url: "http://api-key-service:9094" },
-    ServiceDef { key: "ctp", name: "ctp-service", env_var: "CTP_SERVICE_GRPC_URL", default_url: "http://ctp-service:9097" },
-    ServiceDef { key: "lpr", name: "lpr-service", env_var: "LPR_SERVICE_GRPC_URL", default_url: "http://lpr-service:9099" },
-    ServiceDef { key: "tow", name: "tow-service", env_var: "TOW_SERVICE_GRPC_URL", default_url: "http://tow-service:9086" },
-    ServiceDef { key: "social-ops", name: "social-ops-service", env_var: "SOCIAL_OPS_SERVICE_GRPC_URL", default_url: "http://social-ops-service:9110" },
-    ServiceDef { key: "hik", name: "hik-service", env_var: "HIK_SERVICE_GRPC_URL", default_url: "http://hik-service:9092" },
-    ServiceDef { key: "xlt", name: "xlt-service", env_var: "XLT_SERVICE_GRPC_URL", default_url: "http://xlt-service:9096" },
-    ServiceDef { key: "ebike", name: "ebike-service", env_var: "EBIKE_SERVICE_GRPC_URL", default_url: "http://ebike-service:9100" },
-    ServiceDef { key: "pay", name: "pay-service", env_var: "PAY_SERVICE_GRPC_URL", default_url: "http://pay-service:9093" },
-    ServiceDef { key: "clean", name: "clean-service", env_var: "CLEAN_SERVICE_GRPC_URL", default_url: "http://clean-service:9087" },
-    ServiceDef { key: "browser", name: "browser-service", env_var: "BROWSER_SERVICE_GRPC_URL", default_url: "http://browser-service:8120" },
+    ServiceDef { key: "auth" , name: "auth-service" , env_var: "AUTH_SERVICE_GRPC_URL" , default_url: "http://auth-service:9091" },
+    ServiceDef { key: "user" , name: "user-service" , env_var: "USER_SERVICE_GRPC_URL" , default_url: "http://user-service:9090" },
+    ServiceDef { key: "cms" , name: "cms-service" , env_var: "CMS_SERVICE_GRPC_URL" , default_url: "http://cms-service:9082" },
+    ServiceDef { key: "workflow" , name: "workflow-service" , env_var: "WORKFLOW_SERVICE_GRPC_URL" , default_url: "http://workflow-service:9088" },
+    ServiceDef { key: "audit" , name: "audit-service" , env_var: "AUDIT_SERVICE_GRPC_URL" , default_url: "http://audit-service:9010" },
+    ServiceDef { key: "tenant" , name: "tenant-service" , env_var: "TENANT_SERVICE_GRPC_URL" , default_url: "http://tenant-service:9095" },
+    ServiceDef { key: "feedback" , name: "feedback-service" , env_var: "FEEDBACK_SERVICE_GRPC_URL" , default_url: "http://feedback-service:9085" },
+    ServiceDef { key: "message" , name: "message-service" , env_var: "MESSAGE_SERVICE_GRPC_URL" , default_url: "http://messaging-service:9083" },
+    ServiceDef { key: "file" , name: "file-service" , env_var: "FILE_SERVICE_GRPC_URL" , default_url: "http://file-service:9084" },
+    ServiceDef { key: "api-key" , name: "api-key-service" , env_var: "API_KEY_SERVICE_GRPC_URL" , default_url: "http://api-key-service:9094" },
+    ServiceDef { key: "ctp" , name: "ctp-service" , env_var: "CTP_SERVICE_GRPC_URL" , default_url: "http://ctp-service:9097" },
+    ServiceDef { key: "lpr" , name: "lpr-service" , env_var: "LPR_SERVICE_GRPC_URL" , default_url: "http://lpr-service:9099" },
+    ServiceDef { key: "tow" , name: "tow-service" , env_var: "TOW_SERVICE_GRPC_URL" , default_url: "http://tow-service:9086" },
+    ServiceDef { key: "social-ops" , name: "social-ops-service" , env_var: "SOCIAL_OPS_SERVICE_GRPC_URL" , default_url: "http://social-ops-service:9110" },
+    ServiceDef { key: "hik" , name: "hik-service" , env_var: "HIK_SERVICE_GRPC_URL" , default_url: "http://hik-service:9092" },
+    ServiceDef { key: "xlt" , name: "xlt-service" , env_var: "XLT_SERVICE_GRPC_URL" , default_url: "http://xlt-service:9096" },
+    ServiceDef { key: "ebike" , name: "ebike-service" , env_var: "EBIKE_SERVICE_GRPC_URL" , default_url: "http://ebike-service:9100" },
+    ServiceDef { key: "pay" , name: "pay-service" , env_var: "PAY_SERVICE_GRPC_URL" , default_url: "http://pay-service:9093" },
+    ServiceDef { key: "clean" , name: "clean-service" , env_var: "CLEAN_SERVICE_GRPC_URL" , default_url: "http://clean-service:9087" },
+    ServiceDef { key: "browser" , name: "browser-service" , env_var: "BROWSER_SERVICE_GRPC_URL" , default_url: "http://browser-service:8120" },
 ];
 
 /// 从 gRPC URL 字符串中解析出主机和端口
 #[must_use]
 pub fn parse_grpc_url(url: &str) -> (&str, u16) {
     let without_scheme = url
-        .trim_start_matches("http://")
-        .trim_start_matches("https://");
+        .trim_start_matches("http://" )
+        .trim_start_matches("https://" );
     if let Some((host, port_str)) = without_scheme.split_once(':') {
         let port: u16 = port_str.parse().unwrap_or(9091);
         (host, port)
@@ -115,7 +115,7 @@ macro_rules! connect_env {
         $clients.$field = {
             let url = std::env::var($env_var).unwrap_or_else(|_| $default_url.to_string());
             connect_grpc(url, &$clients.config, |ch| <$client>::new(ch)).await.unwrap_or_else(|e| {
-                tracing::warn!("连接 {} 失败: {}", stringify!($field), e);
+                tracing::warn!("连接 {} 失败: {}" , stringify!($field), e);
                 GrpcClient::new($default_url.to_string(), $clients.config.clone())
             })
         }
@@ -129,12 +129,12 @@ macro_rules! connect_disc {
             $clients.$field = match connect_grpc(addr.clone(), &$clients.config, |ch| <$client>::new(ch)).await {
                 Ok(c) => c,
                 Err(e) => {
-                    tracing::warn!("[服务发现] {} 连接失败: {}", $service_name, e);
+                    tracing::warn!("[服务发现] {} 连接失败: {}" , $service_name, e);
                     GrpcClient::new(addr, $clients.config.clone())
                 }
             };
         } else {
-            tracing::warn!("[服务发现] {} 未注册", $service_name);
+            tracing::warn!("[服务发现] {} 未注册" , $service_name);
         }
     };
 }
@@ -144,10 +144,10 @@ macro_rules! reconnect_svc {
         if let Ok(c) = connect_grpc($addr.clone(), &$clients.config, |ch| <$client>::new(ch)).await {
             if let Some(inner) = c.get_inner().await {
                 $clients.$field.set_inner(inner).await;
-                tracing::info!("[服务发现] {} 重连成功 ({})", $service_name, $addr);
+                tracing::info!("[服务发现] {} 重连成功 ({})" , $service_name, $addr);
             }
         } else {
-            tracing::warn!("[服务发现] {} 重连失败 ({})", $service_name, $addr);
+            tracing::warn!("[服务发现] {} 重连失败 ({})" , $service_name, $addr);
         }
     };
 }
@@ -194,9 +194,9 @@ pub struct GrpcClients {
 
 impl std::fmt::Debug for GrpcClients {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("GrpcClients")
-            .field("config", &self.config)
-            .field("services", &"21 gRPC clients")
+        f.debug_struct("GrpcClients" )
+            .field("config" , &self.config)
+            .field("services" , &"21 gRPC clients" )
             .finish()
     }
 }
@@ -213,26 +213,26 @@ impl GrpcClients {
         let cfg = config.clone();
         Self {
             config,
-            auth_service: disconnected_client!(cfg, "http://localhost:9091"),
-            user_service: disconnected_client!(cfg, "http://localhost:9090"),
-            cms_service: disconnected_client!(cfg, "http://localhost:9082"),
-            workflow_service: disconnected_client!(cfg, "http://localhost:9088"),
-            audit_service: disconnected_client!(cfg, "http://localhost:9010"),
-            tenant_service: disconnected_client!(cfg, "http://localhost:9095"),
-            feedback_service: disconnected_client!(cfg, "http://localhost:9085"),
-            message_service: disconnected_client!(cfg, "http://localhost:9083"),
-            file_service: disconnected_client!(cfg, "http://localhost:9084"),
-            api_key_service: disconnected_client!(cfg, "http://localhost:9094"),
-            ctp_service: disconnected_client!(cfg, "http://localhost:9097"),
-            lpr_service: disconnected_client!(cfg, "http://localhost:9099"),
-            tow_service: disconnected_client!(cfg, "http://localhost:9086"),
-            social_ops_service: disconnected_client!(cfg, "http://localhost:9110"),
-            hik_service: disconnected_client!(cfg, "http://localhost:9092"),
-            xlt_service: disconnected_client!(cfg, "http://localhost:9096"),
-            ebike_service: disconnected_client!(cfg, "http://localhost:9100"),
-            pay_service: disconnected_client!(cfg, "http://localhost:9093"),
-            clean_service: disconnected_client!(cfg, "http://localhost:9087"),
-            browser_service: disconnected_client!(cfg, "http://localhost:8120"),
+            auth_service: disconnected_client!(cfg, "http://localhost:9091" ),
+            user_service: disconnected_client!(cfg, "http://localhost:9090" ),
+            cms_service: disconnected_client!(cfg, "http://localhost:9082" ),
+            workflow_service: disconnected_client!(cfg, "http://localhost:9088" ),
+            audit_service: disconnected_client!(cfg, "http://localhost:9010" ),
+            tenant_service: disconnected_client!(cfg, "http://localhost:9095" ),
+            feedback_service: disconnected_client!(cfg, "http://localhost:9085" ),
+            message_service: disconnected_client!(cfg, "http://localhost:9083" ),
+            file_service: disconnected_client!(cfg, "http://localhost:9084" ),
+            api_key_service: disconnected_client!(cfg, "http://localhost:9094" ),
+            ctp_service: disconnected_client!(cfg, "http://localhost:9097" ),
+            lpr_service: disconnected_client!(cfg, "http://localhost:9099" ),
+            tow_service: disconnected_client!(cfg, "http://localhost:9086" ),
+            social_ops_service: disconnected_client!(cfg, "http://localhost:9110" ),
+            hik_service: disconnected_client!(cfg, "http://localhost:9092" ),
+            xlt_service: disconnected_client!(cfg, "http://localhost:9096" ),
+            ebike_service: disconnected_client!(cfg, "http://localhost:9100" ),
+            pay_service: disconnected_client!(cfg, "http://localhost:9093" ),
+            clean_service: disconnected_client!(cfg, "http://localhost:9087" ),
+            browser_service: disconnected_client!(cfg, "http://localhost:8120" ),
         }
     }
 
@@ -242,32 +242,32 @@ impl GrpcClients {
         for def in SERVICE_DEFS {
             let url = std::env::var(def.env_var).unwrap_or_else(|_| def.default_url.to_string());
             match def.key {
-                "auth" => connect_env!(clients, auth_service, AuthServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "AUTH_SERVICE_GRPC_URL", url),
-                "user" => connect_env!(clients, user_service, UserServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "USER_SERVICE_GRPC_URL", url),
-                "cms" => connect_env!(clients, cms_service, CmsServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "CMS_SERVICE_GRPC_URL", url),
-                "workflow" => connect_env!(clients, workflow_service, WorkflowServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "WORKFLOW_SERVICE_GRPC_URL", url),
-                "audit" => connect_env!(clients, audit_service, AuditServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "AUDIT_SERVICE_GRPC_URL", url),
-                "tenant" => connect_env!(clients, tenant_service, TenantServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "TENANT_SERVICE_GRPC_URL", url),
-                "feedback" => connect_env!(clients, feedback_service, FeedbackServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "FEEDBACK_SERVICE_GRPC_URL", url),
-                "message" => connect_env!(clients, message_service, MessageServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "MESSAGE_SERVICE_GRPC_URL", url),
-                "file" => connect_env!(clients, file_service, FileServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "FILE_SERVICE_GRPC_URL", url),
-                "api-key" => connect_env!(clients, api_key_service, ApiKeyServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "API_KEY_SERVICE_GRPC_URL", url),
-                "ctp" => connect_env!(clients, ctp_service, CtpServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "CTP_SERVICE_GRPC_URL", url),
-                "lpr" => connect_env!(clients, lpr_service, LprServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "LPR_SERVICE_GRPC_URL", url),
-                "tow" => connect_env!(clients, tow_service, TowServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "TOW_SERVICE_GRPC_URL", url),
-                "social-ops" => connect_env!(clients, social_ops_service, AccountServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "SOCIAL_OPS_SERVICE_GRPC_URL", url),
-                "hik" => connect_env!(clients, hik_service, HikServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "HIK_SERVICE_GRPC_URL", url),
-                "xlt" => connect_env!(clients, xlt_service, XltServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "XLT_SERVICE_GRPC_URL", url),
-                "ebike" => connect_env!(clients, ebike_service, EbikeServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "EBIKE_SERVICE_GRPC_URL", url),
-                "pay" => connect_env!(clients, pay_service, PayServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "PAY_SERVICE_GRPC_URL", url),
-                "clean" => connect_env!(clients, clean_service, grpc_proto::clean::clean_service_client::CleanServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "CLEAN_SERVICE_GRPC_URL", url),
-                "browser" => connect_env!(clients, browser_service, grpc_proto::browser::browser_service_client::BrowserServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "BROWSER_SERVICE_GRPC_URL", url),
+                "auth" => connect_env!(clients, auth_service, AuthServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "AUTH_SERVICE_GRPC_URL" , url),
+                "user" => connect_env!(clients, user_service, UserServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "USER_SERVICE_GRPC_URL" , url),
+                "cms" => connect_env!(clients, cms_service, CmsServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "CMS_SERVICE_GRPC_URL" , url),
+                "workflow" => connect_env!(clients, workflow_service, WorkflowServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "WORKFLOW_SERVICE_GRPC_URL" , url),
+                "audit" => connect_env!(clients, audit_service, AuditServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "AUDIT_SERVICE_GRPC_URL" , url),
+                "tenant" => connect_env!(clients, tenant_service, TenantServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "TENANT_SERVICE_GRPC_URL" , url),
+                "feedback" => connect_env!(clients, feedback_service, FeedbackServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "FEEDBACK_SERVICE_GRPC_URL" , url),
+                "message" => connect_env!(clients, message_service, MessageServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "MESSAGE_SERVICE_GRPC_URL" , url),
+                "file" => connect_env!(clients, file_service, FileServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "FILE_SERVICE_GRPC_URL" , url),
+                "api-key" => connect_env!(clients, api_key_service, ApiKeyServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "API_KEY_SERVICE_GRPC_URL" , url),
+                "ctp" => connect_env!(clients, ctp_service, CtpServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "CTP_SERVICE_GRPC_URL" , url),
+                "lpr" => connect_env!(clients, lpr_service, LprServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "LPR_SERVICE_GRPC_URL" , url),
+                "tow" => connect_env!(clients, tow_service, TowServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "TOW_SERVICE_GRPC_URL" , url),
+                "social-ops" => connect_env!(clients, social_ops_service, AccountServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "SOCIAL_OPS_SERVICE_GRPC_URL" , url),
+                "hik" => connect_env!(clients, hik_service, HikServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "HIK_SERVICE_GRPC_URL" , url),
+                "xlt" => connect_env!(clients, xlt_service, XltServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "XLT_SERVICE_GRPC_URL" , url),
+                "ebike" => connect_env!(clients, ebike_service, EbikeServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "EBIKE_SERVICE_GRPC_URL" , url),
+                "pay" => connect_env!(clients, pay_service, PayServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "PAY_SERVICE_GRPC_URL" , url),
+                "clean" => connect_env!(clients, clean_service, grpc_proto::clean::clean_service_client::CleanServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "CLEAN_SERVICE_GRPC_URL" , url),
+                "browser" => connect_env!(clients, browser_service, grpc_proto::browser::browser_service_client::BrowserServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "BROWSER_SERVICE_GRPC_URL" , url),
                 _ => {}
             }
         }
 
         tracing::info!(
-            "gRPC 客户端初始化完成: 可用服务={}",
+            "gRPC 客户端初始化完成: 可用服务={}" ,
             clients.available_services().await.len()
         );
 
@@ -277,27 +277,27 @@ impl GrpcClients {
     pub async fn from_discovery(config: GrpcClientConfig, discovery: &ServiceDiscovery) -> Self {
         let mut clients = Self::new(config);
 
-        connect_disc!(clients, auth_service, AuthServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "auth-service", discovery);
-        connect_disc!(clients, user_service, UserServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "user-service", discovery);
-        connect_disc!(clients, cms_service, CmsServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "cms-service", discovery);
-        connect_disc!(clients, workflow_service, WorkflowServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "workflow-service", discovery);
-        connect_disc!(clients, audit_service, AuditServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "audit-service", discovery);
-        connect_disc!(clients, tenant_service, TenantServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "tenant-service", discovery);
-        connect_disc!(clients, feedback_service, FeedbackServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "feedback-service", discovery);
-        connect_disc!(clients, message_service, MessageServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "message-service", discovery);
-        connect_disc!(clients, file_service, FileServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "file-service", discovery);
-        connect_disc!(clients, api_key_service, ApiKeyServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "api-key-service", discovery);
-        connect_disc!(clients, ctp_service, CtpServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "ctp-service", discovery);
-        connect_disc!(clients, lpr_service, LprServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "lpr-service", discovery);
-        connect_disc!(clients, tow_service, TowServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "tow-service", discovery);
-        connect_disc!(clients, hik_service, HikServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "hik-service", discovery);
-        connect_disc!(clients, xlt_service, XltServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "xlt-service", discovery);
-        connect_disc!(clients, ebike_service, EbikeServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "ebike-service", discovery);
-        connect_disc!(clients, pay_service, PayServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "pay-service", discovery);
-        connect_disc!(clients, clean_service, grpc_proto::clean::clean_service_client::CleanServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "clean-service", discovery);
+        connect_disc!(clients, auth_service, AuthServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "auth-service" , discovery);
+        connect_disc!(clients, user_service, UserServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "user-service" , discovery);
+        connect_disc!(clients, cms_service, CmsServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "cms-service" , discovery);
+        connect_disc!(clients, workflow_service, WorkflowServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "workflow-service" , discovery);
+        connect_disc!(clients, audit_service, AuditServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "audit-service" , discovery);
+        connect_disc!(clients, tenant_service, TenantServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "tenant-service" , discovery);
+        connect_disc!(clients, feedback_service, FeedbackServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "feedback-service" , discovery);
+        connect_disc!(clients, message_service, MessageServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "message-service" , discovery);
+        connect_disc!(clients, file_service, FileServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "file-service" , discovery);
+        connect_disc!(clients, api_key_service, ApiKeyServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "api-key-service" , discovery);
+        connect_disc!(clients, ctp_service, CtpServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "ctp-service" , discovery);
+        connect_disc!(clients, lpr_service, LprServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "lpr-service" , discovery);
+        connect_disc!(clients, tow_service, TowServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "tow-service" , discovery);
+        connect_disc!(clients, hik_service, HikServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "hik-service" , discovery);
+        connect_disc!(clients, xlt_service, XltServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "xlt-service" , discovery);
+        connect_disc!(clients, ebike_service, EbikeServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "ebike-service" , discovery);
+        connect_disc!(clients, pay_service, PayServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "pay-service" , discovery);
+        connect_disc!(clients, clean_service, grpc_proto::clean::clean_service_client::CleanServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, "clean-service" , discovery);
 
         tracing::info!(
-            "[服务发现] gRPC 客户端初始化完成: 可用服务={}",
+            "[服务发现] gRPC 客户端初始化完成: 可用服务={}" ,
             clients.available_services().await.len()
         );
 
@@ -451,25 +451,25 @@ impl GrpcClients {
 
     pub async fn available_services(&self) -> Vec<&'static str> {
         let mut services = Vec::new();
-        push_if_connected!(services, self, auth_service, "auth");
-        push_if_connected!(services, self, user_service, "user");
-        push_if_connected!(services, self, cms_service, "cms");
-        push_if_connected!(services, self, workflow_service, "workflow");
-        push_if_connected!(services, self, audit_service, "audit");
-        push_if_connected!(services, self, tenant_service, "tenant");
-        push_if_connected!(services, self, feedback_service, "feedback");
-        push_if_connected!(services, self, message_service, "message");
-        push_if_connected!(services, self, file_service, "file");
-        push_if_connected!(services, self, api_key_service, "api-key");
-        push_if_connected!(services, self, ctp_service, "ctp");
-        push_if_connected!(services, self, lpr_service, "lpr");
-        push_if_connected!(services, self, tow_service, "tow");
-        push_if_connected!(services, self, social_ops_service, "social-ops");
-        push_if_connected!(services, self, hik_service, "hik");
-        push_if_connected!(services, self, xlt_service, "xlt");
-        push_if_connected!(services, self, ebike_service, "ebike");
-        push_if_connected!(services, self, pay_service, "pay");
-        push_if_connected!(services, self, clean_service, "clean");
+        push_if_connected!(services, self, auth_service, "auth" );
+        push_if_connected!(services, self, user_service, "user" );
+        push_if_connected!(services, self, cms_service, "cms" );
+        push_if_connected!(services, self, workflow_service, "workflow" );
+        push_if_connected!(services, self, audit_service, "audit" );
+        push_if_connected!(services, self, tenant_service, "tenant" );
+        push_if_connected!(services, self, feedback_service, "feedback" );
+        push_if_connected!(services, self, message_service, "message" );
+        push_if_connected!(services, self, file_service, "file" );
+        push_if_connected!(services, self, api_key_service, "api-key" );
+        push_if_connected!(services, self, ctp_service, "ctp" );
+        push_if_connected!(services, self, lpr_service, "lpr" );
+        push_if_connected!(services, self, tow_service, "tow" );
+        push_if_connected!(services, self, social_ops_service, "social-ops" );
+        push_if_connected!(services, self, hik_service, "hik" );
+        push_if_connected!(services, self, xlt_service, "xlt" );
+        push_if_connected!(services, self, ebike_service, "ebike" );
+        push_if_connected!(services, self, pay_service, "pay" );
+        push_if_connected!(services, self, clean_service, "clean" );
         services
     }
 }
@@ -537,7 +537,7 @@ impl GrpcClients {
             "xlt-service" => reconnect_svc!(self, xlt_service, XltServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, service_name, addr),
             "ebike-service" => reconnect_svc!(self, ebike_service, EbikeServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, service_name, addr),
             "pay-service" => reconnect_svc!(self, pay_service, PayServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>, service_name, addr),
-            _ => tracing::warn!("未知服务: {service_name}"),
+            _ => tracing::warn!("未知服务: {service_name}" ),
         }
     }
 }
@@ -583,23 +583,23 @@ pub type PayGrpcClient = GrpcClientWrapper<PayServiceClient<InterceptedService<C
 pub type CleanGrpcClient = GrpcClientWrapper<grpc_proto::clean::clean_service_client::CleanServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>>;
 pub type BrowserGrpcClient = GrpcClientWrapper<grpc_proto::browser::browser_service_client::BrowserServiceClient<InterceptedService<Channel, GrpcTokenInterceptor>>>;
 
-include!("grpc_impl/auth.rs");
-include!("grpc_impl/user.rs");
-include!("grpc_impl/cms.rs");
-include!("grpc_impl/workflow.rs");
-include!("grpc_impl/audit.rs");
-include!("grpc_impl/message.rs");
-include!("grpc_impl/feedback.rs");
-include!("grpc_impl/tenant.rs");
-include!("grpc_impl/file.rs");
-include!("grpc_impl/api_key.rs");
-include!("grpc_impl/lpr.rs");
-include!("grpc_impl/tow.rs");
-include!("grpc_impl/social_ops.rs");
-include!("grpc_impl/hik.rs");
-include!("grpc_impl/xlt.rs");
-include!("grpc_impl/browser.rs");
-include!("grpc_impl/ctp.rs");
-include!("grpc_impl/ebike.rs");
-include!("grpc_impl/pay.rs");
-include!("grpc_impl/clean.rs");
+include!("grpc_impl/auth.rs" );
+include!("grpc_impl/user.rs" );
+include!("grpc_impl/cms.rs" );
+include!("grpc_impl/workflow.rs" );
+include!("grpc_impl/audit.rs" );
+include!("grpc_impl/message.rs" );
+include!("grpc_impl/feedback.rs" );
+include!("grpc_impl/tenant.rs" );
+include!("grpc_impl/file.rs" );
+include!("grpc_impl/api_key.rs" );
+include!("grpc_impl/lpr.rs" );
+include!("grpc_impl/tow.rs" );
+include!("grpc_impl/social_ops.rs" );
+include!("grpc_impl/hik.rs" );
+include!("grpc_impl/xlt.rs" );
+include!("grpc_impl/browser.rs" );
+include!("grpc_impl/ctp.rs" );
+include!("grpc_impl/ebike.rs" );
+include!("grpc_impl/pay.rs" );
+include!("grpc_impl/clean.rs" );

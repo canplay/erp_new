@@ -22,7 +22,7 @@ use crate::services::{
 pub struct Response<T> {
     pub data: T,
     pub message: String,
-    #[serde(rename = "code")]
+    #[serde(rename = "code" )]
     pub status_code: i32,
 }
 
@@ -54,7 +54,7 @@ pub async fn count(
     Query(query): Query<PayQuery>,
 ) -> AppResult<Json<Response<i64>>> {
     let count = state.pay_service.count(&query).await?;
-    Ok(Json(Response::success(count, "查询成功")))
+    Ok(Json(Response::success(count, "查询成功" )))
 }
 
 /// 查询支付订单列表
@@ -64,7 +64,7 @@ pub async fn list(
     Query(query): Query<PayQuery>,
 ) -> AppResult<Json<Response<Vec<PayOrder>>>> {
     let orders = state.pay_service.list(&query).await?;
-    Ok(Json(Response::success(orders, "查询成功")))
+    Ok(Json(Response::success(orders, "查询成功" )))
 }
 
 /// 查询最近已支付订单信息
@@ -74,7 +74,7 @@ pub async fn latest(
     Path(user_id): Path<String>,
 ) -> AppResult<Json<Response<Option<PayOrder>>>> {
     let order = state.pay_service.latest(&user_id).await?;
-    Ok(Json(Response::success(order, "查询成功")))
+    Ok(Json(Response::success(order, "查询成功" )))
 }
 
 /// 创建支付订单
@@ -84,7 +84,7 @@ pub async fn create_order(
     Json(params): Json<PayCreateParams>,
 ) -> AppResult<Json<Response<PayOrder>>> {
     let order = state.pay_service.create_order(&params).await?;
-    Ok(Json(Response::success(order, "创建成功")))
+    Ok(Json(Response::success(order, "创建成功" )))
 }
 
 // ============ CCB 建行支付接口 ============
@@ -92,11 +92,11 @@ pub async fn create_order(
 /// 创建 CCB 配置
 fn create_ccb_config() -> CcbConfig {
     CcbConfig {
-        merchantid: std::env::var("CCB_MERCHANT_ID").unwrap_or_default(),
-        branchid: std::env::var("CCB_BRANCH_ID").unwrap_or_default(),
-        posid: std::env::var("CCB_POS_ID").unwrap_or_default(),
-        qupwd: std::env::var("CCB_QUPWD").unwrap_or_default(),
-        pub_key: std::env::var("CCB_PUB_KEY").unwrap_or_default(),
+        merchantid: std::env::var("CCB_MERCHANT_ID" ).unwrap_or_default(),
+        branchid: std::env::var("CCB_BRANCH_ID" ).unwrap_or_default(),
+        posid: std::env::var("CCB_POS_ID" ).unwrap_or_default(),
+        qupwd: std::env::var("CCB_QUPWD" ).unwrap_or_default(),
+        pub_key: std::env::var("CCB_PUB_KEY" ).unwrap_or_default(),
     }
 }
 
@@ -125,7 +125,7 @@ pub async fn ccb_create(
 pub async fn ccb_verify(Path(order_id): Path<String>) -> AppResult<Json<Response<bool>>> {
     let service = CcbService::new(create_ccb_config());
     let result = service.verify_payment(&order_id).await?;
-    Ok(Json(Response::success(result, "验证成功")))
+    Ok(Json(Response::success(result, "验证成功" )))
 }
 
 /// CCB 退款参数
@@ -142,7 +142,7 @@ pub async fn ccb_refund(
 ) -> AppResult<Json<Response<bool>>> {
     let service = CcbService::new(create_ccb_config());
     let result = service.refund(&params.order_id, params.amount).await?;
-    Ok(Json(Response::success(result, "退款成功")))
+    Ok(Json(Response::success(result, "退款成功" )))
 }
 
 // ============ UMS 银联支付接口 ============
@@ -150,11 +150,11 @@ pub async fn ccb_refund(
 /// 创建 UMS 配置
 fn create_ums_config() -> UmsConfig {
     UmsConfig {
-        appid: std::env::var("UMS_APP_ID").unwrap_or_default(),
-        appkey: std::env::var("UMS_APP_KEY").unwrap_or_default(),
-        mid: std::env::var("UMS_MID").unwrap_or_default(),
-        tid: std::env::var("UMS_TID").unwrap_or_default(),
-        ysjc: std::env::var("UMS_YSJC").ok(),
+        appid: std::env::var("UMS_APP_ID" ).unwrap_or_default(),
+        appkey: std::env::var("UMS_APP_KEY" ).unwrap_or_default(),
+        mid: std::env::var("UMS_MID" ).unwrap_or_default(),
+        tid: std::env::var("UMS_TID" ).unwrap_or_default(),
+        ysjc: std::env::var("UMS_YSJC" ).ok(),
     }
 }
 
@@ -171,12 +171,12 @@ async fn get_ums_token(service: &UmsService) -> AppResult<String> {
 pub async fn ums_query(
     Query(params): Query<UmsQueryParams>,
 ) -> AppResult<Json<Response<serde_json::Value>>> {
-    let pool = sqlx::PgPool::connect_lazy(&std::env::var("DATABASE_URL").unwrap_or_default())
-        .map_err(|e| AppError::PayInternalError(format!("数据库连接失败: {e}")))?;
+    let pool = sqlx::PgPool::connect_lazy(&std::env::var("DATABASE_URL" ).unwrap_or_default())
+        .map_err(|e| AppError::PayInternalError(format!("数据库连接失败: {e}" )))?;
     let service = UmsService::new(create_ums_config(), pool);
     let token = get_ums_token(&service).await?;
     let result = service.query(&params, &token).await?;
-    Ok(Json(Response::success(result, "查询成功")))
+    Ok(Json(Response::success(result, "查询成功" )))
 }
 
 /// UMS 创建支付订单
@@ -184,12 +184,12 @@ pub async fn ums_query(
 pub async fn ums_create(
     Json(params): Json<UmsOrderParams>,
 ) -> AppResult<Json<Response<serde_json::Value>>> {
-    let pool = sqlx::PgPool::connect_lazy(&std::env::var("DATABASE_URL").unwrap_or_default())
-        .map_err(|e| AppError::PayInternalError(format!("数据库连接失败: {e}")))?;
+    let pool = sqlx::PgPool::connect_lazy(&std::env::var("DATABASE_URL" ).unwrap_or_default())
+        .map_err(|e| AppError::PayInternalError(format!("数据库连接失败: {e}" )))?;
     let service = UmsService::new(create_ums_config(), pool);
     let token = get_ums_token(&service).await?;
     let result = service.create_order(&params, &token).await?;
-    Ok(Json(Response::success(result, "创建成功")))
+    Ok(Json(Response::success(result, "创建成功" )))
 }
 
 /// UMS 关闭支付订单
@@ -197,12 +197,12 @@ pub async fn ums_create(
 pub async fn ums_close(
     Json(params): Json<UmsCloseParams>,
 ) -> AppResult<Json<Response<serde_json::Value>>> {
-    let pool = sqlx::PgPool::connect_lazy(&std::env::var("DATABASE_URL").unwrap_or_default())
-        .map_err(|e| AppError::PayInternalError(format!("数据库连接失败: {e}")))?;
+    let pool = sqlx::PgPool::connect_lazy(&std::env::var("DATABASE_URL" ).unwrap_or_default())
+        .map_err(|e| AppError::PayInternalError(format!("数据库连接失败: {e}" )))?;
     let service = UmsService::new(create_ums_config(), pool);
     let token = get_ums_token(&service).await?;
     let result = service.close(&params, &token).await?;
-    Ok(Json(Response::success(result, "关闭成功")))
+    Ok(Json(Response::success(result, "关闭成功" )))
 }
 
 /// UMS 退款
@@ -210,12 +210,12 @@ pub async fn ums_close(
 pub async fn ums_refund(
     Json(params): Json<UmsRefundParams>,
 ) -> AppResult<Json<Response<serde_json::Value>>> {
-    let pool = sqlx::PgPool::connect_lazy(&std::env::var("DATABASE_URL").unwrap_or_default())
-        .map_err(|e| AppError::PayInternalError(format!("数据库连接失败: {e}")))?;
+    let pool = sqlx::PgPool::connect_lazy(&std::env::var("DATABASE_URL" ).unwrap_or_default())
+        .map_err(|e| AppError::PayInternalError(format!("数据库连接失败: {e}" )))?;
     let service = UmsService::new(create_ums_config(), pool);
     let token = get_ums_token(&service).await?;
     let result = service.refund(&params, &token).await?;
-    Ok(Json(Response::success(result, "退款成功")))
+    Ok(Json(Response::success(result, "退款成功" )))
 }
 
 /// UMS 获取订单信息
@@ -227,7 +227,7 @@ pub async fn ums_info(
     let service = UmsService::new(create_ums_config(), state.pool.clone());
     let token = get_ums_token(&service).await?;
     let info = service.query_ums_info(&order, &token).await?;
-    Ok(Json(Response::success(info, "查询成功")))
+    Ok(Json(Response::success(info, "查询成功" )))
 }
 
 #[cfg(test)]
@@ -236,41 +236,41 @@ mod tests {
 
     #[test]
     fn test_response_success() {
-        let resp = Response::success(42, "成功");
+        let resp = Response::success(42, "成功" );
         assert_eq!(resp.data, 42);
-        assert_eq!(resp.message, "成功");
+        assert_eq!(resp.message, "成功" );
         assert_eq!(resp.status_code, 200);
     }
 
     #[test]
     fn test_response_error() {
-        let resp = Response::<()>::error("失败");
+        let resp = Response::<()>::error("失败" );
         assert_eq!(resp.data, ());
-        assert_eq!(resp.message, "失败");
+        assert_eq!(resp.message, "失败" );
         assert_eq!(resp.status_code, 500);
     }
 
     #[test]
     fn test_response_success_string() {
-        let resp = Response::success("hello".to_string(), "ok");
-        assert_eq!(resp.data, "hello");
-        assert_eq!(resp.message, "ok");
+        let resp = Response::success("hello".to_string(), "ok" );
+        assert_eq!(resp.data, "hello" );
+        assert_eq!(resp.message, "ok" );
     }
 
     #[test]
     fn test_response_serialization() {
-        let resp = Response::success(100, "测试");
-        let json = serde_json::to_string(&resp).expect("test assertion");
-        assert!(json.contains("\"code\":200"));
-        assert!(json.contains("\"message\":\"测试\""));
-        assert!(json.contains("\"data\":100"));
+        let resp = Response::success(100, "测试" );
+        let json = serde_json::to_string(&resp).expect("test assertion" );
+        assert!(json.contains("\"code\":200" ));
+        assert!(json.contains("\"message\":\"测试\"" ));
+        assert!(json.contains("\"data\":100" ));
     }
 
     #[test]
     fn test_response_error_serialization() {
-        let resp = Response::<()>::error("错误");
-        let json = serde_json::to_string(&resp).expect("test assertion");
-        assert!(json.contains("\"code\":500"));
-        assert!(json.contains("\"message\":\"错误\""));
+        let resp = Response::<()>::error("错误" );
+        let json = serde_json::to_string(&resp).expect("test assertion" );
+        assert!(json.contains("\"code\":500" ));
+        assert!(json.contains("\"message\":\"错误\"" ));
     }
 }

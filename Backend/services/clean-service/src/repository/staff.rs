@@ -19,7 +19,7 @@ impl StaffRepository {
  }
 
  /// 根据ID查询员工
- pub async fn get_by_id(&self, id: &str) -> AppResult<Option<Staff>> {let staff = sqlx::query_as::<_, Staff>("SELECT * FROM t_s_base_user WHERE id = $1")
+ pub async fn get_by_id(&self, id: &str) -> AppResult<Option<Staff>> {let staff = sqlx::query_as::<_, Staff>("SELECT * FROM t_s_base_user WHERE id = $1" )
  .bind(id)
  .fetch_optional(&self.pool)
  .await

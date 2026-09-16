@@ -49,16 +49,16 @@ mod tests {
     #[test]
     fn test_password_hash_and_verify() {
         let service = PasswordService;
-        let hash = service.hash_password("password123").unwrap();
-        assert!(service.verify_password("password123", &hash));
-        assert!(!service.verify_password("wrongpassword", &hash));
+        let hash = service.hash_password("password123" ).unwrap();
+        assert!(service.verify_password("password123" , &hash));
+        assert!(!service.verify_password("wrongpassword" , &hash));
     }
 
     #[test]
     fn test_compat_aliases() {
         let service = PasswordService;
-        let hash = service.hash_bcrypt("password123").unwrap();
-        assert!(service.verify_bcrypt("password123", &hash));
-        assert!(!service.verify_bcrypt("wrongpassword", &hash));
+        let hash = service.hash_bcrypt("password123" ).unwrap();
+        assert!(service.verify_bcrypt("password123" , &hash));
+        assert!(!service.verify_bcrypt("wrongpassword" , &hash));
     }
 }

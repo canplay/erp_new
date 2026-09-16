@@ -49,18 +49,18 @@ impl HttpServerConfig {
     /// 支持 `INTERNAL_ONLY=true` 设置为 127.0.0.1（仅内网访问）
     #[must_use]
     pub fn from_env(port: u16) -> Self {
-        let actual_port: u16 = std::env::var("HTTP_PORT")
+        let actual_port: u16 = std::env::var("HTTP_PORT" )
             .unwrap_or_else(|_| port.to_string())
             .parse()
             .unwrap_or(port);
 
         // 检查是否仅内网访问
-        let host = if std::env::var("INTERNAL_ONLY")
+        let host = if std::env::var("INTERNAL_ONLY" )
             .unwrap_or_default()
             .to_lowercase()
             == "true"
         {
-            tracing::info!("服务配置为仅内网访问，绑定 127.0.0.1");
+            tracing::info!("服务配置为仅内网访问，绑定 127.0.0.1" );
             "127.0.0.1".to_string()
         } else {
             "0.0.0.0".to_string()
@@ -76,7 +76,7 @@ impl HttpServerConfig {
     /// 获取监听地址
     #[must_use]
     pub fn listen_addr(&self) -> String {
-        format!("{}:{}", self.host, self.port)
+        format!("{}:{}" , self.host, self.port)
     }
 }
 
@@ -94,14 +94,14 @@ impl GrpcServerConfig {
     #[must_use]
     pub fn new(port: u16) -> Self {
         // gRPC 服务默认仅内网访问，除非设置 PUBLIC_GRPC=true
-        let host = if std::env::var("PUBLIC_GRPC")
+        let host = if std::env::var("PUBLIC_GRPC" )
             .unwrap_or_default()
             .to_lowercase()
             == "true"
         {
             "0.0.0.0".to_string()
         } else {
-            tracing::debug!("gRPC 服务默认仅内网访问");
+            tracing::debug!("gRPC 服务默认仅内网访问" );
             "127.0.0.1".to_string()
         };
         Self { port, host }
@@ -110,7 +110,7 @@ impl GrpcServerConfig {
     /// 获取监听地址
     #[must_use]
     pub fn listen_addr(&self) -> String {
-        format!("{}:{}", self.host, self.port)
+        format!("{}:{}" , self.host, self.port)
     }
 }
 
@@ -254,15 +254,15 @@ impl ServiceRunner {
         let pool = if create_pool {
             let database_url = self.resolve_database_url();
             // 从环境变量读取连接池配置（DB_POOL_*），默认 10/2
-            let max_connections = std::env::var("DB_POOL_MAX_CONNECTIONS")
+            let max_connections = std::env::var("DB_POOL_MAX_CONNECTIONS" )
                 .ok().and_then(|v| v.parse().ok()).unwrap_or(10);
-            let min_connections = std::env::var("DB_POOL_MIN_CONNECTIONS")
+            let min_connections = std::env::var("DB_POOL_MIN_CONNECTIONS" )
                 .ok().and_then(|v| v.parse().ok()).unwrap_or(2);
-            let connect_timeout = std::env::var("DB_POOL_CONNECT_TIMEOUT")
+            let connect_timeout = std::env::var("DB_POOL_CONNECT_TIMEOUT" )
                 .ok().and_then(|v| v.parse().ok()).unwrap_or(30);
-            let idle_timeout = std::env::var("DB_POOL_IDLE_TIMEOUT")
+            let idle_timeout = std::env::var("DB_POOL_IDLE_TIMEOUT" )
                 .ok().and_then(|v| v.parse().ok()).unwrap_or(600);
-            let max_lifetime = std::env::var("DB_POOL_MAX_LIFETIME")
+            let max_lifetime = std::env::var("DB_POOL_MAX_LIFETIME" )
                 .ok().and_then(|v| v.parse().ok()).unwrap_or(1800);
             let pool_opts = sqlx::postgres::PgPoolOptions::new()
                 .max_connections(max_connections)
@@ -274,18 +274,18 @@ impl ServiceRunner {
             let pool = pool_opts.connect(&database_url).await?;
 
             // 如果配置了 schema 隔离，设置 search_path
-            if let Ok(schema) = std::env::var("SERVICE_SCHEMA") {
-                let sql = format!("SET search_path TO {schema}");
+            if let Ok(schema) = std::env::var("SERVICE_SCHEMA" ) {
+                let sql = format!("SET search_path TO {schema}" );
                 // B11 豁免: schema 迁移 SQL 运行时动态生成, 无法用编译期宏
         sqlx::query(&sql).execute(&pool).await?;
                 tracing::info!(
-                    "Schema 隔离已启用: service={}, schema={}",
+                    "Schema 隔离已启用: service={}, schema={}" ,
                     self.service_name, schema
                 );
             }
 
             tracing::info!(
-                "数据库连接池已建立: {} (max={}, min={})",
+                "数据库连接池已建立: {} (max={}, min={})" ,
                 self.service_name,
                 max_connections,
                 min_connections
@@ -302,14 +302,14 @@ impl ServiceRunner {
         let http_addr = if self.no_http || http_port == 0 {
             String::new()
         } else {
-            format!("{http_host}:{http_port}")
+            format!("{http_host}:{http_port}" )
         };
 
         Ok(ServiceRunnerHandle {
             service_name: self.service_name.clone(),
             pool,
             http_addr,
-            grpc_addr: grpc_port.map(|p| format!("{grpc_host}:{p}")),
+            grpc_addr: grpc_port.map(|p| format!("{grpc_host}:{p}" )),
             shutdown_rx,
         })
     }
@@ -335,13 +335,13 @@ impl ServiceRunner {
     /// 解析 HTTP 绑定地址
     fn resolve_http_host(&self) -> String {
         if self.use_env_overrides
-            && std::env::var("INTERNAL_ONLY")
+            && std::env::var("INTERNAL_ONLY" )
                 .unwrap_or_default()
                 .to_lowercase()
                 == "true"
         {
             tracing::info!(
-                "服务 {} HTTP 配置为仅内网访问，绑定 127.0.0.1",
+                "服务 {} HTTP 配置为仅内网访问，绑定 127.0.0.1" ,
                 self.service_name
             );
             "127.0.0.1".to_string()
@@ -353,19 +353,19 @@ impl ServiceRunner {
     /// 解析 gRPC 绑定地址
     fn resolve_grpc_host(&self) -> String {
         if self.use_env_overrides {
-            if std::env::var("PUBLIC_GRPC")
+            if std::env::var("PUBLIC_GRPC" )
                 .unwrap_or_default()
                 .to_lowercase()
                 == "true"
             {
                 tracing::info!(
-                    "服务 {} gRPC 配置为公网访问，绑定 0.0.0.0",
+                    "服务 {} gRPC 配置为公网访问，绑定 0.0.0.0" ,
                     self.service_name
                 );
                 "0.0.0.0".to_string()
             } else {
                 tracing::info!(
-                    "服务 {} gRPC 配置为仅内网访问，绑定 127.0.0.1",
+                    "服务 {} gRPC 配置为仅内网访问，绑定 127.0.0.1" ,
                     self.service_name
                 );
                 "127.0.0.1".to_string()
@@ -392,11 +392,11 @@ impl ServiceRunner {
     /// 将健康检查端点添加到现有路由
     pub fn with_health_check(router: Router) -> Router {
         router.route(
-            "/health",
+            "/health" ,
             get(|| async {
                 axum::Json(serde_json::json!({
-                    "status": "ok",
-                    "service": "myai",
+                    "status": "ok" ,
+                    "service": "myai" ,
                     "timestamp": chrono::Utc::now().to_rfc3339()
                 }))
             }),
@@ -408,7 +408,7 @@ impl ServiceRunner {
     /// 从环境变量获取端口，如果未设置则使用默认值
     #[must_use]
     pub fn get_http_port_from_env(default_port: u16) -> u16 {
-        std::env::var("HTTP_PORT")
+        std::env::var("HTTP_PORT" )
             .unwrap_or_else(|_| default_port.to_string())
             .parse()
             .unwrap_or(default_port)
@@ -420,7 +420,7 @@ impl ServiceRunner {
     /// 如果未设置则使用默认值。
     #[must_use]
     pub fn get_grpc_port_from_env(default_port: u16) -> u16 {
-        std::env::var("GRPC_PORT")
+        std::env::var("GRPC_PORT" )
             .unwrap_or_else(|_| default_port.to_string())
             .parse()
             .unwrap_or(default_port)
@@ -438,7 +438,7 @@ impl ServiceRunner {
     /// 获取服务地址
     #[must_use]
     pub fn get_listen_addr(port: u16) -> String {
-        format!("0.0.0.0:{port}")
+        format!("0.0.0.0:{port}" )
     }
 }
 
@@ -451,7 +451,7 @@ pub fn health_check() -> &'static str {
 /// 健康检查 JSON 响应
 #[must_use]
 pub fn health_check_json() -> &'static str {
-    r#"{"status":"ok"}"#
+    r#"{"status":"ok" }"#
 }
 
 /// 检查配置并设置默认值的辅助函数
@@ -459,10 +459,10 @@ pub fn health_check_json() -> &'static str {
 pub fn ensure_required_env(var_name: &str, default: Option<&str>) -> String {
     std::env::var(var_name).unwrap_or_else(|_| {
         if let Some(default) = default {
-            tracing::warn!("{var_name} not set, using default");
+            tracing::warn!("{var_name} not set, using default" );
             default.to_string()
         } else {
-            tracing::warn!("{var_name} not set");
+            tracing::warn!("{var_name} not set" );
             String::new()
         }
     })
@@ -475,10 +475,10 @@ pub fn ensure_required_env(var_name: &str, default: Option<&str>) -> String {
 /// 2. `DATABASE_URL`（全局回退）
 #[must_use]
 pub fn ensure_database_url() -> String {
-    std::env::var("SERVICE_DB_URL").unwrap_or_else(|_| {
+    std::env::var("SERVICE_DB_URL" ).unwrap_or_else(|_| {
         ensure_required_env(
-            "DATABASE_URL",
-            Some("postgres://postgres:${DATABASE_PASSWORD}@localhost:5432/datafusion")
+            "DATABASE_URL" ,
+            Some("postgres://postgres:${DATABASE_PASSWORD}@localhost:5432/datafusion" )
         )
     })
 }
@@ -502,11 +502,11 @@ pub fn setup_shutdown_handler() -> tokio::sync::broadcast::Receiver<()> {
     tokio::spawn(async move {
         match signal::ctrl_c().await {
             Ok(()) => {
-                tracing::info!("收到 Ctrl+C 信号，正在关闭服务...");
+                tracing::info!("收到 Ctrl+C 信号，正在关闭服务..." );
                 let _ = shutdown_tx.send(());
             }
             Err(e) => {
-                tracing::error!("监听信号失败: {e}");
+                tracing::error!("监听信号失败: {e}" );
             }
         }
     });
@@ -530,7 +530,7 @@ mod tests {
     fn test_http_config_default() {
         let config = HttpServerConfig::default();
         assert_eq!(config.port, 8080);
-        assert_eq!(config.host, "0.0.0.0");
+        assert_eq!(config.host, "0.0.0.0" );
         assert!(config.enable_health_check);
     }
 
@@ -541,7 +541,7 @@ mod tests {
             host: "0.0.0.0".to_string(),
             enable_health_check: true,
         };
-        assert_eq!(config.listen_addr(), "0.0.0.0:8080");
+        assert_eq!(config.listen_addr(), "0.0.0.0:8080" );
     }
 
     #[test]
@@ -550,11 +550,11 @@ mod tests {
         let config = GrpcServerConfig::new(9090);
         assert_eq!(config.port, 9090);
         // 默认返回 127.0.0.1（内网访问）
-        assert_eq!(config.listen_addr(), "127.0.0.1:9090");
+        assert_eq!(config.listen_addr(), "127.0.0.1:9090" );
     }
 
     #[test]
     fn test_get_listen_addr() {
-        assert_eq!(ServiceRunner::get_listen_addr(8080), "0.0.0.0:8080");
+        assert_eq!(ServiceRunner::get_listen_addr(8080), "0.0.0.0:8080" );
     }
 }

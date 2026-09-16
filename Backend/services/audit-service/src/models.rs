@@ -33,10 +33,10 @@ pub struct SysLoginLog {
 #[derive(Debug, Clone, Deserialize, Default)]
 pub struct LoginLogQuery {
     /// 页码
-    #[serde(default = "default_page")]
+    #[serde(default = "default_page" )]
     pub page: u32,
     /// 每页数量
-    #[serde(default = "default_page_size")]
+    #[serde(default = "default_page_size" )]
     pub page_size: u32,
     /// 用户名
     #[serde(default)]
@@ -109,10 +109,10 @@ pub struct SysOperationLog {
 #[derive(Debug, Clone, Deserialize, Default)]
 pub struct OperationLogQuery {
     /// 页码
-    #[serde(default = "default_page")]
+    #[serde(default = "default_page" )]
     pub page: u32,
     /// 每页数量
-    #[serde(default = "default_page_size")]
+    #[serde(default = "default_page_size" )]
     pub page_size: u32,
     /// 用户名
     #[serde(default)]
@@ -219,9 +219,9 @@ pub struct ApiCallLog {
 /// API 调用日志查询参数
 #[derive(Debug, Clone, Deserialize, Default)]
 pub struct ApiCallLogQuery {
-    #[serde(default = "default_page")]
+    #[serde(default = "default_page" )]
     pub page: u32,
-    #[serde(default = "default_page_size")]
+    #[serde(default = "default_page_size" )]
     pub page_size: u32,
     /// HTTP方法筛选
     #[serde(default)]

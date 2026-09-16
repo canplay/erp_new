@@ -26,7 +26,7 @@ impl CrawlerAdapter for WechatCrawler {
         keyword: &str,
         client: &BrowserClient,
     ) -> anyhow::Result<Vec<RawContent>> {
-        tracing::info!("[WechatCrawler] loading article '{}' via browser-service", keyword);
+        tracing::info!("[WechatCrawler] loading article '{}' via browser-service" , keyword);
 
         let session_id = client.create_session().await?;
 
@@ -44,10 +44,10 @@ impl CrawlerAdapter for WechatCrawler {
             let combined = if title.is_empty() {
                 text
             } else {
-                format!("【{title}】\n{text}")
+                format!("【{title}】\n{text}" )
             };
 
-            tracing::info!("[WechatCrawler] extracted article '{}'", title);
+            tracing::info!("[WechatCrawler] extracted article '{}'" , title);
             Ok(vec![RawContent {
                 text: combined,
                 images: vec![],

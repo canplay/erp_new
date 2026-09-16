@@ -38,9 +38,9 @@ pub async fn control_lock(
         .await?;
 
     let action_str = match cmd.cmd_type {
-        CmdType::Up => "up",
-        CmdType::Down => "down",
-        CmdType::Syn => "syn",
+        CmdType::Up => "up" ,
+        CmdType::Down => "down" ,
+        CmdType::Syn => "syn" ,
     };
 
     Ok(json_ctp_lock_response(ctp_resp.error_code == 0, &ctp_resp.error_msg, &cmd.device_no, action_str))
@@ -71,5 +71,5 @@ pub async fn list_devices(
 
 /// 健康检查端点
 pub async fn health() -> Json<serde_json::Value> {
-    json_health("ctp-service")
+    json_health("ctp-service" )
 }

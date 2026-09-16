@@ -39,7 +39,7 @@ impl FileRepository {
     pub async fn find_by_id(&self, id: i64) -> AppResult<Option<SysFile>> {
         let file = sqlx::query_as::<_, SysFile>(r#"
             SELECT id, file_name, original_name, file_size, mime_type,
-                   storage_path, COALESCE(storage_type, '') AS "storage_type!",
+                   storage_path, COALESCE(storage_type, '') AS "storage_type!" ,
                    bucket, url, md5,
                    created_by, tenant_id, created_at, updated_at, deleted_at
             FROM sys_files
@@ -64,8 +64,8 @@ impl FileRepository {
         let offset = (page.saturating_sub(1)) * page_size;
 
         // 可选过滤条件: 空字符串/空值表示不过滤
-        let category_filter = category.unwrap_or("");
-        let keyword_filter = keyword.map(|k| format!("%{k}%")).unwrap_or_default();
+        let category_filter = category.unwrap_or(" ");
+        let keyword_filter = keyword.map(|k| format!("%{k}%" )).unwrap_or_default();
         let start = start_date.and_then(parse_datetime);
         let end = end_date.and_then(parse_datetime);
 
@@ -85,7 +85,7 @@ impl FileRepository {
         // 查询列表
         let files = sqlx::query_as::<_, SysFile>(r#"
             SELECT id, file_name, original_name, file_size, mime_type,
-                   storage_path, COALESCE(storage_type, '') AS "storage_type!",
+                   storage_path, COALESCE(storage_type, '') AS "storage_type!" ,
                    bucket, url, md5,
                    created_by, tenant_id, created_at, updated_at, deleted_at
             FROM sys_files
@@ -137,7 +137,7 @@ impl FileRepository {
     pub async fn is_file_in_use(&self, id: i64) -> AppResult<bool> {
         // 可以根据业务需求扩展检查逻辑
         // 例如检查文件是否被文章、设备等引用
-        let count = sqlx::query_scalar("SELECT COUNT(*) FROM sys_files WHERE id = $1 AND deleted_at IS NULL").bind(id).bind()
+        let count = sqlx::query_scalar("SELECT COUNT(*) FROM sys_files WHERE id = $1 AND deleted_at IS NULL" ).bind(id).bind()
         .fetch_one(&self.pool)
         .await?
         .unwrap_or(0);
@@ -148,11 +148,11 @@ impl FileRepository {
 
 /// 解析日期时间字符串为 UTC 时间（支持 `%Y-%m-%d %H:%M:%S` 与 `%Y-%m-%d` 两种格式）
 fn parse_datetime(s: &str) -> Option<DateTime<Utc>> {
-    chrono::NaiveDateTime::parse_from_str(s, "%Y-%m-%d %H:%M:%S")
+    chrono::NaiveDateTime::parse_from_str(s, "%Y-%m-%d %H:%M:%S" )
         .ok()
         .map(|n| DateTime::<Utc>::from_naive_utc_and_offset(n, Utc))
         .or_else(|| {
-            chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d")
+            chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d" )
                 .ok()
                 .and_then(|d| d.and_hms_opt(0, 0, 0))
                 .map(|n| DateTime::<Utc>::from_naive_utc_and_offset(n, Utc))

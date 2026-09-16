@@ -179,10 +179,10 @@ pub async fn list_announcements(
             (StatusCode::OK, json_success(data)).into_response()
         }
         Err(e) => {
-            tracing::error!("查询公告列表失败: {e}");
+            tracing::error!("查询公告列表失败: {e}" );
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                json_error("查询公告列表失败"),
+                json_error("查询公告列表失败" ),
             )
                 .into_response()
         }
@@ -214,10 +214,10 @@ pub async fn get_active_announcements(State(state): State<HttpAppState>) -> impl
                 .into_response()
         }
         Err(e) => {
-            tracing::error!("获取活跃公告失败: {e}");
+            tracing::error!("获取活跃公告失败: {e}" );
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                json_error("获取活跃公告失败"),
+                json_error("获取活跃公告失败" ),
             )
                 .into_response()
         }
@@ -250,14 +250,14 @@ pub async fn get_announcement(
         }
         Ok(None) => (
             StatusCode::NOT_FOUND,
-            json_error("公告不存在"),
+            json_error("公告不存在" ),
         )
             .into_response(),
         Err(e) => {
-            tracing::error!("查询公告失败: {e}");
+            tracing::error!("查询公告失败: {e}" );
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                json_error("查询公告失败"),
+                json_error("查询公告失败" ),
             )
                 .into_response()
         }
@@ -272,7 +272,7 @@ pub async fn create_announcement(
     if req.title.is_empty() || req.content.is_empty() {
         return (
             StatusCode::BAD_REQUEST,
-            json_error("标题和内容不能为空"),
+            json_error("标题和内容不能为空" ),
         )
             .into_response();
     }
@@ -285,7 +285,7 @@ pub async fn create_announcement(
         .create(
             &req.title,
             &req.content,
-            req.announcement_type.as_deref().unwrap_or("normal"),
+            req.announcement_type.as_deref().unwrap_or("normal" ),
             req.priority.unwrap_or(0),
             req.is_pinned.unwrap_or(false),
             req.is_active.unwrap_or(true),
@@ -303,10 +303,10 @@ pub async fn create_announcement(
             (StatusCode::CREATED, json_success(data)).into_response()
         }
         Err(e) => {
-            tracing::error!("创建公告失败: {e}");
+            tracing::error!("创建公告失败: {e}" );
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                json_error("创建公告失败"),
+                json_error("创建公告失败" ),
             )
                 .into_response()
         }
@@ -339,19 +339,19 @@ pub async fn update_announcement(
     {
         Ok(true) => (
             StatusCode::OK,
-            json_ok_msg("公告更新成功"),
+            json_ok_msg("公告更新成功" ),
         )
             .into_response(),
         Ok(false) => (
             StatusCode::NOT_FOUND,
-            json_error("公告不存在"),
+            json_error("公告不存在" ),
         )
             .into_response(),
         Err(e) => {
-            tracing::error!("更新公告失败: {e}");
+            tracing::error!("更新公告失败: {e}" );
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                json_error("更新公告失败"),
+                json_error("更新公告失败" ),
             )
                 .into_response()
         }
@@ -366,19 +366,19 @@ pub async fn delete_announcement(
     match state.announcement_repository.delete(id).await {
         Ok(true) => (
             StatusCode::OK,
-            json_ok_msg("公告删除成功"),
+            json_ok_msg("公告删除成功" ),
         )
             .into_response(),
         Ok(false) => (
             StatusCode::NOT_FOUND,
-            json_error("公告不存在"),
+            json_error("公告不存在" ),
         )
             .into_response(),
         Err(e) => {
-            tracing::error!("删除公告失败: {e}");
+            tracing::error!("删除公告失败: {e}" );
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                json_error("删除公告失败"),
+                json_error("删除公告失败" ),
             )
                 .into_response()
         }
@@ -411,10 +411,10 @@ pub async fn list_configs(State(state): State<HttpAppState>) -> impl IntoRespons
                 .into_response()
         }
         Err(e) => {
-            tracing::error!("获取配置失败: {e}");
+            tracing::error!("获取配置失败: {e}" );
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                json_error("获取配置失败"),
+                json_error("获取配置失败" ),
             )
                 .into_response()
         }
@@ -441,14 +441,14 @@ pub async fn get_config(
         }
         Ok(None) => (
             StatusCode::NOT_FOUND,
-            json_error("配置不存在"),
+            json_error("配置不存在" ),
         )
             .into_response(),
         Err(e) => {
-            tracing::error!("获取配置失败: {e}");
+            tracing::error!("获取配置失败: {e}" );
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                json_error("获取配置失败"),
+                json_error("获取配置失败" ),
             )
                 .into_response()
         }
@@ -468,19 +468,19 @@ pub async fn update_config(
     {
         Ok(true) => (
             StatusCode::OK,
-            json_ok_msg("配置更新成功"),
+            json_ok_msg("配置更新成功" ),
         )
             .into_response(),
         Ok(false) => (
             StatusCode::NOT_FOUND,
-            json_error("配置不存在"),
+            json_error("配置不存在" ),
         )
             .into_response(),
         Err(e) => {
-            tracing::error!("更新配置失败: {e}");
+            tracing::error!("更新配置失败: {e}" );
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                json_error("更新配置失败"),
+                json_error("更新配置失败" ),
             )
                 .into_response()
         }
@@ -495,19 +495,19 @@ pub async fn reset_config(
     match state.announcement_repository.reset_config(&key).await {
         Ok(true) => (
             StatusCode::OK,
-            json_ok_msg("配置重置成功"),
+            json_ok_msg("配置重置成功" ),
         )
             .into_response(),
         Ok(false) => (
             StatusCode::NOT_FOUND,
-            json_error("配置不存在"),
+            json_error("配置不存在" ),
         )
             .into_response(),
         Err(e) => {
-            tracing::error!("重置配置失败: {e}");
+            tracing::error!("重置配置失败: {e}" );
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                json_error("重置配置失败"),
+                json_error("重置配置失败" ),
             )
                 .into_response()
         }
@@ -559,10 +559,10 @@ pub async fn list_login_logs(
             (StatusCode::OK, json_success(data)).into_response()
         }
         Err(e) => {
-            tracing::error!("查询登录日志失败: {e}");
+            tracing::error!("查询登录日志失败: {e}" );
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                json_error("查询登录日志失败"),
+                json_error("查询登录日志失败" ),
             )
                 .into_response()
         }
@@ -575,27 +575,27 @@ pub async fn list_login_logs(
 pub fn create_announcement_router(state: HttpAppState) -> Router {
     Router::new()
         // 公告路由
-        .route("/announcements", axum::routing::get(list_announcements))
+        .route("/announcements" , axum::routing::get(list_announcements))
         .route(
-            "/announcements/active",
+            "/announcements/active" ,
             axum::routing::get(get_active_announcements),
         )
-        .route("/announcements", axum::routing::post(create_announcement))
-        .route("/announcements/:id", axum::routing::get(get_announcement))
+        .route("/announcements" , axum::routing::post(create_announcement))
+        .route("/announcements/:id" , axum::routing::get(get_announcement))
         .route(
-            "/announcements/:id",
+            "/announcements/:id" ,
             axum::routing::put(update_announcement),
         )
         .route(
-            "/announcements/:id",
+            "/announcements/:id" ,
             axum::routing::delete(delete_announcement),
         )
         // 配置路由
-        .route("/configs", axum::routing::get(list_configs))
-        .route("/configs/:key", axum::routing::get(get_config))
-        .route("/configs/:key", axum::routing::put(update_config))
-        .route("/configs/:key/reset", axum::routing::post(reset_config))
+        .route("/configs" , axum::routing::get(list_configs))
+        .route("/configs/:key" , axum::routing::get(get_config))
+        .route("/configs/:key" , axum::routing::put(update_config))
+        .route("/configs/:key/reset" , axum::routing::post(reset_config))
         // 登录日志路由
-        .route("/login-logs", axum::routing::get(list_login_logs))
+        .route("/login-logs" , axum::routing::get(list_login_logs))
         .with_state(state)
 }

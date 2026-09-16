@@ -12,7 +12,7 @@ pub const MIN_PAGE: i32 = 1;
 /// 默认密码（用于新用户创建）
 /// 优先从环境变量读取，避免硬编码
 pub fn default_password() -> String {
-    std::env::var("MYAI_DEFAULT_PASSWORD")
+    std::env::var("MYAI_DEFAULT_PASSWORD" )
         .unwrap_or_else(|_| "ChangeMe@Install!".to_string())
 }
 
@@ -26,7 +26,7 @@ pub const MIN_USERNAME_LENGTH: usize = 3;
 pub const MAX_USERNAME_LENGTH: usize = 50;
 
 /// 允许的角色值
-pub const VALID_ROLES: &[&str] = &["user", "admin", "vip"];
+pub const VALID_ROLES: &[&str] = &["user" , "admin" , "vip" ];
 
 /// 允许的状态值
 pub const VALID_STATUSES: &[i32] = &[0, 1, 2];

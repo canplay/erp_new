@@ -174,7 +174,7 @@ async fn get_workflow(State(state): State<AppState>, Path(id): Path<String>) -> 
             })),
         ),
         Err(e) => {
-            tracing::error!("查询工作流失败: {e}");
+            tracing::error!("查询工作流失败: {e}" );
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 Json(serde_json::json!({
@@ -205,7 +205,7 @@ async fn create_workflow(
             })),
         ),
         Err(e) => {
-            tracing::error!("创建工作流失败: {e}");
+            tracing::error!("创建工作流失败: {e}" );
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 Json(serde_json::json!({
@@ -237,7 +237,7 @@ async fn update_workflow(
                     })),
                 ),
                 Err(e) => {
-                    tracing::error!("更新工作流失败: {e}");
+                    tracing::error!("更新工作流失败: {e}" );
                     (
                         StatusCode::INTERNAL_SERVER_ERROR,
                         Json(serde_json::json!({
@@ -256,7 +256,7 @@ async fn update_workflow(
             })),
         ),
         Err(e) => {
-            tracing::error!("获取工作流失败: {e}");
+            tracing::error!("获取工作流失败: {e}" );
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 Json(serde_json::json!({
@@ -282,7 +282,7 @@ async fn delete_workflow(
             })),
         ),
         Err(e) => {
-            tracing::error!("删除工作流失败: {e}");
+            tracing::error!("删除工作流失败: {e}" );
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 Json(serde_json::json!({
@@ -299,7 +299,7 @@ async fn execute_workflow(
     State(state): State<AppState>,
     Path(id): Path<String>,
 ) -> impl IntoResponse {
-    tracing::info!("【HTTP】执行工作流: {id}");
+    tracing::info!("【HTTP】执行工作流: {id}" );
 
     match state.workflow_repo.find_by_id(&id).await {
         Ok(Some(workflow)) => {
@@ -314,13 +314,13 @@ async fn execute_workflow(
             }
 
             let instance_id = uuid::Uuid::new_v4().to_string();
-            tracing::info!("【HTTP】工作流实例已创建: {instance_id}");
+            tracing::info!("【HTTP】工作流实例已创建: {instance_id}" );
 
             (
                 StatusCode::OK,
                 Json(serde_json::json!({
                     "success": true,
-                    "message": "工作流执行启动",
+                    "message": "工作流执行启动" ,
                     "data": {
                         "instance_id": instance_id,
                         "workflow_id": id
@@ -336,7 +336,7 @@ async fn execute_workflow(
             })),
         ),
         Err(e) => {
-            tracing::error!("【HTTP】获取工作流失败: {e}");
+            tracing::error!("【HTTP】获取工作流失败: {e}" );
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 Json(serde_json::json!({
@@ -447,7 +447,7 @@ async fn get_scheduled_task(
             })),
         ),
         Err(e) => {
-            tracing::error!("查询定时任务失败: {e}");
+            tracing::error!("查询定时任务失败: {e}" );
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 Json(serde_json::json!({
@@ -484,7 +484,7 @@ async fn create_scheduled_task(
             })),
         ),
         Err(e) => {
-            tracing::error!("创建定时任务失败: {e}");
+            tracing::error!("创建定时任务失败: {e}" );
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 Json(serde_json::json!({
@@ -510,7 +510,7 @@ async fn delete_scheduled_task(
             })),
         ),
         Err(e) => {
-            tracing::error!("删除定时任务失败: {e}");
+            tracing::error!("删除定时任务失败: {e}" );
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 Json(serde_json::json!({
@@ -527,7 +527,7 @@ async fn trigger_scheduled_task(
     State(state): State<AppState>,
     Path(id): Path<String>,
 ) -> impl IntoResponse {
-    tracing::info!("【HTTP】触发定时任务: {id}");
+    tracing::info!("【HTTP】触发定时任务: {id}" );
 
     match state.scheduled_task_repo.find_by_id(&id).await {
         Ok(Some(task)) => {
@@ -542,7 +542,7 @@ async fn trigger_scheduled_task(
             }
 
             tracing::info!(
-                "【HTTP】定时任务已触发: {}, task_handler={}",
+                "【HTTP】定时任务已触发: {}, task_handler={}" ,
                 task.name,
                 task.task_handler
             );
@@ -551,7 +551,7 @@ async fn trigger_scheduled_task(
                 StatusCode::OK,
                 Json(serde_json::json!({
                     "success": true,
-                    "message": "定时任务触发成功",
+                    "message": "定时任务触发成功" ,
                     "data": {
                         "task_id": task.id,
                         "task_handler": task.task_handler
@@ -567,7 +567,7 @@ async fn trigger_scheduled_task(
             })),
         ),
         Err(e) => {
-            tracing::error!("【HTTP】获取定时任务失败: {e}");
+            tracing::error!("【HTTP】获取定时任务失败: {e}" );
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 Json(serde_json::json!({
@@ -663,7 +663,7 @@ async fn get_report(State(state): State<AppState>, Path(id): Path<String>) -> im
             })),
         ),
         Err(e) => {
-            tracing::error!("查询报表失败: {e}");
+            tracing::error!("查询报表失败: {e}" );
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 Json(serde_json::json!({
@@ -699,7 +699,7 @@ async fn create_report(
             })),
         ),
         Err(e) => {
-            tracing::error!("创建报表失败: {e}");
+            tracing::error!("创建报表失败: {e}" );
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 Json(serde_json::json!({
@@ -716,12 +716,12 @@ async fn generate_report(
     State(state): State<AppState>,
     Path(id): Path<String>,
 ) -> impl IntoResponse {
-    tracing::info!("【HTTP】生成报表: {id}");
+    tracing::info!("【HTTP】生成报表: {id}" );
 
     match state.report_repo.find_by_id(&id).await {
         Ok(Some(report)) => {
             tracing::info!(
-                "【HTTP】报表生成中: {}, type={}",
+                "【HTTP】报表生成中: {}, type={}" ,
                 report.name,
                 report.report_type
             );
@@ -730,7 +730,7 @@ async fn generate_report(
                 StatusCode::OK,
                 Json(serde_json::json!({
                     "success": true,
-                    "message": "报表生成中",
+                    "message": "报表生成中" ,
                     "data": {
                         "report_id": report.id,
                         "report_type": report.report_type,
@@ -747,7 +747,7 @@ async fn generate_report(
             })),
         ),
         Err(e) => {
-            tracing::error!("【HTTP】获取报表失败: {e}");
+            tracing::error!("【HTTP】获取报表失败: {e}" );
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 Json(serde_json::json!({
@@ -764,7 +764,7 @@ async fn download_report(
     State(state): State<AppState>,
     Path(id): Path<String>,
 ) -> impl IntoResponse {
-    tracing::info!("【HTTP】下载报表: {id}");
+    tracing::info!("【HTTP】下载报表: {id}" );
 
     match state.report_repo.find_by_id(&id).await {
         Ok(Some(report)) => {
@@ -779,7 +779,7 @@ async fn download_report(
             }
 
             tracing::info!(
-                "【HTTP】报表下载准备: {}, generated_at={:?}",
+                "【HTTP】报表下载准备: {}, generated_at={:?}" ,
                 report.name,
                 report.generated_at
             );
@@ -788,7 +788,7 @@ async fn download_report(
                 StatusCode::OK,
                 Json(serde_json::json!({
                     "success": true,
-                    "message": "报表准备就绪",
+                    "message": "报表准备就绪" ,
                     "data": {
                         "report_id": report.id,
                         "name": report.name,
@@ -807,7 +807,7 @@ async fn download_report(
             })),
         ),
         Err(e) => {
-            tracing::error!("【HTTP】获取报表失败: {e}");
+            tracing::error!("【HTTP】获取报表失败: {e}" );
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 Json(serde_json::json!({
@@ -824,7 +824,7 @@ async fn health() -> impl IntoResponse {
     (
         StatusCode::OK,
         Json(serde_json::json!({
-            "status": "healthy",
+            "status": "healthy" ,
             "service": "workflow-service"
         })),
     )
@@ -841,25 +841,25 @@ pub fn create_http_router() -> Router {
     let state = AppState::new(WorkflowState::new());
 
     Router::new()
-        .route("/api/workflows", get(list_workflows))
-        .route("/api/workflows", post(create_workflow))
-        .route("/api/workflows/:id", get(get_workflow))
-        .route("/api/workflows/:id", put(update_workflow))
-        .route("/api/workflows/:id", delete(delete_workflow))
-        .route("/api/workflows/:id/execute", post(execute_workflow))
-        .route("/api/scheduled-tasks", get(list_scheduled_tasks))
-        .route("/api/scheduled-tasks", post(create_scheduled_task))
-        .route("/api/scheduled-tasks/:id", get(get_scheduled_task))
-        .route("/api/scheduled-tasks/:id", delete(delete_scheduled_task))
+        .route("/api/workflows" , get(list_workflows))
+        .route("/api/workflows" , post(create_workflow))
+        .route("/api/workflows/:id" , get(get_workflow))
+        .route("/api/workflows/:id" , put(update_workflow))
+        .route("/api/workflows/:id" , delete(delete_workflow))
+        .route("/api/workflows/:id/execute" , post(execute_workflow))
+        .route("/api/scheduled-tasks" , get(list_scheduled_tasks))
+        .route("/api/scheduled-tasks" , post(create_scheduled_task))
+        .route("/api/scheduled-tasks/:id" , get(get_scheduled_task))
+        .route("/api/scheduled-tasks/:id" , delete(delete_scheduled_task))
         .route(
-            "/api/scheduled-tasks/:id/trigger",
+            "/api/scheduled-tasks/:id/trigger" ,
             post(trigger_scheduled_task),
         )
-        .route("/api/reports", get(list_reports))
-        .route("/api/reports", post(create_report))
-        .route("/api/reports/:id", get(get_report))
-        .route("/api/reports/:id/generate", post(generate_report))
-        .route("/api/reports/:id/download", get(download_report))
-        .route("/health", get(health))
+        .route("/api/reports" , get(list_reports))
+        .route("/api/reports" , post(create_report))
+        .route("/api/reports/:id" , get(get_report))
+        .route("/api/reports/:id/generate" , post(generate_report))
+        .route("/api/reports/:id/download" , get(download_report))
+        .route("/health" , get(health))
         .with_state(state)
 }

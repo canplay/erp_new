@@ -26,12 +26,12 @@ fn infer_resource_and_action(path: &str, method: &str) -> (String, i32) {
     const ACTION_OTHER: i32 = 99;
 
     let resource_type = path
-        .trim_start_matches("/api/")
-        .trim_start_matches("admin/")
-        .trim_start_matches("v1/")
+        .trim_start_matches("/api/" )
+        .trim_start_matches("admin/" )
+        .trim_start_matches("v1/" )
         .split('/')
         .next()
-        .unwrap_or("unknown")
+        .unwrap_or("unknown" )
         .to_string();
 
     let action = match method {
@@ -51,19 +51,19 @@ fn should_log_operation(path: &str, method: &str) -> bool {
         "POST" | "PUT" | "DELETE" | "PATCH"
     );
 
-    let skip = !path.starts_with("/api/")
-        || path.starts_with("/api/user/login")
-        || path.starts_with("/api/user/register")
-        || path.starts_with("/api/auth/")
-        || path.starts_with("/api/health")
-        || path.starts_with("/api/audit/")
-        || path.starts_with("/api/export/")
-        || path.starts_with("/ws/")
-        || path.starts_with("/health")
-        || path.starts_with("/ready")
-        || path.starts_with("/metrics")
-        || path.starts_with("/rate-limit")
-        || path.starts_with("/trace");
+    let skip = !path.starts_with("/api/" )
+        || path.starts_with("/api/user/login" )
+        || path.starts_with("/api/user/register" )
+        || path.starts_with("/api/auth/" )
+        || path.starts_with("/api/health" )
+        || path.starts_with("/api/audit/" )
+        || path.starts_with("/api/export/" )
+        || path.starts_with("/ws/" )
+        || path.starts_with("/health" )
+        || path.starts_with("/ready" )
+        || path.starts_with("/metrics" )
+        || path.starts_with("/rate-limit" )
+        || path.starts_with("/trace" );
 
     is_write && !skip
 }
@@ -83,15 +83,15 @@ pub async fn operation_log_middleware(request: Request, next: Next) -> Response 
     // 提取用户信息（auth_middleware 已注入 x-user-* 头）
     let user_id: i64 = request
         .headers()
-        .get("x-user-id")
+        .get("x-user-id" )
         .and_then(|v| v.to_str().ok())
         .and_then(|s| s.parse().ok())
         .unwrap_or(0);
     let username = request
         .headers()
-        .get("x-user-name")
+        .get("x-user-name" )
         .and_then(|v| v.to_str().ok())
-        .unwrap_or("anonymous")
+        .unwrap_or("anonymous" )
         .to_string();
 
     // 提取客户端 IP
@@ -111,7 +111,7 @@ pub async fn operation_log_middleware(request: Request, next: Next) -> Response 
 
     // 仅在响应成功 (2xx) 时记录操作日志
     if status >= 200 && status < 300 {
-        let description = format!("{} {} - {}ms", method, path, duration_ms);
+        let description = format!("{} {} - {}ms" , method, path, duration_ms);
 
         // 异步记录到审计日志（失败不阻塞响应）
         // 从请求扩展中获取 AppState（由 route_builder 注入 Extension 层）

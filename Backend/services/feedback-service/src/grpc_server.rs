@@ -100,10 +100,10 @@ impl FeedbackService for FeedbackGrpcService {
     ) -> Result<Response<CreateFeedbackResponse>, Status> {
         let req = request.into_inner();
         let type_str = match req.r#type {
-            x if x == FeedbackType::Bug as i32 => "bug",
-            x if x == FeedbackType::Feature as i32 => "suggestion",
-            x if x == FeedbackType::Complaint as i32 => "complaint",
-            _ => "other",
+            x if x == FeedbackType::Bug as i32 => "bug" ,
+            x if x == FeedbackType::Feature as i32 => "suggestion" ,
+            x if x == FeedbackType::Complaint as i32 => "complaint" ,
+            _ => "other" ,
         };
 
         let title = req.title.clone();
@@ -129,10 +129,10 @@ impl FeedbackService for FeedbackGrpcService {
     ) -> Result<Response<UpdateFeedbackResponse>, Status> {
         let req = request.into_inner();
         let status_str = match req.status {
-            x if x == FeedbackStatus::Open as i32 => "pending",
-            x if x == FeedbackStatus::Resolved as i32 => "resolved",
-            x if x == FeedbackStatus::Closed as i32 => "closed",
-            _ => return Err(Status::invalid_argument("invalid status")),
+            x if x == FeedbackStatus::Open as i32 => "pending" ,
+            x if x == FeedbackStatus::Resolved as i32 => "resolved" ,
+            x if x == FeedbackStatus::Closed as i32 => "closed" ,
+            _ => return Err(Status::invalid_argument("invalid status" )),
         };
 
         crate::grpc_handlers::handle_feedback(

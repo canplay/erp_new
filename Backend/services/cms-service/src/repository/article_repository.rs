@@ -6,11 +6,11 @@ use sqlx::PgPool;
 /// 文章 Repository 错误
 #[derive(Debug, thiserror::Error)]
 pub enum ArticleRepositoryError {
-    #[error("文章不存在")]
+    #[error("文章不存在" )]
     NotFound,
-    #[error("文章代码已存在")]
+    #[error("文章代码已存在" )]
     AlreadyExists,
-    #[error("数据库错误: {0}")]
+    #[error("数据库错误: {0}" )]
     Database(#[from] sqlx::Error),
 }
 
@@ -43,7 +43,7 @@ impl ArticleRepository {
         if let Some(cid) = category_id {
             if let Some(s) = status {
                 if let Some(kw) = keyword {
-                    let pattern = format!("%{kw}%");
+                    let pattern = format!("%{kw}%" );
                     articles = sqlx::query_as!(
                         CmsArticle,
                         r"
@@ -56,7 +56,7 @@ impl ArticleRepository {
                         WHERE category_id = $1 AND status = $2 AND (title ILIKE $3 OR content ILIKE $3)
                         ORDER BY is_top DESC, id DESC
                         LIMIT $4 OFFSET $5
-                        ",
+                        " ,
                         cid,
                         s,
                         &pattern,
@@ -78,7 +78,7 @@ impl ArticleRepository {
                             WHERE category_id = $1 AND status = $2
                             ORDER BY is_top DESC, id DESC
                             LIMIT $3 OFFSET $4
-                            ",
+                            " ,
                         cid,
                         s,
                         page_size as i32,
@@ -89,7 +89,7 @@ impl ArticleRepository {
                 }
             } else {
                 if let Some(kw) = keyword {
-                    let pattern = format!("%{kw}%");
+                    let pattern = format!("%{kw}%" );
                     articles = sqlx::query_as!(
                         CmsArticle,
                         r"
@@ -102,7 +102,7 @@ impl ArticleRepository {
                             WHERE category_id = $1 AND (title ILIKE $2 OR content ILIKE $2)
                             ORDER BY is_top DESC, id DESC
                             LIMIT $3 OFFSET $4
-                            ",
+                            " ,
                             cid,
                             &pattern,
                             page_size as i32,
@@ -123,7 +123,7 @@ impl ArticleRepository {
                             WHERE category_id = $1
                             ORDER BY is_top DESC, id DESC
                             LIMIT $2 OFFSET $3
-                            ",
+                            " ,
                             cid,
                             page_size as i32,
                             offset as i32,
@@ -135,7 +135,7 @@ impl ArticleRepository {
         } else {
             if let Some(s) = status {
                 if let Some(kw) = keyword {
-                    let pattern = format!("%{kw}%");
+                    let pattern = format!("%{kw}%" );
                     articles = sqlx::query_as!(
                         CmsArticle,
                         r"
@@ -148,7 +148,7 @@ impl ArticleRepository {
                             WHERE status = $1 AND (title ILIKE $2 OR content ILIKE $2)
                             ORDER BY is_top DESC, id DESC
                             LIMIT $3 OFFSET $4
-                            ",
+                            " ,
                             s,
                             &pattern,
                             page_size as i32,
@@ -169,7 +169,7 @@ impl ArticleRepository {
                             WHERE status = $1
                             ORDER BY is_top DESC, id DESC
                             LIMIT $2 OFFSET $3
-                            ",
+                            " ,
                             s,
                             page_size as i32,
                             offset as i32,
@@ -179,7 +179,7 @@ impl ArticleRepository {
                 }
             } else {
                 if let Some(kw) = keyword {
-                    let pattern = format!("%{kw}%");
+                    let pattern = format!("%{kw}%" );
                     articles = sqlx::query_as!(
                         CmsArticle,
                         r"
@@ -192,7 +192,7 @@ impl ArticleRepository {
                             WHERE title ILIKE $1 OR content ILIKE $1
                             ORDER BY is_top DESC, id DESC
                             LIMIT $2 OFFSET $3
-                            ",
+                            " ,
                             &pattern,
                             page_size as i32,
                             offset as i32,
@@ -211,7 +211,7 @@ impl ArticleRepository {
                             FROM cms_article
                             ORDER BY is_top DESC, id DESC
                             LIMIT $1 OFFSET $2
-                            ",
+                            " ,
                             page_size as i32,
                             offset as i32,
                         )
@@ -223,7 +223,7 @@ impl ArticleRepository {
 
         // 获取总数
         // 获取总数
-        let total: i64 = sqlx::query_scalar!("SELECT COUNT(*) FROM cms_article")
+        let total: i64 = sqlx::query_scalar!("SELECT COUNT(*) FROM cms_article" )
             .fetch_one(&self.pool)
             .await?
             .unwrap_or(0);
@@ -246,7 +246,7 @@ impl ArticleRepository {
                    created_at, updated_at
             FROM cms_article
             WHERE id = $1
-            ",
+            " ,
             id,
         )
         .fetch_optional(&self.pool)
@@ -269,7 +269,7 @@ impl ArticleRepository {
             INSERT INTO cms_article (category_id, title, content, author_id, status, content_type)
             VALUES ($1, $2, $3, $4, $5, 0)
             RETURNING id
-            ",
+            " ,
             category_id,
             title,
             content,
@@ -300,7 +300,7 @@ impl ArticleRepository {
                 is_top = COALESCE($5, is_top),
                 updated_at = NOW()
             WHERE id = $1
-            ",
+            " ,
             id,
             title,
             content,
@@ -320,7 +320,7 @@ impl ArticleRepository {
             UPDATE cms_article
             SET status = 2, published_at = NOW(), updated_at = NOW()
             WHERE id = $1 AND status IN (0, 1)
-            ",
+            " ,
             id,
         )
         .execute(&self.pool)
@@ -332,7 +332,7 @@ impl ArticleRepository {
     /// 删除文章
     pub async fn delete(&self, id: i64) -> Result<bool, ArticleRepositoryError> {
         let result = sqlx::query!(
-            "DELETE FROM cms_article WHERE id = $1",
+            "DELETE FROM cms_article WHERE id = $1" ,
             id,
         )
         .execute(&self.pool)
@@ -347,10 +347,10 @@ impl ArticleRepository {
             ArticleStatistics,
             r#"
             SELECT
-                COUNT(*) AS "total_articles!",
-                COALESCE(SUM(view_count), 0)::bigint AS "total_views!",
-                COALESCE(SUM(like_count), 0)::bigint AS "total_likes!",
-                COUNT(*) FILTER (WHERE published_at::date = CURRENT_DATE) AS "published_today!",
+                COUNT(*) AS "total_articles!" ,
+                COALESCE(SUM(view_count), 0)::bigint AS "total_views!" ,
+                COALESCE(SUM(like_count), 0)::bigint AS "total_likes!" ,
+                COUNT(*) FILTER (WHERE published_at::date = CURRENT_DATE) AS "published_today!" ,
                 COUNT(*) FILTER (WHERE status = 1) AS "pending_review!"
             FROM cms_article
 "#,
@@ -368,7 +368,7 @@ impl ArticleRepository {
             UPDATE cms_article
             SET status = 0, updated_at = NOW()
             WHERE id = $1 AND status = 2
-            ",
+            " ,
             id,
         )
         .execute(&self.pool)
@@ -390,7 +390,7 @@ impl ArticleRepository {
             UPDATE cms_article
             SET status = $2, reject_reason = $3, published_at = CASE WHEN $2 = 2 THEN NOW() ELSE published_at END, updated_at = NOW()
             WHERE id = $1
-            ",
+            " ,
             id,
             new_status,
             reason,
@@ -404,7 +404,7 @@ impl ArticleRepository {
     /// 设置置顶
     pub async fn set_top(&self, id: i64, is_top: bool) -> Result<bool, ArticleRepositoryError> {
         let result = sqlx::query!(
-            "UPDATE cms_article SET is_top = $2, updated_at = NOW() WHERE id = $1",
+            "UPDATE cms_article SET is_top = $2, updated_at = NOW() WHERE id = $1" ,
             id,
             is_top,
         )
@@ -421,7 +421,7 @@ impl ArticleRepository {
         is_featured: bool,
     ) -> Result<bool, ArticleRepositoryError> {
         let result = sqlx::query!(
-            "UPDATE cms_article SET is_featured = $2, updated_at = NOW() WHERE id = $1",
+            "UPDATE cms_article SET is_featured = $2, updated_at = NOW() WHERE id = $1" ,
             id,
             is_featured,
         )
@@ -434,7 +434,7 @@ impl ArticleRepository {
     /// 增加浏览次数
     pub async fn increment_view_count(&self, id: i64) -> Result<bool, ArticleRepositoryError> {
         let result = sqlx::query!(
-            "UPDATE cms_article SET view_count = view_count + 1 WHERE id = $1",
+            "UPDATE cms_article SET view_count = view_count + 1 WHERE id = $1" ,
             id,
         )
         .execute(&self.pool)
@@ -446,7 +446,7 @@ impl ArticleRepository {
     /// 增加点赞次数
     pub async fn increment_like_count(&self, id: i64) -> Result<bool, ArticleRepositoryError> {
         let result = sqlx::query!(
-            "UPDATE cms_article SET like_count = like_count + 1 WHERE id = $1",
+            "UPDATE cms_article SET like_count = like_count + 1 WHERE id = $1" ,
             id,
         )
         .execute(&self.pool)
@@ -474,7 +474,7 @@ impl ArticleRepository {
                 WHERE status = 2 AND category_id = $1
                 ORDER BY view_count DESC, like_count DESC
                 LIMIT $2
-                ",
+                " ,
                 cid,
                 limit as i32,
             )
@@ -493,7 +493,7 @@ impl ArticleRepository {
                 WHERE status = 2
                 ORDER BY view_count DESC, like_count DESC
                 LIMIT $1
-                ",
+                " ,
                 limit as i32,
             )
             .fetch_all(&self.pool)
@@ -522,7 +522,7 @@ impl ArticleRepository {
                 WHERE status = 2 AND category_id = $1
                 ORDER BY published_at DESC
                 LIMIT $2
-                ",
+                " ,
                 cid,
                 limit as i32,
             )
@@ -541,7 +541,7 @@ impl ArticleRepository {
                 WHERE status = 2
                 ORDER BY published_at DESC
                 LIMIT $1
-                ",
+                " ,
                 limit as i32,
             )
             .fetch_all(&self.pool)

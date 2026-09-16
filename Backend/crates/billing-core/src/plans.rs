@@ -22,10 +22,10 @@ pub enum BillingPlanType {
 impl BillingPlanType {
     pub fn as_str(&self) -> &'static str {
         match self {
-            Self::Free => "free",
-            Self::Standard => "standard",
-            Self::Enterprise => "enterprise",
-            Self::Custom => "custom",
+            Self::Free => "free" ,
+            Self::Standard => "standard" ,
+            Self::Enterprise => "enterprise" ,
+            Self::Custom => "custom" ,
         }
     }
 }
@@ -149,7 +149,7 @@ pub struct PlanFeature {
 
 /// 创建默认免费计划
 pub fn create_free_plan() -> BillingPlan {
-    BillingPlan::new("Free", BillingPlanType::Free)
+    BillingPlan::new("Free" , BillingPlanType::Free)
         .with_monthly_price(Decimal::ZERO)
         .with_yearly_price(Decimal::ZERO)
         .with_feature(PlanFeature {
@@ -164,14 +164,14 @@ pub fn create_free_plan() -> BillingPlan {
             enabled: true,
             value: Some("10MB".to_string()),
         })
-        .with_quota("max_users", 5)
-        .with_quota("max_storage_gb", 1)
-        .with_quota("monthly_api_calls", 10000)
+        .with_quota("max_users" , 5)
+        .with_quota("max_storage_gb" , 1)
+        .with_quota("monthly_api_calls" , 10000)
 }
 
 /// 创建默认标准计划
 pub fn create_standard_plan() -> BillingPlan {
-    BillingPlan::new("Standard", BillingPlanType::Standard)
+    BillingPlan::new("Standard" , BillingPlanType::Standard)
         .with_monthly_price(Decimal::from(99))
         .with_yearly_price(Decimal::from(999))
         .with_feature(PlanFeature {
@@ -192,14 +192,14 @@ pub fn create_standard_plan() -> BillingPlan {
             enabled: true,
             value: Some("100MB".to_string()),
         })
-        .with_quota("max_users", 50)
-        .with_quota("max_storage_gb", 10)
-        .with_quota("monthly_api_calls", 100000)
+        .with_quota("max_users" , 50)
+        .with_quota("max_storage_gb" , 10)
+        .with_quota("monthly_api_calls" , 100000)
 }
 
 /// 创建默认企业计划
 pub fn create_enterprise_plan() -> BillingPlan {
-    BillingPlan::new("Enterprise", BillingPlanType::Enterprise)
+    BillingPlan::new("Enterprise" , BillingPlanType::Enterprise)
         .with_monthly_price(Decimal::from(499))
         .with_yearly_price(Decimal::from(4999))
         .with_feature(PlanFeature {
@@ -220,7 +220,7 @@ pub fn create_enterprise_plan() -> BillingPlan {
             enabled: true,
             value: None,
         })
-        .with_quota("max_users", 500)
-        .with_quota("max_storage_gb", 100)
-        .with_quota("monthly_api_calls", 1000000)
+        .with_quota("max_users" , 500)
+        .with_quota("max_storage_gb" , 100)
+        .with_quota("monthly_api_calls" , 1000000)
 }

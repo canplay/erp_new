@@ -52,19 +52,19 @@ impl AppState {
 /// 构建路由
 pub fn routes(state: Arc<AppState>) -> Router {
     Router::new()
-        .route("/health", get(health_check))
-        .route("/browser/create", post(create_session))
-        .route("/browser/pool/status", get(pool_status))
-        .route("/browser/:id/navigate", post(navigate))
-        .route("/browser/:id/text", get(get_text))
-        .route("/browser/:id/html", get(get_html))
-        .route("/browser/:id/title", get(get_title))
-        .route("/browser/:id/click", post(click_element))
-        .route("/browser/:id/type", post(type_text))
-        .route("/browser/:id/cookies", post(inject_cookies))
-        .route("/browser/:id/screenshot", post(take_screenshot))
-        .route("/browser/:id/elements", get(get_elements))
-        .route("/browser/:id", delete(close_session))
+        .route("/health" , get(health_check))
+        .route("/browser/create" , post(create_session))
+        .route("/browser/pool/status" , get(pool_status))
+        .route("/browser/:id/navigate" , post(navigate))
+        .route("/browser/:id/text" , get(get_text))
+        .route("/browser/:id/html" , get(get_html))
+        .route("/browser/:id/title" , get(get_title))
+        .route("/browser/:id/click" , post(click_element))
+        .route("/browser/:id/type" , post(type_text))
+        .route("/browser/:id/cookies" , post(inject_cookies))
+        .route("/browser/:id/screenshot" , post(take_screenshot))
+        .route("/browser/:id/elements" , get(get_elements))
+        .route("/browser/:id" , delete(close_session))
         .with_state(state)
 }
 
@@ -103,8 +103,8 @@ pub struct CookieRequest {
 
 async fn health_check() -> Json<Value> {
     json_ok(json!({
-        "status": "healthy",
-        "service": "browser-service",
+        "status": "healthy" ,
+        "service": "browser-service" ,
         "timestamp": chrono::Utc::now().to_rfc3339()
     }))
 }
@@ -115,7 +115,7 @@ async fn health_check() -> Json<Value> {
 async fn create_session(
     State(state): State<Arc<AppState>>,
 ) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
-    let page_arc = state.pool.get_page().ok_or_else(|| json_unavailable("浏览器池为空"))?;
+    let page_arc = state.pool.get_page().ok_or_else(|| json_unavailable("浏览器池为空" ))?;
 
     let session_id = Uuid::new_v4().to_string();
     let session = BrowserSession::new(session_id.clone());
@@ -127,7 +127,7 @@ async fn create_session(
             *session.tab.lock().await = Some(tab);
         }
         Err(e) => {
-            return Err(json_error_fmt("无法创建标签页", &e));
+            return Err(json_error_fmt("无法创建标签页" , &e));
         }
     }
 
@@ -161,9 +161,9 @@ async fn close_session(
         if let Some(tab) = tab_guard.take() {
             let _ = tab.close().await;
         }
-        Ok(json_ok(json!({"status": "closed", "session_id": id})))
+        Ok(json_ok(json!({"status": "closed" , "session_id": id})))
     } else {
-        Err(json_error_status(StatusCode::NOT_FOUND, "会话不存在"))
+        Err(json_error_status(StatusCode::NOT_FOUND, "会话不存在" ))
     }
 }
 
@@ -174,11 +174,11 @@ macro_rules! with_tab {
     ($state:expr, $id:expr, |$tab:ident| $body:expr) => {{
         let sessions = $state.sessions.lock().await;
         let session = sessions.get(&$id).ok_or_else(|| {
-            json_error_status(StatusCode::NOT_FOUND, "会话不存在")
+            json_error_status(StatusCode::NOT_FOUND, "会话不存在" )
         })?;
         let mut tab_guard = session.tab.lock().await;
         let $tab = tab_guard.as_mut().ok_or_else(|| {
-            json_error_status(StatusCode::BAD_REQUEST, "标签页未初始化")
+            json_error_status(StatusCode::BAD_REQUEST, "标签页未初始化" )
         })?;
         $body
     }};
@@ -198,7 +198,7 @@ async fn navigate(
                 let title = tab.title().await.unwrap_or_default();
                 Ok(json_ok(json!({"status": if success { "ok" } else { "timeout" }, "title": title, "url": req.url})))
             }
-            Err(e) => Err(json_error_fmt("导航失败", &e)),
+            Err(e) => Err(json_error_fmt("导航失败" , &e)),
         }
     })
 }
@@ -209,7 +209,7 @@ async fn get_text(
     Path(id): Path<String>,
 ) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
     with_tab!(state, id, |tab| {
-        let text = tab.ele_text("body").await.unwrap_or(None).unwrap_or_default();
+        let text = tab.ele_text("body" ).await.unwrap_or(None).unwrap_or_default();
         Ok(json_ok(json!({"text": text})))
     })
 }
@@ -244,8 +244,8 @@ async fn click_element(
 ) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
     with_tab!(state, id, |tab| {
         match tab.click(&req.selector).await {
-            Ok(()) => Ok(json_ok(json!({"status": "clicked", "selector": req.selector}))),
-            Err(e) => Err(json_error_fmt("点击失败", &e)),
+            Ok(()) => Ok(json_ok(json!({"status": "clicked" , "selector": req.selector}))),
+            Err(e) => Err(json_error_fmt("点击失败" , &e)),
         }
     })
 }
@@ -258,8 +258,8 @@ async fn type_text(
 ) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
     with_tab!(state, id, |tab| {
         match tab.input(&req.selector, &req.text).await {
-            Ok(()) => Ok(json_ok(json!({"status": "typed", "selector": req.selector}))),
-            Err(e) => Err(json_error_fmt("输入失败", &e)),
+            Ok(()) => Ok(json_ok(json!({"status": "typed" , "selector": req.selector}))),
+            Err(e) => Err(json_error_fmt("输入失败" , &e)),
         }
     })
 }
@@ -288,10 +288,10 @@ async fn inject_cookies(
 
         match tab.set_cookies(cookie_params).await {
             Ok(()) => Ok(json_ok(json!({
-                "status": "injected",
+                "status": "injected" ,
                 "count": req.cookies.len()
             }))),
-            Err(e) => Err(json_error_fmt("Cookie 注入失败", &e)),
+            Err(e) => Err(json_error_fmt("Cookie 注入失败" , &e)),
         }
     })
 }
@@ -304,10 +304,10 @@ async fn take_screenshot(
     with_tab!(state, id, |tab| {
         match tab.screenshot_base64(false).await {
             Ok(b64) => Ok(json_ok(json!({
-                "status": "captured",
+                "status": "captured" ,
                 "image_base64": b64
             }))),
-            Err(e) => Err(json_error_fmt("截图失败", &e)),
+            Err(e) => Err(json_error_fmt("截图失败" , &e)),
         }
     })
 }
@@ -318,9 +318,9 @@ async fn get_elements(
     Path(id): Path<String>,
     Query(params): Query<HashMap<String, String>>,
 ) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
-    let selector = params.get("selector").cloned().unwrap_or_default();
+    let selector = params.get("selector" ).cloned().unwrap_or_default();
     if selector.is_empty() {
-        return Err(json_error_status(StatusCode::BAD_REQUEST, "缺少 selector 查询参数"));
+        return Err(json_error_status(StatusCode::BAD_REQUEST, "缺少 selector 查询参数" ));
     }
 
     with_tab!(state, id, |tab| {
@@ -331,13 +331,13 @@ async fn get_elements(
                     let tag = el.tag().await.unwrap_or_default();
                     let text = el.text().await.unwrap_or_default();
                     let mut attrs = std::collections::HashMap::new();
-                    if let Ok(Some(src)) = el.attr("src").await {
+                    if let Ok(Some(src)) = el.attr("src" ).await {
                         attrs.insert("src".to_string(), src);
                     }
-                    if let Ok(Some(href)) = el.attr("href").await {
+                    if let Ok(Some(href)) = el.attr("href" ).await {
                         attrs.insert("href".to_string(), href);
                     }
-                    if let Ok(Some(cls)) = el.attr("class").await {
+                    if let Ok(Some(cls)) = el.attr("class" ).await {
                         attrs.insert("class".to_string(), cls);
                     }
                     infos.push(json!({
@@ -348,7 +348,7 @@ async fn get_elements(
                 }
                 Ok(json_ok(json!({"elements": infos, "count": infos.len()})))
             }
-            Err(e) => Err(json_error_fmt("查找元素失败", &e)),
+            Err(e) => Err(json_error_fmt("查找元素失败" , &e)),
         }
     })
 }

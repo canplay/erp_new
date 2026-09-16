@@ -25,7 +25,7 @@ impl CrawlService {
     }
 
     pub async fn list_sources(&self) -> Result<Vec<Value>, sqlx::Error> {
-        let rows = sqlx::query(r#"SELECT id, platform, source_name, source_config::text AS "source_config", is_active, crawl_interval,
+        let rows = sqlx::query(r#"SELECT id, platform, source_name, source_config::text AS "source_config" , is_active, crawl_interval,
                to_char(last_crawled_at, 'YYYY-MM-DD HH24:MI:SS') AS "last_crawled"
              FROM socialops.crawl_sources ORDER BY created_at DESC"#).fetch_all(&self.db).await?;
 
@@ -41,7 +41,7 @@ impl CrawlService {
     pub async fn create_source(&self, platform: &str, name: &str, config: &Value, interval: i32) -> Result<Value, sqlx::Error> {
         let row = sqlx::query(r#"INSERT INTO socialops.crawl_sources (platform, source_name, source_config, crawl_interval)
              VALUES ($1, $2, $3, $4)
-             RETURNING id, platform, source_name AS "source_name!", crawl_interval"#).bind(platform).bind(name).bind(config).bind(interval).bind()
+             RETURNING id, platform, source_name AS "source_name!" , crawl_interval"#).bind(platform).bind(name).bind(config).bind(interval).bind()
         .fetch_one(&self.db).await?;
 
         Ok(serde_json::json!({
@@ -50,7 +50,7 @@ impl CrawlService {
     }
 
     pub async fn delete_source(&self, id: Uuid) -> Result<bool, sqlx::Error> {
-        let r = sqlx::query("DELETE FROM socialops.crawl_sources WHERE id = $1").bind(id)
+        let r = sqlx::query("DELETE FROM socialops.crawl_sources WHERE id = $1" ).bind(id)
             .execute(&self.db).await?;
         Ok(r.rows_affected() > 0)
     }
@@ -63,7 +63,7 @@ impl CrawlService {
 
     /// B站公开 API 抓取 — 纯 reqwest，不需要浏览器
     pub async fn crawl_bilibili(&self, task_id: Uuid, keyword: &str) -> Result<i32, anyhow::Error> {
-        sqlx::query("UPDATE socialops.crawl_tasks SET status = 'running', started_at = NOW() WHERE id = $1").bind(task_id)
+        sqlx::query("UPDATE socialops.crawl_tasks SET status = 'running', started_at = NOW() WHERE id = $1" ).bind(task_id)
         .execute(&self.db).await?;
 
         let crawler = BiliCrawler;
@@ -72,8 +72,8 @@ impl CrawlService {
         let mut new_count = 0i32;
         for item in &results {
             let hash = Sha256::digest(item.text.as_bytes());
-            let source_hash = format!("bilibili:{}", &hex::encode(hash)[..32]);
-            let exists = sqlx::query_scalar("SELECT COUNT(*) FROM socialops.content_items WHERE source_hash = $1").bind(&source_hash).fetch_one(&self.db).await.unwrap_or(Some(0)).unwrap_or(0);
+            let source_hash = format!("bilibili:{}" , &hex::encode(hash)[..32]);
+            let exists = sqlx::query_scalar("SELECT COUNT(*) FROM socialops.content_items WHERE source_hash = $1" ).bind(&source_hash).fetch_one(&self.db).await.unwrap_or(Some(0)).unwrap_or(0);
             if exists == 0 {
                 let title = item.text.chars().take(100).collect::<String>();
                 sqlx::query(r#"INSERT INTO socialops.content_items (source_type, content_type, title, body, source_url, source_hash, author_name, status)
@@ -83,7 +83,7 @@ impl CrawlService {
             }
         }
 
-        sqlx::query("UPDATE socialops.crawl_tasks SET status = 'completed', items_found = $1, items_new = $2, completed_at = NOW() WHERE id = $3").bind(results.len() as i32).bind(new_count).bind(task_id)
+        sqlx::query("UPDATE socialops.crawl_tasks SET status = 'completed', items_found = $1, items_new = $2, completed_at = NOW() WHERE id = $3" ).bind(results.len() as i32).bind(new_count).bind(task_id)
         .execute(&self.db).await?;
         Ok(new_count)
     }
@@ -96,7 +96,7 @@ impl CrawlService {
         keyword: &str,
         platform: &str,
     ) -> Result<i32, anyhow::Error> {
-        sqlx::query("UPDATE socialops.crawl_tasks SET status = 'running', started_at = NOW() WHERE id = $1").bind(task_id)
+        sqlx::query("UPDATE socialops.crawl_tasks SET status = 'running', started_at = NOW() WHERE id = $1" ).bind(task_id)
         .execute(&self.db).await?;
 
         let results = adapter.crawl(keyword, &self.browser_client).await?;
@@ -104,9 +104,9 @@ impl CrawlService {
         let mut new_count = 0i32;
         for item in &results {
             let hash = Sha256::digest(item.text.as_bytes());
-            let source_hash = format!("{}:{}", platform, hex::encode(hash));
+            let source_hash = format!("{}:{}" , platform, hex::encode(hash));
 
-            let exists = sqlx::query_scalar("SELECT COUNT(*) FROM socialops.content_items WHERE source_hash = $1").bind(&source_hash)
+            let exists = sqlx::query_scalar("SELECT COUNT(*) FROM socialops.content_items WHERE source_hash = $1" ).bind(&source_hash)
             .fetch_one(&self.db).await
             .unwrap_or(Some(0))
             .unwrap_or(0);
@@ -130,8 +130,8 @@ impl CrawlService {
     }
 
     pub async fn list_crawl_tasks(&self, source_id: Uuid) -> Result<Vec<Value>, sqlx::Error> {
-        let rows = sqlx::query(r#"SELECT id, status, COALESCE(items_found, 0) AS "items_found!", COALESCE(items_new, 0) AS "items_new!",
-               to_char(started_at, 'YYYY-MM-DD HH24:MI:SS') AS "started_at",
+        let rows = sqlx::query(r#"SELECT id, status, COALESCE(items_found, 0) AS "items_found!" , COALESCE(items_new, 0) AS "items_new!" ,
+               to_char(started_at, 'YYYY-MM-DD HH24:MI:SS') AS "started_at" ,
                to_char(completed_at, 'YYYY-MM-DD HH24:MI:SS') AS "completed_at"
              FROM socialops.crawl_tasks
              WHERE source_id = $1
@@ -158,14 +158,14 @@ impl CrawlService {
         let row = sqlx::query(r#"SELECT platform, source_config FROM socialops.crawl_sources WHERE id = $1"#).bind(source_id)
         .fetch_optional(&self.db)
         .await?
-        .ok_or_else(|| anyhow::anyhow!("source not found: {source_id}"))?;
+        .ok_or_else(|| anyhow::anyhow!("source not found: {source_id}" ))?;
 
         let platform = row.platform;
         let source_config = row.source_config;
 
-        let keyword = source_config["keyword"]
+        let keyword = source_config["keyword" ]
             .as_str()
-            .ok_or_else(|| anyhow::anyhow!("keyword not found in source_config"))?
+            .ok_or_else(|| anyhow::anyhow!("keyword not found in source_config" ))?
             .to_string();
 
         let task_id = self.create_task(source_id).await?;
@@ -173,33 +173,33 @@ impl CrawlService {
         match platform.as_str() {
             "bilibili" => {
                 let new_count = self.crawl_bilibili(task_id, &keyword).await?;
-                Ok(format!("bilibili crawl done, {new_count} new items"))
+                Ok(format!("bilibili crawl done, {new_count} new items" ))
             }
             "weibo" => {
                 let crawler = WeiboCrawler::new();
-                let new_count = self.crawl_with_adapter(task_id, &crawler, &keyword, "weibo").await?;
-                Ok(format!("weibo crawl done, {new_count} new items"))
+                let new_count = self.crawl_with_adapter(task_id, &crawler, &keyword, "weibo" ).await?;
+                Ok(format!("weibo crawl done, {new_count} new items" ))
             }
             "xiaohongshu" => {
                 let crawler = XiaohongshuCrawler::new();
-                let new_count = self.crawl_with_adapter(task_id, &crawler, &keyword, "xiaohongshu").await?;
-                Ok(format!("xiaohongshu crawl done, {new_count} new items"))
+                let new_count = self.crawl_with_adapter(task_id, &crawler, &keyword, "xiaohongshu" ).await?;
+                Ok(format!("xiaohongshu crawl done, {new_count} new items" ))
             }
             "douyin" => {
                 let crawler = DouyinCrawler::new();
-                let new_count = self.crawl_with_adapter(task_id, &crawler, &keyword, "douyin").await?;
-                Ok(format!("douyin crawl done, {new_count} new items"))
+                let new_count = self.crawl_with_adapter(task_id, &crawler, &keyword, "douyin" ).await?;
+                Ok(format!("douyin crawl done, {new_count} new items" ))
             }
             "wechat" => {
-                let article_url = source_config["url"]
+                let article_url = source_config["url" ]
                     .as_str()
-                    .ok_or_else(|| anyhow::anyhow!("url not found in source_config for wechat platform"))?
+                    .ok_or_else(|| anyhow::anyhow!("url not found in source_config for wechat platform" ))?
                     .to_string();
                 let crawler = WechatCrawler::new();
-                let new_count = self.crawl_with_adapter(task_id, &crawler, &article_url, "wechat").await?;
-                Ok(format!("wechat crawl done, {new_count} new items"))
+                let new_count = self.crawl_with_adapter(task_id, &crawler, &article_url, "wechat" ).await?;
+                Ok(format!("wechat crawl done, {new_count} new items" ))
             }
-            _ => Err(anyhow::anyhow!("unsupported platform: {platform}")),
+            _ => Err(anyhow::anyhow!("unsupported platform: {platform}" )),
         }
     }
 }

@@ -9,13 +9,13 @@ use thiserror::Error;
 /// 用户仓储错误类型
 #[derive(Error, Debug)]
 pub enum UserRepositoryError {
-    #[error("数据库错误: {0}")]
+    #[error("数据库错误: {0}" )]
     Database(#[from] sqlx::Error),
 
-    #[error("用户不存在")]
+    #[error("用户不存在" )]
     NotFound,
 
-    #[error("用户已存在")]
+    #[error("用户已存在" )]
     AlreadyExists,
 }
 
@@ -123,7 +123,7 @@ impl UserRepository {
             r"INSERT INTO users (username, password_hash, email, nickname, phone, gender, role, status)
                VALUES ($1, $2, $3, $4, $5, $6, 'user', 1)
                ON CONFLICT (username) DO NOTHING
-               RETURNING id",
+               RETURNING id" ,
             username,
             password_hash,
             email.as_deref(),
@@ -146,9 +146,9 @@ impl UserRepository {
         let row = sqlx::query_as!(
             UserDetail,
             r#"SELECT id, username, nickname, avatar, phone, email, gender, address,
-                       COALESCE(role, 'user') AS "role!",
-                       COALESCE(status, 1) AS "status!",
-                       COALESCE(created_at, NOW()) AS "created_at!",
+                       COALESCE(role, 'user') AS "role!" ,
+                       COALESCE(status, 1) AS "status!" ,
+                       COALESCE(created_at, NOW()) AS "created_at!" ,
                        COALESCE(updated_at, NOW()) AS "updated_at!"
                 FROM users WHERE username = $1"#,
             username,
@@ -167,9 +167,9 @@ impl UserRepository {
         let row = sqlx::query_as!(
             UserDetail,
             r#"SELECT id, username, nickname, avatar, phone, email, gender, address,
-                       COALESCE(role, 'user') AS "role!",
-                       COALESCE(status, 1) AS "status!",
-                       COALESCE(created_at, NOW()) AS "created_at!",
+                       COALESCE(role, 'user') AS "role!" ,
+                       COALESCE(status, 1) AS "status!" ,
+                       COALESCE(created_at, NOW()) AS "created_at!" ,
                        COALESCE(updated_at, NOW()) AS "updated_at!"
                 FROM users WHERE id = $1"#,
             user_id,
@@ -199,10 +199,10 @@ impl UserRepository {
                    updated_at = NOW()
                WHERE id = $5
                RETURNING id, username, nickname, avatar, phone, email, gender, address,
-                         COALESCE(role, 'user') AS "role!",
-                         COALESCE(status, 1) AS "status!",
-                         COALESCE(created_at, NOW()) AS "created_at!",
-                         COALESCE(updated_at, NOW()) AS "updated_at!""#,
+                         COALESCE(role, 'user') AS "role!" ,
+                         COALESCE(status, 1) AS "status!" ,
+                         COALESCE(created_at, NOW()) AS "created_at!" ,
+                         COALESCE(updated_at, NOW()) AS "updated_at!" "#,
             nickname.as_deref(),
             gender,
             address.as_deref(),
@@ -218,7 +218,7 @@ impl UserRepository {
     /// 删除用户
     pub async fn delete(&self, user_id: i64) -> Result<bool, UserRepositoryError> {
         let result = sqlx::query!(
-            "DELETE FROM users WHERE id = $1",
+            "DELETE FROM users WHERE id = $1" ,
             user_id,
         )
         .execute(&self.pool)
@@ -240,7 +240,7 @@ impl UserRepository {
         let offset = (page - 1) * page_size;
 
         // 查询总数
-        let total: i64 = sqlx::query_scalar!("SELECT COUNT(*) FROM users")
+        let total: i64 = sqlx::query_scalar!("SELECT COUNT(*) FROM users" )
             .fetch_one(&self.pool)
             .await?
             .unwrap_or(0);
@@ -249,9 +249,9 @@ impl UserRepository {
         let users: Vec<UserListItem> = sqlx::query_as!(
             UserListItem,
             r#"SELECT id, username, nickname, avatar, phone, email, gender, address,
-                       COALESCE(role, 'user') AS "role!",
-                       COALESCE(status, 1) AS "status!",
-                       COALESCE(created_at, NOW()) AS "created_at!",
+                       COALESCE(role, 'user') AS "role!" ,
+                       COALESCE(status, 1) AS "status!" ,
+                       COALESCE(created_at, NOW()) AS "created_at!" ,
                        COALESCE(updated_at, NOW()) AS "updated_at!"
                FROM users
                ORDER BY created_at DESC
@@ -273,7 +273,7 @@ impl UserRepository {
     ) -> Result<bool, UserRepositoryError> {
         let result =
             sqlx::query!(
-                r"UPDATE users SET status = $1, updated_at = NOW() WHERE id = $2",
+                r"UPDATE users SET status = $1, updated_at = NOW() WHERE id = $2" ,
                 status,
                 user_id,
             )
@@ -286,7 +286,7 @@ impl UserRepository {
     /// 更新用户角色
     pub async fn update_role(&self, user_id: i64, role: &str) -> Result<bool, UserRepositoryError> {
         let result = sqlx::query!(
-            r"UPDATE users SET role = $1, updated_at = NOW() WHERE id = $2",
+            r"UPDATE users SET role = $1, updated_at = NOW() WHERE id = $2" ,
             role,
             user_id,
         )
@@ -304,7 +304,7 @@ impl UserRepository {
     ) -> Result<bool, UserRepositoryError> {
         let result =
             sqlx::query!(
-                r"UPDATE users SET password_hash = $1, must_change_password = false, updated_at = NOW() WHERE id = $2",
+                r"UPDATE users SET password_hash = $1, must_change_password = false, updated_at = NOW() WHERE id = $2" ,
                 password_hash,
                 user_id,
             )
@@ -335,7 +335,7 @@ impl UserRepository {
 
         for user_id in user_ids {
             match sqlx::query!(
-                "UPDATE users SET status = $1, updated_at = NOW() WHERE id = $2",
+                "UPDATE users SET status = $1, updated_at = NOW() WHERE id = $2" ,
                 status,
                 user_id,
             )
@@ -393,7 +393,7 @@ impl UserRepository {
 
         for user_id in user_ids {
             match sqlx::query!(
-                "UPDATE users SET role = $1, updated_at = NOW() WHERE id = $2",
+                "UPDATE users SET role = $1, updated_at = NOW() WHERE id = $2" ,
                 role,
                 user_id,
             )
@@ -450,7 +450,7 @@ impl UserRepository {
 
         for user_id in user_ids {
             match sqlx::query!(
-                "DELETE FROM users WHERE id = $1",
+                "DELETE FROM users WHERE id = $1" ,
                 user_id,
             )
             .execute(&mut *tx)

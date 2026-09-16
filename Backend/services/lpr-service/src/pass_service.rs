@@ -27,7 +27,7 @@ impl PassService {
             db_pool,
             redis_conn,
             http_client: HttpClient::new(),
-            hik_service_url: std::env::var("HIK_SERVICE_URL")
+            hik_service_url: std::env::var("HIK_SERVICE_URL" )
                 .unwrap_or_else(|_| "http://localhost:8092".to_string()),
         }
     }
@@ -45,7 +45,7 @@ impl PassService {
             _ => false,
         };
 
-        self.update_record_status(record.id, "processed", "").await?;
+        self.update_record_status(record.id, "processed" , "" ).await?;
 
         Ok(PassProcessResult {
             record_id: record.id,
@@ -88,7 +88,7 @@ impl PassService {
         .fetch_one(&self.db_pool)
         .await?;
 
-        tracing::info!("通行记录已保存 id={}, 车牌={}, 方向={}", row.id, row.plate_no, row.direction);
+        tracing::info!("通行记录已保存 id={}, 车牌={}, 方向={}" , row.id, row.plate_no, row.direction);
         Ok(row)
     }
 
@@ -128,27 +128,27 @@ impl PassService {
     async fn check_vehicle_authorization(&self, plate_no: &str, _park_code: &str) -> AppResult<VehicleAuthorization> {
         // Redis 缓存
         if let Some(ref conn) = self.redis_conn {
-            let cache_key = format!("lpr:vehicle:auth:{plate_no}");
+            let cache_key = format!("lpr:vehicle:auth:{plate_no}" );
             let mut conn = conn.clone();
-            if let Ok(Some(cached)) = redis::cmd("GET")
+            if let Ok(Some(cached)) = redis::cmd("GET" )
                 .arg(&cache_key)
                 .query_async::<Option<String>>(&mut conn)
                 .await
                 && let Ok(auth) = serde_json::from_str::<VehicleAuthorization>(&cached) {
-                    tracing::debug!("车辆授权缓存命中: {} => {:?}", plate_no, auth.auth_type);
+                    tracing::debug!("车辆授权缓存命中: {} => {:?}" , plate_no, auth.auth_type);
                     return Ok(auth);
                 }
         }
 
         // 调用 hik-service
         let payload = serde_json::json!({
-            "method": "parkParking",
+            "method": "parkParking" ,
             "plate_no": plate_no,
-            "phone": "", "pageNo": 1, "pageSize": 1, "requestType": ""
+            "phone": " ", "pageNo": 1, "pageSize": 1, "requestType": " "
         });
 
         let auth = match self.http_client
-            .post(format!("{}/api/hik/exec", self.hik_service_url))
+            .post(format!("{}/api/hik/exec" , self.hik_service_url))
             .json(&payload).send().await
         {
             Ok(resp) if resp.status().is_success() => {
@@ -156,21 +156,21 @@ impl PassService {
                 Self::parse_hik_response(&body, plate_no)
             }
             Ok(resp) => {
-                tracing::warn!("hik-service 查询失败: HTTP {}, 车牌={}", resp.status(), plate_no);
+                tracing::warn!("hik-service 查询失败: HTTP {}, 车牌={}" , resp.status(), plate_no);
                 VehicleAuthorization { is_authorized: false, auth_type: "temp".to_string(), driver_name: String::new(), driver_phone: String::new(), valid_until: None }
             }
             Err(e) => {
-                tracing::error!("hik-service 请求失败: {e}, 车牌={plate_no}");
+                tracing::error!("hik-service 请求失败: {e}, 车牌={plate_no}" );
                 VehicleAuthorization { is_authorized: false, auth_type: "temp".to_string(), driver_name: String::new(), driver_phone: String::new(), valid_until: None }
             }
         };
 
         // 写 Redis 缓存
         if let Some(ref conn) = self.redis_conn {
-            let cache_key = format!("lpr:vehicle:auth:{plate_no}");
+            let cache_key = format!("lpr:vehicle:auth:{plate_no}" );
             if let Ok(json) = serde_json::to_string(&auth) {
                 let mut conn = conn.clone();
-                let _: std::result::Result<(), redis::RedisError> = redis::cmd("SETEX")
+                let _: std::result::Result<(), redis::RedisError> = redis::cmd("SETEX" )
                     .arg(&cache_key).arg(300usize).arg(&json)
                     .query_async(&mut conn).await;
             }
@@ -179,20 +179,20 @@ impl PassService {
     }
 
     fn parse_hik_response(body: &serde_json::Value, _plate_no: &str) -> VehicleAuthorization {
-        if let Some(data) = body.get("data")
-            && let Some(result) = data.get("result")
+        if let Some(data) = body.get("data" )
+            && let Some(result) = data.get("result" )
                 && let Some(orders) = result.as_array()
                     && let Some(order) = orders.first() {
-                        let is_monthly = order.get("orderType")
+                        let is_monthly = order.get("orderType" )
                             .and_then(|v| v.as_str())
-                            .is_some_and(|t| t == "1" || t == "3");
+                            .is_some_and(|t| t == "1" || t == "3" );
                         if is_monthly {
                             return VehicleAuthorization {
                                 is_authorized: true,
                                 auth_type: "monthly_vip".to_string(),
-                                driver_name: order.get("driverName").and_then(|v| v.as_str()).unwrap_or("").to_string(),
-                                driver_phone: order.get("phone").and_then(|v| v.as_str()).unwrap_or("").to_string(),
-                                valid_until: order.get("validDate").and_then(|v| v.as_str()).map(std::string::ToString::to_string),
+                                driver_name: order.get("driverName" ).and_then(|v| v.as_str()).unwrap_or("" ).to_string(),
+                                driver_phone: order.get("phone" ).and_then(|v| v.as_str()).unwrap_or("" ).to_string(),
+                                valid_until: order.get("validDate" ).and_then(|v| v.as_str()).map(std::string::ToString::to_string),
                             };
                         }
                     }
@@ -203,13 +203,13 @@ impl PassService {
 
     async fn handle_entry(&self, record: &PassRecord, auth: &VehicleAuthorization) -> AppResult<bool> {
         if auth.is_authorized {
-            tracing::info!("授权车辆入场: 车牌={}, 类型={}", record.plate_no, auth.auth_type);
+            tracing::info!("授权车辆入场: 车牌={}, 类型={}" , record.plate_no, auth.auth_type);
             match self.open_gate(&record.park_code, &record.device_id).await {
                 Ok(r) => Ok(r.success),
-                Err(e) => { tracing::error!("开闸失败: {}, 车牌={}", e, record.plate_no); Ok(false) }
+                Err(e) => { tracing::error!("开闸失败: {}, 车牌={}" , e, record.plate_no); Ok(false) }
             }
         } else {
-            tracing::info!("临时车辆入场: 车牌={}, 记录通行不开闸", record.plate_no);
+            tracing::info!("临时车辆入场: 车牌={}, 记录通行不开闸" , record.plate_no);
             Ok(false)
         }
     }
@@ -218,15 +218,15 @@ impl PassService {
         let entry = self.find_latest_entry(&record.plate_no, &record.park_code).await?;
         if let Some(entry_record) = entry {
             let minutes = record.pass_time.signed_duration_since(entry_record.pass_time).num_minutes();
-            tracing::info!("车辆出场: 车牌={}, 停车{}分钟", record.plate_no, minutes);
+            tracing::info!("车辆出场: 车牌={}, 停车{}分钟" , record.plate_no, minutes);
             if auth.is_authorized || minutes <= 15 {
                 return self.open_gate(&record.park_code, &record.device_id).await.map(|r| r.success)
                     .map_err(|e| AppError::LprInternal(e.to_string()));
             }
-            tracing::info!("临时车辆需缴费: 车牌={}, 停车{}分钟", record.plate_no, minutes);
+            tracing::info!("临时车辆需缴费: 车牌={}, 停车{}分钟" , record.plate_no, minutes);
             Ok(false)
         } else {
-            tracing::warn!("出场未找到入场记录: 车牌={}, 直接开闸放行", record.plate_no);
+            tracing::warn!("出场未找到入场记录: 车牌={}, 直接开闸放行" , record.plate_no);
             self.open_gate(&record.park_code, &record.device_id).await.map(|r| r.success)
                 .map_err(|e| AppError::LprInternal(e.to_string()))
         }
@@ -236,21 +236,21 @@ impl PassService {
 
     async fn open_gate(&self, park_code: &str, device_id: &str) -> AppResult<GateControlResult> {
         let payload = serde_json::json!({ "park_code": park_code, "device_id": device_id });
-        match self.http_client.post(format!("{}/api/hik/signo/open", self.hik_service_url))
+        match self.http_client.post(format!("{}/api/hik/signo/open" , self.hik_service_url))
             .json(&payload).send().await
         {
             Ok(resp) if resp.status().is_success() => {
                 let body: serde_json::Value = resp.json().await.unwrap_or_default();
-                let success = body.get("success").and_then(serde_json::Value::as_bool).unwrap_or(false);
-                let message = body.get("message").and_then(|v| v.as_str()).unwrap_or("").to_string();
+                let success = body.get("success" ).and_then(serde_json::Value::as_bool).unwrap_or(false);
+                let message = body.get("message" ).and_then(|v| v.as_str()).unwrap_or("" ).to_string();
                 Ok(GateControlResult { success, message })
             }
             Ok(resp) => {
-                tracing::error!("Signo 开闸 HTTP 失败: {}, park_code={}", resp.status(), park_code);
-                Ok(GateControlResult { success: false, message: format!("HTTP {}", resp.status()) })
+                tracing::error!("Signo 开闸 HTTP 失败: {}, park_code={}" , resp.status(), park_code);
+                Ok(GateControlResult { success: false, message: format!("HTTP {}" , resp.status()) })
             }
             Err(e) => {
-                tracing::error!("Signo 开闸请求失败: {e}, park_code={park_code}");
+                tracing::error!("Signo 开闸请求失败: {e}, park_code={park_code}" );
                 Ok(GateControlResult { success: false, message: e.to_string() })
             }
         }
@@ -300,9 +300,9 @@ impl PassService {
     /// 获取通行统计
     pub async fn get_stats(&self) -> AppResult<crate::PassStats> {
         let row = sqlx::query!(
-            r#"SELECT COUNT(*) AS "total!",
-                      COALESCE(SUM(CASE WHEN direction = 'entry' THEN 1 ELSE 0 END), 0) AS "entry!",
-                      COALESCE(SUM(CASE WHEN direction = 'exit' THEN 1 ELSE 0 END), 0) AS "exit!",
+            r#"SELECT COUNT(*) AS "total!" ,
+                      COALESCE(SUM(CASE WHEN direction = 'entry' THEN 1 ELSE 0 END), 0) AS "entry!" ,
+                      COALESCE(SUM(CASE WHEN direction = 'exit' THEN 1 ELSE 0 END), 0) AS "exit!" ,
                       COALESCE(SUM(CASE WHEN confidence >= 0.9 THEN 1 ELSE 0 END), 0) AS "high_conf!"
                FROM public.lpr_pass_records"#,
         )

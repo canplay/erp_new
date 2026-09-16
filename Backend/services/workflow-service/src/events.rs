@@ -12,13 +12,13 @@ use uuid::Uuid;
 /// Workflow event errors
 #[derive(Error, Debug)]
 pub enum WorkflowEventError {
-    #[error("Event emission failed: {0}")]
+    #[error("Event emission failed: {0}" )]
     Emission(String),
 
-    #[error("Invalid event: {0}")]
+    #[error("Invalid event: {0}" )]
     Invalid(String),
 
-    #[error("Serialization failed: {0}")]
+    #[error("Serialization failed: {0}" )]
     Serialization(#[from] serde_json::Error),
 }
 
@@ -45,12 +45,12 @@ pub enum WorkflowEventType {
 impl std::fmt::Display for WorkflowEventType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::WorkflowCompleted => write!(f, "workflow.completed"),
-            Self::WorkflowFailed => write!(f, "workflow.failed"),
-            Self::TaskCompleted => write!(f, "task.completed"),
-            Self::WorkflowCancelled => write!(f, "workflow.cancelled"),
-            Self::TaskAssigned => write!(f, "task.assigned"),
-            Self::WorkflowStarted => write!(f, "workflow.started"),
+            Self::WorkflowCompleted => write!(f, "workflow.completed" ),
+            Self::WorkflowFailed => write!(f, "workflow.failed" ),
+            Self::TaskCompleted => write!(f, "task.completed" ),
+            Self::WorkflowCancelled => write!(f, "workflow.cancelled" ),
+            Self::TaskAssigned => write!(f, "task.assigned" ),
+            Self::WorkflowStarted => write!(f, "workflow.started" ),
         }
     }
 }
@@ -68,10 +68,10 @@ pub enum EventPriority {
 impl std::fmt::Display for EventPriority {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Low => write!(f, "low"),
-            Self::Normal => write!(f, "normal"),
-            Self::High => write!(f, "high"),
-            Self::Urgent => write!(f, "urgent"),
+            Self::Low => write!(f, "low" ),
+            Self::Normal => write!(f, "normal" ),
+            Self::High => write!(f, "high" ),
+            Self::Urgent => write!(f, "urgent" ),
         }
     }
 }
@@ -220,7 +220,7 @@ impl WorkflowEventEmitter {
 
     /// Create from environment variables
     pub fn from_env() -> Self {
-        let endpoint = std::env::var("MESSAGING_SERVICE_ENDPOINT").ok();
+        let endpoint = std::env::var("MESSAGING_SERVICE_ENDPOINT" ).ok();
         Self {
             messaging_endpoint: endpoint,
             event_history: std::sync::Mutex::new(Vec::new()),
@@ -234,7 +234,7 @@ impl WorkflowEventEmitter {
 
         // Log the event
         tracing::info!(
-            "Emitting workflow event: {} for instance {} (workflow: {})",
+            "Emitting workflow event: {} for instance {} (workflow: {})" ,
             event.event_type,
             event.instance_id,
             event.workflow_id
@@ -247,7 +247,7 @@ impl WorkflowEventEmitter {
 
         if let Some(endpoint) = &self.messaging_endpoint {
             tracing::info!(
-                "Sending event to messaging service at {}: {}",
+                "Sending event to messaging service at {}: {}" ,
                 endpoint,
                 event.event_type
             );
@@ -572,10 +572,10 @@ mod tests {
 
     #[test]
     fn test_event_priority_display() {
-        assert_eq!(EventPriority::Low.to_string(), "low");
-        assert_eq!(EventPriority::Normal.to_string(), "normal");
-        assert_eq!(EventPriority::High.to_string(), "high");
-        assert_eq!(EventPriority::Urgent.to_string(), "urgent");
+        assert_eq!(EventPriority::Low.to_string(), "low" );
+        assert_eq!(EventPriority::Normal.to_string(), "normal" );
+        assert_eq!(EventPriority::High.to_string(), "high" );
+        assert_eq!(EventPriority::Urgent.to_string(), "urgent" );
     }
 
     #[test]
@@ -588,15 +588,15 @@ mod tests {
         );
 
         assert_eq!(event.event_type, WorkflowEventType::WorkflowCompleted);
-        assert_eq!(event.instance_id, "instance-123");
-        assert_eq!(event.workflow_id, "workflow-456");
-        assert_eq!(event.user_id, "user-789");
+        assert_eq!(event.instance_id, "instance-123" );
+        assert_eq!(event.workflow_id, "workflow-456" );
+        assert_eq!(event.user_id, "user-789" );
         assert_eq!(event.priority, EventPriority::Normal);
     }
 
     #[test]
     fn test_workflow_event_with_data() {
-        let data = serde_json::json!({"key": "value"});
+        let data = serde_json::json!({"key": "value" });
         let event = WorkflowEvent::new(
             WorkflowEventType::TaskCompleted,
             "instance-1".to_string(),
@@ -619,10 +619,10 @@ mod tests {
             "user-1".to_string(),
         );
 
-        let json = event.to_json().expect("lock should not be poisoned");
+        let json = event.to_json().expect("lock should not be poisoned" );
         // The enum is serialized as the variant name by default
-        assert!(json.contains("WorkflowCompleted") || json.contains("workflow.completed"));
-        assert!(json.contains("instance-1"));
+        assert!(json.contains("WorkflowCompleted" ) || json.contains("workflow.completed" ));
+        assert!(json.contains("instance-1" ));
     }
 
     #[test]
@@ -633,9 +633,9 @@ mod tests {
             total_nodes: 5,
         };
 
-        let json = serde_json::to_value(&data).expect("lock should not be poisoned");
-        assert_eq!(json["duration_seconds"], 3600);
-        assert_eq!(json["nodes_completed"], 5);
+        let json = serde_json::to_value(&data).expect("lock should not be poisoned" );
+        assert_eq!(json["duration_seconds" ], 3600);
+        assert_eq!(json["nodes_completed" ], 5);
     }
 
     #[test]
@@ -646,9 +646,9 @@ mod tests {
             retry_count: 3,
         };
 
-        let json = serde_json::to_value(&data).expect("lock should not be poisoned");
-        assert_eq!(json["error_message"], "Timeout");
-        assert_eq!(json["retry_count"], 3);
+        let json = serde_json::to_value(&data).expect("lock should not be poisoned" );
+        assert_eq!(json["error_message" ], "Timeout" );
+        assert_eq!(json["retry_count" ], 3);
     }
 
     #[test]
@@ -662,9 +662,9 @@ mod tests {
             comment: Some("Approved".to_string()),
         };
 
-        let json = serde_json::to_value(&data).expect("lock should not be poisoned");
-        assert_eq!(json["task_id"], "task-1");
-        assert_eq!(json["node_name"], "Approval");
+        let json = serde_json::to_value(&data).expect("lock should not be poisoned" );
+        assert_eq!(json["task_id" ], "task-1" );
+        assert_eq!(json["node_name" ], "Approval" );
     }
 
     #[test]
@@ -732,7 +732,7 @@ mod tests {
             "user-1".to_string(),
         );
 
-        emitter.event_history.lock().expect("lock should not be poisoned").push(event);
+        emitter.event_history.lock().expect("lock should not be poisoned" ).push(event);
         assert_eq!(emitter.event_count(), 1);
 
         emitter.clear_history();

@@ -120,8 +120,8 @@ impl MessageService for MessagingGrpcServer {
         let query_result = sqlx::query_as!(
             MessageRow,
             r#"SELECT m.id, m.title, m.content, m.sender_id, mu.user_id AS receiver_id,
-               m.type AS message_type, (mu.is_read <> 0) AS "is_read!",
-               COALESCE(m.created_at, NOW()) AS "created_at!", mu.read_time AS read_at
+               m.type AS message_type, (mu.is_read <> 0) AS "is_read!" ,
+               COALESCE(m.created_at, NOW()) AS "created_at!" , mu.read_time AS read_at
                FROM sys_message m
                JOIN sys_message_user mu ON m.id = mu.message_id
                WHERE mu.user_id = $1 AND mu.is_deleted = 0 AND ($2::text IS NULL OR m.type = $2)
@@ -134,26 +134,26 @@ impl MessageService for MessagingGrpcServer {
         )
         .fetch_all(&self.state.pool)
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))?;
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))?;
 
         // 查询总数
         let total = sqlx::query_scalar!(
-            "SELECT COUNT(*) FROM sys_message m JOIN sys_message_user mu ON m.id = mu.message_id WHERE mu.user_id = $1 AND mu.is_deleted = 0",
+            "SELECT COUNT(*) FROM sys_message m JOIN sys_message_user mu ON m.id = mu.message_id WHERE mu.user_id = $1 AND mu.is_deleted = 0" ,
             req.user_id,
         )
         .fetch_one(&self.state.pool)
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))?
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))?
         .unwrap_or(0);
 
         // 查询未读数
         let unread_count = sqlx::query_scalar!(
-            "SELECT COUNT(*) FROM sys_message_user WHERE user_id = $1 AND is_read = 0 AND is_deleted = 0",
+            "SELECT COUNT(*) FROM sys_message_user WHERE user_id = $1 AND is_read = 0 AND is_deleted = 0" ,
             req.user_id,
         )
         .fetch_one(&self.state.pool)
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))?
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))?
         .unwrap_or(0);
 
         let messages: Vec<Message> = query_result.iter().map(message_to_proto).collect();
@@ -174,8 +174,8 @@ impl MessageService for MessagingGrpcServer {
         let result = sqlx::query_as!(
             MessageRow,
             r#"SELECT m.id, m.title, m.content, m.sender_id, mu.user_id AS receiver_id,
-               m.type AS message_type, (mu.is_read <> 0) AS "is_read!",
-               COALESCE(m.created_at, NOW()) AS "created_at!", mu.read_time AS read_at
+               m.type AS message_type, (mu.is_read <> 0) AS "is_read!" ,
+               COALESCE(m.created_at, NOW()) AS "created_at!" , mu.read_time AS read_at
                FROM sys_message m
                JOIN sys_message_user mu ON m.id = mu.message_id
                WHERE m.id = $1 AND mu.user_id = $2 AND mu.is_deleted = 0"#,
@@ -184,13 +184,13 @@ impl MessageService for MessagingGrpcServer {
         )
         .fetch_optional(&self.state.pool)
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))?;
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))?;
 
         match result {
             Some(m) => Ok(Response::new(GetMessageResponse {
                 message: Some(message_to_proto(&m)),
             })),
-            None => Err(Status::not_found("Message not found")),
+            None => Err(Status::not_found("Message not found" )),
         }
     }
 
@@ -206,7 +206,7 @@ impl MessageService for MessagingGrpcServer {
         } else if req.user_id > 0 {
             vec![req.user_id]
         } else {
-            return Err(Status::invalid_argument("No target user specified"));
+            return Err(Status::invalid_argument("No target user specified" ));
         };
 
         let mut tx = self
@@ -214,7 +214,7 @@ impl MessageService for MessagingGrpcServer {
             .pool
             .begin()
             .await
-            .map_err(|e| Status::internal(format!("Transaction error: {e}")))?;
+            .map_err(|e| Status::internal(format!("Transaction error: {e}" )))?;
 
         // 插入消息主记录
         let message_row = sqlx::query!(
@@ -226,16 +226,16 @@ impl MessageService for MessagingGrpcServer {
             &req.title,
             &req.content,
             req.sender_id,
-            "",
+            " ",
             0i16,
             &serde_json::Value::Null,
-            "",
+            "" ,
             &serde_json::Value::Null,
             None::<chrono::DateTime<chrono::Utc>>,
         )
         .fetch_one(&mut *tx)
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))?;
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))?;
 
         let message_id = message_row.id;
 
@@ -249,12 +249,12 @@ impl MessageService for MessagingGrpcServer {
             )
             .execute(&mut *tx)
             .await
-            .map_err(|e| Status::internal(format!("Database error: {e}")))?;
+            .map_err(|e| Status::internal(format!("Database error: {e}" )))?;
         }
 
         tx.commit()
             .await
-            .map_err(|e| Status::internal(format!("Transaction commit error: {e}")))?;
+            .map_err(|e| Status::internal(format!("Transaction commit error: {e}" )))?;
 
         Ok(Response::new(SendMessageResponse {
             id: message_id,
@@ -271,12 +271,12 @@ impl MessageService for MessagingGrpcServer {
         if req.message_ids.is_empty() {
             // 标记全部已读
             let result = sqlx::query!(
-                "UPDATE sys_message_user SET is_read = 1, read_time = NOW() WHERE user_id = $1 AND is_read = 0",
+                "UPDATE sys_message_user SET is_read = 1, read_time = NOW() WHERE user_id = $1 AND is_read = 0" ,
                 req.user_id,
             )
             .execute(&self.state.pool)
             .await
-            .map_err(|e| Status::internal(format!("Database error: {e}")))?;
+            .map_err(|e| Status::internal(format!("Database error: {e}" )))?;
 
             Ok(Response::new(MarkAsReadResponse {
                 count: result.rows_affected() as i32,
@@ -284,13 +284,13 @@ impl MessageService for MessagingGrpcServer {
         } else {
             // 标记指定消息已读
             let result = sqlx::query!(
-                "UPDATE sys_message_user SET is_read = 1, read_time = NOW() WHERE message_id = ANY($1) AND user_id = $2",
+                "UPDATE sys_message_user SET is_read = 1, read_time = NOW() WHERE message_id = ANY($1) AND user_id = $2" ,
                 &req.message_ids,
                 req.user_id,
             )
             .execute(&self.state.pool)
             .await
-            .map_err(|e| Status::internal(format!("Database error: {e}")))?;
+            .map_err(|e| Status::internal(format!("Database error: {e}" )))?;
 
             Ok(Response::new(MarkAsReadResponse {
                 count: result.rows_affected() as i32,
@@ -305,13 +305,13 @@ impl MessageService for MessagingGrpcServer {
         let req = request.into_inner();
 
         let result = sqlx::query!(
-            "UPDATE sys_message_user SET is_deleted = 1 WHERE message_id = ANY($1) AND user_id = $2",
+            "UPDATE sys_message_user SET is_deleted = 1 WHERE message_id = ANY($1) AND user_id = $2" ,
             &req.message_ids,
             req.user_id,
         )
         .execute(&self.state.pool)
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))?;
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))?;
 
         Ok(Response::new(DeleteMessageResponse {
             count: result.rows_affected() as i32,
@@ -340,7 +340,7 @@ impl MessageService for MessagingGrpcServer {
         )
         .fetch_one(&self.state.pool)
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))?
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))?
         .unwrap_or(0);
 
         Ok(Response::new(GetUnreadCountResponse { count }))
@@ -367,8 +367,8 @@ impl MessageService for MessagingGrpcServer {
         let template_rows = sqlx::query_as!(
             TemplateRow,
             r#"SELECT id, name, template_type, title_template, content_template,
-               COALESCE(is_active, false) AS "is_active!",
-               COALESCE(created_at, NOW()) AS "created_at!",
+               COALESCE(is_active, false) AS "is_active!" ,
+               COALESCE(created_at, NOW()) AS "created_at!" ,
                COALESCE(updated_at, NOW()) AS "updated_at!"
                FROM message_templates
                WHERE ($1::text IS NULL OR template_type = $1)
@@ -380,7 +380,7 @@ impl MessageService for MessagingGrpcServer {
         )
         .fetch_all(&self.state.pool)
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))?;
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))?;
 
         let templates: Vec<grpc_proto::message::MessageTemplate> = template_rows
             .into_iter()
@@ -398,12 +398,12 @@ impl MessageService for MessagingGrpcServer {
             .collect();
 
         let total = sqlx::query_scalar!(
-            "SELECT COUNT(*) FROM message_templates WHERE ($1::text IS NULL OR template_type = $1)",
+            "SELECT COUNT(*) FROM message_templates WHERE ($1::text IS NULL OR template_type = $1)" ,
             type_filter,
         )
         .fetch_one(&self.state.pool)
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))?
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))?
         .unwrap_or(0);
 
         Ok(Response::new(ListTemplatesResponse { templates, total }))
@@ -427,7 +427,7 @@ impl MessageService for MessagingGrpcServer {
         )
         .fetch_one(&self.state.pool)
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))?;
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))?;
 
         let id = result.id;
 
@@ -459,14 +459,14 @@ impl MessageService for MessagingGrpcServer {
         )
         .fetch_optional(&self.state.pool)
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))?;
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))?;
 
         match result {
             Some(row) => Ok(Response::new(UpdateTemplateResponse {
                 id: row.id,
                 name: req.name,
             })),
-            None => Err(Status::not_found("Template not found")),
+            None => Err(Status::not_found("Template not found" )),
         }
     }
 
@@ -476,10 +476,10 @@ impl MessageService for MessagingGrpcServer {
     ) -> Result<Response<DeleteTemplateResponse>, Status> {
         let req = request.into_inner();
 
-        let result = sqlx::query!("DELETE FROM message_templates WHERE id = $1", req.id)
+        let result = sqlx::query!("DELETE FROM message_templates WHERE id = $1" , req.id)
             .execute(&self.state.pool)
             .await
-            .map_err(|e| Status::internal(format!("Database error: {e}")))?;
+            .map_err(|e| Status::internal(format!("Database error: {e}" )))?;
 
         Ok(Response::new(DeleteTemplateResponse {
             success: result.rows_affected() > 0,
@@ -491,12 +491,12 @@ impl common::service_bootstrap::GrpcServiceBuilder for MessagingGrpcServer {
     fn build_grpc_server(&self, grpc_addr: &str) -> Result<tokio::task::JoinHandle<()>, Box<dyn std::error::Error + Send + Sync>> {
         use tonic::transport::Server;
 
-        let addr: SocketAddr = grpc_addr.parse().map_err(|e| format!("invalid grpc addr: {e}"))?;
+        let addr: SocketAddr = grpc_addr.parse().map_err(|e| format!("invalid grpc addr: {e}" ))?;
         let server = MessageServiceServer::new(MessagingGrpcServer::new(self.state.clone()));
         let handle = tokio::spawn(async move {
             if let Err(e) = Server::builder()
                 .add_service(server).serve(addr).await {
-                tracing::error!("gRPC server error: {}", e);
+                tracing::error!("gRPC server error: {}" , e);
             }
         });
         Ok(handle)

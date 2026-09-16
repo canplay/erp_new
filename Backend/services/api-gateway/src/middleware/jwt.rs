@@ -83,7 +83,7 @@ impl AuthState {
             &DecodingKey::from_secret(self.jwt_secret.as_bytes()),
             &validation,
         )
-        .map_err(|e| format!("Token 解析失败: {e}"))?;
+        .map_err(|e| format!("Token 解析失败: {e}" ))?;
 
         Ok(token_data.claims)
     }
@@ -91,26 +91,26 @@ impl AuthState {
 
 /// 检查路径是否为公开路径（不需要鉴权）
 fn is_public_path(path: &str) -> bool {
-    path.starts_with("/health")
-        || path.starts_with("/ready")
-        || path.starts_with("/api/health")
+    path.starts_with("/health" )
+        || path.starts_with("/ready" )
+        || path.starts_with("/api/health" )
         || path == "/"
-        || path.starts_with("/api/user/login")
-        || path.starts_with("/api/user/register")
+        || path.starts_with("/api/user/login" )
+        || path.starts_with("/api/user/register" )
         // 内部监控端点（Prometheus、运维等）
-        || path.starts_with("/metrics")
-        || path.starts_with("/rate-limit")
-        || path.starts_with("/trace")
+        || path.starts_with("/metrics" )
+        || path.starts_with("/rate-limit" )
+        || path.starts_with("/trace" )
         // 兼容旧前端调用路径（/api/auth/* → /api/user/*）
-        || path.starts_with("/api/auth/login")
-        || path.starts_with("/api/auth/register")
+        || path.starts_with("/api/auth/login" )
+        || path.starts_with("/api/auth/register" )
         // Token 刷新接口（无需 JWT，使用 refresh_token）
-        || path.starts_with("/api/auth/refresh")
+        || path.starts_with("/api/auth/refresh" )
         // ebike 共享单车运营方登录（运营方推送数据需先登录获取 token）
-        || path.starts_with("/api/v1/ebike/login")
+        || path.starts_with("/api/v1/ebike/login" )
         // WebSocket 握手（浏览器 WebSocket API 无法在握手时带 Authorization 头,
         // token 通过 URL 查询参数 ?token= 传递并在 ws handler 内验证, 故豁免中间件）
-        || path.starts_with("/ws/")
+        || path.starts_with("/ws/" )
 }
 
 /// JWT 鉴权中间件
@@ -125,27 +125,27 @@ pub async fn auth_middleware(mut request: Request, next: Next) -> Response {
     let path = request.uri().path();
 
     if is_public_path(path) {
-        tracing::debug!("公开路径，跳过鉴权: {path}");
+        tracing::debug!("公开路径，跳过鉴权: {path}" );
         return next.run(request).await;
     }
 
     // 获取 Authorization header
     let auth_header = request
         .headers()
-        .get("authorization")
+        .get("authorization" )
         .and_then(|v| v.to_str().ok());
 
     let token = match auth_header {
-        Some(header) if header.starts_with("Bearer ") => &header[7..],
+        Some(header) if header.starts_with("Bearer " ) => &header[7..],
         _ => {
-            tracing::warn!("缺少认证令牌: {path}");
+            tracing::warn!("缺少认证令牌: {path}" );
             return Response::builder()
                 .status(StatusCode::UNAUTHORIZED)
-                .header("Content-Type", "application/json")
-                .body(r#"{"success":false,"error":"缺少有效的认证令牌"}"#.into())
+                .header("Content-Type" , "application/json" )
+                .body(r#"{"success":false,"error":"缺少有效的认证令牌" }"#.into())
                 .unwrap_or_else(|e| {
-                    tracing::error!(error = %e, "构造 401 响应失败");
-                    (StatusCode::INTERNAL_SERVER_ERROR, "Internal Server Error").into_response()
+                    tracing::error!(error = %e, "构造 401 响应失败" );
+                    (StatusCode::INTERNAL_SERVER_ERROR, "Internal Server Error" ).into_response()
                 });
         }
     };
@@ -157,20 +157,20 @@ pub async fn auth_middleware(mut request: Request, next: Next) -> Response {
         match state.verify_token(token) {
             Ok(claims) => claims,
             Err(e) => {
-                tracing::warn!("Token 验证失败 [{path}]: {e}");
+                tracing::warn!("Token 验证失败 [{path}]: {e}" );
                 return Response::builder()
                     .status(StatusCode::UNAUTHORIZED)
-                    .header("Content-Type", "application/json")
-                    .body(r#"{"success":false,"error":"无效或过期的令牌"}"#.into())
+                    .header("Content-Type" , "application/json" )
+                    .body(r#"{"success":false,"error":"无效或过期的令牌" }"#.into())
                     .unwrap_or_else(|e| {
-                        tracing::error!(error = %e, "构造 401 响应失败");
-                        (StatusCode::INTERNAL_SERVER_ERROR, "Internal Server Error").into_response()
+                        tracing::error!(error = %e, "构造 401 响应失败" );
+                        (StatusCode::INTERNAL_SERVER_ERROR, "Internal Server Error" ).into_response()
                     });
             }
         }
     } else {
         // 没有配置鉴权状态，跳过验证（开发模式）
-        tracing::debug!("未配置 JWT 鉴权，跳过验证: {path}");
+        tracing::debug!("未配置 JWT 鉴权，跳过验证: {path}" );
         return next.run(request).await;
     };
 
@@ -186,7 +186,7 @@ pub async fn auth_middleware(mut request: Request, next: Next) -> Response {
     // 注意: 必须先提取 tenant_id, 再取 headers_mut, 避免借用冲突
     let tenant_id = request
         .headers()
-        .get("x-tenant-id")
+        .get("x-tenant-id" )
         .and_then(|v| v.to_str().ok())
         .map(str::to_string)
         .or_else(|| {
@@ -200,26 +200,26 @@ pub async fn auth_middleware(mut request: Request, next: Next) -> Response {
     let headers = request.headers_mut();
     headers.insert(
         HeaderName::from_static(HEADER_USER_ID),
-        HeaderValue::from_str(&user_id).unwrap_or_else(|_| HeaderValue::from_static("0")),
+        HeaderValue::from_str(&user_id).unwrap_or_else(|_| HeaderValue::from_static("0" )),
     );
     headers.insert(
         HeaderName::from_static(HEADER_USER_NAME),
-        HeaderValue::from_str(&user_name).unwrap_or_else(|_| HeaderValue::from_static("")),
+        HeaderValue::from_str(&user_name).unwrap_or_else(|_| HeaderValue::from_static("" )),
     );
     headers.insert(
         HeaderName::from_static(HEADER_USER_ROLE),
-        HeaderValue::from_str(&user_role).unwrap_or_else(|_| HeaderValue::from_static("")),
+        HeaderValue::from_str(&user_role).unwrap_or_else(|_| HeaderValue::from_static("" )),
     );
     headers.insert(
         HeaderName::from_static(HEADER_USER_TOKEN),
-        HeaderValue::from_str(&user_token).unwrap_or_else(|_| HeaderValue::from_static("")),
+        HeaderValue::from_str(&user_token).unwrap_or_else(|_| HeaderValue::from_static("" )),
     );
 
     // 透传租户上下文(已在函数头部提取)
     if let Some(tid) = tenant_id {
         headers.insert(
-            HeaderName::from_static("x-tenant-id"),
-            HeaderValue::from_str(&tid).unwrap_or_else(|_| HeaderValue::from_static("")),
+            HeaderName::from_static("x-tenant-id" ),
+            HeaderValue::from_str(&tid).unwrap_or_else(|_| HeaderValue::from_static("" )),
         );
     }
 

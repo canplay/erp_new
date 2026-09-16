@@ -43,16 +43,16 @@ impl PayService {
 
     /// 查询支付订单数量 (修复: SQL注入-参数绑定)
     pub async fn count(&self, query: &PayQuery) -> AppResult<i64> {
-        let remark_like = query.remark.as_deref().map(|r| format!("%{r}%"));
+        let remark_like = query.remark.as_deref().map(|r| format!("%{r}%" ));
 
         let count: i64 = sqlx::query_scalar!(
             r#"SELECT COUNT(*) FROM pay WHERE "id" IS NOT NULL
                AND ($1 = '' OR status = $1)
                AND ($2 = '' OR "type" = $2)
                AND ($3 = '' OR remark LIKE $3)"#,
-            query.status.as_deref().unwrap_or(""),
-            query.pay_type.as_deref().unwrap_or(""),
-            remark_like.as_deref().unwrap_or(""),
+            query.status.as_deref().unwrap_or(" "),
+            query.pay_type.as_deref().unwrap_or("" ),
+            remark_like.as_deref().unwrap_or("" ),
         )
         .fetch_one(&self.pool)
         .await
@@ -64,23 +64,23 @@ impl PayService {
 
     /// 查询支付订单列表 (修复: SQL注入-参数绑定+ORDER BY白名单)
     pub async fn list(&self, query: &PayQuery) -> AppResult<Vec<PayOrder>> {
-        let remark_like = query.remark.as_deref().map(|r| format!("%{r}%"));
-        let sort_by = query.sort_by.as_deref().unwrap_or("");
+        let remark_like = query.remark.as_deref().map(|r| format!("%{r}%" ));
+        let sort_by = query.sort_by.as_deref().unwrap_or("" );
         let max_page = query.max_page.unwrap_or(10);
         let cur_page = query.cur_page.unwrap_or(0);
 
         let rows: Vec<PayRow> = if query.descending.unwrap_or(true) {
             sqlx::query_as!(
                 PayRow,
-                r#"SELECT id, "order",
-                          COALESCE(status, '') AS "status!",
-                          COALESCE("type", '') AS "pay_type!",
+                r#"SELECT id, "order" ,
+                          COALESCE(status, '') AS "status!" ,
+                          COALESCE("type" , '') AS "pay_type!" ,
                           order_pay,
-                          COALESCE(amount, 0)::int AS "amount!",
-                          COALESCE(remark, '') AS "remark!",
-                          COALESCE(create_service, '') AS "create_service!",
+                          COALESCE(amount, 0)::int AS "amount!" ,
+                          COALESCE(remark, '') AS "remark!" ,
+                          COALESCE(create_service, '') AS "create_service!" ,
                           create_params,
-                          COALESCE(create_date, NOW())::timestamp AS "create_date!",
+                          COALESCE(create_date, NOW())::timestamp AS "create_date!" ,
                           COALESCE(update_date, NOW())::timestamp AS "update_date!"
                    FROM pay
                    WHERE "id" IS NOT NULL
@@ -94,9 +94,9 @@ impl PayService {
                                  WHEN $4 = 'remark' THEN remark
                                  ELSE create_date::text END DESC
                    LIMIT $5 OFFSET $6"#,
-                query.status.as_deref().unwrap_or(""),
-                query.pay_type.as_deref().unwrap_or(""),
-                remark_like.as_deref().unwrap_or(""),
+                query.status.as_deref().unwrap_or(" "),
+                query.pay_type.as_deref().unwrap_or("" ),
+                remark_like.as_deref().unwrap_or("" ),
                 sort_by,
                 max_page,
                 cur_page,
@@ -107,15 +107,15 @@ impl PayService {
         } else {
             sqlx::query_as!(
                 PayRow,
-                r#"SELECT id, "order",
-                          COALESCE(status, '') AS "status!",
-                          COALESCE("type", '') AS "pay_type!",
+                r#"SELECT id, "order" ,
+                          COALESCE(status, '') AS "status!" ,
+                          COALESCE("type" , '') AS "pay_type!" ,
                           order_pay,
-                          COALESCE(amount, 0)::int AS "amount!",
-                          COALESCE(remark, '') AS "remark!",
-                          COALESCE(create_service, '') AS "create_service!",
+                          COALESCE(amount, 0)::int AS "amount!" ,
+                          COALESCE(remark, '') AS "remark!" ,
+                          COALESCE(create_service, '') AS "create_service!" ,
                           create_params,
-                          COALESCE(create_date, NOW())::timestamp AS "create_date!",
+                          COALESCE(create_date, NOW())::timestamp AS "create_date!" ,
                           COALESCE(update_date, NOW())::timestamp AS "update_date!"
                    FROM pay
                    WHERE "id" IS NOT NULL
@@ -129,9 +129,9 @@ impl PayService {
                                  WHEN $4 = 'remark' THEN remark
                                  ELSE create_date::text END ASC
                    LIMIT $5 OFFSET $6"#,
-                query.status.as_deref().unwrap_or(""),
-                query.pay_type.as_deref().unwrap_or(""),
-                remark_like.as_deref().unwrap_or(""),
+                query.status.as_deref().unwrap_or(" "),
+                query.pay_type.as_deref().unwrap_or("" ),
+                remark_like.as_deref().unwrap_or("" ),
                 sort_by,
                 max_page,
                 cur_page,
@@ -153,8 +153,8 @@ impl PayService {
                 remark: row.remark,
                 create_service: row.create_service,
                 create_params: row.create_params,
-                create_date: row.create_date.format("%Y-%m-%d %H:%M:%S").to_string(),
-                update_date: row.update_date.format("%Y-%m-%d %H:%M:%S").to_string(),
+                create_date: row.create_date.format("%Y-%m-%d %H:%M:%S" ).to_string(),
+                update_date: row.update_date.format("%Y-%m-%d %H:%M:%S" ).to_string(),
             })
             .collect();
 
@@ -169,7 +169,7 @@ impl PayService {
             .await
             .map_err(AppError::from)?;
 
-        let cache_key = format!("pay:{user_id}");
+        let cache_key = format!("pay:{user_id}" );
 
         // 尝试从Redis获取缓存
         let cached: Option<String> = conn.get(&cache_key).await.map_err(AppError::from)?;
@@ -184,21 +184,21 @@ impl PayService {
         // 从数据库查询
         let result: Option<PayRow> = sqlx::query_as!(
             PayRow,
-            r#"SELECT id, "order",
-                      COALESCE(status, '') AS "status!",
-                      COALESCE("type", '') AS "pay_type!",
+            r#"SELECT id, "order" ,
+                      COALESCE(status, '') AS "status!" ,
+                      COALESCE("type" , '') AS "pay_type!" ,
                       order_pay,
-                      COALESCE(amount, 0)::int AS "amount!",
-                      COALESCE(remark, '') AS "remark!",
-                      COALESCE(create_service, '') AS "create_service!",
+                      COALESCE(amount, 0)::int AS "amount!" ,
+                      COALESCE(remark, '') AS "remark!" ,
+                      COALESCE(create_service, '') AS "create_service!" ,
                       create_params,
-                      COALESCE(create_date, NOW())::timestamp AS "create_date!",
+                      COALESCE(create_date, NOW())::timestamp AS "create_date!" ,
                       COALESCE(update_date, NOW())::timestamp AS "update_date!"
                FROM pay
                WHERE "id" IS NOT NULL AND status = 'paid' AND remark LIKE $1
                ORDER BY update_date DESC
                LIMIT 1"#,
-            format!("%{user_id}%"),
+            format!("%{user_id}%" ),
         )
         .fetch_optional(&self.pool)
         .await
@@ -215,8 +215,8 @@ impl PayService {
                 remark: row.remark,
                 create_service: row.create_service,
                 create_params: row.create_params,
-                create_date: row.create_date.format("%Y-%m-%d %H:%M:%S").to_string(),
-                update_date: row.update_date.format("%Y-%m-%d %H:%M:%S").to_string(),
+                create_date: row.create_date.format("%Y-%m-%d %H:%M:%S" ).to_string(),
+                update_date: row.update_date.format("%Y-%m-%d %H:%M:%S" ).to_string(),
             };
 
             // 缓存到Redis
@@ -236,17 +236,17 @@ impl PayService {
     /// 创建支付订单
     pub async fn create_order(&self, params: &PayCreateParams) -> AppResult<PayOrder> {
         let id = uuid::Uuid::new_v4().to_string();
-        let status = params.status.as_deref().unwrap_or("pending");
-        let pay_type = params.pay_type.as_deref().unwrap_or("default");
+        let status = params.status.as_deref().unwrap_or("pending" );
+        let pay_type = params.pay_type.as_deref().unwrap_or("default" );
         let amount = params.amount.unwrap_or(0);
-        let remark = params.remark.as_deref().unwrap_or("");
+        let remark = params.remark.as_deref().unwrap_or("" );
         let now = chrono::Utc::now();
 
         let create_date = params
             .create_date
             .clone()
-            .unwrap_or_else(|| now.format("%Y-%m-%d %H:%M:%S").to_string());
-        let create_date_dt = chrono::NaiveDateTime::parse_from_str(&create_date, "%Y-%m-%d %H:%M:%S")
+            .unwrap_or_else(|| now.format("%Y-%m-%d %H:%M:%S" ).to_string());
+        let create_date_dt = chrono::NaiveDateTime::parse_from_str(&create_date, "%Y-%m-%d %H:%M:%S" )
             .map(|n| chrono::DateTime::<chrono::Utc>::from_naive_utc_and_offset(n, chrono::Utc))
             .unwrap_or(now);
 
@@ -279,15 +279,15 @@ impl PayService {
             create_service: "pay".to_string(),
             create_params: params.create_params.clone(),
             create_date: create_date.clone(),
-            update_date: now.format("%Y-%m-%d %H:%M:%S").to_string(),
+            update_date: now.format("%Y-%m-%d %H:%M:%S" ).to_string(),
         })
     }
 }
 
 impl Default for PayService {
     fn default() -> Self {
-        let pool = sqlx::PgPool::connect_lazy(&std::env::var("DATABASE_URL").unwrap_or_default())
-            .expect("数据库连接失败");
-        Self::new(pool, std::env::var("REDIS_URL").unwrap_or_default())
+        let pool = sqlx::PgPool::connect_lazy(&std::env::var("DATABASE_URL" ).unwrap_or_default())
+            .expect("数据库连接失败" );
+        Self::new(pool, std::env::var("REDIS_URL" ).unwrap_or_default())
     }
 }

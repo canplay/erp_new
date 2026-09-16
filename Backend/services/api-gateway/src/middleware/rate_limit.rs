@@ -32,11 +32,11 @@ pub async fn rate_limit_middleware(request: Request, next: Next) -> Response {
         .unwrap_or_else(|| "unknown".to_string());
     let user_agent = request
         .headers()
-        .get("user-agent")
+        .get("user-agent" )
         .and_then(|v| v.to_str().ok())
-        .unwrap_or("");
+        .unwrap_or("" );
     let client_key = format!(
-        "{}:{}:{}:{}",
+        "{}:{}:{}:{}" ,
         client_ip.split(',').next().unwrap_or(&client_ip).trim(),
         user_agent.chars().take(32).collect::<String>(),
         request.uri().path(),
@@ -49,26 +49,26 @@ pub async fn rate_limit_middleware(request: Request, next: Next) -> Response {
 
         let headers = response.headers_mut();
         headers.insert(
-            "X-RateLimit-Remaining",
+            "X-RateLimit-Remaining" ,
             HeaderValue::from_str(&remaining.to_string())
-                .unwrap_or_else(|_| HeaderValue::from_static("0")),
+                .unwrap_or_else(|_| HeaderValue::from_static("0" )),
         );
         headers.insert(
-            "X-RateLimit-Limit",
+            "X-RateLimit-Limit" ,
             HeaderValue::from_str(&state.max_requests.to_string())
-                .unwrap_or_else(|_| HeaderValue::from_static("0")),
+                .unwrap_or_else(|_| HeaderValue::from_static("0" )),
         );
 
         response
     } else {
-        tracing::warn!("限流触发: {client_key}");
+        tracing::warn!("限流触发: {client_key}" );
         Response::builder()
             .status(StatusCode::TOO_MANY_REQUESTS)
-            .header("Content-Type", "application/json")
-            .body(r#"{"error":"请求过于频繁，请稍后重试"}"#.into())
+            .header("Content-Type" , "application/json" )
+            .body(r#"{"error":"请求过于频繁，请稍后重试" }"#.into())
             .unwrap_or_else(|e| {
-                tracing::error!(error = %e, "构造 429 响应失败");
-                (StatusCode::INTERNAL_SERVER_ERROR, "Internal Server Error").into_response()
+                tracing::error!(error = %e, "构造 429 响应失败" );
+                (StatusCode::INTERNAL_SERVER_ERROR, "Internal Server Error" ).into_response()
             })
     }
 }

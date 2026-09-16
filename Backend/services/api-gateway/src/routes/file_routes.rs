@@ -13,7 +13,7 @@ struct FileQuery { page: Option<i32>, page_size: Option<i32>, folder_id: Option<
 /// 获取 file-service gRPC 客户端
 async fn get_file_client(state: &Arc<AppState>) -> Result<crate::grpc_clients::FileGrpcClient, Json<Value>> {
     state.grpc_clients.read().await.file_client().await
-        .map_err(|e| json_error(&format!("file-service 不可用: {e}")))
+        .map_err(|e| json_error(&format!("file-service 不可用: {e}" )))
 }
 
 /// proto FileInfo → JSON
@@ -47,7 +47,7 @@ async fn list_files(
 ) -> Json<Value> {
     let mut client = match get_file_client(&state).await { Ok(c) => c, Err(r) => return r };
     let folder = q.folder_id.map(|v| v.to_string()).unwrap_or_default();
-    let file_type = q.r#type.as_deref().unwrap_or("").parse::<i32>().unwrap_or(-1);
+    let file_type = q.r#type.as_deref().unwrap_or(" ").parse::<i32>().unwrap_or(-1);
     match client.list_files(folder, 0, file_type, q.keyword.clone().unwrap_or_default(), q.page.unwrap_or(1), q.page_size.unwrap_or(20)).await {
         Ok(resp) => json_success(json!({
             "list": resp.files.iter().map(file_to_json).collect::<Vec<_>>(),
@@ -59,7 +59,7 @@ async fn list_files(
             "keyword": q.keyword,
             "type": q.r#type,
         })),
-        Err(e) => json_error(&format!("查询失败: {e}")),
+        Err(e) => json_error(&format!("查询失败: {e}" )),
     }
 }
 
@@ -69,7 +69,7 @@ async fn list_folders(
     let mut client = match get_file_client(&state).await { Ok(c) => c, Err(r) => return r };
     match client.list_folders(String::new(), 0).await {
         Ok(resp) => json_success(json!(resp.folders.iter().map(folder_to_json).collect::<Vec<_>>())),
-        Err(e) => json_error(&format!("查询失败: {e}")),
+        Err(e) => json_error(&format!("查询失败: {e}" )),
     }
 }
 
@@ -79,8 +79,8 @@ async fn create_folder(
 ) -> Json<Value> {
     let mut client = match get_file_client(&state).await { Ok(c) => c, Err(r) => return r };
     match client.create_folder(
-        body["name"].as_str().unwrap_or("").to_string(),
-        body["parent_id"].as_i64().map(|v| v.to_string()).unwrap_or_default(),
+        body["name" ].as_str().unwrap_or("" ).to_string(),
+        body["parent_id" ].as_i64().map(|v| v.to_string()).unwrap_or_default(),
         0,
     ).await {
         Ok(resp) => {
@@ -90,7 +90,7 @@ async fn create_folder(
                 json_ok()
             }
         }
-        Err(e) => json_error(&format!("创建失败: {e}")),
+        Err(e) => json_error(&format!("创建失败: {e}" )),
     }
 }
 
@@ -104,7 +104,7 @@ async fn search_files(
             "list": resp.files.iter().map(file_to_json).collect::<Vec<_>>(),
             "total": resp.total,
         })),
-        Err(e) => json_error(&format!("搜索失败: {e}")),
+        Err(e) => json_error(&format!("搜索失败: {e}" )),
     }
 }
 
@@ -114,7 +114,7 @@ async fn get_file_stats(
     let mut client = match get_file_client(&state).await { Ok(c) => c, Err(r) => return r };
     match client.list_files(String::new(), 0, -1, String::new(), 1, 1).await {
         Ok(resp) => json_success(json!({"used": resp.total_size, "total": 1073741824, "file_count": resp.total})),
-        Err(e) => json_error(&format!("查询失败: {e}")),
+        Err(e) => json_error(&format!("查询失败: {e}" )),
     }
 }
 
@@ -122,9 +122,9 @@ async fn get_file_stats(
 
 async fn get_recent_files() -> Json<Value> { json_success(json!({"list": [], "total": 0})) }
 async fn get_favorites() -> Json<Value> { json_success(json!({"list": [], "total": 0})) }
-async fn upload_file() -> Json<Value> { json_success(json!({"id": 0, "url": ""})) }
-async fn upload_signature() -> Json<Value> { json_success(json!({"upload_url": "", "upload_method": "PUT"})) }
-async fn share_file() -> Json<Value> { json_success(json!({"token": "", "url": ""})) }
+async fn upload_file() -> Json<Value> { json_success(json!({"id": 0, "url": " "})) }
+async fn upload_signature() -> Json<Value> { json_success(json!({"upload_url": " ", "upload_method": "PUT" })) }
+async fn share_file() -> Json<Value> { json_success(json!({"token": " ", "url": " "})) }
 async fn batch_delete_files() -> Json<Value> { json_ok() }
 async fn batch_move_files() -> Json<Value> { json_ok() }
 async fn batch_copy_files() -> Json<Value> { json_ok() }
@@ -139,23 +139,23 @@ async fn get_file(
             if let Some(f) = resp.file {
                 json_success(file_to_json(&f))
             } else {
-                json_error("文件不存在")
+                json_error("文件不存在" )
             }
         }
-        Err(e) => json_error(&format!("查询失败: {e}")),
+        Err(e) => json_error(&format!("查询失败: {e}" )),
     }
 }
 async fn rename_file(Path(_id): Path<i64>) -> Json<Value> { json_ok() }
 async fn move_file(Path(_id): Path<i64>) -> Json<Value> { json_ok() }
 async fn copy_file(Path(_id): Path<i64>) -> Json<Value> { json_ok() }
 async fn download_file(Path(_id): Path<i64>) -> Json<Value> {
-    json_success(json!({"url": "", "filename": ""}))
+    json_success(json!({"url": " ", "filename": " "}))
 }
 async fn preview_file(Path(_id): Path<i64>) -> Json<Value> {
-    json_success(json!({"type": "unknown", "url": ""}))
+    json_success(json!({"type": "unknown" , "url": " "}))
 }
 async fn thumbnail_file(Path(_id): Path<i64>) -> Json<Value> {
-    json_success(json!({"url": ""}))
+    json_success(json!({"url": " "}))
 }
 async fn favorite_file(Path(_id): Path<i64>) -> Json<Value> { json_ok() }
 async fn unfavorite_file(Path(_id): Path<i64>) -> Json<Value> { json_ok() }
@@ -167,36 +167,36 @@ async fn verify_share(Path(_token): Path<String>) -> Json<Value> {
     json_success(json!({"valid": true}))
 }
 async fn download_share(Path((_token, _file_id)): Path<(String, i64)>) -> Json<Value> {
-    json_success(json!({"url": "", "filename": ""}))
+    json_success(json!({"url": " ", "filename": " "}))
 }
 async fn delete_share(Path(_token): Path<String>) -> Json<Value> { json_ok() }
 
 pub fn routes() -> Router<Arc<AppState>> {
     Router::new()
-        .route("/api/files", get(list_files))
-        .route("/api/files/search", get(search_files))
-        .route("/api/files/recent", get(get_recent_files))
-        .route("/api/files/favorites", get(get_favorites))
-        .route("/api/files/stats", get(get_file_stats))
-        .route("/api/files/folders", get(list_folders).post(create_folder))
-        .route("/api/files/folders/path", get(get_folder_path))
-        .route("/api/files/upload", post(upload_file))
-        .route("/api/files/upload/signature", post(upload_signature))
-        .route("/api/files/share", post(share_file))
-        .route("/api/files/batch-delete", post(batch_delete_files))
-        .route("/api/files/batch-move", post(batch_move_files))
-        .route("/api/files/batch-copy", post(batch_copy_files))
+        .route("/api/files" , get(list_files))
+        .route("/api/files/search" , get(search_files))
+        .route("/api/files/recent" , get(get_recent_files))
+        .route("/api/files/favorites" , get(get_favorites))
+        .route("/api/files/stats" , get(get_file_stats))
+        .route("/api/files/folders" , get(list_folders).post(create_folder))
+        .route("/api/files/folders/path" , get(get_folder_path))
+        .route("/api/files/upload" , post(upload_file))
+        .route("/api/files/upload/signature" , post(upload_signature))
+        .route("/api/files/share" , post(share_file))
+        .route("/api/files/batch-delete" , post(batch_delete_files))
+        .route("/api/files/batch-move" , post(batch_move_files))
+        .route("/api/files/batch-copy" , post(batch_copy_files))
         // 单文件操作
-        .route("/api/files/{id}", get(get_file))
-        .route("/api/files/{id}/rename", axum::routing::put(rename_file))
-        .route("/api/files/{id}/move", axum::routing::put(move_file))
-        .route("/api/files/{id}/copy", post(copy_file))
-        .route("/api/files/{id}/download", get(download_file))
-        .route("/api/files/{id}/preview", get(preview_file))
-        .route("/api/files/{id}/thumbnail", get(thumbnail_file))
-        .route("/api/files/{id}/favorite", post(favorite_file).delete(unfavorite_file))
+        .route("/api/files/{id}" , get(get_file))
+        .route("/api/files/{id}/rename" , axum::routing::put(rename_file))
+        .route("/api/files/{id}/move" , axum::routing::put(move_file))
+        .route("/api/files/{id}/copy" , post(copy_file))
+        .route("/api/files/{id}/download" , get(download_file))
+        .route("/api/files/{id}/preview" , get(preview_file))
+        .route("/api/files/{id}/thumbnail" , get(thumbnail_file))
+        .route("/api/files/{id}/favorite" , post(favorite_file).delete(unfavorite_file))
         // 分享链接操作
-        .route("/api/files/share/{token}", get(get_share).delete(delete_share))
-        .route("/api/files/share/{token}/verify", post(verify_share))
-        .route("/api/files/share/{token}/download/{fileId}", get(download_share))
+        .route("/api/files/share/{token}" , get(get_share).delete(delete_share))
+        .route("/api/files/share/{token}/verify" , post(verify_share))
+        .route("/api/files/share/{token}/download/{fileId}" , get(download_share))
 }

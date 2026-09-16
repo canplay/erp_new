@@ -29,13 +29,13 @@ pub async fn logging_middleware(request: Request, next: Next) -> Response {
     let trace_id = common::otel::current_trace_id().or_else(|| {
         request
             .headers()
-            .get("x-trace-id")
+            .get("x-trace-id" )
             .and_then(|v| v.to_str().ok())
             .map(std::string::ToString::to_string)
     })
     .unwrap_or_else(|| {
         format!(
-            "{:x}",
+            "{:x}" ,
             std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
                 .map_or(0, |d| d.as_nanos())
@@ -50,7 +50,7 @@ pub async fn logging_middleware(request: Request, next: Next) -> Response {
     // 获取用户 ID
     let user_id = request
         .headers()
-        .get("x-user-id")
+        .get("x-user-id" )
         .and_then(|v| v.to_str().ok())
         .map(std::string::ToString::to_string);
 

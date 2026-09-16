@@ -16,11 +16,11 @@ pub fn json_error(msg: &str) -> Json<Value> {
     Json(json!({"error": msg}))
 }
 
-/// Error response with formatted message: `{"error": "prefix: detail"}`
+/// Error response with formatted message: `{"error": "prefix: detail" }`
 pub fn json_error_fmt(prefix: &str, e: &impl std::fmt::Display) -> (StatusCode, Json<Value>) {
     (
         StatusCode::INTERNAL_SERVER_ERROR,
-        Json(json!({"error": format!("{}: {}", prefix, e)})),
+        Json(json!({"error": format!("{}: {}" , prefix, e)})),
     )
 }
 

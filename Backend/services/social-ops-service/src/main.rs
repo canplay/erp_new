@@ -26,12 +26,12 @@ use common::service_bootstrap::{ServiceBootstrap, ServiceConfig};
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 使用 ServiceBootstrap 统一启动器
-    let config = ServiceConfig::from_env("social-ops-service", 8110, 9110);
+    let config = ServiceConfig::from_env("social-ops-service" , 8110, 9110);
 
     let bootstrap = ServiceBootstrap::new(config);
 
     // 创建数据库连接池
-    let database_url = std::env::var("DATABASE_URL")
+    let database_url = std::env::var("DATABASE_URL" )
         .unwrap_or_else(|_| "postgres://postgres:${DATABASE_PASSWORD}@localhost:5432/myai".to_string());
     let pool = sqlx::PgPool::connect(&database_url).await?;
 

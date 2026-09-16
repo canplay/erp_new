@@ -421,7 +421,7 @@ impl VersionManager {
                             change_type: "size_change".to_string(),
                             position: None,
                             content: Some(format!(
-                                "文件大小从 {} 字节变为 {} 字节",
+                                "文件大小从 {} 字节变为 {} 字节" ,
                                 from.file_size, to.file_size
                             )),
                         },
@@ -429,7 +429,7 @@ impl VersionManager {
                             change_type: "hash_change".to_string(),
                             position: None,
                             content: Some(format!(
-                                "内容哈希: {} -> {}",
+                                "内容哈希: {} -> {}" ,
                                 from.content_hash, to.content_hash
                             )),
                         },
@@ -464,7 +464,7 @@ impl VersionManager {
                 new_version_id: String::new(),
                 new_version_number: 0,
                 backup_version_id: None,
-                message: format!("版本 {target_version} 不存在"),
+                message: format!("版本 {target_version} 不存在" ),
             };
         };
 
@@ -505,7 +505,7 @@ impl VersionManager {
                     storage_path: target_ver.storage_path.clone(),
                     created_by: "system".to_string(),
                     description: Some(format!(
-                        "回退到版本 {} - {}",
+                        "回退到版本 {} - {}" ,
                         target_version,
                         reason.unwrap_or_else(|| "用户操作".to_string())
                     )),
@@ -518,7 +518,7 @@ impl VersionManager {
             new_version_id: new_version.version_id,
             new_version_number: new_version.version_number,
             backup_version_id,
-            message: format!("成功回退到版本 {target_version}"),
+            message: format!("成功回退到版本 {target_version}" ),
         }
     }
 
@@ -694,7 +694,7 @@ pub struct VersionStats {
 
 /// 生成版本 ID
 fn generate_version_id(file_id: &str, version_number: u32) -> String {
-    format!("{file_id}_v{version_number:03}")
+    format!("{file_id}_v{version_number:03}" )
 }
 
 #[cfg(test)]
@@ -721,7 +721,7 @@ mod tests {
             .await;
 
         assert_eq!(v1.version_number, 1);
-        assert_eq!(v1.file_name, "document.txt");
+        assert_eq!(v1.file_name, "document.txt" );
         assert!(v1.is_initial);
 
         // 创建第二个版本
@@ -792,7 +792,7 @@ mod tests {
             )
             .await;
 
-        let versions = manager.get_versions("file_001").await;
+        let versions = manager.get_versions("file_001" ).await;
         assert_eq!(versions.len(), 3);
         assert_eq!(versions[0].version_number, 3); // 降序排列
         assert_eq!(versions[1].version_number, 2);
@@ -832,10 +832,10 @@ mod tests {
             )
             .await;
 
-        let diff = manager.compare_versions("file_001", 1, 2).await;
+        let diff = manager.compare_versions("file_001" , 1, 2).await;
         assert!(diff.is_some());
 
-        let diff = diff.expect("diff should exist");
+        let diff = diff.expect("diff should exist" );
         assert_eq!(diff.diff_type, DiffType::Modified);
         assert_eq!(diff.added_bytes, 1000);
         assert_eq!(diff.removed_bytes, 0);
@@ -905,9 +905,9 @@ mod tests {
         assert!(result.backup_version_id.is_some());
 
         // 验证新版本内容与目标版本一致
-        let current = manager.get_current_version("file_001").await;
+        let current = manager.get_current_version("file_001" ).await;
         assert!(current.is_some());
-        assert_eq!(current.expect("current version should exist").file_size, 1000);
+        assert_eq!(current.expect("current version should exist" ).file_size, 1000);
     }
 
     #[tokio::test]
@@ -929,18 +929,18 @@ mod tests {
             )
             .await;
 
-        let added = manager.add_tag("file_001", 1, "important").await;
+        let added = manager.add_tag("file_001" , 1, "important" ).await;
         assert!(added);
 
-        let version = manager.get_version("file_001", 1).await;
+        let version = manager.get_version("file_001" , 1).await;
         assert!(version.is_some());
-        assert!(version.expect("version should exist").tags.contains(&"important".to_string()));
+        assert!(version.expect("version should exist" ).tags.contains(&"important".to_string()));
 
-        let removed = manager.remove_tag("file_001", 1, "important").await;
+        let removed = manager.remove_tag("file_001" , 1, "important" ).await;
         assert!(removed);
 
-        let version = manager.get_version("file_001", 1).await;
-        assert!(version.expect("version should exist").tags.is_empty());
+        let version = manager.get_version("file_001" , 1).await;
+        assert!(version.expect("version should exist" ).tags.is_empty());
     }
 
     #[tokio::test]
@@ -977,19 +977,19 @@ mod tests {
             .await;
 
         // 归档版本 1
-        let archived = manager.archive_version("file_001", 1).await;
+        let archived = manager.archive_version("file_001" , 1).await;
         assert!(archived);
 
         // 验证状态
-        let v1 = manager.get_version("file_001", 1).await;
-        assert_eq!(v1.expect("v1 should exist").state, VersionState::Archived);
+        let v1 = manager.get_version("file_001" , 1).await;
+        assert_eq!(v1.expect("v1 should exist" ).state, VersionState::Archived);
 
         // 删除版本 2（不是初始版本）
-        let deleted = manager.delete_version("file_001", 2).await;
+        let deleted = manager.delete_version("file_001" , 2).await;
         assert!(deleted);
 
         // 尝试删除初始版本（应该失败）
-        let deleted = manager.delete_version("file_001", 1).await;
+        let deleted = manager.delete_version("file_001" , 1).await;
         assert!(!deleted);
     }
 

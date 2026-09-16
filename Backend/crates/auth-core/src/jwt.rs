@@ -159,15 +159,15 @@ mod tests {
 
     #[test]
     fn test_jwt_round_trip() {
-        let service = JwtService::new("test-secret", "test-issuer", "test-audience", 3600, 604800);
+        let service = JwtService::new("test-secret" , "test-issuer" , "test-audience" , 3600, 604800);
 
         let token = service
-            .generate_access_token(123, "testuser", "admin")
+            .generate_access_token(123, "testuser" , "admin" )
             .unwrap();
         let claims = service.verify_token(&token).unwrap();
 
         assert_eq!(claims.sub, 123);
-        assert_eq!(claims.username, "testuser");
-        assert_eq!(claims.role, "admin");
+        assert_eq!(claims.username, "testuser" );
+        assert_eq!(claims.role, "admin" );
     }
 }

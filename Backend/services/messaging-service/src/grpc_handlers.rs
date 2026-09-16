@@ -61,8 +61,8 @@ pub async fn list_messages(
             Ok((items, total, unread))
         }
         Err(e) => {
-            tracing::error!("list_messages 查询失败: {e}");
-            Err(Status::internal(format!("Database error: {e}")))
+            tracing::error!("list_messages 查询失败: {e}" );
+            Err(Status::internal(format!("Database error: {e}" )))
         }
     }
 }
@@ -90,7 +90,7 @@ pub async fn get_message(
             tracing::error!(
                 "get_message 查询失败: id={id}, user_id={user_id}, error={e}"
             );
-            Err(Status::internal(format!("Database error: {e}")))
+            Err(Status::internal(format!("Database error: {e}" )))
         }
     }
 }
@@ -109,7 +109,7 @@ pub async fn send_message(
 
     let target_ids = target_user_ids.unwrap_or_default();
     if target_ids.is_empty() {
-        return Err(Status::invalid_argument("No target users specified"));
+        return Err(Status::invalid_argument("No target users specified" ));
     }
 
     let message = Message {
@@ -130,8 +130,8 @@ pub async fn send_message(
     match state.message_repo.send_message(&message, &target_ids).await {
         Ok(()) => Ok((0, target_ids.len() as i32)),
         Err(e) => {
-            tracing::error!("send_message 插入失败: {e}");
-            Err(Status::internal(format!("Database error: {e}")))
+            tracing::error!("send_message 插入失败: {e}" );
+            Err(Status::internal(format!("Database error: {e}" )))
         }
     }
 }
@@ -160,8 +160,8 @@ pub async fn mark_as_read(
         None => match state.message_repo.mark_all_as_read(user_id).await {
             Ok(count) => Ok(count as i32),
             Err(e) => {
-                tracing::error!("mark_all_as_read 失败: user_id={user_id}, error={e}");
-                Err(Status::internal(format!("Database error: {e}")))
+                tracing::error!("mark_all_as_read 失败: user_id={user_id}, error={e}" );
+                Err(Status::internal(format!("Database error: {e}" )))
             }
         },
     }
@@ -203,7 +203,7 @@ pub async fn get_unread_count(
             tracing::error!(
                 "get_unread_count 失败: user_id={user_id}, type={message_type:?}, error={e}"
             );
-            Err(Status::internal(format!("Database error: {e}")))
+            Err(Status::internal(format!("Database error: {e}" )))
         }
     }
 }
@@ -260,8 +260,8 @@ pub async fn list_templates(
     let rows = sqlx::query_as!(
         TemplateRow,
         r#"SELECT id, name, template_type, title_template, content_template,
-           COALESCE(is_active, false) AS "is_active!",
-           COALESCE(created_at, NOW()) AS "created_at!",
+           COALESCE(is_active, false) AS "is_active!" ,
+           COALESCE(created_at, NOW()) AS "created_at!" ,
            COALESCE(updated_at, NOW()) AS "updated_at!"
            FROM message_templates
            WHERE ($1::text IS NULL OR template_type = $1)
@@ -273,7 +273,7 @@ pub async fn list_templates(
     )
     .fetch_all(&state.pool)
     .await
-    .map_err(|e| Status::internal(format!("Database error: {e}")))?;
+    .map_err(|e| Status::internal(format!("Database error: {e}" )))?;
 
     let templates: Vec<MessageTemplate> = rows
         .into_iter()
@@ -291,12 +291,12 @@ pub async fn list_templates(
 
     // 获取总数
     let total = sqlx::query_scalar!(
-        "SELECT COUNT(*) FROM message_templates WHERE ($1::text IS NULL OR template_type = $1)",
+        "SELECT COUNT(*) FROM message_templates WHERE ($1::text IS NULL OR template_type = $1)" ,
         type_filter,
     )
     .fetch_one(&state.pool)
     .await
-    .map_err(|e| Status::internal(format!("Database error: {e}")))?
+    .map_err(|e| Status::internal(format!("Database error: {e}" )))?
     .unwrap_or(0);
 
     Ok(TemplateListResult { templates, total })
@@ -310,8 +310,8 @@ pub async fn get_template(
     let result = sqlx::query_as!(
         TemplateRow,
         r#"SELECT id, name, template_type, title_template, content_template,
-           COALESCE(is_active, false) AS "is_active!",
-           COALESCE(created_at, NOW()) AS "created_at!",
+           COALESCE(is_active, false) AS "is_active!" ,
+           COALESCE(created_at, NOW()) AS "created_at!" ,
            COALESCE(updated_at, NOW()) AS "updated_at!"
            FROM message_templates
            WHERE id = $1"#,
@@ -319,7 +319,7 @@ pub async fn get_template(
     )
     .fetch_optional(&state.pool)
     .await
-    .map_err(|e| Status::internal(format!("Database error: {e}")))?;
+    .map_err(|e| Status::internal(format!("Database error: {e}" )))?;
 
     match result {
         Some(row) => Ok(Some(MessageTemplate {
@@ -357,11 +357,11 @@ pub async fn create_template(
     )
     .fetch_one(&state.pool)
     .await
-    .map_err(|e| Status::internal(format!("Database error: {e}")))?;
+    .map_err(|e| Status::internal(format!("Database error: {e}" )))?;
 
     let id = result.id;
 
-    tracing::info!("创建消息模板成功: id={id}, name={name}");
+    tracing::info!("创建消息模板成功: id={id}, name={name}" );
 
     Ok(id)
 }
@@ -395,11 +395,11 @@ pub async fn update_template(
     )
     .fetch_optional(&state.pool)
     .await
-    .map_err(|e| Status::internal(format!("Database error: {e}")))?;
+    .map_err(|e| Status::internal(format!("Database error: {e}" )))?;
 
     match result {
         Some(row) => {
-            tracing::info!("更新消息模板成功: id={}", row.id);
+            tracing::info!("更新消息模板成功: id={}" , row.id);
             Ok(true)
         }
         None => Ok(false),
@@ -408,17 +408,17 @@ pub async fn update_template(
 
 /// 删除模板
 pub async fn delete_template(state: Arc<MessagingState>, id: i64) -> Result<bool, Status> {
-    let result = sqlx::query!("DELETE FROM message_templates WHERE id = $1", id)
+    let result = sqlx::query!("DELETE FROM message_templates WHERE id = $1" , id)
         .execute(&state.pool)
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))?;
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))?;
 
     let success = result.rows_affected() > 0;
 
     if success {
-        tracing::info!("删除消息模板成功: id={id}");
+        tracing::info!("删除消息模板成功: id={id}" );
     } else {
-        tracing::warn!("删除消息模板失败: id={id} 不存在");
+        tracing::warn!("删除消息模板失败: id={id} 不存在" );
     }
 
     Ok(success)

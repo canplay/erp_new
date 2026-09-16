@@ -25,12 +25,12 @@ pub enum SubscriptionStatus {
 impl SubscriptionStatus {
     pub fn as_str(&self) -> &'static str {
         match self {
-            Self::Active => "active",
-            Self::Cancelled => "cancelled",
-            Self::Expired => "expired",
-            Self::Trialing => "trialing",
-            Self::PastDue => "past_due",
-            Self::Unpaid => "unpaid",
+            Self::Active => "active" ,
+            Self::Cancelled => "cancelled" ,
+            Self::Expired => "expired" ,
+            Self::Trialing => "trialing" ,
+            Self::PastDue => "past_due" ,
+            Self::Unpaid => "unpaid" ,
         }
     }
 
@@ -177,12 +177,12 @@ pub enum SubscriptionChangeType {
 impl SubscriptionChangeType {
     pub fn as_str(&self) -> &'static str {
         match self {
-            Self::Created => "created",
-            Self::Renewed => "renewed",
-            Self::Upgraded => "upgraded",
-            Self::Downgraded => "downgraded",
-            Self::Cancelled => "cancelled",
-            Self::Expired => "expired",
+            Self::Created => "created" ,
+            Self::Renewed => "renewed" ,
+            Self::Upgraded => "upgraded" ,
+            Self::Downgraded => "downgraded" ,
+            Self::Cancelled => "cancelled" ,
+            Self::Expired => "expired" ,
         }
     }
 }

@@ -515,7 +515,7 @@ impl WorkflowRepository for PostgresWorkflowRepository {
     async fn create(&self, wf: &Workflow) -> Result<(), sqlx::Error> {
         sqlx::query!(
             r"INSERT INTO workflows (id, name, description, definition, status, version, created_by, created_at, updated_at)
-               VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
+               VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)" ,
             &wf.id,
             &wf.name,
             wf.description.as_deref(),
@@ -533,7 +533,7 @@ impl WorkflowRepository for PostgresWorkflowRepository {
 
     async fn update(&self, wf: &Workflow) -> Result<(), sqlx::Error> {
         sqlx::query!(
-            r"UPDATE workflows SET name = $2, description = $3, definition = $4, status = $5, updated_at = NOW() WHERE id = $1",
+            r"UPDATE workflows SET name = $2, description = $3, definition = $4, status = $5, updated_at = NOW() WHERE id = $1" ,
             &wf.id,
             &wf.name,
             wf.description.as_deref(),
@@ -546,7 +546,7 @@ impl WorkflowRepository for PostgresWorkflowRepository {
     }
 
     async fn delete(&self, id: &str) -> Result<(), sqlx::Error> {
-        sqlx::query!("DELETE FROM workflows WHERE id = $1", id)
+        sqlx::query!("DELETE FROM workflows WHERE id = $1" , id)
             .execute(&self.pool)
             .await?;
         Ok(())
@@ -556,7 +556,7 @@ impl WorkflowRepository for PostgresWorkflowRepository {
         let row = sqlx::query_as!(
             Workflow,
             r"SELECT id, name, description, definition, status, version, created_by, created_at, updated_at
-             FROM workflows WHERE id = $1",
+             FROM workflows WHERE id = $1" ,
             id,
         )
         .fetch_optional(&self.pool)
@@ -574,7 +574,7 @@ impl WorkflowRepository for PostgresWorkflowRepository {
         let offset = (page - 1) * page_size;
 
         let count: i64 = sqlx::query_scalar!(
-            "SELECT COUNT(*) FROM workflows WHERE ($1::text IS NULL OR status = $1)",
+            "SELECT COUNT(*) FROM workflows WHERE ($1::text IS NULL OR status = $1)" ,
             status,
         )
         .fetch_one(&self.pool)
@@ -586,7 +586,7 @@ impl WorkflowRepository for PostgresWorkflowRepository {
             r"SELECT id, name, description, definition, status, version, created_by, created_at, updated_at
              FROM workflows
              WHERE ($1::text IS NULL OR status = $1)
-             ORDER BY created_at DESC LIMIT $2 OFFSET $3",
+             ORDER BY created_at DESC LIMIT $2 OFFSET $3" ,
             status,
             page_size,
             offset,
@@ -600,7 +600,7 @@ impl WorkflowRepository for PostgresWorkflowRepository {
     }
 
     async fn publish(&self, id: &str) -> Result<(), sqlx::Error> {
-        sqlx::query!("UPDATE workflows SET status = 'published', updated_at = NOW() WHERE id = $1", id)
+        sqlx::query!("UPDATE workflows SET status = 'published', updated_at = NOW() WHERE id = $1" , id)
             .execute(&self.pool)
             .await?;
         Ok(())
@@ -613,14 +613,14 @@ impl WorkflowRepository for PostgresWorkflowRepository {
     ) -> Result<(), sqlx::Error> {
         let mut tx = self.pool.begin().await?;
 
-        sqlx::query!("DELETE FROM workflow_nodes WHERE workflow_id = $1", workflow_id)
+        sqlx::query!("DELETE FROM workflow_nodes WHERE workflow_id = $1" , workflow_id)
             .execute(&mut *tx)
             .await?;
 
         for node in nodes {
             sqlx::query!(
                 r"INSERT INTO workflow_nodes (id, workflow_id, name, node_type, position_x, position_y, config, timeout, auto_complete, created_at)
-                  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
+                  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)" ,
                 &node.id,
                 workflow_id,
                 &node.name,
@@ -648,14 +648,14 @@ impl WorkflowRepository for PostgresWorkflowRepository {
     ) -> Result<(), sqlx::Error> {
         let mut tx = self.pool.begin().await?;
 
-        sqlx::query!("DELETE FROM workflow_edges WHERE workflow_id = $1", workflow_id)
+        sqlx::query!("DELETE FROM workflow_edges WHERE workflow_id = $1" , workflow_id)
             .execute(&mut *tx)
             .await?;
 
         for edge in edges {
             sqlx::query!(
                 r"INSERT INTO workflow_edges (id, workflow_id, source_node_id, target_node_id, edge_type, condition, label, priority, created_at)
-                  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
+                  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)" ,
                 &edge.id,
                 workflow_id,
                 &edge.source_node_id,
@@ -681,7 +681,7 @@ impl WorkflowRepository for PostgresWorkflowRepository {
             r#"SELECT id, workflow_id, name, node_type, position_x, position_y,
                       COALESCE(config, '{}'::jsonb) AS config,
                       timeout,
-                      COALESCE(auto_complete, false) AS "auto_complete!",
+                      COALESCE(auto_complete, false) AS "auto_complete!" ,
                       COALESCE(created_at, NOW()) AS "created_at!"
              FROM workflow_nodes WHERE workflow_id = $1 ORDER BY position_x, position_y"#,
             workflow_id,
@@ -697,7 +697,7 @@ impl WorkflowRepository for PostgresWorkflowRepository {
             WorkflowEdge,
             r#"SELECT id, workflow_id, source_node_id, target_node_id, edge_type,
                       condition, label,
-                      COALESCE(priority, 0) AS "priority!",
+                      COALESCE(priority, 0) AS "priority!" ,
                       COALESCE(created_at, NOW()) AS "created_at!"
              FROM workflow_edges WHERE workflow_id = $1 ORDER BY priority"#,
             workflow_id,
@@ -712,7 +712,7 @@ impl WorkflowRepository for PostgresWorkflowRepository {
     async fn create_instance(&self, inst: &WorkflowInstance) -> Result<(), sqlx::Error> {
         sqlx::query!(
             r"INSERT INTO workflow_instances (id, workflow_id, workflow_version, status, current_node_id, variables, started_by, started_at)
-               VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
+               VALUES ($1, $2, $3, $4, $5, $6, $7, $8)" ,
             &inst.id,
             &inst.workflow_id,
             inst.workflow_version,
@@ -729,7 +729,7 @@ impl WorkflowRepository for PostgresWorkflowRepository {
 
     async fn update_instance(&self, inst: &WorkflowInstance) -> Result<(), sqlx::Error> {
         sqlx::query!(
-            r"UPDATE workflow_instances SET status = $2, current_node_id = $3, variables = $4, completed_at = $5 WHERE id = $1",
+            r"UPDATE workflow_instances SET status = $2, current_node_id = $3, variables = $4, completed_at = $5 WHERE id = $1" ,
             &inst.id,
             &inst.status,
             inst.current_node_id.as_deref(),
@@ -747,7 +747,7 @@ impl WorkflowRepository for PostgresWorkflowRepository {
             r"SELECT id, workflow_id, workflow_version, status, current_node_id,
                       COALESCE(variables, '{}'::jsonb) AS variables,
                       started_by, started_at, completed_at
-             FROM workflow_instances WHERE id = $1",
+             FROM workflow_instances WHERE id = $1" ,
             id,
         )
         .fetch_optional(&self.pool)
@@ -766,7 +766,7 @@ impl WorkflowRepository for PostgresWorkflowRepository {
         let offset = (page - 1) * page_size;
 
         let count: i64 = sqlx::query_scalar!(
-            "SELECT COUNT(*) FROM workflow_instances WHERE ($1::text IS NULL OR workflow_id = $1) AND ($2::text IS NULL OR status = $2)",
+            "SELECT COUNT(*) FROM workflow_instances WHERE ($1::text IS NULL OR workflow_id = $1) AND ($2::text IS NULL OR status = $2)" ,
             workflow_id,
             status,
         )
@@ -781,7 +781,7 @@ impl WorkflowRepository for PostgresWorkflowRepository {
                       started_by, started_at, completed_at
              FROM workflow_instances
              WHERE ($1::text IS NULL OR workflow_id = $1) AND ($2::text IS NULL OR status = $2)
-             ORDER BY started_at DESC LIMIT $3 OFFSET $4",
+             ORDER BY started_at DESC LIMIT $3 OFFSET $4" ,
             workflow_id,
             status,
             page_size,
@@ -799,7 +799,7 @@ impl WorkflowRepository for PostgresWorkflowRepository {
     async fn create_task(&self, task: &TaskRecord) -> Result<(), sqlx::Error> {
         sqlx::query!(
             r"INSERT INTO task_records (id, instance_id, node_id, node_name, assignee, status, started_at)
-               VALUES ($1, $2, $3, $4, $5, $6, $7)",
+               VALUES ($1, $2, $3, $4, $5, $6, $7)" ,
             &task.id,
             &task.instance_id,
             &task.node_id,
@@ -815,7 +815,7 @@ impl WorkflowRepository for PostgresWorkflowRepository {
 
     async fn update_task(&self, task: &TaskRecord) -> Result<(), sqlx::Error> {
         sqlx::query!(
-            r"UPDATE task_records SET assignee = $2, status = $3, comment = $4, completed_at = $5, result = $6, form_data = $7 WHERE id = $1",
+            r"UPDATE task_records SET assignee = $2, status = $3, comment = $4, completed_at = $5, result = $6, form_data = $7 WHERE id = $1" ,
             &task.id,
             task.assignee.as_deref(),
             &task.status,
@@ -833,7 +833,7 @@ impl WorkflowRepository for PostgresWorkflowRepository {
         let row = sqlx::query_as!(
             TaskRecord,
             r#"SELECT id, instance_id, node_id, node_name, assignee, status, comment,
-                      COALESCE(started_at, NOW()) AS "started_at!",
+                      COALESCE(started_at, NOW()) AS "started_at!" ,
                       completed_at, result, form_data, timeout_at
              FROM task_records WHERE id = $1"#,
             id,
@@ -855,7 +855,7 @@ impl WorkflowRepository for PostgresWorkflowRepository {
         let offset = (page - 1) * page_size;
 
         let count: i64 = sqlx::query_scalar!(
-            "SELECT COUNT(*) FROM task_records WHERE ($1::text IS NULL OR instance_id = $1) AND ($2::text IS NULL OR assignee = $2)",
+            "SELECT COUNT(*) FROM task_records WHERE ($1::text IS NULL OR instance_id = $1) AND ($2::text IS NULL OR assignee = $2)" ,
             instance_id,
             assignee,
         )
@@ -866,7 +866,7 @@ impl WorkflowRepository for PostgresWorkflowRepository {
         let rows = sqlx::query_as!(
             TaskRecord,
             r#"SELECT id, instance_id, node_id, node_name, assignee, status, comment,
-                      COALESCE(started_at, NOW()) AS "started_at!",
+                      COALESCE(started_at, NOW()) AS "started_at!" ,
                       completed_at, result, form_data, timeout_at
              FROM task_records
              WHERE ($1::text IS NULL OR instance_id = $1) AND ($2::text IS NULL OR assignee = $2)
@@ -898,7 +898,7 @@ impl WorkflowRepository for PostgresWorkflowRepository {
         let rows = sqlx::query_as!(
             TaskRecord,
             r#"SELECT id, instance_id, node_id, node_name, assignee, status, comment,
-                      COALESCE(started_at, NOW()) AS "started_at!",
+                      COALESCE(started_at, NOW()) AS "started_at!" ,
                       completed_at, result, form_data, timeout_at
              FROM task_records WHERE instance_id = $1 ORDER BY started_at DESC"#,
             instance_id,
@@ -960,7 +960,7 @@ impl InstanceRepository for PostgresInstanceRepository {
     async fn create(&self, inst: &WorkflowInstance) -> Result<(), sqlx::Error> {
         sqlx::query!(
             r"INSERT INTO workflow_instances (id, workflow_id, workflow_version, status, current_node_id, variables, started_by, started_at)
-               VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
+               VALUES ($1, $2, $3, $4, $5, $6, $7, $8)" ,
             &inst.id,
             &inst.workflow_id,
             inst.workflow_version,
@@ -977,7 +977,7 @@ impl InstanceRepository for PostgresInstanceRepository {
 
     async fn update(&self, inst: &WorkflowInstance) -> Result<(), sqlx::Error> {
         sqlx::query!(
-            r"UPDATE workflow_instances SET status = $2, current_node_id = $3, variables = $4, completed_at = $5 WHERE id = $1",
+            r"UPDATE workflow_instances SET status = $2, current_node_id = $3, variables = $4, completed_at = $5 WHERE id = $1" ,
             &inst.id,
             &inst.status,
             inst.current_node_id.as_deref(),
@@ -995,7 +995,7 @@ impl InstanceRepository for PostgresInstanceRepository {
             r"SELECT id, workflow_id, workflow_version, status, current_node_id,
                       COALESCE(variables, '{}'::jsonb) AS variables,
                       started_by, started_at, completed_at
-             FROM workflow_instances WHERE id = $1",
+             FROM workflow_instances WHERE id = $1" ,
             id,
         )
         .fetch_optional(&self.pool)
@@ -1014,7 +1014,7 @@ impl InstanceRepository for PostgresInstanceRepository {
         let offset = (page - 1) * page_size;
 
         let count: i64 = sqlx::query_scalar!(
-            "SELECT COUNT(*) FROM workflow_instances WHERE started_by = $1 AND ($2::text IS NULL OR status = $2)",
+            "SELECT COUNT(*) FROM workflow_instances WHERE started_by = $1 AND ($2::text IS NULL OR status = $2)" ,
             user_id,
             status,
         )
@@ -1029,7 +1029,7 @@ impl InstanceRepository for PostgresInstanceRepository {
                       started_by, started_at, completed_at
              FROM workflow_instances
              WHERE started_by = $1 AND ($2::text IS NULL OR status = $2)
-             ORDER BY started_at DESC LIMIT $3 OFFSET $4",
+             ORDER BY started_at DESC LIMIT $3 OFFSET $4" ,
             user_id,
             status,
             page_size,
@@ -1045,7 +1045,7 @@ impl InstanceRepository for PostgresInstanceRepository {
 
     async fn update_current_node(&self, id: &str, node_id: &str) -> Result<(), sqlx::Error> {
         sqlx::query!(
-            "UPDATE workflow_instances SET current_node_id = $2 WHERE id = $1",
+            "UPDATE workflow_instances SET current_node_id = $2 WHERE id = $1" ,
             id,
             node_id,
         )
@@ -1056,7 +1056,7 @@ impl InstanceRepository for PostgresInstanceRepository {
 
     async fn complete(&self, id: &str) -> Result<(), sqlx::Error> {
         sqlx::query!(
-            "UPDATE workflow_instances SET status = 'completed', completed_at = NOW() WHERE id = $1",
+            "UPDATE workflow_instances SET status = 'completed', completed_at = NOW() WHERE id = $1" ,
             id,
         )
         .execute(&self.pool)
@@ -1112,7 +1112,7 @@ impl TaskRepository for PostgresTaskRepository {
     async fn create(&self, task: &TaskRecord) -> Result<(), sqlx::Error> {
         sqlx::query!(
             r"INSERT INTO task_records (id, instance_id, node_id, node_name, assignee, status, started_at)
-               VALUES ($1, $2, $3, $4, $5, $6, $7)",
+               VALUES ($1, $2, $3, $4, $5, $6, $7)" ,
             &task.id,
             &task.instance_id,
             &task.node_id,
@@ -1128,7 +1128,7 @@ impl TaskRepository for PostgresTaskRepository {
 
     async fn update(&self, task: &TaskRecord) -> Result<(), sqlx::Error> {
         sqlx::query!(
-            r"UPDATE task_records SET assignee = $2, status = $3, comment = $4, completed_at = $5, result = $6, form_data = $7 WHERE id = $1",
+            r"UPDATE task_records SET assignee = $2, status = $3, comment = $4, completed_at = $5, result = $6, form_data = $7 WHERE id = $1" ,
             &task.id,
             task.assignee.as_deref(),
             &task.status,
@@ -1146,7 +1146,7 @@ impl TaskRepository for PostgresTaskRepository {
         let row = sqlx::query_as!(
             TaskRecord,
             r#"SELECT id, instance_id, node_id, node_name, assignee, status, comment,
-                      COALESCE(started_at, NOW()) AS "started_at!",
+                      COALESCE(started_at, NOW()) AS "started_at!" ,
                       completed_at, result, form_data, timeout_at
              FROM task_records WHERE id = $1"#,
             id,
@@ -1161,7 +1161,7 @@ impl TaskRepository for PostgresTaskRepository {
         let rows = sqlx::query_as!(
             TaskRecord,
             r#"SELECT id, instance_id, node_id, node_name, assignee, status, comment,
-                      COALESCE(started_at, NOW()) AS "started_at!",
+                      COALESCE(started_at, NOW()) AS "started_at!" ,
                       completed_at, result, form_data, timeout_at
              FROM task_records WHERE instance_id = $1 ORDER BY started_at"#,
             instance_id,
@@ -1177,7 +1177,7 @@ impl TaskRepository for PostgresTaskRepository {
         let rows = sqlx::query_as!(
             TaskRecord,
             r#"SELECT id, instance_id, node_id, node_name, assignee, status, comment,
-                      COALESCE(started_at, NOW()) AS "started_at!",
+                      COALESCE(started_at, NOW()) AS "started_at!" ,
                       completed_at, result, form_data, timeout_at
              FROM task_records WHERE assignee = $1 AND status = 'pending' ORDER BY started_at"#,
             assignee,
@@ -1191,7 +1191,7 @@ impl TaskRepository for PostgresTaskRepository {
 
     async fn complete_task(&self, id: &str, result: Option<&serde_json::Value>) -> Result<(), sqlx::Error> {
         sqlx::query!(
-            r"UPDATE task_records SET status = 'completed', completed_at = NOW(), result = $2 WHERE id = $1",
+            r"UPDATE task_records SET status = 'completed', completed_at = NOW(), result = $2 WHERE id = $1" ,
             id,
             result,
         )

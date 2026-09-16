@@ -151,7 +151,7 @@ impl ApiKeyService for ApiKeyGrpcServer {
                         .map(|dt| dt.timestamp()).unwrap_or(0),
                 }),
             })),
-            None => Err(Status::not_found("API Key not found")),
+            None => Err(Status::not_found("API Key not found" )),
         }
     }
 
@@ -211,7 +211,7 @@ impl ApiKeyService for ApiKeyGrpcServer {
         let req = request.into_inner();
 
         // grpc_handlers::validate_api_key 将 key_id+secret 拼接为一个 key 参数
-        let full_key = format!("{}{}", req.key_id, req.secret_key);
+        let full_key = format!("{}{}" , req.key_id, req.secret_key);
 
         let resp = grpc_handlers::validate_api_key(
             self.state.clone(),
@@ -264,7 +264,7 @@ impl ApiKeyService for ApiKeyGrpcServer {
         let _old_key = grpc_handlers::get_api_key(self.state.clone(), id.clone()).await
             .map_err(|e| Status::internal(e.to_string()))?;
 
-        let new_secret = Uuid::new_v4().to_string().replace('-', "");
+        let new_secret = Uuid::new_v4().to_string().replace('-', "" );
         let new_key_id = ApiKeyAppState::generate_key_id();
 
         Ok(Response::new(RotateApiKeyResponse {
@@ -279,12 +279,12 @@ impl common::service_bootstrap::GrpcServiceBuilder for ApiKeyGrpcServer {
     fn build_grpc_server(&self, grpc_addr: &str) -> Result<tokio::task::JoinHandle<()>, Box<dyn std::error::Error + Send + Sync>> {
         use tonic::transport::Server;
 
-        let addr: SocketAddr = grpc_addr.parse().map_err(|e| -> Box<dyn std::error::Error + Send + Sync> { format!("invalid grpc addr: {e}").into() })?;
+        let addr: SocketAddr = grpc_addr.parse().map_err(|e| -> Box<dyn std::error::Error + Send + Sync> { format!("invalid grpc addr: {e}" ).into() })?;
         let server = ApiKeyServiceServer::new(ApiKeyGrpcServer::new(self.state.clone()));
         let handle = tokio::spawn(async move {
             if let Err(e) = Server::builder()
                 .add_service(server).serve(addr).await {
-                tracing::error!("gRPC server error: {}", e);
+                tracing::error!("gRPC server error: {}" , e);
             }
         });
         Ok(handle)

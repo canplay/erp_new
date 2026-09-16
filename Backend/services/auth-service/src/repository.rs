@@ -6,13 +6,13 @@ use thiserror::Error;
 /// 用户仓储错误类型
 #[derive(Error, Debug)]
 pub enum UserRepositoryError {
-    #[error("数据库错误: {0}")]
+    #[error("数据库错误: {0}" )]
     Database(#[from] sqlx::Error),
 
-    #[error("用户不存在")]
+    #[error("用户不存在" )]
     NotFound,
 
-    #[error("用户已存在")]
+    #[error("用户已存在" )]
     AlreadyExists,
 }
 
@@ -63,7 +63,7 @@ impl UserRepository {
         username: &str,
     ) -> Result<Option<UserInfo>, UserRepositoryError> {
         let row = sqlx::query!(
-            "SELECT id, username, password_hash, email, phone, nickname, status, role, must_change_password FROM users WHERE username = $1",
+            "SELECT id, username, password_hash, email, phone, nickname, status, role, must_change_password FROM users WHERE username = $1" ,
             username as &str,
         )
         .fetch_optional(&self.pool)
@@ -89,7 +89,7 @@ impl UserRepository {
     /// 根据用户ID查找用户
     pub async fn find_by_id(&self, user_id: i64) -> Result<Option<UserInfo>, UserRepositoryError> {
         let row = sqlx::query!(
-            "SELECT id, username, password_hash, email, phone, nickname, status, role, must_change_password FROM users WHERE id = $1",
+            "SELECT id, username, password_hash, email, phone, nickname, status, role, must_change_password FROM users WHERE id = $1" ,
             user_id,
         )
         .fetch_optional(&self.pool)
@@ -121,7 +121,7 @@ impl UserRepository {
         }
 
         let row = sqlx::query!(
-            "INSERT INTO users (username, email, password_hash, created_at) VALUES ($1, $2, $3, NOW()) RETURNING id",
+            "INSERT INTO users (username, email, password_hash, created_at) VALUES ($1, $2, $3, NOW()) RETURNING id" ,
             username as &str,
             email,
             password_hash as &str,
@@ -135,7 +135,7 @@ impl UserRepository {
     /// 检查用户名是否存在
     pub async fn exists(&self, username: &str) -> Result<bool, UserRepositoryError> {
         let row = sqlx::query!(
-            r#"SELECT EXISTS(SELECT 1 FROM users WHERE username = $1) AS "exists!""#,
+            r#"SELECT EXISTS(SELECT 1 FROM users WHERE username = $1) AS "exists!" "#,
             username as &str,
         )
         .fetch_one(&self.pool)
@@ -152,7 +152,7 @@ impl UserRepository {
     ) -> Result<(), UserRepositoryError> {
         let result =
             sqlx::query!(
-                "UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2",
+                "UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2" ,
                 new_password_hash as &str,
                 user_id,
             )
@@ -177,7 +177,7 @@ impl UserRepository {
     ) -> Result<(), UserRepositoryError> {
         // 构建动态更新语句
         let result = sqlx::query!(
-            "UPDATE users SET \n                nickname = COALESCE($1, nickname),\n                phone = COALESCE($2, phone),\n                email = COALESCE($3, email),\n                updated_at = NOW()\n             WHERE id = $4",
+            "UPDATE users SET \n                nickname = COALESCE($1, nickname),\n                phone = COALESCE($2, phone),\n                email = COALESCE($3, email),\n                updated_at = NOW()\n             WHERE id = $4" ,
             nickname,
             phone,
             email,
@@ -199,7 +199,7 @@ impl UserRepository {
         user_id: i64,
     ) -> Result<(), UserRepositoryError> {
         sqlx::query!(
-            "UPDATE users SET must_change_password = false, updated_at = NOW() WHERE id = $1",
+            "UPDATE users SET must_change_password = false, updated_at = NOW() WHERE id = $1" ,
             user_id,
         )
         .execute(&self.pool)
@@ -214,7 +214,7 @@ impl UserRepository {
         avatar: &str,
     ) -> Result<(), UserRepositoryError> {
         let result = sqlx::query!(
-            "UPDATE users SET avatar = $1, updated_at = NOW() WHERE id = $2",
+            "UPDATE users SET avatar = $1, updated_at = NOW() WHERE id = $2" ,
             avatar as &str,
             user_id,
         )
@@ -236,9 +236,9 @@ mod tests {
     #[test]
     fn test_user_repository_error_display() {
         let err = UserRepositoryError::NotFound;
-        assert_eq!(err.to_string(), "用户不存在");
+        assert_eq!(err.to_string(), "用户不存在" );
 
         let err = UserRepositoryError::AlreadyExists;
-        assert_eq!(err.to_string(), "用户已存在");
+        assert_eq!(err.to_string(), "用户已存在" );
     }
 }

@@ -30,7 +30,7 @@ pub async fn list_articles(
         .list(page, page_size, category_id, status, keyword.as_deref())
         .await
         .map(|result| result.articles)
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 /// 获取文章详情
@@ -40,7 +40,7 @@ pub async fn get_article(state: Arc<CmsAppState>, id: i64) -> Result<Option<CmsA
         .article
         .find_by_id(id)
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 /// 创建文章
@@ -57,7 +57,7 @@ pub async fn create_article(
         .article
         .create(category_id, &title, &content, author_id, is_draft)
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 /// 更新文章
@@ -80,7 +80,7 @@ pub async fn update_article(
             is_top,
         )
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 /// 删除文章
@@ -90,7 +90,7 @@ pub async fn delete_article(state: Arc<CmsAppState>, id: i64) -> Result<bool, St
         .article
         .delete(id)
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 /// 发布文章
@@ -100,7 +100,7 @@ pub async fn publish_article(state: Arc<CmsAppState>, id: i64) -> Result<bool, S
         .article
         .publish(id)
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 /// 下架文章
@@ -110,7 +110,7 @@ pub async fn unpublish_article(state: Arc<CmsAppState>, id: i64) -> Result<bool,
         .article
         .unpublish(id)
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 /// 审核文章
@@ -125,7 +125,7 @@ pub async fn review_article(
         .article
         .review(id, approved, reason.as_deref())
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 /// 设置置顶
@@ -139,7 +139,7 @@ pub async fn set_article_top(
         .article
         .set_top(id, is_top)
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 /// 设置推荐
@@ -153,7 +153,7 @@ pub async fn set_article_featured(
         .article
         .set_featured(id, is_featured)
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 /// 增加浏览次数
@@ -166,7 +166,7 @@ pub async fn increment_article_view_count(
         .article
         .increment_view_count(id)
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 /// 增加点赞次数
@@ -179,7 +179,7 @@ pub async fn increment_article_like_count(
         .article
         .increment_like_count(id)
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 /// 获取热门文章
@@ -193,7 +193,7 @@ pub async fn get_hot_articles(
         .article
         .get_hot_articles(limit, category_id)
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 /// 获取最新文章
@@ -207,7 +207,7 @@ pub async fn get_latest_articles(
         .article
         .get_latest_articles(limit, category_id)
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 // ============== 分类相关实现 ==============
@@ -225,7 +225,7 @@ pub async fn list_categories(
             .category
             .get_tree(parent_id)
             .await
-            .map_err(|e| Status::internal(format!("Database error: {e}")))
+            .map_err(|e| Status::internal(format!("Database error: {e}" )))
             .map(|_| vec![]) // 简化处理，实际应该返回树形结构
     } else {
         // 直接获取列表
@@ -234,7 +234,7 @@ pub async fn list_categories(
             .category
             .list(1, 100, None)
             .await
-            .map_err(|e| Status::internal(format!("Database error: {e}")))?;
+            .map_err(|e| Status::internal(format!("Database error: {e}" )))?;
         Ok(result.categories)
     }
 }
@@ -246,7 +246,7 @@ pub async fn get_category(state: Arc<CmsAppState>, id: i64) -> Result<Option<Cms
         .category
         .find_by_id(id)
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 /// 创建分类
@@ -265,9 +265,9 @@ pub async fn create_category(
         .await
         .map_err(|e| match e {
             crate::repository::category_repository::CategoryRepositoryError::AlreadyExists => {
-                Status::already_exists("Category slug already exists")
+                Status::already_exists("Category slug already exists" )
             }
-            _ => Status::internal(format!("Database error: {e}")),
+            _ => Status::internal(format!("Database error: {e}" )),
         })
 }
 
@@ -291,7 +291,7 @@ pub async fn update_category(
             status,
         )
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 /// 删除分类
@@ -310,9 +310,9 @@ pub async fn delete_category(
             .await
             .map_err(|e| match e {
                 crate::repository::category_repository::CategoryRepositoryError::HasChildren => {
-                    Status::failed_precondition("Category has children or articles")
+                    Status::failed_precondition("Category has children or articles" )
                 }
-                _ => Status::internal(format!("Database error: {e}")),
+                _ => Status::internal(format!("Database error: {e}" )),
             })
     } else {
         // 非强制删除，检查是否有依赖
@@ -323,9 +323,9 @@ pub async fn delete_category(
             .await
             .map_err(|e| match e {
                 crate::repository::category_repository::CategoryRepositoryError::HasChildren => {
-                    Status::failed_precondition("Category has children or articles")
+                    Status::failed_precondition("Category has children or articles" )
                 }
-                _ => Status::internal(format!("Database error: {e}")),
+                _ => Status::internal(format!("Database error: {e}" )),
             })
     }
 }
@@ -340,7 +340,7 @@ pub async fn get_category_tree(
         .category
         .get_tree(parent_id)
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 // ============== 标签相关实现 ==============
@@ -369,7 +369,7 @@ pub async fn list_tags(
         .article
         .list(page, page_size, None, Some(2), None)
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))?;
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))?;
 
     // 收集所有标签
     let mut tag_map: std::collections::HashMap<String, (String, i64)> =

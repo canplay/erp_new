@@ -83,22 +83,22 @@ impl AppState {
         let grpc_clients = GrpcClients::from_discovery(config, &service_discovery).await;
         let grpc_clients = Arc::new(AsyncRwLock::new(grpc_clients));
 
-        let user_service_url = std::env::var("USER_SERVICE_HTTP_URL")
+        let user_service_url = std::env::var("USER_SERVICE_HTTP_URL" )
             .unwrap_or_else(|_| "http://localhost:50052".to_string());
-        let audit_service_url = std::env::var("AUDIT_SERVICE_HTTP_URL")
+        let audit_service_url = std::env::var("AUDIT_SERVICE_HTTP_URL" )
             .unwrap_or_else(|_| "http://localhost:50059".to_string());
-        let tenant_service_url = std::env::var("TENANT_SERVICE_HTTP_URL")
+        let tenant_service_url = std::env::var("TENANT_SERVICE_HTTP_URL" )
             .unwrap_or_else(|_| "http://localhost:50051".to_string());
 
-        let failure_threshold: u32 = std::env::var("CIRCUIT_BREAKER_FAILURE_THRESHOLD")
+        let failure_threshold: u32 = std::env::var("CIRCUIT_BREAKER_FAILURE_THRESHOLD" )
             .unwrap_or_else(|_| "5".to_string())
             .parse()
             .unwrap_or(5);
-        let timeout_secs: u64 = std::env::var("CIRCUIT_BREAKER_TIMEOUT_SECS")
+        let timeout_secs: u64 = std::env::var("CIRCUIT_BREAKER_TIMEOUT_SECS" )
             .unwrap_or_else(|_| "60".to_string())
             .parse()
             .unwrap_or(60);
-        let half_open_requests: u32 = std::env::var("CIRCUIT_BREAKER_HALF_OPEN_REQUESTS")
+        let half_open_requests: u32 = std::env::var("CIRCUIT_BREAKER_HALF_OPEN_REQUESTS" )
             .unwrap_or_else(|_| "3".to_string())
             .parse()
             .unwrap_or(3);
@@ -119,12 +119,12 @@ impl AppState {
         let http_client = http_client_manager.client();
 
         // Fail-fast: JWT_SECRET must be configured.
-        let jwt_secret = std::env::var("JWT_SECRET")
-            .expect("JWT_SECRET environment variable must be set");
+        let jwt_secret = std::env::var("JWT_SECRET" )
+            .expect("JWT_SECRET environment variable must be set" );
         let jwt_service = auth_core::JwtService::new(
             &jwt_secret,
-            "myai",
-            "myai-users",
+            "myai" ,
+            "myai-users" ,
             3600,   // access token: 1 hour
             604800, // refresh token: 7 days
         );

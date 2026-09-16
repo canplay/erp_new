@@ -198,7 +198,7 @@ impl Retryer {
             let now = SystemTime::now()
                 .duration_since(SystemTime::UNIX_EPOCH)
                 .unwrap_or_else(|_| {
-                    tracing::error!("系统时间早于 UNIX epoch，使用默认值");
+                    tracing::error!("系统时间早于 UNIX epoch，使用默认值" );
                     std::time::Duration::from_secs(0)
                 })
                 .as_nanos();
@@ -253,21 +253,21 @@ impl Retryer {
                     attempt_durations.push(duration);
 
                     tracing::warn!(
-                        "请求失败 (尝试 {}/{}): {:?}",
+                        "请求失败 (尝试 {}/{}): {:?}" ,
                         attempts,
                         self.config.max_retries,
                         error
                     );
 
                     if !self.should_retry(&error, attempts) {
-                        tracing::error!("达到最大重试次数 {}，放弃重试", self.config.max_retries);
+                        tracing::error!("达到最大重试次数 {}，放弃重试" , self.config.max_retries);
                         return RetryResult::failure(error, attempts, attempt_durations);
                     }
 
                     // 计算并等待退避时间
                     let backoff = self.calculate_backoff(attempts);
                     tracing::info!(
-                        "等待 {}ms 后进行第 {} 次重试...",
+                        "等待 {}ms 后进行第 {} 次重试..." ,
                         backoff.as_millis(),
                         attempts + 1
                     );

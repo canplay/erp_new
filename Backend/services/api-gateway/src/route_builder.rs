@@ -43,8 +43,8 @@ pub fn create_router(
 
     // Build base routes + innermost middleware first.
     let router = crate::routes::all_routes()
-        .route("/ws/status", axum::routing::get(crate::ws_routes::ws_status_handler))
-        .route("/ws/messages", axum::routing::get(crate::ws_routes::ws_messages_handler))
+        .route("/ws/status" , axum::routing::get(crate::ws_routes::ws_status_handler))
+        .route("/ws/messages" , axum::routing::get(crate::ws_routes::ws_messages_handler))
         // OpenAPI / Swagger UI
         .merge(crate::openapi::routes())
         // 8. Innermost: gRPC error handler (catches handler/propagation errors)
@@ -60,7 +60,7 @@ pub fn create_router(
 
     // 6. Auth middleware (always applied - JWT is required at startup)
     let router = {
-        tracing::info!("应用 JWT 鉴权中间件");
+        tracing::info!("应用 JWT 鉴权中间件" );
         router
             .layer(axum::middleware::from_fn(auth_middleware))
             .layer(axum::extract::Extension(auth_state))

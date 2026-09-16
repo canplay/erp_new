@@ -11,13 +11,13 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum CarRepositoryError {
-    #[error("数据库错误: {0}")]
+    #[error("数据库错误: {0}" )]
     DbError(#[from] sqlx::Error),
 
-    #[error("记录不存在")]
+    #[error("记录不存在" )]
     NotFound,
 
-    #[error("记录已存在")]
+    #[error("记录已存在" )]
     AlreadyExists,
 }
 
@@ -156,54 +156,54 @@ impl CarRepository {
 
         // 状态过滤: "" 不限制, "N" 未放行, "Y" 已放行
         let status = match query.status.as_deref() {
-            Some("未放行") => "N",
-            Some("已放行") => "Y",
-            _ => "",
+            Some("未放行" ) => "N" ,
+            Some("已放行" ) => "Y" ,
+            _ => "" ,
         };
 
         // 日期范围过滤
         // mode: "" 不限制 / "both" (dc_date LIKE $3 OR rs_date LIKE $4) / "in" dc_date BETWEEN / "out" rs_date BETWEEN
         let (date_mode, d1, d2) = match (&query.in_date, &query.out_date) {
             (Some(in_date), Some(out_date))
-                if in_date.contains(" - ") && out_date.contains(" - ") =>
+                if in_date.contains(" - " ) && out_date.contains(" - " ) =>
             {
-                let in_part = in_date.split(" - ").next().unwrap_or("");
-                let out_part = out_date.split(" - ").next().unwrap_or("");
-                ("both", format!("%{in_part}%"), format!("%{out_part}%"))
+                let in_part = in_date.split(" - " ).next().unwrap_or("" );
+                let out_part = out_date.split(" - " ).next().unwrap_or("" );
+                ("both" , format!("%{in_part}%" ), format!("%{out_part}%" ))
             }
-            (Some(in_date), Some(_)) if in_date.contains(" - ") => {
-                let dates: Vec<&str> = in_date.split(" - ").collect();
+            (Some(in_date), Some(_)) if in_date.contains(" - " ) => {
+                let dates: Vec<&str> = in_date.split(" - " ).collect();
                 if dates.len() == 2 {
-                    ("in", dates[0].to_string(), dates[1].to_string())
+                    ("in" , dates[0].to_string(), dates[1].to_string())
                 } else {
-                    ("", String::new(), String::new())
+                    ("" , String::new(), String::new())
                 }
             }
-            (Some(_), Some(out_date)) if out_date.contains(" - ") => {
-                let dates: Vec<&str> = out_date.split(" - ").collect();
+            (Some(_), Some(out_date)) if out_date.contains(" - " ) => {
+                let dates: Vec<&str> = out_date.split(" - " ).collect();
                 if dates.len() == 2 {
-                    ("out", dates[0].to_string(), dates[1].to_string())
+                    ("out" , dates[0].to_string(), dates[1].to_string())
                 } else {
-                    ("", String::new(), String::new())
+                    ("" , String::new(), String::new())
                 }
             }
-            _ => ("", String::new(), String::new()),
+            _ => ("" , String::new(), String::new()),
         };
 
         // 内容搜索 (content 与 model 同时提供才生效; 列名白名单)
         let model_col = match query.model.as_deref() {
-            Some("车牌") => "license",
-            Some("车辆类型") => "car_type",
-            Some("车身颜色") => "car_color",
-            Some("车架号") => "vehicle",
-            Some("发动机号") => "engine",
-            Some("记录人") => "dc_name",
-            Some("车辆备注") => "car_remark",
-            Some("拖移备注") => "remark",
-            _ => "license",
+            Some("车牌" ) => "license" ,
+            Some("车辆类型" ) => "car_type" ,
+            Some("车身颜色" ) => "car_color" ,
+            Some("车架号" ) => "vehicle" ,
+            Some("发动机号" ) => "engine" ,
+            Some("记录人" ) => "dc_name" ,
+            Some("车辆备注" ) => "car_remark" ,
+            Some("拖移备注" ) => "remark" ,
+            _ => "license" ,
         };
         let content = if query.content.is_some() && query.model.is_some() {
-            format!("%{}%", query.content.as_deref().unwrap_or(""))
+            format!("%{}%" , query.content.as_deref().unwrap_or("" ))
         } else {
             String::new()
         };
@@ -212,14 +212,14 @@ impl CarRepository {
         let name = query
             .name
             .as_deref()
-            .map(|n| format!("%{n}%"))
+            .map(|n| format!("%{n}%" ))
             .unwrap_or_default();
 
         // 部门过滤: "城管部门" 特殊分支, "全部"/None 不限制
         let (unit, unit_like) = match query.unit.as_deref() {
-            Some("城管部门") => ("城管部门", String::new()),
-            Some(u) if u != "全部" => (u, format!("%{u}%")),
-            _ => ("", String::new()),
+            Some("城管部门" ) => ("城管部门" , String::new()),
+            Some(u) if u != "全部" => (u, format!("%{u}%" )),
+            _ => ("" , String::new()),
         };
 
         // 编号过滤 (原逻辑: 精确匹配, 不加 %)
@@ -227,12 +227,12 @@ impl CarRepository {
 
         // 排序: 列名白名单 + 方向 (无 sort_by 时默认 dc_date DESC)
         let sort_key = match query.sort_by.as_deref() {
-            Some("license") => "license",
-            Some("car_type") => "car_type",
-            Some("dc_date") => "dc_date",
-            Some("dc_name") => "dc_name",
-            Some("cmd_unit") => "cmd_unit",
-            _ => "",
+            Some("license" ) => "license" ,
+            Some("car_type" ) => "car_type" ,
+            Some("dc_date" ) => "dc_date" ,
+            Some("dc_name" ) => "dc_name" ,
+            Some("cmd_unit" ) => "cmd_unit" ,
+            _ => "" ,
         };
         let descending = query.sort_by.is_none() || query.descending.unwrap_or(false);
 
@@ -266,28 +266,28 @@ impl CarRepository {
             sqlx::query_as!(
                 CarListItem,
                 r#"SELECT id,
-                    COALESCE(license, '') AS "license!",
+                    COALESCE(license, '') AS "license!" ,
                     vehicle,
-                    COALESCE(engine, '') AS "engine!",
-                    COALESCE(car_type, '') AS "car_type!",
-                    COALESCE(dc_type, '') AS "dc_type!",
-                    COALESCE(dc_causes, '') AS "dc_causes!",
-                    COALESCE(car_color, '') AS "car_color!",
-                    COALESCE(dc_date, '') AS "dc_date!",
-                    COALESCE(dc_address, '') AS "dc_address!",
-                    COALESCE(dc_key, '') AS "dc_key!",
-                    COALESCE(dc_party_name, '') AS "dc_party_name!",
-                    COALESCE(dc_party_cardid, '') AS "dc_party_cardid!",
-                    COALESCE(dc_party_tel, '') AS "dc_party_tel!",
-                    COALESCE(dc_name, '') AS "dc_name!",
-                    COALESCE(cmd_unit, '') AS "cmd_unit!",
-                    COALESCE(cv, '') AS "cv!",
-                    COALESCE(tv, '') AS "tv!",
-                    COALESCE(parking_unit, '') AS "parking_unit!",
-                    COALESCE(remark, '') AS "remark!",
-                    COALESCE(rs_name, '') AS "rs_name!",
-                    COALESCE(rs_date, '') AS "rs_date!",
-                    COALESCE("delete", false) AS "delete!"
+                    COALESCE(engine, '') AS "engine!" ,
+                    COALESCE(car_type, '') AS "car_type!" ,
+                    COALESCE(dc_type, '') AS "dc_type!" ,
+                    COALESCE(dc_causes, '') AS "dc_causes!" ,
+                    COALESCE(car_color, '') AS "car_color!" ,
+                    COALESCE(dc_date, '') AS "dc_date!" ,
+                    COALESCE(dc_address, '') AS "dc_address!" ,
+                    COALESCE(dc_key, '') AS "dc_key!" ,
+                    COALESCE(dc_party_name, '') AS "dc_party_name!" ,
+                    COALESCE(dc_party_cardid, '') AS "dc_party_cardid!" ,
+                    COALESCE(dc_party_tel, '') AS "dc_party_tel!" ,
+                    COALESCE(dc_name, '') AS "dc_name!" ,
+                    COALESCE(cmd_unit, '') AS "cmd_unit!" ,
+                    COALESCE(cv, '') AS "cv!" ,
+                    COALESCE(tv, '') AS "tv!" ,
+                    COALESCE(parking_unit, '') AS "parking_unit!" ,
+                    COALESCE(remark, '') AS "remark!" ,
+                    COALESCE(rs_name, '') AS "rs_name!" ,
+                    COALESCE(rs_date, '') AS "rs_date!" ,
+                    COALESCE("delete" , false) AS "delete!"
                 FROM tow_car
                 WHERE "delete" = false
                     AND ($1 = '' OR ($1 = 'N' AND (rs_date IS NULL OR rs_date = '1000-01-01 00:00:00')) OR ($1 = 'Y' AND rs_date IS NOT NULL AND rs_date != '1000-01-01 00:00:00'))
@@ -322,28 +322,28 @@ impl CarRepository {
             sqlx::query_as!(
                 CarListItem,
                 r#"SELECT id,
-                    COALESCE(license, '') AS "license!",
+                    COALESCE(license, '') AS "license!" ,
                     vehicle,
-                    COALESCE(engine, '') AS "engine!",
-                    COALESCE(car_type, '') AS "car_type!",
-                    COALESCE(dc_type, '') AS "dc_type!",
-                    COALESCE(dc_causes, '') AS "dc_causes!",
-                    COALESCE(car_color, '') AS "car_color!",
-                    COALESCE(dc_date, '') AS "dc_date!",
-                    COALESCE(dc_address, '') AS "dc_address!",
-                    COALESCE(dc_key, '') AS "dc_key!",
-                    COALESCE(dc_party_name, '') AS "dc_party_name!",
-                    COALESCE(dc_party_cardid, '') AS "dc_party_cardid!",
-                    COALESCE(dc_party_tel, '') AS "dc_party_tel!",
-                    COALESCE(dc_name, '') AS "dc_name!",
-                    COALESCE(cmd_unit, '') AS "cmd_unit!",
-                    COALESCE(cv, '') AS "cv!",
-                    COALESCE(tv, '') AS "tv!",
-                    COALESCE(parking_unit, '') AS "parking_unit!",
-                    COALESCE(remark, '') AS "remark!",
-                    COALESCE(rs_name, '') AS "rs_name!",
-                    COALESCE(rs_date, '') AS "rs_date!",
-                    COALESCE("delete", false) AS "delete!"
+                    COALESCE(engine, '') AS "engine!" ,
+                    COALESCE(car_type, '') AS "car_type!" ,
+                    COALESCE(dc_type, '') AS "dc_type!" ,
+                    COALESCE(dc_causes, '') AS "dc_causes!" ,
+                    COALESCE(car_color, '') AS "car_color!" ,
+                    COALESCE(dc_date, '') AS "dc_date!" ,
+                    COALESCE(dc_address, '') AS "dc_address!" ,
+                    COALESCE(dc_key, '') AS "dc_key!" ,
+                    COALESCE(dc_party_name, '') AS "dc_party_name!" ,
+                    COALESCE(dc_party_cardid, '') AS "dc_party_cardid!" ,
+                    COALESCE(dc_party_tel, '') AS "dc_party_tel!" ,
+                    COALESCE(dc_name, '') AS "dc_name!" ,
+                    COALESCE(cmd_unit, '') AS "cmd_unit!" ,
+                    COALESCE(cv, '') AS "cv!" ,
+                    COALESCE(tv, '') AS "tv!" ,
+                    COALESCE(parking_unit, '') AS "parking_unit!" ,
+                    COALESCE(remark, '') AS "remark!" ,
+                    COALESCE(rs_name, '') AS "rs_name!" ,
+                    COALESCE(rs_date, '') AS "rs_date!" ,
+                    COALESCE("delete" , false) AS "delete!"
                 FROM tow_car
                 WHERE "delete" = false
                     AND ($1 = '' OR ($1 = 'N' AND (rs_date IS NULL OR rs_date = '1000-01-01 00:00:00')) OR ($1 = 'Y' AND rs_date IS NOT NULL AND rs_date != '1000-01-01 00:00:00'))
@@ -386,23 +386,23 @@ impl CarRepository {
 
     /// 统计车辆数量
     pub async fn count(&self, query: &CarQuery) -> Result<i64, CarRepositoryError> {
-        // 状态过滤: "" 不限制, "N" 未放行, "Y" 已放行
+        // 状态过滤: " " 不限制, "N" 未放行, "Y" 已放行
         let status = match query.status.as_deref() {
-            Some("未放行") => "N",
-            Some("已放行") => "Y",
-            _ => "",
+            Some("未放行" ) => "N" ,
+            Some("已放行" ) => "Y" ,
+            _ => "" ,
         };
 
         // 日期范围过滤 (仅原逻辑的 "both" 分支)
         let (date_mode, d1, d2) = match (&query.in_date, &query.out_date) {
             (Some(in_date), Some(out_date))
-                if in_date.contains(" - ") && out_date.contains(" - ") =>
+                if in_date.contains(" - " ) && out_date.contains(" - " ) =>
             {
-                let in_part = in_date.split(" - ").next().unwrap_or("");
-                let out_part = out_date.split(" - ").next().unwrap_or("");
-                ("both", format!("%{in_part}%"), format!("%{out_part}%"))
+                let in_part = in_date.split(" - " ).next().unwrap_or("" );
+                let out_part = out_date.split(" - " ).next().unwrap_or("" );
+                ("both" , format!("%{in_part}%" ), format!("%{out_part}%" ))
             }
-            _ => ("", String::new(), String::new()),
+            _ => ("" , String::new(), String::new()),
         };
 
         let count: i64 = sqlx::query_scalar!(
@@ -427,63 +427,63 @@ impl CarRepository {
         let car: Option<Car> = sqlx::query_as!(
             Car,
             r#"SELECT id,
-                COALESCE(license, '') AS "license!",
+                COALESCE(license, '') AS "license!" ,
                 vehicle,
-                COALESCE(engine, '') AS "engine!",
-                COALESCE(car_type, '') AS "car_type!",
-                COALESCE(dc_type, '') AS "dc_type!",
-                COALESCE(dc_causes, '') AS "dc_causes!",
-                COALESCE(car_color, '') AS "car_color!",
-                COALESCE(dc_date, '') AS "dc_date!",
-                COALESCE(dc_address, '') AS "dc_address!",
-                COALESCE(dc_key, '') AS "dc_key!",
-                COALESCE(dc_party_name, '') AS "dc_party_name!",
-                COALESCE(dc_party_cardid, '') AS "dc_party_cardid!",
-                COALESCE(dc_party_tel, '') AS "dc_party_tel!",
-                COALESCE(p_name, '') AS "p_name!",
-                COALESCE(p_id, '') AS "p_id!",
-                COALESCE(dc_acc, '') AS "dc_acc!",
-                COALESCE(dc_name, '') AS "dc_name!",
-                COALESCE(dc_into_date, '') AS "dc_into_date!",
-                COALESCE(car_remark, '') AS "car_remark!",
-                COALESCE(driver, '') AS "driver!",
-                COALESCE(operator, '') AS "operator!",
-                COALESCE(drag_km, '') AS "drag_km!",
-                COALESCE(drag_unit, '') AS "drag_unit!",
-                COALESCE(drag_money, '') AS "drag_money!",
-                COALESCE(cmd_unit, '') AS "cmd_unit!",
-                COALESCE(cmd_user, '') AS "cmd_user!",
-                COALESCE(cv, '') AS "cv!",
-                COALESCE(cv_acc, '') AS "cv_acc!",
-                COALESCE(cv_name, '') AS "cv_name!",
-                COALESCE(cv_date, '') AS "cv_date!",
-                COALESCE(cv_opinion, '') AS "cv_opinion!",
-                COALESCE(tv, '') AS "tv!",
-                COALESCE(tv_acc, '') AS "tv_acc!",
-                COALESCE(tv_name, '') AS "tv_name!",
-                COALESCE(tv_date, '') AS "tv_date!",
-                COALESCE(tv_opinion, '') AS "tv_opinion!",
-                COALESCE(rc_name, '') AS "rc_name!",
-                COALESCE(rc_idcard, '') AS "rc_idcard!",
-                COALESCE(rc_tel, '') AS "rc_tel!",
-                COALESCE(parking_date, '') AS "parking_date!",
-                COALESCE(parking_unit, '') AS "parking_unit!",
-                COALESCE(parking_money, '') AS "parking_money!",
-                COALESCE(parking_payable, '') AS "parking_payable!",
-                COALESCE(parking_paidin, '') AS "parking_paidin!",
-                COALESCE(remark, '') AS "remark!",
-                COALESCE(rs_name, '') AS "rs_name!",
-                COALESCE(rs_acc, '') AS "rs_acc!",
-                COALESCE(rs_date, '') AS "rs_date!",
+                COALESCE(engine, '') AS "engine!" ,
+                COALESCE(car_type, '') AS "car_type!" ,
+                COALESCE(dc_type, '') AS "dc_type!" ,
+                COALESCE(dc_causes, '') AS "dc_causes!" ,
+                COALESCE(car_color, '') AS "car_color!" ,
+                COALESCE(dc_date, '') AS "dc_date!" ,
+                COALESCE(dc_address, '') AS "dc_address!" ,
+                COALESCE(dc_key, '') AS "dc_key!" ,
+                COALESCE(dc_party_name, '') AS "dc_party_name!" ,
+                COALESCE(dc_party_cardid, '') AS "dc_party_cardid!" ,
+                COALESCE(dc_party_tel, '') AS "dc_party_tel!" ,
+                COALESCE(p_name, '') AS "p_name!" ,
+                COALESCE(p_id, '') AS "p_id!" ,
+                COALESCE(dc_acc, '') AS "dc_acc!" ,
+                COALESCE(dc_name, '') AS "dc_name!" ,
+                COALESCE(dc_into_date, '') AS "dc_into_date!" ,
+                COALESCE(car_remark, '') AS "car_remark!" ,
+                COALESCE(driver, '') AS "driver!" ,
+                COALESCE(operator, '') AS "operator!" ,
+                COALESCE(drag_km, '') AS "drag_km!" ,
+                COALESCE(drag_unit, '') AS "drag_unit!" ,
+                COALESCE(drag_money, '') AS "drag_money!" ,
+                COALESCE(cmd_unit, '') AS "cmd_unit!" ,
+                COALESCE(cmd_user, '') AS "cmd_user!" ,
+                COALESCE(cv, '') AS "cv!" ,
+                COALESCE(cv_acc, '') AS "cv_acc!" ,
+                COALESCE(cv_name, '') AS "cv_name!" ,
+                COALESCE(cv_date, '') AS "cv_date!" ,
+                COALESCE(cv_opinion, '') AS "cv_opinion!" ,
+                COALESCE(tv, '') AS "tv!" ,
+                COALESCE(tv_acc, '') AS "tv_acc!" ,
+                COALESCE(tv_name, '') AS "tv_name!" ,
+                COALESCE(tv_date, '') AS "tv_date!" ,
+                COALESCE(tv_opinion, '') AS "tv_opinion!" ,
+                COALESCE(rc_name, '') AS "rc_name!" ,
+                COALESCE(rc_idcard, '') AS "rc_idcard!" ,
+                COALESCE(rc_tel, '') AS "rc_tel!" ,
+                COALESCE(parking_date, '') AS "parking_date!" ,
+                COALESCE(parking_unit, '') AS "parking_unit!" ,
+                COALESCE(parking_money, '') AS "parking_money!" ,
+                COALESCE(parking_payable, '') AS "parking_payable!" ,
+                COALESCE(parking_paidin, '') AS "parking_paidin!" ,
+                COALESCE(remark, '') AS "remark!" ,
+                COALESCE(rs_name, '') AS "rs_name!" ,
+                COALESCE(rs_acc, '') AS "rs_acc!" ,
+                COALESCE(rs_date, '') AS "rs_date!" ,
                 attachment,
-                COALESCE(create_date::timestamp, '1970-01-01 00:00:00') AS "create_date!",
-                COALESCE(create_user, '') AS "create_user!",
-                COALESCE(update_date::timestamp, '1970-01-01 00:00:00') AS "update_date!",
-                COALESCE(update_user, '') AS "update_user!",
-                COALESCE("delete", false) AS "delete!"
+                COALESCE(create_date::timestamp, '1970-01-01 00:00:00') AS "create_date!" ,
+                COALESCE(create_user, '') AS "create_user!" ,
+                COALESCE(update_date::timestamp, '1970-01-01 00:00:00') AS "update_date!" ,
+                COALESCE(update_user, '') AS "update_user!" ,
+                COALESCE("delete" , false) AS "delete!"
             FROM tow_car
             WHERE license LIKE $1 AND "delete" = false"#,
-            format!("%{license}%"),
+            format!("%{license}%" ),
         )
         .fetch_optional(&self.pool)
         .await?;
@@ -495,60 +495,60 @@ impl CarRepository {
         let car: Option<Car> = sqlx::query_as!(
             Car,
             r#"SELECT id,
-                COALESCE(license, '') AS "license!",
+                COALESCE(license, '') AS "license!" ,
                 vehicle,
-                COALESCE(engine, '') AS "engine!",
-                COALESCE(car_type, '') AS "car_type!",
-                COALESCE(dc_type, '') AS "dc_type!",
-                COALESCE(dc_causes, '') AS "dc_causes!",
-                COALESCE(car_color, '') AS "car_color!",
-                COALESCE(dc_date, '') AS "dc_date!",
-                COALESCE(dc_address, '') AS "dc_address!",
-                COALESCE(dc_key, '') AS "dc_key!",
-                COALESCE(dc_party_name, '') AS "dc_party_name!",
-                COALESCE(dc_party_cardid, '') AS "dc_party_cardid!",
-                COALESCE(dc_party_tel, '') AS "dc_party_tel!",
-                COALESCE(p_name, '') AS "p_name!",
-                COALESCE(p_id, '') AS "p_id!",
-                COALESCE(dc_acc, '') AS "dc_acc!",
-                COALESCE(dc_name, '') AS "dc_name!",
-                COALESCE(dc_into_date, '') AS "dc_into_date!",
-                COALESCE(car_remark, '') AS "car_remark!",
-                COALESCE(driver, '') AS "driver!",
-                COALESCE(operator, '') AS "operator!",
-                COALESCE(drag_km, '') AS "drag_km!",
-                COALESCE(drag_unit, '') AS "drag_unit!",
-                COALESCE(drag_money, '') AS "drag_money!",
-                COALESCE(cmd_unit, '') AS "cmd_unit!",
-                COALESCE(cmd_user, '') AS "cmd_user!",
-                COALESCE(cv, '') AS "cv!",
-                COALESCE(cv_acc, '') AS "cv_acc!",
-                COALESCE(cv_name, '') AS "cv_name!",
-                COALESCE(cv_date, '') AS "cv_date!",
-                COALESCE(cv_opinion, '') AS "cv_opinion!",
-                COALESCE(tv, '') AS "tv!",
-                COALESCE(tv_acc, '') AS "tv_acc!",
-                COALESCE(tv_name, '') AS "tv_name!",
-                COALESCE(tv_date, '') AS "tv_date!",
-                COALESCE(tv_opinion, '') AS "tv_opinion!",
-                COALESCE(rc_name, '') AS "rc_name!",
-                COALESCE(rc_idcard, '') AS "rc_idcard!",
-                COALESCE(rc_tel, '') AS "rc_tel!",
-                COALESCE(parking_date, '') AS "parking_date!",
-                COALESCE(parking_unit, '') AS "parking_unit!",
-                COALESCE(parking_money, '') AS "parking_money!",
-                COALESCE(parking_payable, '') AS "parking_payable!",
-                COALESCE(parking_paidin, '') AS "parking_paidin!",
-                COALESCE(remark, '') AS "remark!",
-                COALESCE(rs_name, '') AS "rs_name!",
-                COALESCE(rs_acc, '') AS "rs_acc!",
-                COALESCE(rs_date, '') AS "rs_date!",
+                COALESCE(engine, '') AS "engine!" ,
+                COALESCE(car_type, '') AS "car_type!" ,
+                COALESCE(dc_type, '') AS "dc_type!" ,
+                COALESCE(dc_causes, '') AS "dc_causes!" ,
+                COALESCE(car_color, '') AS "car_color!" ,
+                COALESCE(dc_date, '') AS "dc_date!" ,
+                COALESCE(dc_address, '') AS "dc_address!" ,
+                COALESCE(dc_key, '') AS "dc_key!" ,
+                COALESCE(dc_party_name, '') AS "dc_party_name!" ,
+                COALESCE(dc_party_cardid, '') AS "dc_party_cardid!" ,
+                COALESCE(dc_party_tel, '') AS "dc_party_tel!" ,
+                COALESCE(p_name, '') AS "p_name!" ,
+                COALESCE(p_id, '') AS "p_id!" ,
+                COALESCE(dc_acc, '') AS "dc_acc!" ,
+                COALESCE(dc_name, '') AS "dc_name!" ,
+                COALESCE(dc_into_date, '') AS "dc_into_date!" ,
+                COALESCE(car_remark, '') AS "car_remark!" ,
+                COALESCE(driver, '') AS "driver!" ,
+                COALESCE(operator, '') AS "operator!" ,
+                COALESCE(drag_km, '') AS "drag_km!" ,
+                COALESCE(drag_unit, '') AS "drag_unit!" ,
+                COALESCE(drag_money, '') AS "drag_money!" ,
+                COALESCE(cmd_unit, '') AS "cmd_unit!" ,
+                COALESCE(cmd_user, '') AS "cmd_user!" ,
+                COALESCE(cv, '') AS "cv!" ,
+                COALESCE(cv_acc, '') AS "cv_acc!" ,
+                COALESCE(cv_name, '') AS "cv_name!" ,
+                COALESCE(cv_date, '') AS "cv_date!" ,
+                COALESCE(cv_opinion, '') AS "cv_opinion!" ,
+                COALESCE(tv, '') AS "tv!" ,
+                COALESCE(tv_acc, '') AS "tv_acc!" ,
+                COALESCE(tv_name, '') AS "tv_name!" ,
+                COALESCE(tv_date, '') AS "tv_date!" ,
+                COALESCE(tv_opinion, '') AS "tv_opinion!" ,
+                COALESCE(rc_name, '') AS "rc_name!" ,
+                COALESCE(rc_idcard, '') AS "rc_idcard!" ,
+                COALESCE(rc_tel, '') AS "rc_tel!" ,
+                COALESCE(parking_date, '') AS "parking_date!" ,
+                COALESCE(parking_unit, '') AS "parking_unit!" ,
+                COALESCE(parking_money, '') AS "parking_money!" ,
+                COALESCE(parking_payable, '') AS "parking_payable!" ,
+                COALESCE(parking_paidin, '') AS "parking_paidin!" ,
+                COALESCE(remark, '') AS "remark!" ,
+                COALESCE(rs_name, '') AS "rs_name!" ,
+                COALESCE(rs_acc, '') AS "rs_acc!" ,
+                COALESCE(rs_date, '') AS "rs_date!" ,
                 attachment,
-                COALESCE(create_date::timestamp, '1970-01-01 00:00:00') AS "create_date!",
-                COALESCE(create_user, '') AS "create_user!",
-                COALESCE(update_date::timestamp, '1970-01-01 00:00:00') AS "update_date!",
-                COALESCE(update_user, '') AS "update_user!",
-                COALESCE("delete", false) AS "delete!"
+                COALESCE(create_date::timestamp, '1970-01-01 00:00:00') AS "create_date!" ,
+                COALESCE(create_user, '') AS "create_user!" ,
+                COALESCE(update_date::timestamp, '1970-01-01 00:00:00') AS "update_date!" ,
+                COALESCE(update_user, '') AS "update_user!" ,
+                COALESCE("delete" , false) AS "delete!"
             FROM tow_car
             WHERE id = $1 AND "delete" = false"#,
             id,

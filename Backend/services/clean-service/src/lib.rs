@@ -20,11 +20,11 @@ pub use services::grpc_impl::CleanGrpcService;
 impl GrpcServiceBuilder for CleanGrpcService {
     fn build_grpc_server(&self, grpc_addr: &str) -> Result<tokio::task::JoinHandle<()>, Box<dyn std::error::Error + Send + Sync>> {
         let state = self.state.clone();
-        let addr: SocketAddr = grpc_addr.parse().map_err(|e| format!("无效的 gRPC 地址 '{grpc_addr}': {e}"))?;
+        let addr: SocketAddr = grpc_addr.parse().map_err(|e| format!("无效的 gRPC 地址 '{grpc_addr}': {e}" ))?;
         Ok(tokio::spawn(async move {
             let server = CleanServiceServer::new(CleanGrpcService::new(state));
             if let Err(e) = tonic::transport::Server::builder().add_service(server).serve(addr).await {
-                tracing::error!("gRPC server error: {}", e);
+                tracing::error!("gRPC server error: {}" , e);
             }
         }))
     }

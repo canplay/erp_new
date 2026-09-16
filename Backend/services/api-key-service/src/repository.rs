@@ -109,7 +109,7 @@ impl ApiKeyRepository for PostgresApiKeyRepository {
             INSERT INTO api_keys (id, name, description, key_id, secret_key_hash, key_hint,
                 permission_level, allowed_ips, rate_limit, tenant_id, user_id, status, created_at, expires_at)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
-            ",
+            " ,
             &key.id,
             &key.name,
             key.description.as_ref().map(|s| s.as_str()),
@@ -134,11 +134,11 @@ impl ApiKeyRepository for PostgresApiKeyRepository {
         let row = sqlx::query!(
             r#"
             SELECT id, name, description, key_id, secret_key_hash, key_hint,
-                COALESCE(permission_level, 0) AS "permission_level!",
+                COALESCE(permission_level, 0) AS "permission_level!" ,
                 COALESCE(allowed_ips, '[]'::jsonb)::text AS allowed_ips,
-                COALESCE(rate_limit, 0) AS "rate_limit!",
+                COALESCE(rate_limit, 0) AS "rate_limit!" ,
                 tenant_id, user_id,
-                COALESCE(status, '') AS "status!",
+                COALESCE(status, '') AS "status!" ,
                 created_at, updated_at, expires_at, last_used_at
             FROM api_keys WHERE id = $1
 "#,
@@ -155,7 +155,7 @@ impl ApiKeyRepository for PostgresApiKeyRepository {
             secret_key_hash: r.secret_key_hash,
             key_hint: r.key_hint,
             permission_level: r.permission_level,
-            allowed_ips: serde_json::from_str(r.allowed_ips.as_deref().unwrap_or("[]")).unwrap_or_default(),
+            allowed_ips: serde_json::from_str(r.allowed_ips.as_deref().unwrap_or("[]" )).unwrap_or_default(),
             rate_limit: r.rate_limit,
             tenant_id: r.tenant_id,
             user_id: r.user_id,
@@ -171,11 +171,11 @@ impl ApiKeyRepository for PostgresApiKeyRepository {
         let row = sqlx::query!(
             r#"
             SELECT id, name, description, key_id, secret_key_hash, key_hint,
-                COALESCE(permission_level, 0) AS "permission_level!",
+                COALESCE(permission_level, 0) AS "permission_level!" ,
                 COALESCE(allowed_ips, '[]'::jsonb)::text AS allowed_ips,
-                COALESCE(rate_limit, 0) AS "rate_limit!",
+                COALESCE(rate_limit, 0) AS "rate_limit!" ,
                 tenant_id, user_id,
-                COALESCE(status, '') AS "status!",
+                COALESCE(status, '') AS "status!" ,
                 created_at, updated_at, expires_at, last_used_at
             FROM api_keys WHERE key_id = $1
 "#,
@@ -192,7 +192,7 @@ impl ApiKeyRepository for PostgresApiKeyRepository {
             secret_key_hash: r.secret_key_hash,
             key_hint: r.key_hint,
             permission_level: r.permission_level,
-            allowed_ips: serde_json::from_str(r.allowed_ips.as_deref().unwrap_or("[]")).unwrap_or_default(),
+            allowed_ips: serde_json::from_str(r.allowed_ips.as_deref().unwrap_or("[]" )).unwrap_or_default(),
             rate_limit: r.rate_limit,
             tenant_id: r.tenant_id,
             user_id: r.user_id,
@@ -212,7 +212,7 @@ impl ApiKeyRepository for PostgresApiKeyRepository {
     ) -> Result<(Vec<ApiKey>, i64), sqlx::Error> {
         let offset = (page - 1) * page_size;
 
-        let count: i64 = sqlx::query_scalar!("SELECT COUNT(*) FROM api_keys WHERE user_id = $1", user_id)
+        let count: i64 = sqlx::query_scalar!("SELECT COUNT(*) FROM api_keys WHERE user_id = $1" , user_id)
             .fetch_one(&self.pool)
             .await?
             .unwrap_or(0);
@@ -220,11 +220,11 @@ impl ApiKeyRepository for PostgresApiKeyRepository {
         let rows = sqlx::query!(
             r#"
             SELECT id, name, description, key_id, secret_key_hash, key_hint,
-                COALESCE(permission_level, 0) AS "permission_level!",
+                COALESCE(permission_level, 0) AS "permission_level!" ,
                 COALESCE(allowed_ips, '[]'::jsonb)::text AS allowed_ips,
-                COALESCE(rate_limit, 0) AS "rate_limit!",
+                COALESCE(rate_limit, 0) AS "rate_limit!" ,
                 tenant_id, user_id,
-                COALESCE(status, '') AS "status!",
+                COALESCE(status, '') AS "status!" ,
                 created_at, updated_at, expires_at, last_used_at
             FROM api_keys WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3
 "#,
@@ -245,7 +245,7 @@ impl ApiKeyRepository for PostgresApiKeyRepository {
                 secret_key_hash: r.secret_key_hash,
                 key_hint: r.key_hint,
                 permission_level: r.permission_level,
-                allowed_ips: serde_json::from_str(r.allowed_ips.as_deref().unwrap_or("[]")).unwrap_or_default(),
+                allowed_ips: serde_json::from_str(r.allowed_ips.as_deref().unwrap_or("[]" )).unwrap_or_default(),
                 rate_limit: r.rate_limit,
                 tenant_id: r.tenant_id,
                 user_id: r.user_id,
@@ -266,7 +266,7 @@ impl ApiKeyRepository for PostgresApiKeyRepository {
             UPDATE api_keys SET name = $2, description = $3, permission_level = $4,
                 allowed_ips = $5, rate_limit = $6, status = $7, expires_at = $8, updated_at = NOW()
             WHERE id = $1
-            ",
+            " ,
             &key.id,
             &key.name,
             key.description.as_ref().map(|s| s.as_str()),
@@ -282,14 +282,14 @@ impl ApiKeyRepository for PostgresApiKeyRepository {
     }
 
     async fn delete(&self, id: &str) -> Result<(), sqlx::Error> {
-        sqlx::query!("DELETE FROM api_keys WHERE id = $1", id)
+        sqlx::query!("DELETE FROM api_keys WHERE id = $1" , id)
             .execute(&self.pool)
             .await?;
         Ok(())
     }
 
     async fn update_last_used(&self, id: &str) -> Result<(), sqlx::Error> {
-        sqlx::query!("UPDATE api_keys SET last_used_at = NOW() WHERE id = $1", id)
+        sqlx::query!("UPDATE api_keys SET last_used_at = NOW() WHERE id = $1" , id)
             .execute(&self.pool)
             .await?;
         Ok(())
@@ -301,7 +301,7 @@ impl ApiKeyRepository for PostgresApiKeyRepository {
             INSERT INTO api_key_usage_logs 
                 (id, key_id, endpoint, method, status_code, latency_ms, ip_address, user_agent, request_size, response_size, created_at)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-            ",
+            " ,
             log.id.parse::<i64>().unwrap_or_default(),
             log.key_id,
             &log.endpoint,
@@ -330,13 +330,13 @@ impl ApiKeyRepository for PostgresApiKeyRepository {
         let (count, logs): (i64, Vec<ApiKeyUsageLog>);
 
         if let Some(kid) = key_id {
-            count = sqlx::query_scalar!("SELECT COUNT(*) FROM api_key_usage_logs WHERE key_id = $1", kid)
+            count = sqlx::query_scalar!("SELECT COUNT(*) FROM api_key_usage_logs WHERE key_id = $1" , kid)
                 .fetch_one(&self.pool)
                 .await?
                 .unwrap_or(0);
 
             let rows = sqlx::query!(
-                "SELECT id, key_id, endpoint, method, status_code, latency_ms, ip_address, user_agent, request_size, response_size, created_at FROM api_key_usage_logs WHERE key_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3",
+                "SELECT id, key_id, endpoint, method, status_code, latency_ms, ip_address, user_agent, request_size, response_size, created_at FROM api_key_usage_logs WHERE key_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3" ,
                 kid,
                 page_size as i64,
                 offset as i64,
@@ -361,13 +361,13 @@ impl ApiKeyRepository for PostgresApiKeyRepository {
                 })
                 .collect();
         } else {
-            count = sqlx::query_scalar!("SELECT COUNT(*) FROM api_key_usage_logs")
+            count = sqlx::query_scalar!("SELECT COUNT(*) FROM api_key_usage_logs" )
                 .fetch_one(&self.pool)
                 .await?
                 .unwrap_or(0);
 
             let rows = sqlx::query!(
-                "SELECT id, key_id, endpoint, method, status_code, latency_ms, ip_address, user_agent, request_size, response_size, created_at FROM api_key_usage_logs ORDER BY created_at DESC LIMIT $1 OFFSET $2",
+                "SELECT id, key_id, endpoint, method, status_code, latency_ms, ip_address, user_agent, request_size, response_size, created_at FROM api_key_usage_logs ORDER BY created_at DESC LIMIT $1 OFFSET $2" ,
                 page_size as i64,
                 offset as i64,
             )
@@ -401,19 +401,19 @@ impl ApiKeyRepository for PostgresApiKeyRepository {
         before_date: Option<DateTime<Utc>>,
     ) -> Result<i64, sqlx::Error> {
         let result = if let (Some(kid), Some(date)) = (key_id, before_date) {
-            sqlx::query!("DELETE FROM api_key_usage_logs WHERE key_id = $1 AND created_at < $2", kid, date)
+            sqlx::query!("DELETE FROM api_key_usage_logs WHERE key_id = $1 AND created_at < $2" , kid, date)
                 .execute(&self.pool)
                 .await?
         } else if let Some(kid) = key_id {
-            sqlx::query!("DELETE FROM api_key_usage_logs WHERE key_id = $1", kid)
+            sqlx::query!("DELETE FROM api_key_usage_logs WHERE key_id = $1" , kid)
                 .execute(&self.pool)
                 .await?
         } else if let Some(date) = before_date {
-            sqlx::query!("DELETE FROM api_key_usage_logs WHERE created_at < $1", date)
+            sqlx::query!("DELETE FROM api_key_usage_logs WHERE created_at < $1" , date)
                 .execute(&self.pool)
                 .await?
         } else {
-            sqlx::query!("DELETE FROM api_key_usage_logs")
+            sqlx::query!("DELETE FROM api_key_usage_logs" )
                 .execute(&self.pool)
                 .await?
         };

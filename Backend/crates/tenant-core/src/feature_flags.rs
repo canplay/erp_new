@@ -101,20 +101,20 @@ impl FeatureFlagManager {
         
         // 注册所有已知功能
         let all_features = vec![
-            "chat",
-            "file_upload",
-            "voice_message",
-            "video_call",
-            "moments",
-            "contacts",
-            "groups",
-            "analytics",
-            "api_access",
-            "custom_branding",
-            "priority_support",
-            "sso",
-            "audit_log",
-            "data_export",
+            "chat" ,
+            "file_upload" ,
+            "voice_message" ,
+            "video_call" ,
+            "moments" ,
+            "contacts" ,
+            "groups" ,
+            "analytics" ,
+            "api_access" ,
+            "custom_branding" ,
+            "priority_support" ,
+            "sso" ,
+            "audit_log" ,
+            "data_export" ,
         ];
         
         for feature in all_features {
@@ -175,10 +175,10 @@ pub mod presets {
     pub fn enterprise_plan() -> HashMap<String, bool> {
         let mut map = HashMap::new();
         for feature in &[
-            "chat", "file_upload", "voice_message", "video_call",
-            "moments", "contacts", "groups", "analytics", "api_access",
-            "custom_branding", "priority_support", "sso", "audit_log",
-            "data_export",
+            "chat" , "file_upload" , "voice_message" , "video_call" ,
+            "moments" , "contacts" , "groups" , "analytics" , "api_access" ,
+            "custom_branding" , "priority_support" , "sso" , "audit_log" ,
+            "data_export" ,
         ] {
             map.insert(feature.to_string(), true);
         }

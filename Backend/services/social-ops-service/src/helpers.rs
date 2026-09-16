@@ -32,7 +32,7 @@ pub fn json_error(msg: &str) -> Json<Value> {
 
 /// Error response with formatted message
 pub fn json_error_fmt(msg: &str, e: &impl std::fmt::Display) -> Json<Value> {
-    Json(json!({"success": false, "error": format!("{}: {}", msg, e)}))
+    Json(json!({"success": false, "error": format!("{}: {}" , msg, e)}))
 }
 
 /// Error response with message field
@@ -42,12 +42,12 @@ pub fn json_error_msg(msg: &str) -> Json<Value> {
 
 /// Error response with formatted message field
 pub fn json_error_msg_fmt(msg: &str, e: &impl std::fmt::Display) -> Json<Value> {
-    Json(json!({"success": false, "message": format!("{}: {}", msg, e)}))
+    Json(json!({"success": false, "message": format!("{}: {}" , msg, e)}))
 }
 
 /// Health check response
 pub fn json_health(service_name: &str) -> Json<Value> {
-    Json(json!({"status": "healthy", "service": service_name}))
+    Json(json!({"status": "healthy" , "service": service_name}))
 }
 
 /// Created response with message
@@ -82,7 +82,7 @@ pub fn json_social_accounts(accounts: &[crate::SocialAccount]) -> Json<Value> {
 
 /// Social account created response
 pub fn json_social_created<S: ToString>(id: S) -> Json<Value> {
-    Json(json!({"id": id.to_string(), "status": "created"}))
+    Json(json!({"id": id.to_string(), "status": "created" }))
 }
 
 /// Social status response
@@ -92,7 +92,7 @@ pub fn json_social_status<S: ToString>(status: S) -> Json<Value> {
 
 /// Social OK with message response
 pub fn json_social_ok(message: &str) -> Json<Value> {
-    Json(json!({"status": "ok", "message": message}))
+    Json(json!({"status": "ok" , "message": message}))
 }
 
 /// Social sources list response

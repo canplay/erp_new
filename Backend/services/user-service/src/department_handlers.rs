@@ -137,10 +137,10 @@ pub async fn list_departments(
                 .into_response()
         }
         Err(e) => {
-            tracing::error!("查询部门列表失败: {e}");
+            tracing::error!("查询部门列表失败: {e}" );
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                json_error("查询部门列表失败"),
+                json_error("查询部门列表失败" ),
             )
                 .into_response()
         }
@@ -176,10 +176,10 @@ pub async fn get_department_tree(State(state): State<HttpAppState>) -> impl Into
                 .into_response()
         }
         Err(e) => {
-            tracing::error!("获取部门树失败: {e}");
+            tracing::error!("获取部门树失败: {e}" );
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                json_error("获取部门树失败"),
+                json_error("获取部门树失败" ),
             )
                 .into_response()
         }
@@ -212,14 +212,14 @@ pub async fn get_department(
             .into_response(),
         Ok(None) => (
             StatusCode::NOT_FOUND,
-            json_error("部门不存在"),
+            json_error("部门不存在" ),
         )
             .into_response(),
         Err(e) => {
-            tracing::error!("查询部门失败: {e}");
+            tracing::error!("查询部门失败: {e}" );
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                json_error("查询部门失败"),
+                json_error("查询部门失败" ),
             )
                 .into_response()
         }
@@ -234,7 +234,7 @@ pub async fn create_department(
     if req.name.is_empty() {
         return (
             StatusCode::BAD_REQUEST,
-            json_error("部门名称不能为空"),
+            json_error("部门名称不能为空" ),
         )
             .into_response();
     }
@@ -261,19 +261,19 @@ pub async fn create_department(
             .into_response(),
         Err(DepartmentRepositoryError::AlreadyExists) => (
             StatusCode::CONFLICT,
-            json_error("部门代码已存在"),
+            json_error("部门代码已存在" ),
         )
             .into_response(),
         Err(DepartmentRepositoryError::MaxLevelExceeded) => (
             StatusCode::BAD_REQUEST,
-            json_error("部门层级不能超过5级"),
+            json_error("部门层级不能超过5级" ),
         )
             .into_response(),
         Err(e) => {
-            tracing::error!("创建部门失败: {e}");
+            tracing::error!("创建部门失败: {e}" );
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                json_error("创建部门失败"),
+                json_error("创建部门失败" ),
             )
                 .into_response()
         }
@@ -311,24 +311,24 @@ pub async fn update_department(
             .into_response(),
         Ok(None) => (
             StatusCode::NOT_FOUND,
-            json_error("部门不存在"),
+            json_error("部门不存在" ),
         )
             .into_response(),
         Err(DepartmentRepositoryError::CircularReference) => (
             StatusCode::BAD_REQUEST,
-            json_error("不能将自己或子部门设为父部门"),
+            json_error("不能将自己或子部门设为父部门" ),
         )
             .into_response(),
         Err(DepartmentRepositoryError::MaxLevelExceeded) => (
             StatusCode::BAD_REQUEST,
-            json_error("部门层级不能超过5级"),
+            json_error("部门层级不能超过5级" ),
         )
             .into_response(),
         Err(e) => {
-            tracing::error!("更新部门失败: {e}");
+            tracing::error!("更新部门失败: {e}" );
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                json_error("更新部门失败"),
+                json_error("更新部门失败" ),
             )
                 .into_response()
         }
@@ -343,29 +343,29 @@ pub async fn delete_department(
     match state.department_repository.delete(id).await {
         Ok(true) => (
             StatusCode::OK,
-            json_ok_msg("部门删除成功"),
+            json_ok_msg("部门删除成功" ),
         )
             .into_response(),
         Ok(false) => (
             StatusCode::NOT_FOUND,
-            json_error("部门不存在"),
+            json_error("部门不存在" ),
         )
             .into_response(),
         Err(DepartmentRepositoryError::HasChildDepartments) => (
             StatusCode::CONFLICT,
-            json_error("部门有子部门，无法删除"),
+            json_error("部门有子部门，无法删除" ),
         )
             .into_response(),
         Err(DepartmentRepositoryError::HasAssociatedUsers) => (
             StatusCode::CONFLICT,
-            json_error("部门有用户关联，无法删除"),
+            json_error("部门有用户关联，无法删除" ),
         )
             .into_response(),
         Err(e) => {
-            tracing::error!("删除部门失败: {e}");
+            tracing::error!("删除部门失败: {e}" );
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                json_error("删除部门失败"),
+                json_error("删除部门失败" ),
             )
                 .into_response()
         }
@@ -385,29 +385,29 @@ pub async fn move_department(
     {
         Ok(true) => (
             StatusCode::OK,
-            json_ok_msg("部门移动成功"),
+            json_ok_msg("部门移动成功" ),
         )
             .into_response(),
         Ok(false) => (
             StatusCode::NOT_FOUND,
-            json_error("部门不存在"),
+            json_error("部门不存在" ),
         )
             .into_response(),
         Err(DepartmentRepositoryError::CircularReference) => (
             StatusCode::BAD_REQUEST,
-            json_error("不能将自己或子部门设为父部门"),
+            json_error("不能将自己或子部门设为父部门" ),
         )
             .into_response(),
         Err(DepartmentRepositoryError::MaxLevelExceeded) => (
             StatusCode::BAD_REQUEST,
-            json_error("部门层级不能超过5级"),
+            json_error("部门层级不能超过5级" ),
         )
             .into_response(),
         Err(e) => {
-            tracing::error!("移动部门失败: {e}");
+            tracing::error!("移动部门失败: {e}" );
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                json_error("移动部门失败"),
+                json_error("移动部门失败" ),
             )
                 .into_response()
         }
@@ -439,10 +439,10 @@ pub async fn get_department_users(
         )
             .into_response(),
         Err(e) => {
-            tracing::error!("获取部门用户失败: {e}");
+            tracing::error!("获取部门用户失败: {e}" );
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                json_error("获取部门用户失败"),
+                json_error("获取部门用户失败" ),
             )
                 .into_response()
         }
@@ -454,13 +454,13 @@ pub async fn get_department_users(
 /// 创建部门管理路由
 pub fn create_department_router(state: HttpAppState) -> Router {
     Router::new()
-        .route("/", axum::routing::get(list_departments))
-        .route("/", axum::routing::post(create_department))
-        .route("/tree", axum::routing::get(get_department_tree))
-        .route("/{id}", axum::routing::get(get_department))
-        .route("/{id}", axum::routing::put(update_department))
-        .route("/{id}", axum::routing::delete(delete_department))
-        .route("/{id}/move", axum::routing::post(move_department))
-        .route("/{id}/users", axum::routing::get(get_department_users))
+        .route("/" , axum::routing::get(list_departments))
+        .route("/" , axum::routing::post(create_department))
+        .route("/tree" , axum::routing::get(get_department_tree))
+        .route("/{id}" , axum::routing::get(get_department))
+        .route("/{id}" , axum::routing::put(update_department))
+        .route("/{id}" , axum::routing::delete(delete_department))
+        .route("/{id}/move" , axum::routing::post(move_department))
+        .route("/{id}/users" , axum::routing::get(get_department_users))
         .with_state(state)
 }

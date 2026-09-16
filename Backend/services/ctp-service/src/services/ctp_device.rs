@@ -38,14 +38,14 @@ impl CtpDeviceService {
     /// 签名算法: `hex(md5(app_secret + device_no + date(yyyy-MM-dd) + app_secret))`
     /// 输出: 32位小写字符串
     fn sign(&self, device_no: &str, date: &str) -> String {
-        let input = format!("{}{}{}{}", self.config.app_secret, device_no, date, self.config.app_secret);
+        let input = format!("{}{}{}{}" , self.config.app_secret, device_no, date, self.config.app_secret);
         let digest = md5::compute(input.as_bytes());
-        format!("{digest:x}")
+        format!("{digest:x}" )
     }
 
     /// 获取当前 UTC 日期字符串（YYYY-MM-DD）
     fn today_date() -> String {
-        chrono::Utc::now().format("%Y-%m-%d").to_string()
+        chrono::Utc::now().format("%Y-%m-%d" ).to_string()
     }
 
     /// 上报设备数据至 CTP 平台
@@ -59,13 +59,13 @@ impl CtpDeviceService {
         let resp = client
             .post(&self.config.api_base_url)
             .form(&[
-                ("Sign", sign.as_str()),
-                ("DeviceNo", upload.device_no.as_str()),
-                ("DataType", &upload.data_type.to_string()),
-                ("Voltage", upload.voltage.as_deref().unwrap_or("")),
-                ("StatusOne", upload.status_one.as_deref().unwrap_or("")),
-                ("StatusTwo", upload.status_two.as_deref().unwrap_or("")),
-                ("DataTime", upload.data_time.as_deref().unwrap_or("")),
+                ("Sign" , sign.as_str()),
+                ("DeviceNo" , upload.device_no.as_str()),
+                ("DataType" , &upload.data_type.to_string()),
+                ("Voltage" , upload.voltage.as_deref().unwrap_or("" )),
+                ("StatusOne" , upload.status_one.as_deref().unwrap_or("" )),
+                ("StatusTwo" , upload.status_two.as_deref().unwrap_or("" )),
+                ("DataTime" , upload.data_time.as_deref().unwrap_or("" )),
             ])
             .send()
             .await?;
@@ -74,7 +74,7 @@ impl CtpDeviceService {
         if status.is_success() {
             let body: CtpResponse = resp.json().await?;
             tracing::info!(
-                "设备数据上报成功: device_no={}, data_type={}, error_code={}",
+                "设备数据上报成功: device_no={}, data_type={}, error_code={}" ,
                 upload.device_no,
                 upload.data_type,
                 body.error_code
@@ -82,7 +82,7 @@ impl CtpDeviceService {
             Ok(body)
         } else {
             let text = resp.text().await.unwrap_or_default();
-            Err(AppError::CtpDeviceConnection(format!("HTTP {status}: {text}")))
+            Err(AppError::CtpDeviceConnection(format!("HTTP {status}: {text}" )))
         }
     }
 
@@ -98,23 +98,23 @@ impl CtpDeviceService {
         let date = Self::today_date();
         let sign = self.sign(device_no, &date);
         let client = reqwest::Client::new();
-        let url = format!("{}/api/LockControl", self.config.api_base_url);
+        let url = format!("{}/api/LockControl" , self.config.api_base_url);
 
         let cmd_str = match cmd_type {
-            CmdType::Up => "up",
-            CmdType::Down => "down",
-            CmdType::Syn => "syn",
+            CmdType::Up => "up" ,
+            CmdType::Down => "down" ,
+            CmdType::Syn => "syn" ,
         };
 
         let mut params = vec![
-            ("Sign", sign),
-            ("FacotryId", self.config.factory_id.clone()),
-            ("DeviceNo", device_no.to_string()),
-            ("CmdType", cmd_str.to_string()),
+            ("Sign" , sign),
+            ("FacotryId" , self.config.factory_id.clone()),
+            ("DeviceNo" , device_no.to_string()),
+            ("CmdType" , cmd_str.to_string()),
         ];
 
         if let Some(d) = data {
-            params.push(("data", d.to_string()));
+            params.push(("data" , d.to_string()));
         }
 
         let resp = client
@@ -127,7 +127,7 @@ impl CtpDeviceService {
         if status.is_success() {
             let body: CtpResponse = resp.json().await?;
             tracing::info!(
-                "锁控制命令发送成功: device_no={}, cmd={}, error_code={}",
+                "锁控制命令发送成功: device_no={}, cmd={}, error_code={}" ,
                 device_no,
                 cmd_str,
                 body.error_code
@@ -135,7 +135,7 @@ impl CtpDeviceService {
             Ok(body)
         } else {
             let text = resp.text().await.unwrap_or_default();
-            Err(AppError::CtpDeviceCommand(format!("HTTP {status}: {text}")))
+            Err(AppError::CtpDeviceCommand(format!("HTTP {status}: {text}" )))
         }
     }
 
@@ -148,7 +148,7 @@ impl CtpDeviceService {
             .await
             .map_err(AppError::from)?;
 
-        let key = format!("ctp:device:{device_no}");
+        let key = format!("ctp:device:{device_no}" );
         let data: Option<String> = redis::AsyncCommands::get(&mut conn, &key)
             .await
             .map_err(AppError::from)?;
@@ -156,7 +156,7 @@ impl CtpDeviceService {
         match data {
             Some(json_str) => {
                 let device: LockDevice = serde_json::from_str(&json_str)
-                    .map_err(|e| AppError::CtpInternal(format!("解析设备数据失败: {e}")))?;
+                    .map_err(|e| AppError::CtpInternal(format!("解析设备数据失败: {e}" )))?;
                 Ok(device)
             }
             None => Err(AppError::CtpDeviceNotFound(device_no.to_string())),
@@ -178,7 +178,7 @@ impl CtpDeviceService {
             .map_err(AppError::from)?;
 
         let pattern = if let Some(code) = park_code {
-            format!("ctp:park:{code}:*")
+            format!("ctp:park:{code}:*" )
         } else {
             "ctp:device:*".to_string()
         };
@@ -222,8 +222,8 @@ impl CtpDeviceService {
             .map_err(AppError::from)?;
 
         // 使用状态字解析器
-        let s1 = upload.status_one.as_deref().unwrap_or("");
-        let s2 = upload.status_two.as_deref().unwrap_or("");
+        let s1 = upload.status_one.as_deref().unwrap_or(" ");
+        let s2 = upload.status_two.as_deref().unwrap_or("" );
         let parsed = crate::services::status_parser::parse_status(s1, s2);
 
         let status = match parsed.lock_status.as_str() {
@@ -248,16 +248,16 @@ impl CtpDeviceService {
 
         // 将解析结果附加到 device 结构（通过序列化扩展）
         let mut device_json = serde_json::to_value(&device)
-            .map_err(|e| AppError::CtpInternal(format!("序列化设备失败: {e}")))?;
-        device_json["status_parsed"] = serde_json::to_value(&parsed.status_one)
-            .map_err(|e| AppError::CtpInternal(format!("序列化状态失败: {e}")))?;
+            .map_err(|e| AppError::CtpInternal(format!("序列化设备失败: {e}" )))?;
+        device_json["status_parsed" ] = serde_json::to_value(&parsed.status_one)
+            .map_err(|e| AppError::CtpInternal(format!("序列化状态失败: {e}" )))?;
         if let Some(ref st2) = parsed.status_two {
-            device_json["status_two_parsed"] = serde_json::to_value(st2)
-                .map_err(|e| AppError::CtpInternal(format!("序列化状态失败: {e}")))?;
+            device_json["status_two_parsed" ] = serde_json::to_value(st2)
+                .map_err(|e| AppError::CtpInternal(format!("序列化状态失败: {e}" )))?;
         }
-        device_json["battery_level"] = serde_json::Value::String(parsed.battery_level.clone());
+        device_json["battery_level" ] = serde_json::Value::String(parsed.battery_level.clone());
 
-        let key = format!("ctp:device:{}", upload.device_no);
+        let key = format!("ctp:device:{}" , upload.device_no);
         let _: () = redis::AsyncCommands::set(
             &mut conn,
             &key,
@@ -267,7 +267,7 @@ impl CtpDeviceService {
         .map_err(AppError::from)?;
 
         tracing::info!(
-            "设备数据已缓存: device_no={}, status={:?}, battery={}, lock_state={}",
+            "设备数据已缓存: device_no={}, status={:?}, battery={}, lock_state={}" ,
             upload.device_no,
             device.status,
             parsed.battery_level,
@@ -276,7 +276,7 @@ impl CtpDeviceService {
 
         if parsed.valid {
             tracing::debug!(
-                "状态字解析: S1={}, 锁={}, 线圈左={}, 线圈右={}, 电量={}",
+                "状态字解析: S1={}, 锁={}, 线圈左={}, 线圈右={}, 电量={}" ,
                 s1,
                 parsed.status_one.lock_state,
                 parsed.status_one.left_coil,
@@ -285,7 +285,7 @@ impl CtpDeviceService {
             );
             if let Some(ref st2) = parsed.status_two {
                 tracing::debug!(
-                    "状态字解析: S2={}, 入位={}, 出位={}, 逃费={}, 当前车辆={}",
+                    "状态字解析: S2={}, 入位={}, 出位={}, 逃费={}, 当前车辆={}" ,
                     s2,
                     st2.total_entry_count,
                     st2.total_exit_count,
@@ -312,9 +312,9 @@ mod tests {
             redis_url: "redis://localhost".to_string(),
         };
         let service = CtpDeviceService { config };
-        let sign = service.sign("dev001", "2026-06-18");
-        // Expected: md5("secret456dev0012026-06-18secret456")
-        let expected = format!("{:x}", md5::compute(b"secret456dev0012026-06-18secret456"));
+        let sign = service.sign("dev001" , "2026-06-18" );
+        // Expected: md5("secret456dev0012026-06-18secret456" )
+        let expected = format!("{:x}" , md5::compute(b"secret456dev0012026-06-18secret456" ));
         assert_eq!(sign, expected);
         assert_eq!(sign.len(), 32);
     }
@@ -328,7 +328,7 @@ mod tests {
             redis_url: "redis://localhost".to_string(),
         };
         let service = CtpDeviceService { config };
-        let sign = service.sign("dev001", "2026-06-18");
+        let sign = service.sign("dev001" , "2026-06-18" );
         assert_eq!(sign.len(), 32);
         assert_eq!(sign, sign.to_lowercase());
     }
@@ -342,8 +342,8 @@ mod tests {
             redis_url: "redis://localhost".to_string(),
         };
         let service = CtpDeviceService { config };
-        let sign1 = service.sign("dev001", "2026-06-18");
-        let sign2 = service.sign("dev002", "2026-06-18");
+        let sign1 = service.sign("dev001" , "2026-06-18" );
+        let sign2 = service.sign("dev002" , "2026-06-18" );
         assert_ne!(sign1, sign2);
     }
 
@@ -356,8 +356,8 @@ mod tests {
             redis_url: "redis://localhost".to_string(),
         };
         let service = CtpDeviceService { config };
-        let sign1 = service.sign("dev001", "2026-06-18");
-        let sign2 = service.sign("dev001", "2026-06-19");
+        let sign1 = service.sign("dev001" , "2026-06-18" );
+        let sign2 = service.sign("dev001" , "2026-06-19" );
         assert_ne!(sign1, sign2);
     }
 
@@ -377,7 +377,7 @@ mod tests {
         };
         let svc1 = CtpDeviceService { config: config1 };
         let svc2 = CtpDeviceService { config: config2 };
-        assert_ne!(svc1.sign("dev001", "2026-06-18"), svc2.sign("dev001", "2026-06-18"));
+        assert_ne!(svc1.sign("dev001" , "2026-06-18" ), svc2.sign("dev001" , "2026-06-18" ));
     }
 
     #[test]

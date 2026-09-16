@@ -36,11 +36,11 @@ use crate::services::CtpDeviceService;
 /// 创建 HTTP 应用
 pub fn create_app(state: AppState) -> Router {
     Router::new()
-        .route("/api/ctp/report", post(ctp::receive_device_data))
-        .route("/api/ctp/device/control", post(ctp::control_lock))
-        .route("/api/ctp/device/{device_no}", get(ctp::get_device))
-        .route("/api/ctp/device/list", get(ctp::list_devices))
-        .route("/health", get(ctp::health))
+        .route("/api/ctp/report" , post(ctp::receive_device_data))
+        .route("/api/ctp/device/control" , post(ctp::control_lock))
+        .route("/api/ctp/device/{device_no}" , get(ctp::get_device))
+        .route("/api/ctp/device/list" , get(ctp::list_devices))
+        .route("/health" , get(ctp::health))
         .with_state(state)
 }
 

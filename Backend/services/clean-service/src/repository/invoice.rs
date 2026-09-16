@@ -20,14 +20,14 @@ impl InvoiceRepository {/// 创建发票仓储实例
  /// 统计发票数量
  pub async fn count(&self, query: &InvoiceQuery) -> AppResult<i64> {
      // 安全加固: 全部改为参数绑定 + 编译期校验(修复: 原实现直接拼接用户输入, SQL 注入)
-     let id = query.id.as_deref().map(|s| format!("%{s}%")).unwrap_or_default();
-     let no = query.no.as_deref().map(|s| format!("%{s}%")).unwrap_or_default();
+     let id = query.id.as_deref().map(|s| format!("%{s}%" )).unwrap_or_default();
+     let no = query.no.as_deref().map(|s| format!("%{s}%" )).unwrap_or_default();
      let imposing_no = query.imposing_no.filter(|&v| v != 0);
-     let imposing_name = query.imposing_name.as_deref().map(|s| format!("%{s}%")).unwrap_or_default();
-     let collection_name = query.collection_name.as_deref().map(|s| format!("%{s}%")).unwrap_or_default();
-     let fingerprint = query.fingerprint.as_deref().map(|s| format!("%{s}%")).unwrap_or_default();
-     let create_date = query.create_date.as_deref().map(|s| format!("%{s}%")).unwrap_or_default();
-     let zone = query.zone.as_deref().map(|s| format!("%{s}%")).unwrap_or_default();
+     let imposing_name = query.imposing_name.as_deref().map(|s| format!("%{s}%" )).unwrap_or_default();
+     let collection_name = query.collection_name.as_deref().map(|s| format!("%{s}%" )).unwrap_or_default();
+     let fingerprint = query.fingerprint.as_deref().map(|s| format!("%{s}%" )).unwrap_or_default();
+     let create_date = query.create_date.as_deref().map(|s| format!("%{s}%" )).unwrap_or_default();
+     let zone = query.zone.as_deref().map(|s| format!("%{s}%" )).unwrap_or_default();
 
      let row = sqlx::query_scalar!(
          r#"
@@ -55,15 +55,15 @@ impl InvoiceRepository {/// 创建发票仓储实例
  /// 查询发票列表
  pub async fn list(&self, query: &InvoiceQuery) -> AppResult<Vec<Invoice>> {
      // 安全加固: 全部改为参数绑定; ORDER BY 列名白名单(经 CASE 表达式参数化)
-     let id = query.id.as_deref().map(|s| format!("%{s}%")).unwrap_or_default();
-     let no = query.no.as_deref().map(|s| format!("%{s}%")).unwrap_or_default();
+     let id = query.id.as_deref().map(|s| format!("%{s}%" )).unwrap_or_default();
+     let no = query.no.as_deref().map(|s| format!("%{s}%" )).unwrap_or_default();
      let imposing_no = query.imposing_no.filter(|&v| v != 0);
-     let imposing_name = query.imposing_name.as_deref().map(|s| format!("%{s}%")).unwrap_or_default();
-     let collection_name = query.collection_name.as_deref().map(|s| format!("%{s}%")).unwrap_or_default();
-     let fingerprint = query.fingerprint.as_deref().map(|s| format!("%{s}%")).unwrap_or_default();
-     let create_date = query.create_date.as_deref().map(|s| format!("%{s}%")).unwrap_or_default();
-     let zone = query.zone.as_deref().map(|s| format!("%{s}%")).unwrap_or_default();
-     let sort_by = query.sort_by.as_deref().unwrap_or("");
+     let imposing_name = query.imposing_name.as_deref().map(|s| format!("%{s}%" )).unwrap_or_default();
+     let collection_name = query.collection_name.as_deref().map(|s| format!("%{s}%" )).unwrap_or_default();
+     let fingerprint = query.fingerprint.as_deref().map(|s| format!("%{s}%" )).unwrap_or_default();
+     let create_date = query.create_date.as_deref().map(|s| format!("%{s}%" )).unwrap_or_default();
+     let zone = query.zone.as_deref().map(|s| format!("%{s}%" )).unwrap_or_default();
+     let sort_by = query.sort_by.as_deref().unwrap_or("" );
      let descending = query.descending.unwrap_or(false);
      let limit = query.max_page.unwrap_or(-1);
      let offset = query.cur_page.unwrap_or(0);
@@ -72,13 +72,13 @@ impl InvoiceRepository {/// 创建发票仓储实例
          sqlx::query_as!(
              Invoice,
              r#"
-             SELECT id, COALESCE(no, '') AS "no!",
+             SELECT id, COALESCE(no, '') AS "no!" ,
                     imposing_no, imposing_name,
-                    COALESCE(fingerprint, '') AS "fingerprint!",
+                    COALESCE(fingerprint, '') AS "fingerprint!" ,
                     zone, payer, sum, sum_capital, remark, review, operator, collection_name,
-                    print, project, COALESCE(invalid, false) AS "invalid!",
-                    COALESCE(create_user, '') AS "create_user!",
-                     COALESCE(create_date, '') AS "create_date!",
+                    print, project, COALESCE(invalid, false) AS "invalid!" ,
+                    COALESCE(create_user, '') AS "create_user!" ,
+                     COALESCE(create_date, '') AS "create_date!" ,
                      update_user, update_date,
                     COALESCE(delete, false) AS "delete!"
              FROM clean_invoice
@@ -112,13 +112,13 @@ impl InvoiceRepository {/// 创建发票仓储实例
          sqlx::query_as!(
              Invoice,
              r#"
-             SELECT id, COALESCE(no, '') AS "no!",
+             SELECT id, COALESCE(no, '') AS "no!" ,
                     imposing_no, imposing_name,
-                    COALESCE(fingerprint, '') AS "fingerprint!",
+                    COALESCE(fingerprint, '') AS "fingerprint!" ,
                     zone, payer, sum, sum_capital, remark, review, operator, collection_name,
-                    print, project, COALESCE(invalid, false) AS "invalid!",
-                    COALESCE(create_user, '') AS "create_user!",
-                     COALESCE(create_date, '') AS "create_date!",
+                    print, project, COALESCE(invalid, false) AS "invalid!" ,
+                    COALESCE(create_user, '') AS "create_user!" ,
+                     COALESCE(create_date, '') AS "create_date!" ,
                      update_user, update_date,
                     COALESCE(delete, false) AS "delete!"
              FROM clean_invoice
@@ -155,7 +155,7 @@ impl InvoiceRepository {/// 创建发票仓储实例
 
  /// 创建或更新发票
  pub async fn upsert(&self, param: &InvoiceCreateParam) -> AppResult<()> {
-     let now = chrono::Utc::now().format("%Y-%m-%d %H:%M:%S").to_string();
+     let now = chrono::Utc::now().format("%Y-%m-%d %H:%M:%S" ).to_string();
 
      if let Some(ref id) = param.id {
          // 更新

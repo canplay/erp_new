@@ -20,11 +20,11 @@ pub struct RequestLog {
     pub request_id: String,
     pub method: String,
     pub path: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none" )]
     pub query: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none" )]
     pub client_ip: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none" )]
     pub user_id: Option<String>,
 }
 
@@ -34,14 +34,14 @@ pub struct AccessLog {
     pub request_id: String,
     pub method: String,
     pub path: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none" )]
     pub query: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none" )]
     pub client_ip: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none" )]
     pub user_id: Option<String>,
     pub status: u16,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none" )]
     pub content_length: Option<u64>,
     pub duration_ms: u64,
     pub timestamp: String,
@@ -100,8 +100,8 @@ impl RequestContext {
     #[must_use]
     pub fn new() -> Self {
         Self {
-            trace_id: generate_id("trace"),
-            request_id: generate_id("req"),
+            trace_id: generate_id("trace" ),
+            request_id: generate_id("req" ),
             start_time: Instant::now(),
             user_id: None,
         }
@@ -150,15 +150,15 @@ fn generate_id(prefix: &str) -> String {
     let mut h = state.build_hasher();
     h.write_u128(ts);
     let r = h.finish() as u32;
-    format!("{}-{}-{:016x}{:08x}", prefix, 1, ts, r)
+    format!("{}-{}-{:016x}{:08x}" , prefix, 1, ts, r)
 }
 
 pub fn get_client_ip(request: &Request) -> Option<String> {
     let ips = [
-        "x-forwarded-for",
-        "x-real-ip",
-        "cf-connecting-ip",
-        "true-client-ip",
+        "x-forwarded-for" ,
+        "x-real-ip" ,
+        "cf-connecting-ip" ,
+        "true-client-ip" ,
     ];
     for h in ips {
         if let Some(v) = request.headers().get(h)
@@ -175,7 +175,7 @@ pub fn get_client_ip(request: &Request) -> Option<String> {
 pub fn get_user_id(request: &Request) -> Option<String> {
     request
         .headers()
-        .get("x-user-id")
+        .get("x-user-id" )
         .and_then(|v| v.to_str().ok())
         .map(std::string::ToString::to_string)
 }
@@ -183,7 +183,7 @@ pub fn get_user_id(request: &Request) -> Option<String> {
 pub fn get_user_agent(request: &Request) -> Option<String> {
     request
         .headers()
-        .get("user-agent")
+        .get("user-agent" )
         .and_then(|v| v.to_str().ok())
         .map(std::string::ToString::to_string)
 }
@@ -191,7 +191,7 @@ pub fn get_user_agent(request: &Request) -> Option<String> {
 pub fn get_content_length(request: &Request) -> Option<u64> {
     request
         .headers()
-        .get("content-length")
+        .get("content-length" )
         .and_then(|v| v.to_str().ok())
         .and_then(|s| s.parse().ok())
 }
@@ -206,21 +206,21 @@ pub async fn logging_middleware(request: Request, next: Next) -> Response {
             .get(TRACE_ID_HEADER)
             .and_then(|v| v.to_str().ok())
             .map(std::string::ToString::to_string)
-    }).unwrap_or_else(|| generate_id("trace"));
+    }).unwrap_or_else(|| generate_id("trace" ));
     let rid = request
         .headers()
         .get(REQUEST_ID_HEADER)
-        .and_then(|v| v.to_str().ok()).map_or_else(|| generate_id("req"), std::string::ToString::to_string);
+        .and_then(|v| v.to_str().ok()).map_or_else(|| generate_id("req" ), std::string::ToString::to_string);
     let cip = get_client_ip(&request);
     let uid = get_user_id(&request);
     tracing::info!(
-        "Request start | trace_id={} request_id={} method={} path={} client_ip={} user_id={}",
+        "Request start | trace_id={} request_id={} method={} path={} client_ip={} user_id={}" ,
         tid,
         rid,
         m,
         p,
-        cip.as_deref().unwrap_or("-"),
-        uid.as_deref().unwrap_or("-")
+        cip.as_deref().unwrap_or("-" ),
+        uid.as_deref().unwrap_or("-" )
     );
     let r = next.run(request).await;
     let dm = t.elapsed().as_millis() as u64;
@@ -249,11 +249,11 @@ pub async fn request_id_middleware(request: Request, next: Next) -> Response {
     let rid = request
         .headers()
         .get(REQUEST_ID_HEADER)
-        .and_then(|v| v.to_str().ok()).map_or_else(|| generate_id("req"), std::string::ToString::to_string);
+        .and_then(|v| v.to_str().ok()).map_or_else(|| generate_id("req" ), std::string::ToString::to_string);
     let tid = request
         .headers()
         .get(TRACE_ID_HEADER)
-        .and_then(|v| v.to_str().ok()).map_or_else(|| generate_id("trace"), std::string::ToString::to_string);
+        .and_then(|v| v.to_str().ok()).map_or_else(|| generate_id("trace" ), std::string::ToString::to_string);
     let mut req = request;
     req.extensions_mut().insert(rid.clone());
     req.extensions_mut().insert(tid.clone());
@@ -261,11 +261,11 @@ pub async fn request_id_middleware(request: Request, next: Next) -> Response {
     let h = resp.headers_mut();
     h.insert(
         HeaderName::from_static(REQUEST_ID_HEADER),
-        HeaderValue::from_str(&rid).unwrap_or_else(|_| HeaderValue::from_static("")),
+        HeaderValue::from_str(&rid).unwrap_or_else(|_| HeaderValue::from_static("" )),
     );
     h.insert(
         HeaderName::from_static(TRACE_ID_HEADER),
-        HeaderValue::from_str(&tid).unwrap_or_else(|_| HeaderValue::from_static("")),
+        HeaderValue::from_str(&tid).unwrap_or_else(|_| HeaderValue::from_static("" )),
     );
     resp
 }
@@ -276,7 +276,7 @@ pub async fn health_logging_middleware(request: Request, next: Next) -> Response
     let r = next.run(request).await;
     let dm = t.elapsed().as_millis() as u64;
     tracing::debug!(
-        "health_check | path={} duration_ms={} status={}",
+        "health_check | path={} duration_ms={} status={}" ,
         p,
         dm,
         r.status().as_u16()
@@ -302,7 +302,7 @@ pub fn log_ws_connect(
         timestamp: chrono::Utc::now().to_rfc3339(),
     };
     if let Ok(s) = serde_json::to_string(&l) {
-        tracing::info!("WebSocket connect | {s}");
+        tracing::info!("WebSocket connect | {s}" );
     }
 }
 
@@ -323,9 +323,9 @@ pub fn log_ws_message(
     };
     if let Ok(s) = serde_json::to_string(&l) {
         match direction {
-            "inbound" => tracing::debug!("WS inbound | {s}"),
-            "outbound" => tracing::debug!("WS outbound | {s}"),
-            _ => tracing::debug!("WS message | {s}"),
+            "inbound" => tracing::debug!("WS inbound | {s}" ),
+            "outbound" => tracing::debug!("WS outbound | {s}" ),
+            _ => tracing::debug!("WS message | {s}" ),
         }
     }
 }
@@ -346,7 +346,7 @@ pub fn log_ws_error(
         timestamp: chrono::Utc::now().to_rfc3339(),
     };
     if let Ok(s) = serde_json::to_string(&l) {
-        tracing::error!("WebSocket error | {s}");
+        tracing::error!("WebSocket error | {s}" );
     }
 }
 

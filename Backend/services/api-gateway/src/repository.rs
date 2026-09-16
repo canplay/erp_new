@@ -137,7 +137,7 @@ impl DeviceRepository {
         {
             Ok(d) => d,
             Err(e) => {
-                tracing::warn!("DeviceRepository: failed to load from DB: {}", e);
+                tracing::warn!("DeviceRepository: failed to load from DB: {}" , e);
                 Vec::new()
             }
         };
@@ -228,7 +228,7 @@ impl IpWhitelistRepository {
         {
             Ok(e) => e,
             Err(e) => {
-                tracing::warn!("IpWhitelistRepository: failed to load from DB: {}", e);
+                tracing::warn!("IpWhitelistRepository: failed to load from DB: {}" , e);
                 Vec::new()
             }
         };
@@ -302,7 +302,7 @@ impl SensitiveAuditRepository {
         {
             Ok(e) => e,
             Err(e) => {
-                tracing::warn!("SensitiveAuditRepository: failed to load from DB: {}", e);
+                tracing::warn!("SensitiveAuditRepository: failed to load from DB: {}" , e);
                 Vec::new()
             }
         };
@@ -377,7 +377,7 @@ impl ScheduledTaskRepository {
         {
             Ok(e) => e,
             Err(e) => {
-                tracing::warn!("ScheduledTaskRepository: failed to load from DB: {}", e);
+                tracing::warn!("ScheduledTaskRepository: failed to load from DB: {}" , e);
                 Vec::new()
             }
         };
@@ -452,7 +452,7 @@ impl ReportRepository {
         {
             Ok(e) => e,
             Err(e) => {
-                tracing::warn!("ReportRepository: failed to load from DB: {}", e);
+                tracing::warn!("ReportRepository: failed to load from DB: {}" , e);
                 Vec::new()
             }
         };
@@ -520,14 +520,14 @@ impl DataSourceRepository {
 
     async fn load_from_db(&self) {
         let entries = match sqlx::query_as::<_, DataSourceEntry>(
-            r#"SELECT id, name, "type", config, is_active, created_at FROM gw_data_sources ORDER BY created_at DESC"#,
+            r#"SELECT id, name, "type" , config, is_active, created_at FROM gw_data_sources ORDER BY created_at DESC"#,
         )
         .fetch_all(&self.pool)
         .await
         {
             Ok(e) => e,
             Err(e) => {
-                tracing::warn!("DataSourceRepository: failed to load from DB: {}", e);
+                tracing::warn!("DataSourceRepository: failed to load from DB: {}" , e);
                 Vec::new()
             }
         };
@@ -549,7 +549,7 @@ impl DataSourceRepository {
 
     pub async fn insert_entry(&self, entry: DataSourceEntry) -> Result<(), sqlx::Error> {
         sqlx::query(
-            r#"INSERT INTO gw_data_sources (id, name, "type", config, is_active, created_at) VALUES ($1, $2, $3, $4, $5, $6)"#,
+            r#"INSERT INTO gw_data_sources (id, name, "type" , config, is_active, created_at) VALUES ($1, $2, $3, $4, $5, $6)"#,
         )
         .bind(entry.id)
         .bind(&entry.name)
@@ -602,7 +602,7 @@ impl ReportTemplateRepository {
         {
             Ok(e) => e,
             Err(e) => {
-                tracing::warn!("ReportTemplateRepository: failed to load from DB: {}", e);
+                tracing::warn!("ReportTemplateRepository: failed to load from DB: {}" , e);
                 Vec::new()
             }
         };

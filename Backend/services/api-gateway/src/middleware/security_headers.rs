@@ -25,28 +25,28 @@ pub async fn security_headers_middleware(request: Request, next: Next) -> Respon
     let headers = response.headers_mut();
 
     headers.insert(
-        HeaderName::from_static("strict-transport-security"),
-        HeaderValue::from_static("max-age=31536000; includeSubDomains"),
+        HeaderName::from_static("strict-transport-security" ),
+        HeaderValue::from_static("max-age=31536000; includeSubDomains" ),
     );
     headers.insert(
-        HeaderName::from_static("x-frame-options"),
-        HeaderValue::from_static("DENY"),
+        HeaderName::from_static("x-frame-options" ),
+        HeaderValue::from_static("DENY" ),
     );
     headers.insert(
-        HeaderName::from_static("x-content-type-options"),
-        HeaderValue::from_static("nosniff"),
+        HeaderName::from_static("x-content-type-options" ),
+        HeaderValue::from_static("nosniff" ),
     );
     headers.insert(
-        HeaderName::from_static("content-security-policy"),
-        HeaderValue::from_static("default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:"),
+        HeaderName::from_static("content-security-policy" ),
+        HeaderValue::from_static("default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:" ),
     );
     headers.insert(
-        HeaderName::from_static("referrer-policy"),
-        HeaderValue::from_static("strict-origin-when-cross-origin"),
+        HeaderName::from_static("referrer-policy" ),
+        HeaderValue::from_static("strict-origin-when-cross-origin" ),
     );
     headers.insert(
-        HeaderName::from_static("permissions-policy"),
-        HeaderValue::from_static("geolocation=(), microphone=(), camera=()"),
+        HeaderName::from_static("permissions-policy" ),
+        HeaderValue::from_static("geolocation=(), microphone=(), camera=()" ),
     );
 
     response

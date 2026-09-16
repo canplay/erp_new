@@ -10,16 +10,16 @@ use social_ops_service::services::llm_service::LlmService;
 use social_ops_service::models::account::CreateAccountRequest;
 
 async fn init_pool() -> Option<PgPool> {
-    let url = std::env::var("DATABASE_URL").ok()?;
+    let url = std::env::var("DATABASE_URL" ).ok()?;
     PgPool::connect(&url).await.ok()
 }
 
 #[tokio::test]
 async fn test_account_crud() {
-    println!("=== 测试: 社交账号 CRUD ===");
+    println!("=== 测试: 社交账号 CRUD ===" );
     let pool = match init_pool().await {
         Some(p) => p,
-        None => { eprintln!("跳过集成测试：未设置 DATABASE_URL"); return; }
+        None => { eprintln!("跳过集成测试：未设置 DATABASE_URL" ); return; }
     };
     let svc = AccountService::new(pool.clone());
 
@@ -31,13 +31,13 @@ async fn test_account_crud() {
         credentials: None,
         config: None,
     };
-    let created = svc.create(&req).await.expect("创建失败");
-    println!("✅ 创建账号: {} ({})", created.account_name, created.id);
+    let created = svc.create(&req).await.expect("创建失败" );
+    println!("✅ 创建账号: {} ({})" , created.account_name, created.id);
 
     // 查询
-    let list = svc.list(None).await.expect("查询失败");
-    assert!(!list.is_empty(), "账号列表不应为空");
-    println!("✅ 账号列表: {} 条", list.len());
+    let list = svc.list(None).await.expect("查询失败" );
+    assert!(!list.is_empty(), "账号列表不应为空" );
+    println!("✅ 账号列表: {} 条" , list.len());
 
     // 更新
     let update_req = social_ops_service::models::account::UpdateAccountRequest {
@@ -45,77 +45,77 @@ async fn test_account_crud() {
         config: None,
         is_active: Some(false),
     };
-    svc.update(created.id, &update_req).await.expect("更新失败");
-    let updated = svc.get(created.id).await.expect("查询失败").expect("test assertion");
-    assert_eq!(updated.account_name, "测试账号(已更新)");
-    println!("✅ 更新账号: {} -> {}", created.account_name, updated.account_name);
+    svc.update(created.id, &update_req).await.expect("更新失败" );
+    let updated = svc.get(created.id).await.expect("查询失败" ).expect("test assertion" );
+    assert_eq!(updated.account_name, "测试账号(已更新)" );
+    println!("✅ 更新账号: {} -> {}" , created.account_name, updated.account_name);
 
     // 删除
-    svc.delete(created.id).await.expect("删除失败");
-    let deleted = svc.get(created.id).await.expect("查询失败");
+    svc.delete(created.id).await.expect("删除失败" );
+    let deleted = svc.get(created.id).await.expect("查询失败" );
     assert!(deleted.is_none());
-    println!("✅ 删除账号成功");
+    println!("✅ 删除账号成功" );
 
-    println!("🎉 账号 CRUD 测试通过!\n");
+    println!("🎉 账号 CRUD 测试通过!\n" );
 }
 
 #[tokio::test]
 async fn test_content_crud() {
-    println!("=== 测试: 内容库 CRUD ===");
+    println!("=== 测试: 内容库 CRUD ===" );
     let pool = match init_pool().await {
         Some(p) => p,
-        None => { eprintln!("跳过集成测试：未设置 DATABASE_URL"); return; }
+        None => { eprintln!("跳过集成测试：未设置 DATABASE_URL" ); return; }
     };
     let svc = ContentService::new(pool.clone());
 
     // 创建
-    let created = svc.create("测试标题", "测试正文内容，这是一段测试文本。", "article", None)
-        .await.expect("创建失败");
-    println!("✅ 创建内容: {} ({})", created["title"], created["id"]);
+    let created = svc.create("测试标题" , "测试正文内容，这是一段测试文本。" , "article" , None)
+        .await.expect("创建失败" );
+    println!("✅ 创建内容: {} ({})" , created["title" ], created["id" ]);
 
     // 查询列表
-    let (items, total) = svc.list(None, 1, 10).await.expect("查询失败");
+    let (items, total) = svc.list(None, 1, 10).await.expect("查询失败" );
     assert!(total > 0);
-    println!("✅ 内容列表: {} 条 (共 {})", items.len(), total);
+    println!("✅ 内容列表: {} 条 (共 {})" , items.len(), total);
 
     // 查询详情
-    let id: Uuid = created["id"].as_str().expect("test assertion").parse().expect("test assertion");
-    let detail = svc.get(id).await.expect("查询失败").expect("test assertion");
-    println!("✅ 内容详情: {}", detail["title"]);
+    let id: Uuid = created["id" ].as_str().expect("test assertion" ).parse().expect("test assertion" );
+    let detail = svc.get(id).await.expect("查询失败" ).expect("test assertion" );
+    println!("✅ 内容详情: {}" , detail["title" ]);
 
-    println!("🎉 内容库 CRUD 测试通过!\n");
+    println!("🎉 内容库 CRUD 测试通过!\n" );
 }
 
 #[ignore]
 #[tokio::test]
 async fn test_bilibili_crawl() {
     // 已禁用：需要 BrowserPool 模块（未实现）
-    println!("⚠️ 测试已禁用，需要 BrowserPool 模块");
+    println!("⚠️ 测试已禁用，需要 BrowserPool 模块" );
 }
 
 #[tokio::test]
 async fn test_llm_provider_crud() {
-    println!("=== 测试: LLM 提供商 CRUD ===");
+    println!("=== 测试: LLM 提供商 CRUD ===" );
     let pool = match init_pool().await {
         Some(p) => p,
-        None => { eprintln!("跳过集成测试：未设置 DATABASE_URL"); return; }
+        None => { eprintln!("跳过集成测试：未设置 DATABASE_URL" ); return; }
     };
     let svc = LlmService::new(pool.clone());
 
     // 创建
-    let provider = svc.add_provider("测试LLM", "https://api.openai.com/v1", "sk-test123", "gpt-4o")
-        .await.expect("创建失败");
-    println!("✅ 创建 LLM 提供商: {} ({})", provider["provider_name"], provider["id"]);
+    let provider = svc.add_provider("测试LLM" , "https://api.openai.com/v1" , "sk-test123" , "gpt-4o" )
+        .await.expect("创建失败" );
+    println!("✅ 创建 LLM 提供商: {} ({})" , provider["provider_name" ], provider["id" ]);
 
     // 列表
-    let list = svc.list_providers().await.expect("查询失败");
+    let list = svc.list_providers().await.expect("查询失败" );
     assert!(!list.is_empty());
-    println!("✅ LLM 提供商列表: {} 条", list.len());
+    println!("✅ LLM 提供商列表: {} 条" , list.len());
 
     // 删除
-    let id: Uuid = provider["id"].as_str().expect("test assertion").parse().expect("test assertion");
-    svc.delete_provider(id).await.expect("删除失败");
-    println!("✅ 删除 LLM 提供商成功");
+    let id: Uuid = provider["id" ].as_str().expect("test assertion" ).parse().expect("test assertion" );
+    svc.delete_provider(id).await.expect("删除失败" );
+    println!("✅ 删除 LLM 提供商成功" );
 
-    println!("🎉 LLM 提供商测试通过!\n");
+    println!("🎉 LLM 提供商测试通过!\n" );
 }

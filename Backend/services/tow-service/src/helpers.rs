@@ -10,7 +10,7 @@ use serde_json::{json, Value};
 pub fn json_success(data: Value) -> (StatusCode, Json<Value>) {
     (
         StatusCode::OK,
-        Json(json!({"status": 1, "message": "success", "data": data})),
+        Json(json!({"status": 1, "message": "success" , "data": data})),
     )
 }
 
@@ -26,6 +26,6 @@ pub fn json_error(msg: String) -> (StatusCode, Json<Value>) {
 pub fn json_health() -> (StatusCode, Json<Value>) {
     (
         StatusCode::OK,
-        Json(json!({"status": 1, "message": "success"})),
+        Json(json!({"status": 1, "message": "success" })),
     )
 }

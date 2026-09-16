@@ -12,9 +12,9 @@ use regex::Regex;
 
 lazy_static! {
     /// 邮箱校验正则表达式（预编译缓存，避免每次调用重复编译）
-    static ref EMAIL_REGEX: Regex = Regex::new(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$").expect("邮箱正则表达式编译失败");
+    static ref EMAIL_REGEX: Regex = Regex::new(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" ).expect("邮箱正则表达式编译失败" );
     /// 手机号校验正则表达式（中国大陆，预编译缓存）
-    static ref PHONE_REGEX: Regex = Regex::new(r"^1[3-9]\d{9}$").expect("手机号正则表达式编译失败");
+    static ref PHONE_REGEX: Regex = Regex::new(r"^1[3-9]\d{9}$" ).expect("手机号正则表达式编译失败" );
 }
 
 /// 密码哈希（使用 argon2）
@@ -30,7 +30,7 @@ pub fn hash_password(password: &str) -> Result<String, String> {
     argon2
         .hash_password(password.as_bytes(), &salt)
         .map(|hash| hash.to_string())
-        .map_err(|e| format!("密码哈希失败: {e}"))
+        .map_err(|e| format!("密码哈希失败: {e}" ))
 }
 
 /// 验证密码（优先 argon2，兼容 bcrypt 旧哈希）
@@ -44,7 +44,7 @@ pub fn hash_password(password: &str) -> Result<String, String> {
 #[must_use]
 pub fn verify_password(password: &str, hash: &str) -> bool {
     // 兼容 bcrypt 旧哈希（$2a$/$2b$/$2y$ 前缀）
-    if hash.starts_with("$2a$") || hash.starts_with("$2b$") || hash.starts_with("$2y$") {
+    if hash.starts_with("$2a$" ) || hash.starts_with("$2b$" ) || hash.starts_with("$2y$" ) {
         return bcrypt::verify(password, hash).unwrap_or(false);
     }
     let parsed_hash = match PasswordHash::new(hash) {
@@ -67,16 +67,16 @@ pub fn verify_password(password: &str, hash: &str) -> bool {
 /// 验证成功返回空字符串，失败返回错误消息
 pub fn validate_username(username: &str) -> Result<(), &'static str> {
     if username.is_empty() {
-        return Err("用户名不能为空");
+        return Err("用户名不能为空" );
     }
     if username.len() < 3 {
-        return Err("用户名长度不能少于3个字符");
+        return Err("用户名长度不能少于3个字符" );
     }
     if username.len() > 50 {
-        return Err("用户名长度不能超过50个字符");
+        return Err("用户名长度不能超过50个字符" );
     }
     if !username.chars().all(|c| c.is_alphanumeric() || c == '_') {
-        return Err("用户名只能包含字母、数字和下划线");
+        return Err("用户名只能包含字母、数字和下划线" );
     }
     Ok(())
 }
@@ -92,7 +92,7 @@ pub fn validate_username(username: &str) -> Result<(), &'static str> {
 /// 验证成功返回空字符串，失败返回错误消息
 pub const fn validate_password(password: &str) -> Result<(), &'static str> {
     if password.len() < 8 {
-        return Err("密码长度至少 8 个字符");
+        return Err("密码长度至少 8 个字符" );
     }
     Ok(())
 }
@@ -106,11 +106,11 @@ pub const fn validate_password(password: &str) -> Result<(), &'static str> {
 /// 验证成功返回空字符串，失败返回错误消息
 pub fn validate_email(email: &str) -> Result<(), &'static str> {
     if email.is_empty() {
-        return Err("邮箱不能为空");
+        return Err("邮箱不能为空" );
     }
     // 简单的邮箱格式验证
     if !EMAIL_REGEX.is_match(email) {
-        return Err("邮箱格式不正确");
+        return Err("邮箱格式不正确" );
     }
     Ok(())
 }
@@ -126,10 +126,10 @@ pub fn validate_email(email: &str) -> Result<(), &'static str> {
 /// 验证成功返回空字符串，失败返回错误消息
 pub fn validate_phone(phone: &str) -> Result<(), &'static str> {
     if phone.is_empty() {
-        return Err("手机号不能为空");
+        return Err("手机号不能为空" );
     }
     if !PHONE_REGEX.is_match(phone) {
-        return Err("手机号格式不正确");
+        return Err("手机号格式不正确" );
     }
     Ok(())
 }
@@ -144,7 +144,7 @@ pub fn validate_phone(phone: &str) -> Result<(), &'static str> {
 /// 验证成功返回空字符串，失败返回错误消息
 pub fn validate_role(role: &str, valid_roles: &[&str]) -> Result<(), &'static str> {
     if !valid_roles.contains(&role) {
-        return Err("无效的角色值");
+        return Err("无效的角色值" );
     }
     Ok(())
 }
@@ -159,7 +159,7 @@ pub fn validate_role(role: &str, valid_roles: &[&str]) -> Result<(), &'static st
 /// 验证成功返回空字符串，失败返回错误消息
 pub fn validate_status(status: i32, valid_statuses: &[i32]) -> Result<(), &'static str> {
     if !valid_statuses.contains(&status) {
-        return Err("无效的状态值");
+        return Err("无效的状态值" );
     }
     Ok(())
 }
@@ -194,7 +194,7 @@ pub fn generate_random_password(length: usize) -> String {
 /// 验证成功返回空字符串，失败返回错误消息
 pub const fn validate_id(id: i64) -> Result<(), &'static str> {
     if id <= 0 {
-        return Err("ID 必须大于 0");
+        return Err("ID 必须大于 0" );
     }
     Ok(())
 }
@@ -234,10 +234,10 @@ pub fn validate_string_length(
 ) -> Result<(), String> {
     let len = value.len();
     if len < min_len {
-        return Err(format!("{field_name} 长度不能少于 {min_len} 个字符"));
+        return Err(format!("{field_name} 长度不能少于 {min_len} 个字符" ));
     }
     if len > max_len {
-        return Err(format!("{field_name} 长度不能超过 {max_len} 个字符"));
+        return Err(format!("{field_name} 长度不能超过 {max_len} 个字符" ));
     }
     Ok(())
 }
@@ -251,28 +251,28 @@ mod tests {
         let password = "Test@123456";
         let hash = hash_password(password).unwrap();
         assert!(verify_password(password, &hash));
-        assert!(!verify_password("wrong_password", &hash));
+        assert!(!verify_password("wrong_password" , &hash));
     }
 
     #[test]
     fn test_validate_username() {
-        assert!(validate_username("user123").is_ok());
-        assert!(validate_username("user_name").is_ok());
-        assert!(validate_username("ab").is_err()); // 太短
-        assert!(validate_username("user@name").is_err()); // 包含非法字符
+        assert!(validate_username("user123" ).is_ok());
+        assert!(validate_username("user_name" ).is_ok());
+        assert!(validate_username("ab" ).is_err()); // 太短
+        assert!(validate_username("user@name" ).is_err()); // 包含非法字符
     }
 
     #[test]
     fn test_validate_email() {
-        assert!(validate_email("test@example.com").is_ok());
-        assert!(validate_email("invalid").is_err());
+        assert!(validate_email("test@example.com" ).is_ok());
+        assert!(validate_email("invalid" ).is_err());
     }
 
     #[test]
     fn test_validate_phone() {
-        assert!(validate_phone("13800000001").is_ok());
-        assert!(validate_phone("12345").is_err()); // 太短
-        assert!(validate_phone("123456789012").is_err()); // 太长
+        assert!(validate_phone("13800000001" ).is_ok());
+        assert!(validate_phone("12345" ).is_err()); // 太短
+        assert!(validate_phone("123456789012" ).is_err()); // 太长
     }
 
     #[test]

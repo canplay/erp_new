@@ -75,7 +75,7 @@ impl GrpcConnectionPool {
 
             if let Some(conn) = connections.get(addr) {
                 if conn.state == ConnectionState::Healthy && !conn.is_expired(self.max_idle_time) {
-                    tracing::debug!("gRPC 连接池命中: {addr}");
+                    tracing::debug!("gRPC 连接池命中: {addr}" );
                     return Ok(conn.channel());
                 }
 
@@ -85,7 +85,7 @@ impl GrpcConnectionPool {
         }
 
         // 创建新连接
-        tracing::info!("创建新的 gRPC 连接: {addr}");
+        tracing::info!("创建新的 gRPC 连接: {addr}" );
         let channel = tonic::transport::Endpoint::from_shared(addr.to_string())?
             .timeout(Duration::from_secs(30))
             .connect()
@@ -99,7 +99,7 @@ impl GrpcConnectionPool {
             while connections.len() >= self.max_pool_size {
                 if let Some(oldest) = connections.keys().next().cloned() {
                     connections.remove(&oldest);
-                    tracing::debug!("清理旧的 gRPC 连接: {oldest}");
+                    tracing::debug!("清理旧的 gRPC 连接: {oldest}" );
                 }
             }
 
@@ -120,14 +120,14 @@ impl GrpcConnectionPool {
     pub fn remove_connection(&self, addr: &str) {
         let mut connections = self.connections.write();
         connections.remove(addr);
-        tracing::debug!("移除 gRPC 连接: {addr}");
+        tracing::debug!("移除 gRPC 连接: {addr}" );
     }
 
     /// 清理所有连接
     pub fn clear(&self) {
         let mut connections = self.connections.write();
         connections.clear();
-        tracing::info!("清理所有 gRPC 连接");
+        tracing::info!("清理所有 gRPC 连接" );
     }
 
     /// 获取连接统计

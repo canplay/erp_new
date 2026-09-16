@@ -1,0 +1,2 @@
+# Enforce LF line endings for all Rust source files
+*.rs text eol=lf

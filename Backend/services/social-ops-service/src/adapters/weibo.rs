@@ -25,15 +25,15 @@ impl CrawlerAdapter for WeiboCrawler {
         keyword: &str,
         client: &BrowserClient,
     ) -> anyhow::Result<Vec<RawContent>> {
-        tracing::info!("[WeiboCrawler] crawling '{}' via browser-service", keyword);
+        tracing::info!("[WeiboCrawler] crawling '{}' via browser-service" , keyword);
 
         // 1. 创建浏览器标签页
         let session_id = client.create_session().await?;
-        tracing::info!("[WeiboCrawler] session_id={}", session_id);
+        tracing::info!("[WeiboCrawler] session_id={}" , session_id);
 
         // 2. 导航到微博搜索页
         let search_url = format!(
-            "https://s.weibo.com/weibo?q={}&typeall=1&suball=1&page=1",
+            "https://s.weibo.com/weibo?q={}&typeall=1&suball=1&page=1" ,
             urlencoding::encode(keyword)
         );
         client.navigate(&session_id, &search_url).await?;
@@ -48,7 +48,7 @@ impl CrawlerAdapter for WeiboCrawler {
         // 5. 关闭标签页
         let _ = client.close_session(&session_id).await;
 
-        tracing::info!("[WeiboCrawler] found {} results", results.len());
+        tracing::info!("[WeiboCrawler] found {} results" , results.len());
         Ok(results)
     }
 }
@@ -57,25 +57,25 @@ fn parse_weibo_html(html: &str, keyword: &str) -> Vec<RawContent> {
     let mut results = Vec::new();
 
     // 简单提取 card-wrap 中的文本
-    for card in html.split("card-wrap") {
+    for card in html.split("card-wrap" ) {
         if card.len() < 50 {
             continue;
         }
 
         // 提取文本
-        let text = extract_text_between(card, "\\\"text\\\":\\\"", "\\\"");
+        let text = extract_text_between(card, "\\\"text\\\":\\\"" , "\\\"" );
         if text.len() < 10 {
             continue;
         }
-        let text = text.replace("\\n", "\n").replace("\\\"", "\"").replace("&nbsp;", " ");
+        let text = text.replace("\\n" , "\n" ).replace("\\\"" , "\"" ).replace("&nbsp;" , " " );
 
         // 提取图片 URL
         let mut images = Vec::new();
-        for (start, _) in card.match_indices("src=\"https://") {
+        for (start, _) in card.match_indices("src=\"https://" ) {
             let remain = &card[start + 5..];
             if let Some(end) = remain.find('\"') {
                 let img_url = &remain[..end];
-                if img_url.contains("sinaimg") {
+                if img_url.contains("sinaimg" ) {
                     images.push(img_url.to_string());
                 }
             }
@@ -85,7 +85,7 @@ fn parse_weibo_html(html: &str, keyword: &str) -> Vec<RawContent> {
             text,
             images,
             source: "weibo".to_string(),
-            url: format!("https://s.weibo.com/weibo?q={}", urlencoding::encode(keyword)),
+            url: format!("https://s.weibo.com/weibo?q={}" , urlencoding::encode(keyword)),
         });
     }
 

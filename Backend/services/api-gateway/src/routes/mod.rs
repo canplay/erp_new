@@ -99,5 +99,5 @@ pub fn all_routes() -> Router<Arc<AppState>> {
         .merge(hik_routes())
         .merge(xlt_routes())
         .merge(options_routes())
-        .route("/metrics", axum::routing::get(metrics_handler))
+        .route("/metrics" , axum::routing::get(metrics_handler))
 }

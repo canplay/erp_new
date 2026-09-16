@@ -22,34 +22,34 @@ pub struct AppState {
 pub fn create_router(state: AppState) -> Router {
     Router::new()
         // 登录日志
-        .route("/login", axum::routing::get(get_login_logs))
+        .route("/login" , axum::routing::get(get_login_logs))
         .route(
-            "/login/statistics",
+            "/login/statistics" ,
             axum::routing::get(get_login_statistics),
         )
         // 操作日志
-        .route("/operation", axum::routing::get(get_operation_logs))
+        .route("/operation" , axum::routing::get(get_operation_logs))
         .route(
-            "/operation/batch",
+            "/operation/batch" ,
             axum::routing::delete(batch_delete_operation_logs),
         )
         .route(
-            "/operation/{id}",
+            "/operation/{id}" ,
             axum::routing::get(get_operation_log_detail),
         )
         // API 调用日志（API Governance）
-        .route("/api-call", axum::routing::get(get_api_call_logs))
+        .route("/api-call" , axum::routing::get(get_api_call_logs))
         .route(
-            "/api-call/statistics",
+            "/api-call/statistics" ,
             axum::routing::get(get_api_call_statistics),
         )
         .route(
-            "/api-call/endpoints",
+            "/api-call/endpoints" ,
             axum::routing::get(get_api_endpoint_statistics),
         )
-        .route("/api-call/trend", axum::routing::get(get_api_call_trend))
+        .route("/api-call/trend" , axum::routing::get(get_api_call_trend))
         .route(
-            "/api-call/distribution",
+            "/api-call/distribution" ,
             axum::routing::get(get_api_response_distribution),
         )
         .with_state(state)
@@ -141,7 +141,7 @@ async fn batch_delete_operation_logs(
         .batch_delete_operation_logs(&req.ids)
         .await?;
 
-    Ok(json_ok_msg(&format!("已删除 {} 条日志", count)))
+    Ok(json_ok_msg(&format!("已删除 {} 条日志" , count)))
 }
 
 // ============ API 调用日志（API Governance） ============
@@ -189,5 +189,5 @@ async fn get_api_response_distribution(
 
 /// 健康检查
 pub fn health_check() -> Json<serde_json::Value> {
-    json_health("audit-service")
+    json_health("audit-service" )
 }

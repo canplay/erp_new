@@ -6,13 +6,13 @@ use sqlx::PgPool;
 /// 分类 Repository 错误
 #[derive(Debug, thiserror::Error)]
 pub enum CategoryRepositoryError {
-    #[error("分类不存在")]
+    #[error("分类不存在" )]
     NotFound,
-    #[error("分类代码已存在")]
+    #[error("分类代码已存在" )]
     AlreadyExists,
-    #[error("存在子分类")]
+    #[error("存在子分类" )]
     HasChildren,
-    #[error("数据库错误: {0}")]
+    #[error("数据库错误: {0}" )]
     Database(#[from] sqlx::Error),
 }
 
@@ -44,14 +44,14 @@ impl CategoryRepository {
         let offset = (page - 1) * page_size;
 
         let (categories, total) = if let Some(kw) = keyword {
-            let keyword_pattern = format!("%{kw}%");
+            let keyword_pattern = format!("%{kw}%" );
             let categories = sqlx::query_as!(
                 CmsCategory,
                 r#"
                 SELECT id, parent_id, name, slug, description, icon, sort_order,
                        seo_title, seo_keywords, seo_description,
-                       status::int4 AS "status!", (allow_attachment <> 0) AS "allow_attachment!",
-                       COALESCE(created_at, NOW()) AS "created_at!",
+                       status::int4 AS "status!" , (allow_attachment <> 0) AS "allow_attachment!" ,
+                       COALESCE(created_at, NOW()) AS "created_at!" ,
                        COALESCE(updated_at, NOW()) AS "updated_at!"
                 FROM cms_category
                 WHERE (name ILIKE $1 OR slug ILIKE $1) AND status = 1
@@ -66,7 +66,7 @@ impl CategoryRepository {
             .await?;
 
             let total = sqlx::query_scalar!(
-                "SELECT COUNT(*) FROM cms_category WHERE (name ILIKE $1 OR slug ILIKE $1) AND status = 1",
+                "SELECT COUNT(*) FROM cms_category WHERE (name ILIKE $1 OR slug ILIKE $1) AND status = 1" ,
                 &keyword_pattern,
             )
             .fetch_one(&self.pool)
@@ -80,8 +80,8 @@ impl CategoryRepository {
                 r#"
                 SELECT id, parent_id, name, slug, description, icon, sort_order,
                        seo_title, seo_keywords, seo_description,
-                       status::int4 AS "status!", (allow_attachment <> 0) AS "allow_attachment!",
-                       COALESCE(created_at, NOW()) AS "created_at!",
+                       status::int4 AS "status!" , (allow_attachment <> 0) AS "allow_attachment!" ,
+                       COALESCE(created_at, NOW()) AS "created_at!" ,
                        COALESCE(updated_at, NOW()) AS "updated_at!"
                 FROM cms_category
                 WHERE status = 1
@@ -94,7 +94,7 @@ impl CategoryRepository {
             .fetch_all(&self.pool)
             .await?;
 
-            let total = sqlx::query_scalar!("SELECT COUNT(*) FROM cms_category WHERE status = 1")
+            let total = sqlx::query_scalar!("SELECT COUNT(*) FROM cms_category WHERE status = 1" )
                 .fetch_one(&self.pool)
                 .await?
                 .unwrap_or(0);
@@ -116,8 +116,8 @@ impl CategoryRepository {
                 r#"
                 SELECT id, parent_id, name, slug, description, icon, sort_order,
                        seo_title, seo_keywords, seo_description,
-                       status::int4 AS "status!", (allow_attachment <> 0) AS "allow_attachment!",
-                       COALESCE(created_at, NOW()) AS "created_at!",
+                       status::int4 AS "status!" , (allow_attachment <> 0) AS "allow_attachment!" ,
+                       COALESCE(created_at, NOW()) AS "created_at!" ,
                        COALESCE(updated_at, NOW()) AS "updated_at!"
                 FROM cms_category
                 WHERE parent_id = $1 AND status = 1
@@ -133,8 +133,8 @@ impl CategoryRepository {
                 r#"
                 SELECT id, parent_id, name, slug, description, icon, sort_order,
                        seo_title, seo_keywords, seo_description,
-                       status::int4 AS "status!", (allow_attachment <> 0) AS "allow_attachment!",
-                       COALESCE(created_at, NOW()) AS "created_at!",
+                       status::int4 AS "status!" , (allow_attachment <> 0) AS "allow_attachment!" ,
+                       COALESCE(created_at, NOW()) AS "created_at!" ,
                        COALESCE(updated_at, NOW()) AS "updated_at!"
                 FROM cms_category
                 WHERE parent_id IS NULL AND status = 1
@@ -182,8 +182,8 @@ impl CategoryRepository {
             r#"
             SELECT id, parent_id, name, slug, description, icon, sort_order,
                    seo_title, seo_keywords, seo_description,
-                   status::int4 AS "status!", (allow_attachment <> 0) AS "allow_attachment!",
-                   COALESCE(created_at, NOW()) AS "created_at!",
+                   status::int4 AS "status!" , (allow_attachment <> 0) AS "allow_attachment!" ,
+                   COALESCE(created_at, NOW()) AS "created_at!" ,
                    COALESCE(updated_at, NOW()) AS "updated_at!"
             FROM cms_category
             WHERE id = $1
@@ -205,7 +205,7 @@ impl CategoryRepository {
         description: Option<&str>,
     ) -> Result<i64, CategoryRepositoryError> {
         // 检查 slug 是否已存在
-        let existing = sqlx::query_scalar!("SELECT id FROM cms_category WHERE slug = $1", slug)
+        let existing = sqlx::query_scalar!("SELECT id FROM cms_category WHERE slug = $1" , slug)
             .fetch_optional(&self.pool)
             .await?;
 
@@ -265,7 +265,7 @@ impl CategoryRepository {
     pub async fn delete(&self, id: i64) -> Result<bool, CategoryRepositoryError> {
         // 检查是否有子分类
         let children = sqlx::query_scalar!(
-            "SELECT COUNT(*) FROM cms_category WHERE parent_id = $1",
+            "SELECT COUNT(*) FROM cms_category WHERE parent_id = $1" ,
             id,
         )
         .fetch_one(&self.pool)
@@ -278,7 +278,7 @@ impl CategoryRepository {
 
         // 检查是否有文章关联
         let articles = sqlx::query_scalar!(
-            "SELECT COUNT(*) FROM cms_article WHERE category_id = $1",
+            "SELECT COUNT(*) FROM cms_article WHERE category_id = $1" ,
             id,
         )
         .fetch_one(&self.pool)
@@ -289,7 +289,7 @@ impl CategoryRepository {
             return Err(CategoryRepositoryError::HasChildren);
         }
 
-        let result = sqlx::query!("DELETE FROM cms_category WHERE id = $1", id)
+        let result = sqlx::query!("DELETE FROM cms_category WHERE id = $1" , id)
             .execute(&self.pool)
             .await?;
 

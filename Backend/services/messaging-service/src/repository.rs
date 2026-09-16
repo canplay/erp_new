@@ -257,7 +257,7 @@ impl MessageRepository for PostgresMessageRepository {
         let rows = sqlx::query!(
             r#"
             SELECT m.id, m.type AS msg_type, m.title, m.content, m.sender_id, m.sender_name,
-                   m.priority::int AS "priority!", m.attachment_urls, m.target_type, m.target_ids,
+                   m.priority::int AS "priority!" , m.attachment_urls, m.target_type, m.target_ids,
                    m.expire_time, COALESCE(m.created_at, NOW()) AS "created_at!"
             FROM sys_message m
             JOIN sys_message_user mu ON m.id = mu.message_id
@@ -305,7 +305,7 @@ impl MessageRepository for PostgresMessageRepository {
         .unwrap_or(0);
 
         let unread = sqlx::query_scalar!(
-            "SELECT COUNT(*) FROM sys_message_user WHERE user_id = $1 AND is_read = 0 AND is_deleted = 0",
+            "SELECT COUNT(*) FROM sys_message_user WHERE user_id = $1 AND is_read = 0 AND is_deleted = 0" ,
             user_id
         )
         .fetch_one(&self.pool)
@@ -323,7 +323,7 @@ impl MessageRepository for PostgresMessageRepository {
         let row = sqlx::query!(
             r#"
             SELECT m.id, m.type AS msg_type, m.title, m.content, m.sender_id, m.sender_name,
-                   m.priority::int AS "priority!", m.attachment_urls, m.target_type, m.target_ids,
+                   m.priority::int AS "priority!" , m.attachment_urls, m.target_type, m.target_ids,
                    m.expire_time, COALESCE(m.created_at, NOW()) AS "created_at!"
             FROM sys_message m
             JOIN sys_message_user mu ON m.id = mu.message_id
@@ -353,7 +353,7 @@ impl MessageRepository for PostgresMessageRepository {
 
     async fn mark_as_read(&self, message_id: i64, user_id: i64) -> Result<(), sqlx::Error> {
         sqlx::query!(
-            "UPDATE sys_message_user SET is_read = 1, read_time = NOW() WHERE message_id = $1 AND user_id = $2",
+            "UPDATE sys_message_user SET is_read = 1, read_time = NOW() WHERE message_id = $1 AND user_id = $2" ,
             message_id,
             user_id
         )
@@ -364,7 +364,7 @@ impl MessageRepository for PostgresMessageRepository {
 
     async fn mark_all_as_read(&self, user_id: i64) -> Result<i64, sqlx::Error> {
         let result = sqlx::query!(
-            "UPDATE sys_message_user SET is_read = 1, read_time = NOW() WHERE user_id = $1 AND is_read = 0",
+            "UPDATE sys_message_user SET is_read = 1, read_time = NOW() WHERE user_id = $1 AND is_read = 0" ,
             user_id
         )
         .execute(&self.pool)
@@ -374,7 +374,7 @@ impl MessageRepository for PostgresMessageRepository {
 
     async fn delete_message(&self, message_id: i64, user_id: i64) -> Result<(), sqlx::Error> {
         sqlx::query!(
-            "UPDATE sys_message_user SET is_deleted = 1 WHERE message_id = $1 AND user_id = $2",
+            "UPDATE sys_message_user SET is_deleted = 1 WHERE message_id = $1 AND user_id = $2" ,
             message_id,
             user_id
         )
@@ -469,7 +469,7 @@ impl AnnouncementRepository for PostgresAnnouncementRepository {
     }
 
     async fn delete(&self, id: i64) -> Result<(), sqlx::Error> {
-        sqlx::query!("DELETE FROM announcements WHERE id = $1", id)
+        sqlx::query!("DELETE FROM announcements WHERE id = $1" , id)
             .execute(&self.pool)
             .await?;
         Ok(())
@@ -480,12 +480,12 @@ impl AnnouncementRepository for PostgresAnnouncementRepository {
             Announcement,
             r#"
             SELECT id, title, content,
-                   COALESCE(announcement_type, '') AS "announcement_type!",
-                   COALESCE(priority, 0) AS "priority!",
-                   COALESCE(is_pinned, false) AS "is_pinned!",
-                   COALESCE(is_active, false) AS "is_active!",
+                   COALESCE(announcement_type, '') AS "announcement_type!" ,
+                   COALESCE(priority, 0) AS "priority!" ,
+                   COALESCE(is_pinned, false) AS "is_pinned!" ,
+                   COALESCE(is_active, false) AS "is_active!" ,
                    start_time, end_time, created_by,
-                   COALESCE(created_at, NOW()) AS "created_at!",
+                   COALESCE(created_at, NOW()) AS "created_at!" ,
                    COALESCE(updated_at, NOW()) AS "updated_at!"
             FROM announcements
             WHERE id = $1
@@ -523,12 +523,12 @@ impl AnnouncementRepository for PostgresAnnouncementRepository {
             Announcement,
             r#"
             SELECT id, title, content,
-                   COALESCE(announcement_type, '') AS "announcement_type!",
-                   COALESCE(priority, 0) AS "priority!",
-                   COALESCE(is_pinned, false) AS "is_pinned!",
-                   COALESCE(is_active, false) AS "is_active!",
+                   COALESCE(announcement_type, '') AS "announcement_type!" ,
+                   COALESCE(priority, 0) AS "priority!" ,
+                   COALESCE(is_pinned, false) AS "is_pinned!" ,
+                   COALESCE(is_active, false) AS "is_active!" ,
                    start_time, end_time, created_by,
-                   COALESCE(created_at, NOW()) AS "created_at!",
+                   COALESCE(created_at, NOW()) AS "created_at!" ,
                    COALESCE(updated_at, NOW()) AS "updated_at!"
             FROM announcements
             WHERE ($1::boolean IS NULL OR (is_active = $1 AND (start_time IS NULL OR start_time <= NOW())
@@ -551,12 +551,12 @@ impl AnnouncementRepository for PostgresAnnouncementRepository {
             Announcement,
             r#"
             SELECT id, title, content,
-                   COALESCE(announcement_type, '') AS "announcement_type!",
-                   COALESCE(priority, 0) AS "priority!",
-                   COALESCE(is_pinned, false) AS "is_pinned!",
-                   COALESCE(is_active, false) AS "is_active!",
+                   COALESCE(announcement_type, '') AS "announcement_type!" ,
+                   COALESCE(priority, 0) AS "priority!" ,
+                   COALESCE(is_pinned, false) AS "is_pinned!" ,
+                   COALESCE(is_active, false) AS "is_active!" ,
                    start_time, end_time, created_by,
-                   COALESCE(created_at, NOW()) AS "created_at!",
+                   COALESCE(created_at, NOW()) AS "created_at!" ,
                    COALESCE(updated_at, NOW()) AS "updated_at!"
             FROM announcements 
             WHERE is_active = true 

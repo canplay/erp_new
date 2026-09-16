@@ -335,7 +335,7 @@ impl AlertManager {
             now - chrono::Duration::seconds(i64::from(self.config.abnormal_access_window_seconds));
 
         // 获取用户访问记录
-        let key = format!("{user_id}:{ip_address}");
+        let key = format!("{user_id}:{ip_address}" );
         let user_access = access_log.entry(key).or_insert_with(Vec::new);
 
         // 清理过期记录
@@ -541,7 +541,7 @@ impl AlertManager {
             .count();
 
         let by_type: HashMap<String, usize> = events.values().fold(HashMap::new(), |mut acc, e| {
-            *acc.entry(format!("{:?}", e.alert_type)).or_insert(0) += 1;
+            *acc.entry(format!("{:?}" , e.alert_type)).or_insert(0) += 1;
             acc
         });
 
@@ -589,11 +589,11 @@ fn generate_alert_id() -> String {
     let timestamp = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap_or_else(|_| {
-            tracing::error!("系统时间早于 UNIX epoch");
+            tracing::error!("系统时间早于 UNIX epoch" );
             std::time::Duration::from_secs(0)
         })
         .as_nanos();
-    format!("alert_{timestamp:016x}")
+    format!("alert_{timestamp:016x}" )
 }
 
 #[cfg(test)]
@@ -635,12 +635,12 @@ mod tests {
         // 模拟多次登录失败
         for i in 1..=5 {
             let alert = manager
-                .check_login_failure("user_001", "192.0.2.100", "密码错误")
+                .check_login_failure("user_001" , "192.0.2.100" , "密码错误" )
                 .await;
 
             if i == 5 {
                 assert!(alert.is_some());
-                let a = alert.expect("alert should exist");
+                let a = alert.expect("alert should exist" );
                 assert_eq!(a.alert_type, AlertType::LoginFailed);
                 assert_eq!(a.level, AlertLevel::Warning);
             } else {
@@ -655,11 +655,11 @@ mod tests {
 
         // 高风险访问
         let alert = manager
-            .check_abnormal_access("user_001", "192.0.2.100", "/admin/settings", "read", 0.9)
+            .check_abnormal_access("user_001" , "192.0.2.100" , "/admin/settings" , "read" , 0.9)
             .await;
 
         assert!(alert.is_some());
-        assert_eq!(alert.expect("alert should exist").alert_type, AlertType::AbnormalAccess);
+        assert_eq!(alert.expect("alert should exist" ).alert_type, AlertType::AbnormalAccess);
     }
 
     #[tokio::test]
@@ -672,10 +672,10 @@ mod tests {
 
         let alert = manager
             .record_sensitive_operation(
-                "user_001",
-                "192.0.2.100",
-                "delete",
-                "/api/users",
+                "user_001" ,
+                "192.0.2.100" ,
+                "delete" ,
+                "/api/users" ,
                 details,
             )
             .await;
@@ -689,19 +689,19 @@ mod tests {
 
         let alert = manager
             .record_sensitive_operation(
-                "user_001",
-                "192.0.2.100",
-                "delete",
-                "/api/users",
+                "user_001" ,
+                "192.0.2.100" ,
+                "delete" ,
+                "/api/users" ,
                 HashMap::new(),
             )
             .await;
 
-        let acknowledged = manager.acknowledge(&alert.alert_id, "admin_001").await;
+        let acknowledged = manager.acknowledge(&alert.alert_id, "admin_001" ).await;
         assert!(acknowledged);
 
         let fetched = manager.get_alert(&alert.alert_id).await;
-        assert!(fetched.expect("fetched alert should exist").acknowledged);
+        assert!(fetched.expect("fetched alert should exist" ).acknowledged);
     }
 
     #[tokio::test]
@@ -710,14 +710,14 @@ mod tests {
 
         // 创建多个告警
         let a1 = manager
-            .record_sensitive_operation("u1", "ip1", "op1", "r1", HashMap::new())
+            .record_sensitive_operation("u1" , "ip1" , "op1" , "r1" , HashMap::new())
             .await;
         let a2 = manager
-            .record_sensitive_operation("u2", "ip2", "op2", "r2", HashMap::new())
+            .record_sensitive_operation("u2" , "ip2" , "op2" , "r2" , HashMap::new())
             .await;
 
         // 确认一个
-        manager.acknowledge(&a1.alert_id, "admin").await;
+        manager.acknowledge(&a1.alert_id, "admin" ).await;
 
         let unacknowledged = manager.get_unacknowledged().await;
         assert_eq!(unacknowledged.len(), 1);
@@ -730,12 +730,12 @@ mod tests {
 
         // record_sensitive_operation 总是创建告警
         manager
-            .record_sensitive_operation("u1", "ip1", "op1", "r1", HashMap::new())
+            .record_sensitive_operation("u1" , "ip1" , "op1" , "r1" , HashMap::new())
             .await;
 
         // check_login_failure 需要达到阈值才会触发告警（默认阈值是 5）
         // 所以这里只验证 record_sensitive_operation 的效果
-        manager.check_login_failure("u2", "ip2", "failed").await;
+        manager.check_login_failure("u2" , "ip2" , "failed" ).await;
 
         let stats = manager.get_stats().await;
         // 只期望 1 个告警，因为 check_login_failure 未达到阈值

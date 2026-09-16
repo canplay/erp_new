@@ -22,9 +22,9 @@ pub enum CircuitState {
 impl std::fmt::Display for CircuitState {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Closed => write!(f, "closed"),
-            Self::Open => write!(f, "open"),
-            Self::HalfOpen => write!(f, "half_open"),
+            Self::Closed => write!(f, "closed" ),
+            Self::Open => write!(f, "open" ),
+            Self::HalfOpen => write!(f, "half_open" ),
         }
     }
 }
@@ -174,7 +174,7 @@ impl CircuitBreaker {
                 // 检查是否超时可以进入半开状态
                 if self.should_enter_half_open() {
                     *state = CircuitState::HalfOpen;
-                    tracing::info!("Circuit breaker for '{key}' entering half-open state");
+                    tracing::info!("Circuit breaker for '{key}' entering half-open state" );
                     true
                 } else {
                     false
@@ -228,7 +228,7 @@ impl CircuitBreaker {
             stat.reset();
         }
 
-        tracing::warn!("Circuit breaker for '{key}' force opened");
+        tracing::warn!("Circuit breaker for '{key}' force opened" );
     }
 
     /// 手动重置熔断器
@@ -242,7 +242,7 @@ impl CircuitBreaker {
             stat.reset();
         }
 
-        tracing::info!("Circuit breaker for '{key}' reset to closed state");
+        tracing::info!("Circuit breaker for '{key}' reset to closed state" );
     }
 
     /// 获取统计信息
@@ -266,7 +266,7 @@ impl CircuitBreaker {
             let elapsed = stat.window_start.elapsed().as_secs();
             if elapsed > self.config.window_size_secs {
                 stat.reset();
-                tracing::debug!("Circuit breaker stats window reset for '{key}'");
+                tracing::debug!("Circuit breaker stats window reset for '{key}'" );
             }
         }
     }
@@ -289,7 +289,7 @@ impl CircuitBreaker {
             *self.opened_at.lock() = Some(Instant::now());
             stat.reset();
             tracing::warn!(
-                "Circuit breaker for '{}' opened due to failure rate {:.2}% (threshold: {:.2}%)",
+                "Circuit breaker for '{}' opened due to failure rate {:.2}% (threshold: {:.2}%)" ,
                 key,
                 rate,
                 self.config.failure_threshold
@@ -353,7 +353,7 @@ mod tests {
     fn test_circuit_breaker_initial_state() {
         let cb = CircuitBreaker::new(CircuitBreakerConfig::default());
         assert_eq!(cb.state(), CircuitState::Closed);
-        assert!(cb.allow("test"));
+        assert!(cb.allow("test" ));
     }
 
     #[test]
@@ -368,11 +368,11 @@ mod tests {
 
         // 模拟失败率达到阈值
         for _ in 0..6 {
-            cb.record("test", false);
+            cb.record("test" , false);
         }
 
         assert_eq!(cb.state(), CircuitState::Open);
-        assert!(!cb.allow("test"));
+        assert!(!cb.allow("test" ));
     }
 
     #[test]
@@ -380,11 +380,11 @@ mod tests {
         let config = CircuitBreakerConfig::default();
         let cb = CircuitBreaker::new(config);
 
-        cb.force_open("test");
+        cb.force_open("test" );
         assert_eq!(cb.state(), CircuitState::Open);
 
         // 手动重置以测试半开逻辑
-        cb.reset("test");
+        cb.reset("test" );
         assert_eq!(cb.state(), CircuitState::Closed);
     }
 

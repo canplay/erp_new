@@ -28,17 +28,17 @@ pub struct CasdoorConfig {
 impl Default for CasdoorConfig {
     fn default() -> Self {
         Self {
-            endpoint: std::env::var("CASDOOR_ENDPOINT")
+            endpoint: std::env::var("CASDOOR_ENDPOINT" )
                 .unwrap_or_else(|_| "http://localhost:8000".to_string()),
-            client_id: std::env::var("CASDOOR_CLIENT_ID")
+            client_id: std::env::var("CASDOOR_CLIENT_ID" )
                 .unwrap_or_else(|_| "default-client-id".to_string()),
-            client_secret: std::env::var("CASDOOR_CLIENT_SECRET")
+            client_secret: std::env::var("CASDOOR_CLIENT_SECRET" )
                 .unwrap_or_else(|_| "default-secret".to_string()),
-            organization: std::env::var("CASDOOR_ORGANIZATION")
+            organization: std::env::var("CASDOOR_ORGANIZATION" )
                 .unwrap_or_else(|_| "built-in".to_string()),
-            application: std::env::var("CASDOOR_APPLICATION")
+            application: std::env::var("CASDOOR_APPLICATION" )
                 .unwrap_or_else(|_| "app-auth".to_string()),
-            redirect_uri: std::env::var("CASDOOR_REDIRECT_URI")
+            redirect_uri: std::env::var("CASDOOR_REDIRECT_URI" )
                 .unwrap_or_else(|_| "http://localhost:8081/casdoor/callback".to_string()),
         }
     }
@@ -81,10 +81,10 @@ pub enum CasdoorError {
 impl std::fmt::Display for CasdoorError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::NetworkError(msg) => write!(f, "网络错误: {msg}"),
-            Self::AuthenticationFailed(msg) => write!(f, "认证失败: {msg}"),
-            Self::UserNotFound => write!(f, "用户不存在"),
-            Self::ApiError(msg) => write!(f, "API 错误: {msg}"),
+            Self::NetworkError(msg) => write!(f, "网络错误: {msg}" ),
+            Self::AuthenticationFailed(msg) => write!(f, "认证失败: {msg}" ),
+            Self::UserNotFound => write!(f, "用户不存在" ),
+            Self::ApiError(msg) => write!(f, "API 错误: {msg}" ),
         }
     }
 }
@@ -106,7 +106,7 @@ impl CasdoorClient {
             .timeout(std::time::Duration::from_secs(30))
             .build()
             .unwrap_or_else(|e| {
-                tracing::error!("创建 HTTP 客户端失败: {e}");
+                tracing::error!("创建 HTTP 客户端失败: {e}" );
                 reqwest::Client::new()
             });
 
@@ -120,21 +120,21 @@ impl CasdoorClient {
     #[must_use]
     pub fn get_authorize_url(&self, state: &str) -> String {
         let params = [
-            ("response_type", "code"),
-            ("client_id", &self.config.client_id),
-            ("redirect_uri", &self.config.redirect_uri),
-            ("scope", "read"),
-            ("state", state),
+            ("response_type" , "code" ),
+            ("client_id" , &self.config.client_id),
+            ("redirect_uri" , &self.config.redirect_uri),
+            ("scope" , "read" ),
+            ("state" , state),
         ];
 
         let query_string = params
             .iter()
-            .map(|(k, v)| format!("{}={}", k, urlencoding::encode(v)))
+            .map(|(k, v)| format!("{}={}" , k, urlencoding::encode(v)))
             .collect::<Vec<_>>()
-            .join("&");
+            .join("&" );
 
         format!(
-            "{}/login/oauth/authorize?{}",
+            "{}/login/oauth/authorize?{}" ,
             self.config.endpoint.trim_end_matches('/'),
             query_string
         )
@@ -143,16 +143,16 @@ impl CasdoorClient {
     /// 交换授权码获取 Token
     pub async fn exchange_code(&self, code: &str) -> Result<CasdoorTokenResponse, CasdoorError> {
         let url = format!(
-            "{}/api/login/oauth/access_token",
+            "{}/api/login/oauth/access_token" ,
             self.config.endpoint.trim_end_matches('/')
         );
 
         let params = [
-            ("grant_type", "authorization_code"),
-            ("client_id", &self.config.client_id),
-            ("client_secret", &self.config.client_secret),
-            ("code", code),
-            ("redirect_uri", &self.config.redirect_uri),
+            ("grant_type" , "authorization_code" ),
+            ("client_id" , &self.config.client_id),
+            ("client_secret" , &self.config.client_secret),
+            ("code" , code),
+            ("redirect_uri" , &self.config.redirect_uri),
         ];
 
         let response = self
@@ -179,14 +179,14 @@ impl CasdoorClient {
     /// 使用 Token 获取用户信息
     pub async fn get_user(&self, access_token: &str) -> Result<CasdoorUser, CasdoorError> {
         let url = format!(
-            "{}/api/get-current-user",
+            "{}/api/get-current-user" ,
             self.config.endpoint.trim_end_matches('/')
         );
 
         let response = self
             .http_client
             .get(&url)
-            .header("Authorization", format!("Bearer {access_token}"))
+            .header("Authorization" , format!("Bearer {access_token}" ))
             .send()
             .await
             .map_err(|e| CasdoorError::NetworkError(e.to_string()))?;
@@ -210,15 +210,15 @@ impl CasdoorClient {
         refresh_token: &str,
     ) -> Result<CasdoorTokenResponse, CasdoorError> {
         let url = format!(
-            "{}/api/login/oauth/refresh_token",
+            "{}/api/login/oauth/refresh_token" ,
             self.config.endpoint.trim_end_matches('/')
         );
 
         let params = [
-            ("grant_type", "refresh_token"),
-            ("client_id", &self.config.client_id),
-            ("client_secret", &self.config.client_secret),
-            ("refresh_token", refresh_token),
+            ("grant_type" , "refresh_token" ),
+            ("client_id" , &self.config.client_id),
+            ("client_secret" , &self.config.client_secret),
+            ("refresh_token" , refresh_token),
         ];
 
         let response = self
@@ -244,12 +244,12 @@ impl CasdoorClient {
 
     /// 登出用户
     pub async fn logout(&self, access_token: &str) -> Result<(), CasdoorError> {
-        let url = format!("{}/api/logout", self.config.endpoint.trim_end_matches('/'));
+        let url = format!("{}/api/logout" , self.config.endpoint.trim_end_matches('/'));
 
         let response = self
             .http_client
             .post(&url)
-            .header("Authorization", format!("Bearer {access_token}"))
+            .header("Authorization" , format!("Bearer {access_token}" ))
             .send()
             .await
             .map_err(|e| CasdoorError::NetworkError(e.to_string()))?;
@@ -265,14 +265,14 @@ impl CasdoorClient {
     /// 获取用户列表
     pub async fn get_users(&self, access_token: &str) -> Result<Vec<CasdoorUser>, CasdoorError> {
         let url = format!(
-            "{}/api/get-users?p=1&pageSize=100",
+            "{}/api/get-users?p=1&pageSize=100" ,
             self.config.endpoint.trim_end_matches('/')
         );
 
         let response = self
             .http_client
             .get(&url)
-            .header("Authorization", format!("Bearer {access_token}"))
+            .header("Authorization" , format!("Bearer {access_token}" ))
             .send()
             .await
             .map_err(|e| CasdoorError::NetworkError(e.to_string()))?;
@@ -284,7 +284,7 @@ impl CasdoorClient {
 
         #[derive(Deserialize)]
         struct UsersResponse {
-            #[serde(rename = "data2")]
+            #[serde(rename = "data2" )]
             data: Vec<CasdoorUser>,
         }
 
@@ -368,7 +368,7 @@ impl CasdoorSessionManager {
         }
 
         tracing::info!(
-            "创建 Casdoor 会话: session_id={}, user={}",
+            "创建 Casdoor 会话: session_id={}, user={}" ,
             session_id,
             session.user.name
         );
@@ -407,19 +407,19 @@ mod tests {
 
     #[test]
     fn test_casdoor_config_default() {
-        std::env::set_var("CASDOOR_CLIENT_SECRET", "test-secret-for-unit-test");
+        std::env::set_var("CASDOOR_CLIENT_SECRET" , "test-secret-for-unit-test" );
         let config = CasdoorConfig::default();
-        assert_eq!(config.endpoint, "http://localhost:8000");
-        assert_eq!(config.organization, "built-in");
-        assert_eq!(config.client_secret, "test-secret-for-unit-test");
+        assert_eq!(config.endpoint, "http://localhost:8000" );
+        assert_eq!(config.organization, "built-in" );
+        assert_eq!(config.client_secret, "test-secret-for-unit-test" );
     }
 
     #[test]
     fn test_create_authorize_url() {
-        std::env::set_var("CASDOOR_CLIENT_SECRET", "test-secret-for-unit-test");
+        std::env::set_var("CASDOOR_CLIENT_SECRET" , "test-secret-for-unit-test" );
         let client = CasdoorClient::new(CasdoorConfig::default());
-        let url = client.get_authorize_url("test_state");
-        assert!(url.contains("authorize"));
-        assert!(url.contains("client_id"));
+        let url = client.get_authorize_url("test_state" );
+        assert!(url.contains("authorize" ));
+        assert!(url.contains("client_id" ));
     }
 }

@@ -15,7 +15,7 @@ pub struct PlanDefinition {
     pub description: String,
     pub price_cents: i64,
     pub currency: String,
-    pub interval: String,    // "month", "year"
+    pub interval: String,    // "month" , "year"
     pub interval_count: i32, // 1 = monthly, 12 = yearly
     pub trial_days: i32,
     pub active: bool,
@@ -105,7 +105,7 @@ impl SubscriptionService {
     /// 创建订阅
     pub async fn create_subscription(&self, params: &CreateSubscriptionParams) -> AppResult<SubscriptionResult> {
         let plan = PlanDefinition::get_plan(&params.plan_id)
-            .ok_or_else(|| AppError::PayInternalError(format!("Unknown plan: {}", params.plan_id)))?;
+            .ok_or_else(|| AppError::PayInternalError(format!("Unknown plan: {}" , params.plan_id)))?;
 
         let now = Utc::now();
         let trial_days = if params.trial_days > 0 { params.trial_days } else { plan.trial_days };
@@ -116,13 +116,13 @@ impl SubscriptionService {
                 "year" => trial_end + Duration::days(365),
                 _ => trial_end + Duration::days(30),
             };
-            (now, period_end, "trialing")
+            (now, period_end, "trialing" )
         } else {
             let period_end = match plan.interval.as_str() {
                 "year" => now + Duration::days(365 * plan.interval_count as i64),
                 _ => now + Duration::days(30 * plan.interval_count as i64),
             };
-            (now, period_end, "active")
+            (now, period_end, "active" )
         };
 
         // 检查是否已有活跃订阅
@@ -169,8 +169,8 @@ impl SubscriptionService {
             current_period_start: row.4.and_utc().timestamp(),
             current_period_end: row.5.and_utc().timestamp(),
             cancel_at_period_end: row.6,
-            created_at: row.7.format("%Y-%m-%d %H:%M:%S").to_string(),
-            updated_at: row.8.format("%Y-%m-%d %H:%M:%S").to_string(),
+            created_at: row.7.format("%Y-%m-%d %H:%M:%S" ).to_string(),
+            updated_at: row.8.format("%Y-%m-%d %H:%M:%S" ).to_string(),
         })
     }
 
@@ -205,8 +205,8 @@ impl SubscriptionService {
                 current_period_start: row.4.and_utc().timestamp(),
                 current_period_end: row.5.and_utc().timestamp(),
                 cancel_at_period_end: true,
-                created_at: row.7.format("%Y-%m-%d %H:%M:%S").to_string(),
-                updated_at: now.format("%Y-%m-%d %H:%M:%S").to_string(),
+                created_at: row.7.format("%Y-%m-%d %H:%M:%S" ).to_string(),
+                updated_at: now.format("%Y-%m-%d %H:%M:%S" ).to_string(),
             })
         } else {
             // Cancel at period end
@@ -227,8 +227,8 @@ impl SubscriptionService {
                 current_period_start: row.4.and_utc().timestamp(),
                 current_period_end: row.5.and_utc().timestamp(),
                 cancel_at_period_end: true,
-                created_at: row.7.format("%Y-%m-%d %H:%M:%S").to_string(),
-                updated_at: now.format("%Y-%m-%d %H:%M:%S").to_string(),
+                created_at: row.7.format("%Y-%m-%d %H:%M:%S" ).to_string(),
+                updated_at: now.format("%Y-%m-%d %H:%M:%S" ).to_string(),
             })
         }
     }
@@ -252,8 +252,8 @@ impl SubscriptionService {
             current_period_start: row.4.and_utc().timestamp(),
             current_period_end: row.5.and_utc().timestamp(),
             cancel_at_period_end: row.6,
-            created_at: row.7.format("%Y-%m-%d %H:%M:%S").to_string(),
-            updated_at: row.8.format("%Y-%m-%d %H:%M:%S").to_string(),
+            created_at: row.7.format("%Y-%m-%d %H:%M:%S" ).to_string(),
+            updated_at: row.8.format("%Y-%m-%d %H:%M:%S" ).to_string(),
         })
     }
 
@@ -305,8 +305,8 @@ impl SubscriptionService {
             current_period_start: row.4.and_utc().timestamp(),
             current_period_end: row.5.and_utc().timestamp(),
             cancel_at_period_end: row.6,
-            created_at: row.7.format("%Y-%m-%d %H:%M:%S").to_string(),
-            updated_at: row.8.format("%Y-%m-%d %H:%M:%S").to_string(),
+            created_at: row.7.format("%Y-%m-%d %H:%M:%S" ).to_string(),
+            updated_at: row.8.format("%Y-%m-%d %H:%M:%S" ).to_string(),
         }).collect())
     }
 
@@ -334,8 +334,8 @@ impl SubscriptionService {
 
 impl Default for SubscriptionService {
     fn default() -> Self {
-        let pool = sqlx::PgPool::connect_lazy(&std::env::var("DATABASE_URL").unwrap_or_default())
-            .expect("数据库连接失败");
+        let pool = sqlx::PgPool::connect_lazy(&std::env::var("DATABASE_URL" ).unwrap_or_default())
+            .expect("数据库连接失败" );
         Self { pool }
     }
 }
@@ -348,19 +348,19 @@ mod tests {
     fn test_default_plans() {
         let plans = PlanDefinition::default_plans();
         assert_eq!(plans.len(), 3);
-        assert_eq!(plans[0].id, "free");
-        assert_eq!(plans[1].id, "pro");
+        assert_eq!(plans[0].id, "free" );
+        assert_eq!(plans[1].id, "pro" );
         assert!(plans[1].trial_days > 0);
-        assert_eq!(plans[2].id, "enterprise");
+        assert_eq!(plans[2].id, "enterprise" );
     }
 
     #[test]
     fn test_get_plan() {
-        let plan = PlanDefinition::get_plan("pro");
+        let plan = PlanDefinition::get_plan("pro" );
         assert!(plan.is_some());
-        assert_eq!(plan.unwrap().name, "Pro");
+        assert_eq!(plan.unwrap().name, "Pro" );
 
-        let unknown = PlanDefinition::get_plan("nonexistent");
+        let unknown = PlanDefinition::get_plan("nonexistent" );
         assert!(unknown.is_none());
     }
 

@@ -13,7 +13,7 @@ struct KeyQuery { page: Option<i32>, page_size: Option<i32>, status: Option<Stri
 /// 获取 api-key-service gRPC 客户端
 async fn get_key_client(state: &Arc<AppState>) -> Result<crate::grpc_clients::ApiKeyGrpcClient, Json<Value>> {
     state.grpc_clients.read().await.api_key_client().await
-        .map_err(|e| json_error(&format!("api-key-service 不可用: {e}")))
+        .map_err(|e| json_error(&format!("api-key-service 不可用: {e}" )))
 }
 
 /// proto ApiKeyInfo → JSON
@@ -45,7 +45,7 @@ async fn list_api_keys(
         Ok(resp) => json_success(json!({
             "list": resp.keys.iter().map(key_info_to_json).collect::<Vec<_>>(), "total": resp.total, "page": q.page.unwrap_or(1), "page_size": q.page_size.unwrap_or(20), "status": q.status
         })),
-        Err(e) => json_error(&format!("查询失败: {e}")),
+        Err(e) => json_error(&format!("查询失败: {e}" )),
     }
 }
 
@@ -55,16 +55,16 @@ async fn create_api_key(
 ) -> Json<Value> {
     let mut client = match get_key_client(&state).await { Ok(c) => c, Err(r) => return r };
     match client.create_api_key(
-        body["name"].as_str().unwrap_or("").to_string(),
-        body["description"].as_str().unwrap_or("").to_string(),
-        body["permission_level"].as_i64().unwrap_or(1) as i32,
+        body["name" ].as_str().unwrap_or("" ).to_string(),
+        body["description" ].as_str().unwrap_or("" ).to_string(),
+        body["permission_level" ].as_i64().unwrap_or(1) as i32,
         vec![],
-        body["rate_limit"].as_i64().unwrap_or(100),
+        body["rate_limit" ].as_i64().unwrap_or(100),
         0, 0,
-        body["expires_at"].as_i64().unwrap_or(0),
+        body["expires_at" ].as_i64().unwrap_or(0),
     ).await {
         Ok(resp) => json_success(json!({"id": resp.id, "key_id": resp.key_id, "key_secret": resp.secret_key})),
-        Err(e) => json_error(&format!("创建失败: {e}")),
+        Err(e) => json_error(&format!("创建失败: {e}" )),
     }
 }
 
@@ -73,8 +73,8 @@ async fn get_api_key_stats(
 ) -> Json<Value> {
     let mut client = match get_key_client(&state).await { Ok(c) => c, Err(r) => return r };
     match client.list_api_keys(1, 1000, 0, 0, String::new()).await {
-        Ok(resp) => json_success(json!({"total": resp.total, "active": resp.keys.iter().filter(|k| k.status == "active").count()})),
-        Err(e) => json_error(&format!("查询失败: {e}")),
+        Ok(resp) => json_success(json!({"total": resp.total, "active": resp.keys.iter().filter(|k| k.status == "active" ).count()})),
+        Err(e) => json_error(&format!("查询失败: {e}" )),
     }
 }
 
@@ -90,10 +90,10 @@ async fn get_api_key(
             if let Some(k) = resp.keys.iter().find(|k| k.key_id == id || k.id.to_string() == id) {
                 json_success(key_info_to_json(k))
             } else {
-                json_error("API Key 不存在")
+                json_error("API Key 不存在" )
             }
         }
-        Err(e) => json_error(&format!("查询失败: {e}")),
+        Err(e) => json_error(&format!("查询失败: {e}" )),
     }
 }
 
@@ -115,7 +115,7 @@ async fn delete_api_key(
     if let Ok(numeric_id) = id.parse::<i64>() {
         match client.delete_api_key(numeric_id).await {
             Ok(_) => json_ok(),
-            Err(e) => json_error(&format!("删除失败: {e}")),
+            Err(e) => json_error(&format!("删除失败: {e}" )),
         }
     } else {
         // 按 key_id 查找后删除
@@ -124,13 +124,13 @@ async fn delete_api_key(
                 if let Some(k) = resp.keys.iter().find(|k| k.key_id == id) {
                     match client.delete_api_key(k.id).await {
                         Ok(_) => json_ok(),
-                        Err(e) => json_error(&format!("删除失败: {e}")),
+                        Err(e) => json_error(&format!("删除失败: {e}" )),
                     }
                 } else {
-                    json_error("API Key 不存在")
+                    json_error("API Key 不存在" )
                 }
             }
-            Err(e) => json_error(&format!("查询失败: {e}")),
+            Err(e) => json_error(&format!("查询失败: {e}" )),
         }
     }
 }
@@ -158,21 +158,21 @@ async fn validate_api_key(
 ) -> Json<Value> {
     let mut client = match get_key_client(&state).await { Ok(c) => c, Err(r) => return r };
     match client.validate_api_key(
-        body["key_id"].as_str().unwrap_or("").to_string(),
-        body["key_secret"].as_str().unwrap_or("").to_string(),
-        body["ip_address"].as_str().unwrap_or("").to_string(),
+        body["key_id" ].as_str().unwrap_or("" ).to_string(),
+        body["key_secret" ].as_str().unwrap_or("" ).to_string(),
+        body["ip_address" ].as_str().unwrap_or("" ).to_string(),
     ).await {
         Ok(resp) => json_success(json!({"valid": resp.valid, "user_id": resp.user_id, "tenant_id": resp.tenant_id})),
-        Err(e) => json_error(&format!("{e}")),
+        Err(e) => json_error(&format!("{e}" )),
     }
 }
 
 pub fn routes() -> Router<Arc<AppState>> {
     Router::new()
-        .route("/api/apikeys", get(list_api_keys).post(create_api_key))
-        .route("/api/apikeys/stats", get(get_api_key_stats))
-        .route("/api/apikeys/{id}", get(get_api_key).put(update_api_key).delete(delete_api_key))
-        .route("/api/apikeys/{id}/disable", axum::routing::post(disable_api_key))
-        .route("/api/apikeys/{id}/enable", axum::routing::post(enable_api_key))
-        .route("/api/apikeys/validate", post(validate_api_key))
+        .route("/api/apikeys" , get(list_api_keys).post(create_api_key))
+        .route("/api/apikeys/stats" , get(get_api_key_stats))
+        .route("/api/apikeys/{id}" , get(get_api_key).put(update_api_key).delete(delete_api_key))
+        .route("/api/apikeys/{id}/disable" , axum::routing::post(disable_api_key))
+        .route("/api/apikeys/{id}/enable" , axum::routing::post(enable_api_key))
+        .route("/api/apikeys/validate" , post(validate_api_key))
 }

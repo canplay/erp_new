@@ -45,274 +45,274 @@ macro_rules! impl_into_response {
 #[derive(Debug, thiserror::Error)]
 pub enum AppError {
     // ============ 认证授权 (2xxxx) ============
-    #[error("认证失败: {0}")]
+    #[error("认证失败: {0}" )]
     Unauthorized(String),
 
-    #[error("禁止访问: {0}")]
+    #[error("禁止访问: {0}" )]
     Forbidden(String),
 
-    #[error("Token 已过期")]
+    #[error("Token 已过期" )]
     TokenExpired,
 
-    #[error("Token 无效: {0}")]
+    #[error("Token 无效: {0}" )]
     TokenInvalid(String),
 
     // ============ 参数校验 (3xxxx) ============
-    #[error("请求参数错误: {0}")]
+    #[error("请求参数错误: {0}" )]
     BadRequest(String),
 
-    #[error("用户名不能为空")]
+    #[error("用户名不能为空" )]
     InvalidUsername,
 
-    #[error("用户名格式不正确（长度 3-50 位字母数字下划线）")]
+    #[error("用户名格式不正确（长度 3-50 位字母数字下划线）" )]
     InvalidUsernameFormat,
 
-    #[error("密码长度至少 8 位")]
+    #[error("密码长度至少 8 位" )]
     InvalidPassword,
 
-    #[error("邮箱格式不正确")]
+    #[error("邮箱格式不正确" )]
     InvalidEmail,
 
-    #[error("手机号格式不正确")]
+    #[error("手机号格式不正确" )]
     InvalidPhone,
 
-    #[error("无效的角色值: {0}")]
+    #[error("无效的角色值: {0}" )]
     InvalidRole(String),
 
-    #[error("无效的状态值: {0}")]
+    #[error("无效的状态值: {0}" )]
     InvalidStatus(i32),
 
     // ============ 业务逻辑 (4xxxx) ============
-    #[error("资源未找到: {0}")]
+    #[error("资源未找到: {0}" )]
     NotFound(String),
 
-    #[error("用户不存在")]
+    #[error("用户不存在" )]
     UserNotFound,
 
-    #[error("用户已存在: {0}")]
+    #[error("用户已存在: {0}" )]
     UserAlreadyExists(String),
 
-    #[error("角色不存在: {0}")]
+    #[error("角色不存在: {0}" )]
     RoleNotFound(String),
 
-    #[error("角色已存在: {0}")]
+    #[error("角色已存在: {0}" )]
     RoleAlreadyExists(String),
 
-    #[error("部门不存在")]
+    #[error("部门不存在" )]
     DepartmentNotFound,
 
     // ============ API 密钥服务 (41xxx) ============
-    #[error("密钥不存在: {0}")]
+    #[error("密钥不存在: {0}" )]
     ApiKeyNotFound(String),
 
-    #[error("密钥已过期")]
+    #[error("密钥已过期" )]
     ApiKeyExpired,
 
-    #[error("密钥已被禁用")]
+    #[error("密钥已被禁用" )]
     ApiKeyDisabled,
 
-    #[error("密钥验证失败")]
+    #[error("密钥验证失败" )]
     ApiKeyInvalid,
 
-    #[error("IP地址不被允许")]
+    #[error("IP地址不被允许" )]
     ApiKeyIpNotAllowed,
 
-    #[error("超过请求限制")]
+    #[error("超过请求限制" )]
     ApiKeyRateLimitExceeded,
 
     // ============ 审计服务 (42xxx) ============
-    #[error("日志不存在")]
+    #[error("日志不存在" )]
     AuditNotFound,
 
-    #[error("删除失败: {0}")]
+    #[error("删除失败: {0}" )]
     AuditDeleteFailed(String),
 
     // ============ 计费服务 (43xxx) ============
-    #[error("计费计划不存在: {0}")]
+    #[error("计费计划不存在: {0}" )]
     BillingPlanNotFound(String),
 
-    #[error("订阅不存在: {0}")]
+    #[error("订阅不存在: {0}" )]
     BillingSubscriptionNotFound(String),
 
-    #[error("发票不存在: {0}")]
+    #[error("发票不存在: {0}" )]
     BillingInvoiceNotFound(String),
 
-    #[error("计费计算错误: {0}")]
+    #[error("计费计算错误: {0}" )]
     BillingCalculationError(String),
 
-    #[error("用量记录不存在: {0}")]
+    #[error("用量记录不存在: {0}" )]
     BillingUsageNotFound(String),
 
     // ============ CTP 锁平台服务 (44xxx) ============
-    #[error("设备连接失败: {0}")]
+    #[error("设备连接失败: {0}" )]
     CtpDeviceConnection(String),
 
-    #[error("设备命令执行失败: {0}")]
+    #[error("设备命令执行失败: {0}" )]
     CtpDeviceCommand(String),
 
-    #[error("设备离线")]
+    #[error("设备离线" )]
     CtpDeviceOffline,
 
-    #[error("设备不存在: {0}")]
+    #[error("设备不存在: {0}" )]
     CtpDeviceNotFound(String),
 
-    #[error("CTP参数无效")]
+    #[error("CTP参数无效" )]
     CtpInvalidParams,
 
-    #[error("CTP内部错误: {0}")]
+    #[error("CTP内部错误: {0}" )]
     CtpInternal(String),
 
     // ============ 文件服务 (45xxx) ============
-    #[error("文件不存在")]
+    #[error("文件不存在" )]
     FileNotFound,
 
-    #[error("文件已存在")]
+    #[error("文件已存在" )]
     FileAlreadyExists,
 
-    #[error("文件类型不支持: {0}")]
+    #[error("文件类型不支持: {0}" )]
     FileUnsupportedType(String),
 
-    #[error("文件大小超出限制: {0}")]
+    #[error("文件大小超出限制: {0}" )]
     FileTooLarge(String),
 
-    #[error("文件上传失败: {0}")]
+    #[error("文件上传失败: {0}" )]
     FileUploadFailed(String),
 
-    #[error("文件删除失败: {0}")]
+    #[error("文件删除失败: {0}" )]
     FileDeleteFailed(String),
 
-    #[error("存储错误: {0}")]
+    #[error("存储错误: {0}" )]
     FileStorageError(String),
 
-    #[error("文件权限不足")]
+    #[error("文件权限不足" )]
     FilePermissionDenied,
 
     // ============ 海康服务 (46xxx) ============
-    #[error("海康令牌获取失败")]
+    #[error("海康令牌获取失败" )]
     HikTokenError,
 
-    #[error("海康方法无效")]
+    #[error("海康方法无效" )]
     HikInvalidMethod,
 
-    #[error("第三方API调用失败: {0}")]
+    #[error("第三方API调用失败: {0}" )]
     HikApiError(String),
 
-    #[error("海康参数错误")]
+    #[error("海康参数错误" )]
     HikInvalidParams,
 
     // ============ 车牌识别服务 (47xxx) ============
-    #[error("LPR数据库错误: {0}")]
+    #[error("LPR数据库错误: {0}" )]
     LprDatabaseError(String),
 
-    #[error("LPR内部错误: {0}")]
+    #[error("LPR内部错误: {0}" )]
     LprInternal(String),
 
     // ============ XLT 信路通服务 (48xxx) ============
-    #[error("MQTT连接失败: {0}")]
+    #[error("MQTT连接失败: {0}" )]
     XltMqttConnection(String),
 
-    #[error("MQTT消息发布失败: {0}")]
+    #[error("MQTT消息发布失败: {0}" )]
     XltMqttPublish(String),
 
-    #[error("车辆在场内未找到")]
+    #[error("车辆在场内未找到" )]
     XltVehicleNotFound,
 
-    #[error("XLT参数无效")]
+    #[error("XLT参数无效" )]
     XltInvalidParams,
 
     // ============ 支付服务 (49xxx) ============
-    #[error("支付订单不存在")]
+    #[error("支付订单不存在" )]
     PayOrderNotFound,
 
-    #[error("支付参数错误")]
+    #[error("支付参数错误" )]
     PayInvalidParams,
 
-    #[error("支付内部错误: {0}")]
+    #[error("支付内部错误: {0}" )]
     PayInternalError(String),
 
     // ============ 清理服务 (50xxx) ============
-    #[error("清理资源不存在")]
+    #[error("清理资源不存在" )]
     CleanNotFound,
 
-    #[error("清理删除失败: {0}")]
+    #[error("清理删除失败: {0}" )]
     CleanDeleteFailed(String),
 
     // ============ 租户服务 (51xxx) ============
-    #[error("租户不存在")]
+    #[error("租户不存在" )]
     TenantNotFound,
 
-    #[error("租户已存在")]
+    #[error("租户已存在" )]
     TenantAlreadyExists,
 
     // ============ 工作流服务 (52xxx) ============
-    #[error("工作流不存在: {0}")]
+    #[error("工作流不存在: {0}" )]
     WorkflowNotFound(String),
 
-    #[error("工作流未发布: {0}")]
+    #[error("工作流未发布: {0}" )]
     WorkflowNotPublished(String),
 
-    #[error("工作流实例不存在: {0}")]
+    #[error("工作流实例不存在: {0}" )]
     InstanceNotFound(String),
 
-    #[error("工作流节点不存在: {0}")]
+    #[error("工作流节点不存在: {0}" )]
     NodeNotFound(String),
 
-    #[error("无效的状态转换: {0}")]
+    #[error("无效的状态转换: {0}" )]
     InvalidStateTransition(String),
 
-    #[error("执行失败: {0}")]
+    #[error("执行失败: {0}" )]
     ExecutionFailed(String),
 
     // ============ 系统错误 (1xxxx) ============
-    #[error("内部服务器错误: {0}")]
+    #[error("内部服务器错误: {0}" )]
     Internal(String),
 
-    #[error("数据库错误: {0}")]
+    #[error("数据库错误: {0}" )]
     Database(#[from] sqlx::Error),
 
-    #[error("配置错误: {0}")]
+    #[error("配置错误: {0}" )]
     Config(String),
 
-    #[error("Token 错误: {0}")]
+    #[error("Token 错误: {0}" )]
     Token(String),
 
-    #[error("限流: {0}")]
+    #[error("限流: {0}" )]
     RateLimit(String),
 
-    #[error("服务不可用: {0}")]
+    #[error("服务不可用: {0}" )]
     ServiceUnavailable(String),
 
-    #[error("CSRF 验证失败: {0}")]
+    #[error("CSRF 验证失败: {0}" )]
     CsrfError(String),
 
-    #[error("Redis错误: {0}")]
+    #[error("Redis错误: {0}" )]
     Redis(redis::RedisError),
 
-    #[error("HTTP客户端错误: {0}")]
+    #[error("HTTP客户端错误: {0}" )]
     HttpError(reqwest::Error),
 
     /// 操作失败（带数量统计）
-    #[error("部分操作失败: 成功 {success_count} 个, 失败 {fail_count} 个")]
+    #[error("部分操作失败: 成功 {success_count} 个, 失败 {fail_count} 个" )]
     PartialFailure {
         success_count: usize,
         fail_count: usize,
     },
 
     // ============ 通用业务错误 ============
-    #[error("无效参数: {0}")]
+    #[error("无效参数: {0}" )]
     InvalidParam(String),
 
-    #[error("未授权访问")]
+    #[error("未授权访问" )]
     UnauthorizedAccess,
 
-    #[error("禁止操作")]
+    #[error("禁止操作" )]
     ForbiddenOperation,
 
-    #[error("数据库错误: {0}")]
+    #[error("数据库错误: {0}" )]
     DatabaseError(String),
 
     /// 功能未实现（桩 handler 占位）
-    #[error("功能未实现: {0}")]
+    #[error("功能未实现: {0}" )]
     NotImplemented(String),
 }
 
@@ -335,12 +335,12 @@ impl IntoResponse for AppError {
             Self::InvalidRole(role) => (
                 StatusCode::BAD_REQUEST,
                 30007,
-                format!("无效的角色值: {role}"),
+                format!("无效的角色值: {role}" ),
             ),
             Self::InvalidStatus(status) => (
                 StatusCode::BAD_REQUEST,
                 30008,
-                format!("无效的状态值: {status}"),
+                format!("无效的状态值: {status}" ),
             ),
 
             // 业务逻辑
@@ -349,13 +349,13 @@ impl IntoResponse for AppError {
             Self::UserAlreadyExists(username) => (
                 StatusCode::CONFLICT,
                 40002,
-                format!("用户已存在: {username}"),
+                format!("用户已存在: {username}" ),
             ),
             Self::RoleNotFound(role) => {
-                (StatusCode::NOT_FOUND, 40003, format!("角色不存在: {role}"))
+                (StatusCode::NOT_FOUND, 40003, format!("角色不存在: {role}" ))
             }
             Self::RoleAlreadyExists(role) => {
-                (StatusCode::CONFLICT, 40004, format!("角色已存在: {role}"))
+                (StatusCode::CONFLICT, 40004, format!("角色已存在: {role}" ))
             }
             Self::DepartmentNotFound => (StatusCode::NOT_FOUND, 40005, self.to_string()),
 
@@ -460,7 +460,7 @@ impl IntoResponse for AppError {
             Self::Database(e) => (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 10002,
-                format!("数据库错误: {e}"),
+                format!("数据库错误: {e}" ),
             ),
             Self::Config(msg) => (StatusCode::INTERNAL_SERVER_ERROR, 10003, msg.clone()),
             Self::Token(msg) => (StatusCode::UNAUTHORIZED, 20004, msg.clone()),
@@ -474,14 +474,14 @@ impl IntoResponse for AppError {
             Self::Redis(e) => (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 10006,
-                format!("Redis错误: {e}"),
+                format!("Redis错误: {e}" ),
             ),
 
             // HTTP 客户端错误
             Self::HttpError(e) => (
                 StatusCode::BAD_GATEWAY,
                 10007,
-                format!("HTTP客户端错误: {e}"),
+                format!("HTTP客户端错误: {e}" ),
             ),
 
             // 部分失败
@@ -491,22 +491,22 @@ impl IntoResponse for AppError {
             } => (
                 StatusCode::MULTI_STATUS, // 207 Multi-Status
                 30010,
-                format!("部分操作失败: 成功 {success_count} 个, 失败 {fail_count} 个"),
+                format!("部分操作失败: 成功 {success_count} 个, 失败 {fail_count} 个" ),
             ),
 
             // 通用业务错误
-            Self::InvalidParam(msg) => (StatusCode::BAD_REQUEST, 30011, format!("无效参数: {msg}")),
+            Self::InvalidParam(msg) => (StatusCode::BAD_REQUEST, 30011, format!("无效参数: {msg}" )),
             Self::UnauthorizedAccess => (StatusCode::UNAUTHORIZED, 20006, self.to_string()),
             Self::ForbiddenOperation => (StatusCode::FORBIDDEN, 20007, self.to_string()),
             Self::DatabaseError(msg) => (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 10002,
-                format!("数据库错误: {msg}"),
+                format!("数据库错误: {msg}" ),
             ),
             Self::NotImplemented(msg) => (
                 StatusCode::NOT_IMPLEMENTED, // 501
                 30012,
-                format!("功能未实现: {msg}"),
+                format!("功能未实现: {msg}" ),
             ),
         };
 

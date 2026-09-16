@@ -46,7 +46,7 @@ pub struct DatabaseConfig {
 impl Default for DatabaseConfig {
     fn default() -> Self {
         Self {
-            url: std::env::var("DATABASE_URL").unwrap_or_else(|_| {
+            url: std::env::var("DATABASE_URL" ).unwrap_or_else(|_| {
                 "postgres://postgres:${DATABASE_PASSWORD}@localhost:5432/myai".to_string()
             }),
             max_connections: Self::pool_config_from_env().max_connections,
@@ -62,23 +62,23 @@ impl DatabaseConfig {
     /// 从环境变量读取连接池配置
     fn pool_config_from_env() -> PoolConfig {
         PoolConfig {
-            max_connections: std::env::var("DB_POOL_MAX_CONNECTIONS")
+            max_connections: std::env::var("DB_POOL_MAX_CONNECTIONS" )
                 .ok()
                 .and_then(|v| v.parse().ok())
                 .unwrap_or(10),
-            min_connections: std::env::var("DB_POOL_MIN_CONNECTIONS")
+            min_connections: std::env::var("DB_POOL_MIN_CONNECTIONS" )
                 .ok()
                 .and_then(|v| v.parse().ok())
                 .unwrap_or(2),
-            connect_timeout_secs: std::env::var("DB_POOL_CONNECT_TIMEOUT")
+            connect_timeout_secs: std::env::var("DB_POOL_CONNECT_TIMEOUT" )
                 .ok()
                 .and_then(|v| v.parse().ok())
                 .unwrap_or(30),
-            idle_timeout_secs: std::env::var("DB_POOL_IDLE_TIMEOUT")
+            idle_timeout_secs: std::env::var("DB_POOL_IDLE_TIMEOUT" )
                 .ok()
                 .and_then(|v| v.parse().ok())
                 .unwrap_or(600),
-            max_lifetime_secs: std::env::var("DB_POOL_MAX_LIFETIME")
+            max_lifetime_secs: std::env::var("DB_POOL_MAX_LIFETIME" )
                 .ok()
                 .and_then(|v| v.parse().ok())
                 .unwrap_or(1800),
@@ -124,11 +124,11 @@ impl ServiceDatabaseConfig {
     /// 3. `DATABASE_URL`（全局回退）
     #[must_use]
     pub fn resolve_url(service_name: &str) -> String {
-        let service_key = format!("{}_DB_URL", service_name.to_uppercase().replace('-', "_"));
+        let service_key = format!("{}_DB_URL" , service_name.to_uppercase().replace('-', "_" ));
         std::env::var(&service_key)
-            .or_else(|_| std::env::var("SERVICE_DB_URL"))
+            .or_else(|_| std::env::var("SERVICE_DB_URL" ))
             .unwrap_or_else(|_| {
-                std::env::var("DATABASE_URL").unwrap_or_else(|_| {
+                std::env::var("DATABASE_URL" ).unwrap_or_else(|_| {
                     "postgres://postgres:${DATABASE_PASSWORD}@localhost:5432/myai".to_string()
                 })
             })
@@ -138,7 +138,7 @@ impl ServiceDatabaseConfig {
     #[must_use]
     pub fn for_service(service_name: &str) -> Self {
         let url = Self::resolve_url(service_name);
-        let schema = std::env::var("SERVICE_SCHEMA").ok();
+        let schema = std::env::var("SERVICE_SCHEMA" ).ok();
         let pool = PoolConfig::default();
         Self {
             url,
@@ -154,9 +154,9 @@ impl ServiceDatabaseConfig {
         if let Some(ref schema) = self.schema {
             let encoded = urlencoding(schema);
             if self.url.contains('?') {
-                format!("{}&options=--search_path%3D{}", self.url, encoded)
+                format!("{}&options=--search_path%3D{}" , self.url, encoded)
             } else {
-                format!("{}?options=--search_path%3D{}", self.url, encoded)
+                format!("{}?options=--search_path%3D{}" , self.url, encoded)
             }
         } else {
             self.url.clone()
@@ -168,7 +168,7 @@ impl ServiceDatabaseConfig {
     pub fn schema_sql(&self) -> Option<String> {
         self.schema
             .as_ref()
-            .map(|s| format!("SET search_path TO {s}"))
+            .map(|s| format!("SET search_path TO {s}" ))
     }
 
     /// 验证配置
@@ -218,9 +218,9 @@ pub async fn create_service_db_pool(
         // B11 豁免: schema 迁移 SQL 运行时动态生成, 无法用编译期宏
         sqlx::query(&sql).execute(&pool).await?;
         tracing::info!(
-            "Schema 隔离已启用: service={}, schema={}",
+            "Schema 隔离已启用: service={}, schema={}" ,
             config.service_name,
-            config.schema.as_deref().unwrap_or("")
+            config.schema.as_deref().unwrap_or("" )
         );
     }
 

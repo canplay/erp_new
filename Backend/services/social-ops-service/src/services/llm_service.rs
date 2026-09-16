@@ -43,7 +43,7 @@ impl LlmService {
     }
 
     pub async fn delete_provider(&self, id: Uuid) -> Result<bool, sqlx::Error> {
-        let r = sqlx::query("DELETE FROM socialops.llm_providers WHERE id = $1").bind(id)
+        let r = sqlx::query("DELETE FROM socialops.llm_providers WHERE id = $1" ).bind(id)
             .execute(&self.db).await?;
         Ok(r.rows_affected() > 0)
     }

@@ -75,7 +75,7 @@ pub async fn create_plan(
     .bind(plan_type.as_str())
     .bind(request.price_monthly)
     .bind(request.price_yearly)
-    .bind(request.currency.as_deref().unwrap_or("CNY"))
+    .bind(request.currency.as_deref().unwrap_or("CNY" ))
     .bind(serde_json::to_value(&request.features).unwrap_or_default())
     .bind(serde_json::to_value(&request.quotas).unwrap_or_default())
     .execute(&state.pool)
@@ -132,7 +132,7 @@ pub async fn create_subscription(
 ) -> AppResult<impl IntoResponse> {
     // 获取计划价格
     let plan: PlanRow = sqlx::query_as::<_, PlanRow>(
-        "SELECT * FROM plans WHERE id = $1",
+        "SELECT * FROM plans WHERE id = $1" ,
     )
     .bind(request.plan_id)
     .fetch_optional(&state.pool)
@@ -179,7 +179,7 @@ pub async fn create_invoice(
 ) -> AppResult<impl IntoResponse> {
     let now = chrono::Utc::now();
     let id = Uuid::new_v4();
-    let invoice_number = format!("INV-{}", now.format("%Y%m%d%H%M%S"));
+    let invoice_number = format!("INV-{}" , now.format("%Y%m%d%H%M%S" ));
 
     sqlx::query(
         r#"
@@ -218,7 +218,7 @@ pub async fn record_usage(
     Json(request): Json<RecordUsageRequest>,
 ) -> AppResult<impl IntoResponse> {
     sqlx::query(
-        "INSERT INTO usage_records (tenant_id, metric, quantity) VALUES ($1, $2, $3)",
+        "INSERT INTO usage_records (tenant_id, metric, quantity) VALUES ($1, $2, $3)" ,
     )
     .bind(request.tenant_id)
     .bind(&request.metric)
@@ -227,7 +227,7 @@ pub async fn record_usage(
     .await
     .map_err(|e| AppError::DatabaseError(e.to_string()))?;
 
-    Ok(Json(ApiResponse::success("Usage recorded")))
+    Ok(Json(ApiResponse::success("Usage recorded" )))
 }
 
 // ============ 错误类型 ============

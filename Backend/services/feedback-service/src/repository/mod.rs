@@ -10,16 +10,16 @@ use thiserror::Error;
 /// 反馈仓储错误
 #[derive(Error, Debug)]
 pub enum FeedbackRepositoryError {
-    #[error("数据库错误: {0}")]
+    #[error("数据库错误: {0}" )]
     Database(#[from] sqlx::Error),
 
-    #[error("反馈不存在")]
+    #[error("反馈不存在" )]
     NotFound,
 }
 
 /// 反馈类型
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "lowercase")]
+#[serde(rename_all = "lowercase" )]
 pub enum FeedbackType {
     Suggestion,
     Bug,
@@ -29,7 +29,7 @@ pub enum FeedbackType {
 
 /// 反馈状态
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "lowercase")]
+#[serde(rename_all = "lowercase" )]
 pub enum FeedbackStatus {
     Pending,
     Processing,
@@ -180,7 +180,7 @@ impl FeedbackRepository {
             SELECT f.id, f.user_id, u.username AS user_name, f.type, f.title, f.content,
                    f.contact, f.status, f.handler_id, h.username AS handler_name,
                    f.handler_reply, f.handler_time, f.rating::int,
-                   COALESCE(f.created_at, NOW()) AS "created_at!",
+                   COALESCE(f.created_at, NOW()) AS "created_at!" ,
                    COALESCE(f.updated_at, NOW()) AS "updated_at!"
             FROM feedbacks f
             LEFT JOIN users u ON f.user_id = u.id
@@ -230,7 +230,7 @@ impl FeedbackRepository {
             SELECT f.id, f.user_id, u.username AS user_name, f.type, f.title, f.content,
                    f.contact, f.status, f.handler_id, h.username AS handler_name,
                    f.handler_reply, f.handler_time, f.rating::int,
-                   COALESCE(f.created_at, NOW()) AS "created_at!",
+                   COALESCE(f.created_at, NOW()) AS "created_at!" ,
                    COALESCE(f.updated_at, NOW()) AS "updated_at!"
             FROM feedbacks f
             LEFT JOIN users u ON f.user_id = u.id
@@ -288,7 +288,7 @@ impl FeedbackRepository {
         handler_id: i64,
     ) -> Result<bool, FeedbackRepositoryError> {
         let result = sqlx::query!(
-            "UPDATE feedbacks SET handler_id = $1, status = 'processing', updated_at = NOW() WHERE id = $2",
+            "UPDATE feedbacks SET handler_id = $1, status = 'processing', updated_at = NOW() WHERE id = $2" ,
             handler_id,
             id,
         )
@@ -319,7 +319,7 @@ impl FeedbackRepository {
 
     /// 删除反馈
     pub async fn delete(&self, id: i64) -> Result<bool, FeedbackRepositoryError> {
-        let result = sqlx::query!("DELETE FROM feedbacks WHERE id = $1", id)
+        let result = sqlx::query!("DELETE FROM feedbacks WHERE id = $1" , id)
             .execute(&self.pool)
             .await?;
 
@@ -340,7 +340,7 @@ impl FeedbackRepository {
             WHERE id = ANY($3)
             "#,
             status,
-            reply.unwrap_or(""),
+            reply.unwrap_or(" "),
             ids,
         )
         .execute(&self.pool)
@@ -354,7 +354,7 @@ impl FeedbackRepository {
         &self,
         _params: &FeedbackQueryParams,
     ) -> Result<FeedbackStatistics, FeedbackRepositoryError> {
-        let total: i64 = sqlx::query_scalar!("SELECT COUNT(*) FROM feedbacks")
+        let total: i64 = sqlx::query_scalar!("SELECT COUNT(*) FROM feedbacks" )
             .fetch_one(&self.pool)
             .await?
             .unwrap_or(0);

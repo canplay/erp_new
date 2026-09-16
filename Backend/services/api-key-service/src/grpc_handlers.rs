@@ -96,7 +96,7 @@ impl ApiKeyAppState {
     /// 生成新的 `key_id`
     #[must_use]
     pub fn generate_key_id() -> String {
-        format!("ak_{}", &Uuid::new_v4().to_string().replace('-', "")[..16])
+        format!("ak_{}" , &Uuid::new_v4().to_string().replace('-', "" )[..16])
     }
 }
 
@@ -255,12 +255,12 @@ pub async fn create_api_key(
     state: Arc<ApiKeyAppState>,
     params: CreateApiKeyParams,
 ) -> Result<CreateKeyResponse, Status> {
-    tracing::info!("创建 API Key: name={}, user_id={}", params.name, params.user_id);
+    tracing::info!("创建 API Key: name={}, user_id={}" , params.name, params.user_id);
 
     // 生成密钥
     let key_id = ApiKeyAppState::generate_key_id();
-    let secret = Uuid::new_v4().to_string().replace('-', "");
-    let hint = format!("****{}", &secret[secret.len().saturating_sub(4)..]);
+    let secret = Uuid::new_v4().to_string().replace('-', "" );
+    let hint = format!("****{}" , &secret[secret.len().saturating_sub(4)..]);
 
     // 解析过期时间
     let expires_at = params.expires_at.and_then(|s| {
@@ -292,8 +292,8 @@ pub async fn create_api_key(
 
     // 保存到数据库
     if let Err(e) = state.repository.create(&api_key).await {
-        tracing::error!("创建 API Key 失败: {e}");
-        return Err(Status::internal("创建 API Key 失败"));
+        tracing::error!("创建 API Key 失败: {e}" );
+        return Err(Status::internal("创建 API Key 失败" ));
     }
 
     // 更新缓存
@@ -301,7 +301,7 @@ pub async fn create_api_key(
 
     Ok(CreateKeyResponse {
         id,
-        key: format!("{key_id}{secret}"),
+        key: format!("{key_id}{secret}" ),
         key_prefix: key_id,
     })
 }
@@ -316,7 +316,7 @@ pub async fn list_api_keys(
     user_id: Option<String>,
     _tenant_id: Option<String>,
 ) -> Result<PaginatedApiKeysInfo, Status> {
-    tracing::info!("获取 Key 列表: page={page}, keyword={keyword:?}");
+    tracing::info!("获取 Key 列表: page={page}, keyword={keyword:?}" );
 
     // 解析用户 ID
     let user_id = user_id.and_then(|s| s.parse().ok());
@@ -336,8 +336,8 @@ pub async fn list_api_keys(
                 });
             }
             Err(e) => {
-                tracing::error!("获取密钥列表失败: {e}");
-                return Err(Status::internal("获取密钥列表失败"));
+                tracing::error!("获取密钥列表失败: {e}" );
+                return Err(Status::internal("获取密钥列表失败" ));
             }
         }
     }
@@ -351,7 +351,7 @@ pub async fn get_api_key(
     state: Arc<ApiKeyAppState>,
     id: String,
 ) -> Result<Option<ApiKeyInfo>, Status> {
-    tracing::info!("获取 Key 详情: {id}");
+    tracing::info!("获取 Key 详情: {id}" );
 
     if let Some(key) = state.get_key(&id).await {
         Ok(Some(ApiKeyInfo::from(key)))
@@ -365,11 +365,11 @@ pub async fn update_api_key(
     state: Arc<ApiKeyAppState>,
     params: UpdateApiKeyParams,
 ) -> Result<bool, Status> {
-    tracing::info!("更新 API Key: {}", params.id);
+    tracing::info!("更新 API Key: {}" , params.id);
 
     // 获取现有密钥
     let Some(mut key) = state.get_key(&params.id).await else {
-        return Err(Status::not_found("API Key not found"));
+        return Err(Status::not_found("API Key not found" ));
     };
 
     // 更新字段
@@ -403,8 +403,8 @@ pub async fn update_api_key(
 
     // 保存到数据库
     if let Err(e) = state.repository.update(&key).await {
-        tracing::error!("更新 API Key 失败: {e}");
-        return Err(Status::internal("更新 API Key 失败"));
+        tracing::error!("更新 API Key 失败: {e}" );
+        return Err(Status::internal("更新 API Key 失败" ));
     }
 
     // 更新缓存
@@ -415,12 +415,12 @@ pub async fn update_api_key(
 
 /// 删除 Key
 pub async fn delete_api_key(state: Arc<ApiKeyAppState>, id: String) -> Result<bool, Status> {
-    tracing::info!("删除 API Key: {id}");
+    tracing::info!("删除 API Key: {id}" );
 
     // 从数据库删除
     if let Err(e) = state.repository.delete(&id).await {
-        tracing::error!("删除 API Key 失败: {e}");
-        return Err(Status::internal("删除 API Key 失败"));
+        tracing::error!("删除 API Key 失败: {e}" );
+        return Err(Status::internal("删除 API Key 失败" ));
     }
 
     // 从缓存移除
@@ -434,12 +434,12 @@ pub async fn batch_delete_api_keys(
     state: Arc<ApiKeyAppState>,
     ids: Vec<String>,
 ) -> Result<i64, Status> {
-    tracing::info!("批量删除 API Keys: count={}", ids.len());
+    tracing::info!("批量删除 API Keys: count={}" , ids.len());
 
     let mut deleted = 0i64;
     for id in &ids {
         if let Err(e) = state.repository.delete(id).await {
-            tracing::error!("删除 API Key {id} 失败: {e}");
+            tracing::error!("删除 API Key {id} 失败: {e}" );
             continue;
         }
         state.remove_from_cache(id).await;
@@ -455,7 +455,7 @@ pub async fn get_key_statistics(
     user_id: Option<String>,
     _tenant_id: Option<String>,
 ) -> Result<KeyStatsInfo, Status> {
-    tracing::info!("获取密钥统计: user_id={user_id:?}");
+    tracing::info!("获取密钥统计: user_id={user_id:?}" );
 
     // 解析用户 ID
     let user_id = match user_id.and_then(|s| s.parse().ok()) {
@@ -494,8 +494,8 @@ pub async fn get_key_statistics(
             })
         }
         Err(e) => {
-            tracing::error!("获取密钥统计失败: {e}");
-            Err(Status::internal("获取密钥统计失败"))
+            tracing::error!("获取密钥统计失败: {e}" );
+            Err(Status::internal("获取密钥统计失败" ))
         }
     }
 }
@@ -511,10 +511,10 @@ pub async fn validate_api_key(
     _method: Option<String>,
 ) -> Result<ValidateKeyResponse, Status> {
     let prefix = if key.len() > 8 { &key[..8] } else { &key };
-    tracing::info!("验证 API Key: prefix={prefix}");
+    tracing::info!("验证 API Key: prefix={prefix}" );
 
     // 提取 key_id（假设格式为 ak_xxx + secret）
-    let key_id = if key.starts_with("ak_") && key.len() > 24 {
+    let key_id = if key.starts_with("ak_" ) && key.len() > 24 {
         key[..24].to_string()
     } else {
         key.clone()
@@ -566,7 +566,7 @@ pub async fn validate_api_key(
     // 更新最后使用时间
     api_key.last_used_at = Some(Utc::now());
     if let Err(e) = state.repository.update_last_used(&api_key.id).await {
-        tracing::warn!("更新最后使用时间失败: {e}");
+        tracing::warn!("更新最后使用时间失败: {e}" );
     }
     state.update_cache(api_key.clone()).await;
 
@@ -580,16 +580,16 @@ pub async fn validate_api_key(
 
 /// 禁用 Key
 pub async fn disable_api_key(state: Arc<ApiKeyAppState>, id: String) -> Result<bool, Status> {
-    tracing::info!("禁用 API Key: {id}");
+    tracing::info!("禁用 API Key: {id}" );
 
-    update_key_status(state, id, "inactive").await
+    update_key_status(state, id, "inactive" ).await
 }
 
 /// 启用 Key
 pub async fn enable_api_key(state: Arc<ApiKeyAppState>, id: String) -> Result<bool, Status> {
-    tracing::info!("启用 API Key: {id}");
+    tracing::info!("启用 API Key: {id}" );
 
-    update_key_status(state, id, "active").await
+    update_key_status(state, id, "active" ).await
 }
 
 /// 撤销 Key
@@ -598,10 +598,10 @@ pub async fn revoke_api_key(
     id: String,
     _reason: Option<String>,
 ) -> Result<bool, Status> {
-    tracing::info!("撤销 API Key: {id}");
+    tracing::info!("撤销 API Key: {id}" );
 
     // 撤销等同于禁用
-    update_key_status(state, id, "revoked").await
+    update_key_status(state, id, "revoked" ).await
 }
 
 /// 更新密钥状态（辅助函数）
@@ -612,7 +612,7 @@ async fn update_key_status(
 ) -> Result<bool, Status> {
     // 获取现有密钥
     let Some(mut key) = state.get_key(&id).await else {
-        return Err(Status::not_found("API Key not found"));
+        return Err(Status::not_found("API Key not found" ));
     };
 
     // 更新状态
@@ -621,8 +621,8 @@ async fn update_key_status(
 
     // 保存到数据库
     if let Err(e) = state.repository.update(&key).await {
-        tracing::error!("更新密钥状态失败: {e}");
-        return Err(Status::internal("更新密钥状态失败"));
+        tracing::error!("更新密钥状态失败: {e}" );
+        return Err(Status::internal("更新密钥状态失败" ));
     }
 
     // 更新缓存
@@ -645,7 +645,7 @@ pub async fn list_usage_logs(
     page: i32,
     page_size: i32,
 ) -> Result<PaginatedUsageLogsInfo, Status> {
-    tracing::info!("获取使用记录: key_id={key_id:?}");
+    tracing::info!("获取使用记录: key_id={key_id:?}" );
 
     let page = i64::from(page.max(1));
     let page_size = i64::from(page_size.clamp(1, 100));
@@ -682,8 +682,8 @@ pub async fn list_usage_logs(
             })
         }
         Err(e) => {
-            tracing::error!("获取使用记录失败: {e}");
-            Err(Status::internal("获取使用记录失败"))
+            tracing::error!("获取使用记录失败: {e}" );
+            Err(Status::internal("获取使用记录失败" ))
         }
     }
 }
@@ -695,7 +695,7 @@ pub async fn get_key_usage_logs(
     page: i32,
     page_size: i32,
 ) -> Result<PaginatedUsageLogsInfo, Status> {
-    tracing::info!("获取 Key 使用记录: key_id={key_id}");
+    tracing::info!("获取 Key 使用记录: key_id={key_id}" );
 
     list_usage_logs(state, Some(key_id), None, None, None, None, page, page_size).await
 }
@@ -706,7 +706,7 @@ pub async fn clear_usage_logs(
     key_id: Option<String>,
     before_date: Option<String>,
 ) -> Result<i64, Status> {
-    tracing::info!("清除使用记录: key_id={key_id:?}");
+    tracing::info!("清除使用记录: key_id={key_id:?}" );
 
     let before = before_date.and_then(|s| {
         chrono::DateTime::parse_from_rfc3339(&s)
@@ -720,12 +720,12 @@ pub async fn clear_usage_logs(
         .await
     {
         Ok(count) => {
-            tracing::info!("已清除 {count} 条使用记录");
+            tracing::info!("已清除 {count} 条使用记录" );
             Ok(count)
         }
         Err(e) => {
-            tracing::error!("清除使用记录失败: {e}");
-            Err(Status::internal("清除使用记录失败"))
+            tracing::error!("清除使用记录失败: {e}" );
+            Err(Status::internal("清除使用记录失败" ))
         }
     }
 }

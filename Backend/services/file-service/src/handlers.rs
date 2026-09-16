@@ -27,11 +27,11 @@ pub struct AppState {
 /// 创建路由
 pub fn create_router(state: AppState) -> Router {
     Router::new()
-        .route("/upload", axum::routing::post(upload_file))
-        .route("/", axum::routing::get(list_files))
-        .route("/{id}", axum::routing::get(get_file).delete(delete_file))
-        .route("/{id}/download", axum::routing::get(download_file))
-        .route("/categories", axum::routing::get(list_categories))
+        .route("/upload" , axum::routing::post(upload_file))
+        .route("/" , axum::routing::get(list_files))
+        .route("/{id}" , axum::routing::get(get_file).delete(delete_file))
+        .route("/{id}/download" , axum::routing::get(download_file))
+        .route("/categories" , axum::routing::get(list_categories))
         .with_state(state)
 }
 
@@ -53,17 +53,17 @@ async fn upload_file(
 
     // 解析 multipart 数据
     while let Some(field) = multipart.next_field().await.map_err(|e| {
-        error!("解析 multipart 失败: {}", e);
+        error!("解析 multipart 失败: {}" , e);
         AppError::InvalidParam("表单解析失败".to_string())
     })? {
-        let field_name = field.name().unwrap_or("").to_string();
+        let field_name = field.name().unwrap_or(" ").to_string();
 
         match field_name.as_str() {
             "file" => {
-                let filename = field.file_name().unwrap_or("unknown").to_string();
+                let filename = field.file_name().unwrap_or("unknown" ).to_string();
                 let content_type = field
                     .content_type()
-                    .unwrap_or("application/octet-stream")
+                    .unwrap_or("application/octet-stream" )
                     .to_string();
 
                 // 读取文件内容
@@ -71,7 +71,7 @@ async fn upload_file(
                 let mut stream = field;
                 while let Some(chunk) = stream.next().await {
                     data.extend_from_slice(&chunk.map_err(|e| {
-                        error!("读取文件数据失败: {}", e);
+                        error!("读取文件数据失败: {}" , e);
                         AppError::InvalidParam("文件读取失败".to_string())
                     })?);
                 }
@@ -119,7 +119,7 @@ async fn upload_file(
         .upload(&storage_key, &file_data.data, &file_data.content_type)
         .await
         .map_err(|e| {
-            error!("文件上传失败: {}", e);
+            error!("文件上传失败: {}" , e);
             AppError::FileUploadFailed(e.to_string())
         })?;
 
@@ -148,7 +148,7 @@ async fn upload_file(
 
     let id = state.repository.insert(&file).await?;
 
-    info!("文件上传成功: id={}, name={}", id, file.original_name);
+    info!("文件上传成功: id={}, name={}" , id, file.original_name);
 
     Ok((
         StatusCode::CREATED,
@@ -160,7 +160,7 @@ async fn upload_file(
                 "size": file.file_size,
                 "mime_type": file.mime_type
             }),
-            "文件上传成功",
+            "文件上传成功" ,
         ),
     ))
 }
@@ -186,22 +186,22 @@ struct FileMetadata {
 /// 生成存储路径
 fn generate_storage_path(filename: &str, category: &str) -> String {
     let now = chrono::Utc::now();
-    let date = now.format("%Y/%m/%d").to_string();
-    let uuid = uuid::Uuid::new_v4().to_string().replace('-', "");
+    let date = now.format("%Y/%m/%d" ).to_string();
+    let uuid = uuid::Uuid::new_v4().to_string().replace('-', "" );
     let ext = std::path::Path::new(filename)
         .extension()
         .and_then(|e| e.to_str())
-        .unwrap_or("");
+        .unwrap_or("" );
 
     format!(
-        "{}/{}/{}{}",
+        "{}/{}/{}{}" ,
         category,
         date,
         uuid,
         if ext.is_empty() {
             String::new()
         } else {
-            format!(".{ext}")
+            format!(".{ext}" )
         }
     )
 }
@@ -217,7 +217,7 @@ async fn read_text_field(
     while let Some(chunk) = futures_util::StreamExt::next(&mut field).await {
         match chunk {
             Ok(bytes) => text.push_str(&String::from_utf8_lossy(&bytes)),
-            Err(e) => return Err(AppError::InvalidParam(format!("读取字段失败: {e}"))),
+            Err(e) => return Err(AppError::InvalidParam(format!("读取字段失败: {e}" ))),
         }
     }
     Ok(text)
@@ -226,11 +226,11 @@ async fn read_text_field(
 /// 从 multipart 中提取请求头（需要通过 `FromRequestParts` 获取）
 /// 这里简化处理，从环境变量获取
 fn get_uploaded_by() -> String {
-    std::env::var("FILE_UPLOADED_BY").unwrap_or_else(|_| "anonymous".to_string())
+    std::env::var("FILE_UPLOADED_BY" ).unwrap_or_else(|_| "anonymous".to_string())
 }
 
 fn get_category() -> String {
-    std::env::var("FILE_CATEGORY").unwrap_or_else(|_| "general".to_string())
+    std::env::var("FILE_CATEGORY" ).unwrap_or_else(|_| "general".to_string())
 }
 
 /// 文件列表查询
@@ -290,7 +290,7 @@ async fn download_file(
 
     let filename = urlencoding::encode(&file.original_name);
     let content_disposition = format!(
-        "attachment; filename=\"{}\"; filename*=UTF-8''{}",
+        "attachment; filename=\"{}\"; filename*=UTF-8''{}" ,
         file.original_name, filename
     );
 
@@ -327,7 +327,7 @@ async fn delete_file(
     // 从数据库删除记录
     state.repository.delete(id).await?;
 
-    Ok(json_ok_msg("文件删除成功"))
+    Ok(json_ok_msg("文件删除成功" ))
 }
 
 /// 获取文件分类列表
@@ -345,5 +345,5 @@ async fn list_categories() -> Json<Vec<String>> {
 
 /// 健康检查
 pub fn health_check() -> Json<serde_json::Value> {
-    json_health("file-service")
+    json_health("file-service" )
 }

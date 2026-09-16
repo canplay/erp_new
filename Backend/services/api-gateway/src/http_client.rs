@@ -51,7 +51,7 @@ impl HttpClientManager {
 
         let client = builder
             .build()
-            .expect("Failed to build HTTP client (invalid TLS/HTTP2 config)");
+            .expect("Failed to build HTTP client (invalid TLS/HTTP2 config)" );
 
         Self {
             client: Arc::new(client),

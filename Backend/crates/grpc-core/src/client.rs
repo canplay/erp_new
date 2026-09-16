@@ -108,7 +108,7 @@ impl GrpcTokenInterceptor {
     #[must_use]
     pub fn from_env() -> Self {
         // Secret中的值可能包含尾部CRLF, trim避免比较失败
-        let token = std::env::var("GRPC_AUTH_TOKEN")
+        let token = std::env::var("GRPC_AUTH_TOKEN" )
             .ok()
             .map(|t| t.trim().to_string())
             .filter(|t| !t.is_empty())
@@ -120,7 +120,7 @@ impl GrpcTokenInterceptor {
 impl tonic::service::Interceptor for GrpcTokenInterceptor {
     fn call(&mut self, mut req: tonic::Request<()>) -> Result<tonic::Request<()>, tonic::Status> {
         if let Some(t) = &self.token {
-            req.metadata_mut().insert("x-grpc-token", t.clone());
+            req.metadata_mut().insert("x-grpc-token" , t.clone());
         }
         Ok(req)
     }
@@ -174,8 +174,8 @@ where
 #[must_use]
 pub fn create_grpc_addr(service_name: &str, default_port: u16) -> String {
     let env_key = format!(
-        "{}_GRPC_ADDR",
-        service_name.to_uppercase().replace('-', "_")
+        "{}_GRPC_ADDR" ,
+        service_name.to_uppercase().replace('-', "_" )
     );
-    std::env::var(&env_key).unwrap_or_else(|_| format!("http://localhost:{default_port}"))
+    std::env::var(&env_key).unwrap_or_else(|_| format!("http://localhost:{default_port}" ))
 }

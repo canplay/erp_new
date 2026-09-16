@@ -25,9 +25,9 @@ pub async fn list_cars(
     Query(q): Query<CarQuery>,
 ) -> Result<Json<serde_json::Value>, AppError> {
     let mut client = state.grpc_clients.read().await.tow_client().await
-        .map_err(|e| AppError::ServiceUnavailable(format!("tow-service: {e}")))?;
+        .map_err(|e| AppError::ServiceUnavailable(format!("tow-service: {e}" )))?;
     let resp = client.list_tow_cars(&q.keyword.unwrap_or_default(), &q.status.unwrap_or_default(), q.page.unwrap_or(1), q.page_size.unwrap_or(20)).await
-        .map_err(|e| AppError::ServiceUnavailable(format!("调用失败: {e}")))?;
+        .map_err(|e| AppError::ServiceUnavailable(format!("调用失败: {e}" )))?;
     let cars: Vec<serde_json::Value> = resp.cars.into_iter().map(|c| json!({
         "id": c.id, "license": c.license, "car_type": c.car_type,
         "car_color": c.car_color, "dc_date": c.dc_date, "dc_address": c.dc_address,
@@ -41,8 +41,8 @@ pub async fn get_car(
     Path(id): Path<i64>,
 ) -> Result<Json<serde_json::Value>, AppError> {
     let mut client = state.grpc_clients.read().await.tow_client().await
-        .map_err(|e| AppError::ServiceUnavailable(format!("tow-service: {e}")))?;
-    let c = client.get_tow_car(id).await.map_err(|e| AppError::ServiceUnavailable(format!("调用失败: {e}")))?;
+        .map_err(|e| AppError::ServiceUnavailable(format!("tow-service: {e}" )))?;
+    let c = client.get_tow_car(id).await.map_err(|e| AppError::ServiceUnavailable(format!("调用失败: {e}" )))?;
     Ok(json_success(json!({ "id": c.id, "license": c.license, "car_type": c.car_type, "car_color": c.car_color,
         "engine": c.engine, "dc_type": c.dc_type, "dc_causes": c.dc_causes, "dc_date": c.dc_date,
         "dc_address": c.dc_address, "dc_key": c.dc_key,
@@ -56,9 +56,9 @@ pub async fn list_dict(
     Query(q): Query<DictQuery>,
 ) -> Result<Json<serde_json::Value>, AppError> {
     let mut client = state.grpc_clients.read().await.tow_client().await
-        .map_err(|e| AppError::ServiceUnavailable(format!("tow-service: {e}")))?;
+        .map_err(|e| AppError::ServiceUnavailable(format!("tow-service: {e}" )))?;
     let resp = client.list_dict_items(&q.dict_type).await
-        .map_err(|e| AppError::ServiceUnavailable(format!("调用失败: {e}")))?;
+        .map_err(|e| AppError::ServiceUnavailable(format!("调用失败: {e}" )))?;
     let items: Vec<serde_json::Value> = resp.items.into_iter().map(|d| json!({ "id": d.id, "name": d.name, "value": d.value })).collect();
     Ok(json_success(json!({ "items": items })))
 }
@@ -68,21 +68,21 @@ pub async fn update_tow_car_status(
     Path(_id): Path<i64>,
     Json(body): Json<serde_json::Value>,
 ) -> Json<serde_json::Value> {
-    let status = body.get("status").and_then(|v| v.as_str()).unwrap_or("");
+    let status = body.get("status" ).and_then(|v| v.as_str()).unwrap_or("" );
     if !status.is_empty() {
-        json_success(json!({ "message": format!("状态已更新为: {}", status) }))
+        json_success(json!({ "message": format!("状态已更新为: {}" , status) }))
     } else {
-        json_error("状态参数不能为空")
+        json_error("状态参数不能为空" )
     }
 }
 
 pub fn routes() -> Router<Arc<AppState>> {
     Router::new()
-        .route("/api/tow/cars", get(list_cars))
-        .route("/api/tow/cars/{id}", get(get_car))
-        .route("/api/tow/dict", get(list_dict))
-        .route("/api/v1/tow/cars", get(list_cars))
-        .route("/api/v1/tow/cars/{id}", get(get_car))
-        .route("/api/v1/tow/cars/{id}/status", post(update_tow_car_status))
-        .route("/api/v1/tow/dict", get(list_dict))
+        .route("/api/tow/cars" , get(list_cars))
+        .route("/api/tow/cars/{id}" , get(get_car))
+        .route("/api/tow/dict" , get(list_dict))
+        .route("/api/v1/tow/cars" , get(list_cars))
+        .route("/api/v1/tow/cars/{id}" , get(get_car))
+        .route("/api/v1/tow/cars/{id}/status" , post(update_tow_car_status))
+        .route("/api/v1/tow/dict" , get(list_dict))
 }

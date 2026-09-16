@@ -14,7 +14,7 @@ use serde_json::Value;
 
 /// browser-service gRPC 地址（默认 <http://localhost:9120>）
 fn grpc_endpoint() -> String {
-    std::env::var("BROWSER_SERVICE_GRPC").unwrap_or_else(|_| "http://localhost:9120".to_string())
+    std::env::var("BROWSER_SERVICE_GRPC" ).unwrap_or_else(|_| "http://localhost:9120".to_string())
 }
 
 /// Cookie 条目
@@ -73,7 +73,7 @@ impl BrowserClient {
         if inner.success {
             Ok(inner.title)
         } else {
-            anyhow::bail!("导航超时: {url}")
+            anyhow::bail!("导航超时: {url}" )
         }
     }
 
@@ -122,7 +122,7 @@ impl BrowserClient {
         if resp.into_inner().success {
             Ok(())
         } else {
-            anyhow::bail!("点击失败: {selector}")
+            anyhow::bail!("点击失败: {selector}" )
         }
     }
 
@@ -139,7 +139,7 @@ impl BrowserClient {
         if resp.into_inner().success {
             Ok(())
         } else {
-            anyhow::bail!("输入失败: selector={selector}")
+            anyhow::bail!("输入失败: selector={selector}" )
         }
     }
 
@@ -164,7 +164,7 @@ impl BrowserClient {
         if resp.into_inner().success {
             Ok(())
         } else {
-            anyhow::bail!("Cookie 注入失败")
+            anyhow::bail!("Cookie 注入失败" )
         }
     }
 
@@ -212,7 +212,7 @@ impl BrowserClient {
         if resp.into_inner().success {
             Ok(())
         } else {
-            anyhow::bail!("关闭会话失败")
+            anyhow::bail!("关闭会话失败" )
         }
     }
 

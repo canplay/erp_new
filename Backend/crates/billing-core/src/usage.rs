@@ -26,13 +26,13 @@ pub enum UsageType {
 impl UsageType {
     pub fn as_str(&self) -> &'static str {
         match self {
-            Self::ApiCalls => "api_calls",
-            Self::FileUploads => "file_uploads",
-            Self::StorageGb => "storage_gb",
-            Self::ActiveUsers => "active_users",
-            Self::Messages => "messages",
-            Self::VoiceMinutes => "voice_minutes",
-            Self::VideoMinutes => "video_minutes",
+            Self::ApiCalls => "api_calls" ,
+            Self::FileUploads => "file_uploads" ,
+            Self::StorageGb => "storage_gb" ,
+            Self::ActiveUsers => "active_users" ,
+            Self::Messages => "messages" ,
+            Self::VoiceMinutes => "voice_minutes" ,
+            Self::VideoMinutes => "video_minutes" ,
         }
     }
 }
@@ -73,11 +73,11 @@ pub enum AggregationPeriod {
 impl AggregationPeriod {
     pub fn as_str(&self) -> &'static str {
         match self {
-            Self::Hourly => "hourly",
-            Self::Daily => "daily",
-            Self::Weekly => "weekly",
-            Self::Monthly => "monthly",
-            Self::Yearly => "yearly",
+            Self::Hourly => "hourly" ,
+            Self::Daily => "daily" ,
+            Self::Weekly => "weekly" ,
+            Self::Monthly => "monthly" ,
+            Self::Yearly => "yearly" ,
         }
     }
 }

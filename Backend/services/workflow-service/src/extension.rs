@@ -281,7 +281,7 @@ impl NodeManager {
     ) -> WorkflowNode {
         let mut nodes = self.nodes.write().await;
 
-        let node_id = format!("{}_{}", workflow_id, generate_id());
+        let node_id = format!("{}_{}" , workflow_id, generate_id());
 
         // 获取默认配置
         let extension = self.extensions.read().await.get(&node_type).cloned();
@@ -291,7 +291,7 @@ impl NodeManager {
                 ext.input_ports
                     .iter()
                     .map(|p| Port {
-                        port_id: format!("{}_in_{}", node_id, p.name),
+                        port_id: format!("{}_in_{}" , node_id, p.name),
                         name: p.name.clone(),
                         data_type: p.data_type.clone(),
                         required: p.required,
@@ -301,7 +301,7 @@ impl NodeManager {
                 ext.output_ports
                     .iter()
                     .map(|p| Port {
-                        port_id: format!("{}_out_{}", node_id, p.name),
+                        port_id: format!("{}_out_{}" , node_id, p.name),
                         name: p.name.clone(),
                         data_type: p.data_type.clone(),
                         required: p.required,
@@ -523,14 +523,14 @@ impl NodeManager {
                     if param.required && !node.config.contains_key(&param.name) {
                         errors.push(ValidationError {
                             field: param.name.clone(),
-                            message: format!("缺少必需参数: {}", param.name),
+                            message: format!("缺少必需参数: {}" , param.name),
                         });
                     }
                 }
 
                 // 验证规则检查
                 for rule in &ext.validation_rules {
-                    if let Some(value) = node.config.get(&format!("{}_expr", rule.rule_type))
+                    if let Some(value) = node.config.get(&format!("{}_expr" , rule.rule_type))
                         && *value != rule.expression {
                             errors.push(ValidationError {
                                 field: rule.rule_type.clone(),
@@ -635,7 +635,7 @@ impl NodeManager {
 
         let total = nodes.len();
         let by_type: HashMap<String, usize> = nodes.values().fold(HashMap::new(), |mut acc, n| {
-            *acc.entry(format!("{:?}", n.node_type)).or_insert(0) += 1;
+            *acc.entry(format!("{:?}" , n.node_type)).or_insert(0) += 1;
             acc
         });
 
@@ -691,9 +691,9 @@ fn generate_id() -> String {
     use std::time::{SystemTime, UNIX_EPOCH};
     let timestamp = SystemTime::now()
         .duration_since(UNIX_EPOCH)
-        .unwrap_or_else(|_| { tracing::error!("system time is before UNIX epoch"); std::time::Duration::from_secs(0) })
+        .unwrap_or_else(|_| { tracing::error!("system time is before UNIX epoch" ); std::time::Duration::from_secs(0) })
         .as_nanos();
-    format!("{timestamp:016x}")
+    format!("{timestamp:016x}" )
 }
 
 #[cfg(test)]
@@ -737,7 +737,7 @@ mod tests {
 
         let ext = manager.get_extension(NodeType::Custom).await;
         assert!(ext.is_some());
-        assert_eq!(ext.expect("test assertion").display_name, "自定义节点");
+        assert_eq!(ext.expect("test assertion" ).display_name, "自定义节点" );
     }
 
     #[tokio::test]
@@ -746,8 +746,8 @@ mod tests {
 
         let node = manager
             .create_node(
-                "workflow_001",
-                "测试节点",
+                "workflow_001" ,
+                "测试节点" ,
                 NodeType::Task,
                 HashMap::new(),
                 100.0,
@@ -755,8 +755,8 @@ mod tests {
             )
             .await;
 
-        assert_eq!(node.workflow_id, "workflow_001");
-        assert_eq!(node.name, "测试节点");
+        assert_eq!(node.workflow_id, "workflow_001" );
+        assert_eq!(node.name, "测试节点" );
         assert_eq!(node.node_type, NodeType::Task);
         assert_eq!(node.state, NodeState::Draft);
 
@@ -771,8 +771,8 @@ mod tests {
 
         let node = manager
             .create_node(
-                "workflow_001",
-                "节点1",
+                "workflow_001" ,
+                "节点1" ,
                 NodeType::Task,
                 HashMap::new(),
                 0.0,
@@ -795,8 +795,8 @@ mod tests {
         assert!(updated);
 
         let fetched = manager.get_node(&node.node_id).await;
-        let fetched_node = fetched.as_ref().expect("test assertion");
-        assert_eq!(fetched_node.name, "更新后节点");
+        let fetched_node = fetched.as_ref().expect("test assertion" );
+        assert_eq!(fetched_node.name, "更新后节点" );
         assert_eq!(fetched_node.state, NodeState::Active);
     }
 
@@ -806,21 +806,21 @@ mod tests {
 
         // 创建两个节点
         let node1 = manager
-            .create_node("wf1", "开始", NodeType::Start, HashMap::new(), 0.0, 0.0)
+            .create_node("wf1" , "开始" , NodeType::Start, HashMap::new(), 0.0, 0.0)
             .await;
         let node2 = manager
-            .create_node("wf1", "任务", NodeType::Task, HashMap::new(), 100.0, 0.0)
+            .create_node("wf1" , "任务" , NodeType::Task, HashMap::new(), 100.0, 0.0)
             .await;
         let node3 = manager
-            .create_node("wf1", "结束", NodeType::End, HashMap::new(), 200.0, 0.0)
+            .create_node("wf1" , "结束" , NodeType::End, HashMap::new(), 200.0, 0.0)
             .await;
 
         // 创建连接
         let conn1 = manager
-            .create_connection(&node1.node_id, "out1", &node2.node_id, "in1", None)
+            .create_connection(&node1.node_id, "out1" , &node2.node_id, "in1" , None)
             .await;
         let conn2 = manager
-            .create_connection(&node2.node_id, "out1", &node3.node_id, "in1", None)
+            .create_connection(&node2.node_id, "out1" , &node3.node_id, "in1" , None)
             .await;
 
         assert!(conn1.is_some());
@@ -842,7 +842,7 @@ mod tests {
         let manager = NodeManager::default_manager();
 
         let node = manager
-            .create_node("wf1", "任务", NodeType::Task, HashMap::new(), 0.0, 0.0)
+            .create_node("wf1" , "任务" , NodeType::Task, HashMap::new(), 0.0, 0.0)
             .await;
 
         // 开始执行
@@ -850,7 +850,7 @@ mod tests {
         inputs.insert("param1".to_string(), "value1".to_string());
 
         let context = manager
-            .start_execution("exec_001", "wf1", &node.node_id, inputs)
+            .start_execution("exec_001" , "wf1" , &node.node_id, inputs)
             .await;
         assert!(context.is_some());
 
@@ -858,13 +858,13 @@ mod tests {
         let mut outputs = HashMap::new();
         outputs.insert("result".to_string(), "success".to_string());
 
-        let completed = manager.complete_execution("exec_001", outputs).await;
+        let completed = manager.complete_execution("exec_001" , outputs).await;
         assert!(completed);
 
         // 获取执行记录
         let executions = manager.get_node_executions(&node.node_id).await;
         assert_eq!(executions.len(), 1);
-        assert_eq!(executions[0].execution_id, "exec_001");
+        assert_eq!(executions[0].execution_id, "exec_001" );
     }
 
     #[tokio::test]
@@ -873,16 +873,16 @@ mod tests {
 
         // 创建多个节点
         manager
-            .create_node("wf1", "开始", NodeType::Start, HashMap::new(), 0.0, 0.0)
+            .create_node("wf1" , "开始" , NodeType::Start, HashMap::new(), 0.0, 0.0)
             .await;
         manager
-            .create_node("wf1", "任务1", NodeType::Task, HashMap::new(), 100.0, 0.0)
+            .create_node("wf1" , "任务1" , NodeType::Task, HashMap::new(), 100.0, 0.0)
             .await;
         manager
-            .create_node("wf1", "任务2", NodeType::Task, HashMap::new(), 200.0, 0.0)
+            .create_node("wf1" , "任务2" , NodeType::Task, HashMap::new(), 200.0, 0.0)
             .await;
         manager
-            .create_node("wf1", "结束", NodeType::End, HashMap::new(), 300.0, 0.0)
+            .create_node("wf1" , "结束" , NodeType::End, HashMap::new(), 300.0, 0.0)
             .await;
 
         let stats = manager.get_stats().await;

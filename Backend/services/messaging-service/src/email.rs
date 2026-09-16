@@ -9,19 +9,19 @@ use thiserror::Error;
 /// Email error types
 #[derive(Error, Debug)]
 pub enum EmailError {
-    #[error("SMTP connection failed: {0}")]
+    #[error("SMTP connection failed: {0}" )]
     Connection(String),
 
-    #[error("Authentication failed: {0}")]
+    #[error("Authentication failed: {0}" )]
     Authentication(String),
 
-    #[error("Send failed: {0}")]
+    #[error("Send failed: {0}" )]
     Send(String),
 
-    #[error("Template rendering failed: {0}")]
+    #[error("Template rendering failed: {0}" )]
     Template(String),
 
-    #[error("Invalid configuration: {0}")]
+    #[error("Invalid configuration: {0}" )]
     Configuration(String),
 }
 
@@ -58,19 +58,19 @@ impl SmtpConfig {
     /// Create SMTP configuration from environment variables
     pub fn from_env() -> Self {
         Self {
-            host: std::env::var("SMTP_HOST").unwrap_or_default(),
-            port: std::env::var("SMTP_PORT")
+            host: std::env::var("SMTP_HOST" ).unwrap_or_default(),
+            port: std::env::var("SMTP_PORT" )
                 .ok()
                 .and_then(|p| p.parse().ok())
                 .unwrap_or(587),
-            username: std::env::var("SMTP_USERNAME").unwrap_or_default(),
-            password: std::env::var("SMTP_PASSWORD").unwrap_or_default(),
-            use_tls: std::env::var("SMTP_USE_TLS")
+            username: std::env::var("SMTP_USERNAME" ).unwrap_or_default(),
+            password: std::env::var("SMTP_PASSWORD" ).unwrap_or_default(),
+            use_tls: std::env::var("SMTP_USE_TLS" )
                 .ok()
-                .map(|v| v != "false" && v != "0")
+                .map(|v| v != "false" && v != "0" )
                 .unwrap_or(true),
-            from_name: std::env::var("SMTP_FROM_NAME").unwrap_or_else(|_| "MyAI".to_string()),
-            from_address: std::env::var("SMTP_FROM_ADDRESS").unwrap_or_default(),
+            from_name: std::env::var("SMTP_FROM_NAME" ).unwrap_or_else(|_| "MyAI".to_string()),
+            from_address: std::env::var("SMTP_FROM_ADDRESS" ).unwrap_or_default(),
         }
     }
 
@@ -196,7 +196,7 @@ impl EmailProvider for SmtpEmailProvider {
     async fn send(&self, message: &EmailMessage) -> EmailResult<()> {
         // Validate configuration
         self.config.validate().map_err(|e| {
-            EmailError::Configuration(format!("Invalid SMTP config: {e}"))
+            EmailError::Configuration(format!("Invalid SMTP config: {e}" ))
         })?;
 
         // In a real implementation, this would:
@@ -204,7 +204,7 @@ impl EmailProvider for SmtpEmailProvider {
         // 2. Authenticate
         // 3. Send the email using lettre or similar crate
         tracing::info!(
-            "Sending email via SMTP to {} recipients: {}",
+            "Sending email via SMTP to {} recipients: {}" ,
             message.to.len(),
             message.subject
         );
@@ -212,7 +212,7 @@ impl EmailProvider for SmtpEmailProvider {
         // Simulate email sending
         // In production, use lettre crate:
         // let email = Message::builder()
-        //     .from(format!("{} <{}>", self.config.from_name, self.config.from_address).parse()?)
+        //     .from(format!("{} <{}>" , self.config.from_name, self.config.from_address).parse()?)
         //     .to(message.to[0].parse()?)
         //     .subject(&message.subject)
         //     .multipart(Multipart::alternative_plain_html(
@@ -239,7 +239,7 @@ impl EmailProvider for SmtpEmailProvider {
             match self.send(message).await {
                 Ok(()) => sent += 1,
                 Err(e) => {
-                    tracing::error!("Failed to send batch email: {e}");
+                    tracing::error!("Failed to send batch email: {e}" );
                 }
             }
         }
@@ -248,11 +248,11 @@ impl EmailProvider for SmtpEmailProvider {
 
     async fn verify_connection(&self) -> EmailResult<()> {
         self.config.validate().map_err(|e| {
-            EmailError::Configuration(format!("Invalid SMTP config: {e}"))
+            EmailError::Configuration(format!("Invalid SMTP config: {e}" ))
         })?;
 
         tracing::info!(
-            "Verifying SMTP connection to {}:{}",
+            "Verifying SMTP connection to {}:{}" ,
             self.config.host,
             self.config.port
         );
@@ -352,12 +352,12 @@ impl EmailTemplateEngine {
         variables: &std::collections::HashMap<String, String>,
     ) -> EmailResult<String> {
         let template = self.templates.get(template_name).ok_or_else(|| {
-            EmailError::Template(format!("Template not found: {template_name}"))
+            EmailError::Template(format!("Template not found: {template_name}" ))
         })?;
 
         let mut rendered = template.body.clone();
         for (key, value) in variables {
-            rendered = rendered.replace(&format!("{{{{{key}}}}}"), value);
+            rendered = rendered.replace(&format!("{{{{{key}}}}}" ), value);
         }
         Ok(rendered)
     }
@@ -384,7 +384,7 @@ impl EmailTemplate {
     pub fn new(name: String, subject: String, body: String) -> Self {
         // Extract variables from the template body
         let variables = body
-            .split("{{")
+            .split("{{" )
             .skip(1)
             .filter_map(|s| s.split('}').next())
             .map(String::from)
@@ -477,24 +477,24 @@ mod tests {
     #[test]
     fn test_smtp_config_from_env() {
         unsafe {
-            std::env::set_var("SMTP_HOST", "smtp.example.com");
-            std::env::set_var("SMTP_PORT", "465");
-            std::env::set_var("SMTP_USERNAME", "user@example.com");
-            std::env::set_var("SMTP_PASSWORD", "secret");
-            std::env::set_var("SMTP_FROM_ADDRESS", "noreply@example.com");
+            std::env::set_var("SMTP_HOST" , "smtp.example.com" );
+            std::env::set_var("SMTP_PORT" , "465" );
+            std::env::set_var("SMTP_USERNAME" , "user@example.com" );
+            std::env::set_var("SMTP_PASSWORD" , "secret" );
+            std::env::set_var("SMTP_FROM_ADDRESS" , "noreply@example.com" );
         }
 
         let config = SmtpConfig::from_env();
-        assert_eq!(config.host, "smtp.example.com");
+        assert_eq!(config.host, "smtp.example.com" );
         assert_eq!(config.port, 465);
-        assert_eq!(config.username, "user@example.com");
+        assert_eq!(config.username, "user@example.com" );
 
         unsafe {
-            std::env::remove_var("SMTP_HOST");
-            std::env::remove_var("SMTP_PORT");
-            std::env::remove_var("SMTP_USERNAME");
-            std::env::remove_var("SMTP_PASSWORD");
-            std::env::remove_var("SMTP_FROM_ADDRESS");
+            std::env::remove_var("SMTP_HOST" );
+            std::env::remove_var("SMTP_PORT" );
+            std::env::remove_var("SMTP_USERNAME" );
+            std::env::remove_var("SMTP_PASSWORD" );
+            std::env::remove_var("SMTP_FROM_ADDRESS" );
         }
     }
 
@@ -530,42 +530,42 @@ mod tests {
     fn test_email_template_engine() {
         let mut engine = EmailTemplateEngine::new();
         let template = EmailTemplate::welcome();
-        engine.register_template("welcome", template);
+        engine.register_template("welcome" , template);
 
         let mut vars = std::collections::HashMap::new();
         vars.insert("tenant_name".to_string(), "Acme Corp".to_string());
         vars.insert("admin_username".to_string(), "admin".to_string());
 
-        let rendered = engine.render("welcome", &vars).expect("template rendering should not fail");
-        assert!(rendered.contains("Acme Corp"));
-        assert!(rendered.contains("admin"));
+        let rendered = engine.render("welcome" , &vars).expect("template rendering should not fail" );
+        assert!(rendered.contains("Acme Corp" ));
+        assert!(rendered.contains("admin" ));
     }
 
     #[test]
     fn test_welcome_template() {
         let template = EmailTemplate::welcome();
-        assert_eq!(template.name, "welcome");
-        assert!(template.body.contains("{{tenant_name}}"));
+        assert_eq!(template.name, "welcome" );
+        assert!(template.body.contains("{{tenant_name}}" ));
     }
 
     #[test]
     fn test_farewell_template() {
         let template = EmailTemplate::farewell();
-        assert_eq!(template.name, "farewell");
-        assert!(template.body.contains("{{retain_days}}"));
+        assert_eq!(template.name, "farewell" );
+        assert!(template.body.contains("{{retain_days}}" ));
     }
 
     #[test]
     fn test_password_reset_template() {
         let template = EmailTemplate::password_reset();
-        assert_eq!(template.name, "password_reset");
-        assert!(template.body.contains("{{reset_link}}"));
+        assert_eq!(template.name, "password_reset" );
+        assert!(template.body.contains("{{reset_link}}" ));
     }
 
     #[test]
     fn test_mock_email_provider() {
         let provider = MockEmailProvider::new();
-        assert_eq!(provider.provider_name(), "mock");
+        assert_eq!(provider.provider_name(), "mock" );
         assert_eq!(provider.sent_count(), 0);
     }
 }

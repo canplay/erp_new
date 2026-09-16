@@ -13,13 +13,13 @@ use thiserror::Error;
 /// Notification preference errors
 #[derive(Error, Debug)]
 pub enum PreferenceError {
-    #[error("Database error: {0}")]
+    #[error("Database error: {0}" )]
     Database(#[from] sqlx::Error),
 
-    #[error("Invalid preference: {0}")]
+    #[error("Invalid preference: {0}" )]
     Invalid(String),
 
-    #[error("Preference not found for user: {0}")]
+    #[error("Preference not found for user: {0}" )]
     NotFound(i64),
 }
 
@@ -43,10 +43,10 @@ pub enum NotificationChannel {
 impl std::fmt::Display for NotificationChannel {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Email => write!(f, "email"),
-            Self::Sms => write!(f, "sms"),
-            Self::Push => write!(f, "push"),
-            Self::InApp => write!(f, "in_app"),
+            Self::Email => write!(f, "email" ),
+            Self::Sms => write!(f, "sms" ),
+            Self::Push => write!(f, "push" ),
+            Self::InApp => write!(f, "in_app" ),
         }
     }
 }
@@ -60,7 +60,7 @@ impl std::str::FromStr for NotificationChannel {
             "sms" => Ok(Self::Sms),
             "push" => Ok(Self::Push),
             "in_app" | "inapp" => Ok(Self::InApp),
-            _ => Err(format!("Unknown notification channel: {s}")),
+            _ => Err(format!("Unknown notification channel: {s}" )),
         }
     }
 }
@@ -86,12 +86,12 @@ pub enum NotificationType {
 impl std::fmt::Display for NotificationType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::System => write!(f, "system"),
-            Self::Workflow => write!(f, "workflow"),
-            Self::Security => write!(f, "security"),
-            Self::Marketing => write!(f, "marketing"),
-            Self::Social => write!(f, "social"),
-            Self::Billing => write!(f, "billing"),
+            Self::System => write!(f, "system" ),
+            Self::Workflow => write!(f, "workflow" ),
+            Self::Security => write!(f, "security" ),
+            Self::Marketing => write!(f, "marketing" ),
+            Self::Social => write!(f, "social" ),
+            Self::Billing => write!(f, "billing" ),
         }
     }
 }
@@ -107,7 +107,7 @@ impl std::str::FromStr for NotificationType {
             "marketing" => Ok(Self::Marketing),
             "social" => Ok(Self::Social),
             "billing" => Ok(Self::Billing),
-            _ => Err(format!("Unknown notification type: {s}")),
+            _ => Err(format!("Unknown notification type: {s}" )),
         }
     }
 }
@@ -121,7 +121,7 @@ pub struct QuietHours {
     pub start_time: NaiveTime,
     /// End time (local time)
     pub end_time: NaiveTime,
-    /// Timezone (e.g., "Asia/Shanghai")
+    /// Timezone (e.g., "Asia/Shanghai" )
     pub timezone: String,
     /// Whether to allow urgent notifications during quiet hours
     pub allow_urgent: bool,
@@ -485,12 +485,12 @@ impl NotificationPreferencesRepository {
 
     /// Delete all preferences for a user
     pub async fn delete_preferences(&self, user_id: i64) -> PreferenceResult<bool> {
-        let result = sqlx::query("DELETE FROM notification_preferences WHERE user_id = $1")
+        let result = sqlx::query("DELETE FROM notification_preferences WHERE user_id = $1" )
             .bind(user_id)
             .execute(&self.pool)
             .await?;
 
-        sqlx::query("DELETE FROM notification_type_preferences WHERE user_id = $1")
+        sqlx::query("DELETE FROM notification_type_preferences WHERE user_id = $1" )
             .bind(user_id)
             .execute(&self.pool)
             .await?;
@@ -530,33 +530,33 @@ mod tests {
 
     #[test]
     fn test_notification_channel_display() {
-        assert_eq!(NotificationChannel::Email.to_string(), "email");
-        assert_eq!(NotificationChannel::Sms.to_string(), "sms");
-        assert_eq!(NotificationChannel::Push.to_string(), "push");
-        assert_eq!(NotificationChannel::InApp.to_string(), "in_app");
+        assert_eq!(NotificationChannel::Email.to_string(), "email" );
+        assert_eq!(NotificationChannel::Sms.to_string(), "sms" );
+        assert_eq!(NotificationChannel::Push.to_string(), "push" );
+        assert_eq!(NotificationChannel::InApp.to_string(), "in_app" );
     }
 
     #[test]
     fn test_notification_channel_from_str() {
-        assert_eq!("email".parse::<NotificationChannel>().expect("test assertion"), NotificationChannel::Email);
-        assert_eq!("sms".parse::<NotificationChannel>().expect("test assertion"), NotificationChannel::Sms);
-        assert_eq!("push".parse::<NotificationChannel>().expect("test assertion"), NotificationChannel::Push);
-        assert_eq!("in_app".parse::<NotificationChannel>().expect("test assertion"), NotificationChannel::InApp);
+        assert_eq!("email".parse::<NotificationChannel>().expect("test assertion" ), NotificationChannel::Email);
+        assert_eq!("sms".parse::<NotificationChannel>().expect("test assertion" ), NotificationChannel::Sms);
+        assert_eq!("push".parse::<NotificationChannel>().expect("test assertion" ), NotificationChannel::Push);
+        assert_eq!("in_app".parse::<NotificationChannel>().expect("test assertion" ), NotificationChannel::InApp);
     }
 
     #[test]
     fn test_notification_type_display() {
-        assert_eq!(NotificationType::System.to_string(), "system");
-        assert_eq!(NotificationType::Workflow.to_string(), "workflow");
-        assert_eq!(NotificationType::Security.to_string(), "security");
+        assert_eq!(NotificationType::System.to_string(), "system" );
+        assert_eq!(NotificationType::Workflow.to_string(), "workflow" );
+        assert_eq!(NotificationType::Security.to_string(), "security" );
     }
 
     #[test]
     fn test_quiet_hours_default() {
         let qh = QuietHours::default();
         assert!(!qh.enabled);
-        assert_eq!(qh.start_time, NaiveTime::from_hms_opt(22, 0, 0).expect("test assertion"));
-        assert_eq!(qh.end_time, NaiveTime::from_hms_opt(8, 0, 0).expect("test assertion"));
+        assert_eq!(qh.start_time, NaiveTime::from_hms_opt(22, 0, 0).expect("test assertion" ));
+        assert_eq!(qh.end_time, NaiveTime::from_hms_opt(8, 0, 0).expect("test assertion" ));
     }
 
     #[test]
@@ -565,17 +565,17 @@ mod tests {
         qh.enabled = true;
 
         // 23:00 should be quiet time (22:00 - 08:00)
-        assert!(qh.is_quiet_time(NaiveTime::from_hms_opt(23, 0, 0).expect("test assertion")));
+        assert!(qh.is_quiet_time(NaiveTime::from_hms_opt(23, 0, 0).expect("test assertion" )));
 
         // 03:00 should be quiet time
-        assert!(qh.is_quiet_time(NaiveTime::from_hms_opt(3, 0, 0).expect("test assertion")));
+        assert!(qh.is_quiet_time(NaiveTime::from_hms_opt(3, 0, 0).expect("test assertion" )));
 
         // 12:00 should NOT be quiet time
-        assert!(!qh.is_quiet_time(NaiveTime::from_hms_opt(12, 0, 0).expect("test assertion")));
+        assert!(!qh.is_quiet_time(NaiveTime::from_hms_opt(12, 0, 0).expect("test assertion" )));
 
         // When disabled, no time is quiet
         qh.enabled = false;
-        assert!(!qh.is_quiet_time(NaiveTime::from_hms_opt(23, 0, 0).expect("test assertion")));
+        assert!(!qh.is_quiet_time(NaiveTime::from_hms_opt(23, 0, 0).expect("test assertion" )));
     }
 
     #[test]

@@ -3,87 +3,87 @@
 //! 所有微服务的 protobuf 定义
 
 pub mod auth {
-    tonic::include_proto!("auth");
+    tonic::include_proto!("auth" );
 }
 
 pub mod user {
-    tonic::include_proto!("user");
+    tonic::include_proto!("user" );
 }
 
 pub mod cms {
-    tonic::include_proto!("cms");
+    tonic::include_proto!("cms" );
 }
 
 pub mod message {
-    tonic::include_proto!("message");
+    tonic::include_proto!("message" );
 }
 
 pub mod file {
-    tonic::include_proto!("file");
+    tonic::include_proto!("file" );
 }
 
 pub mod feedback {
-    tonic::include_proto!("feedback");
+    tonic::include_proto!("feedback" );
 }
 
 pub mod tenant {
-    tonic::include_proto!("tenant");
+    tonic::include_proto!("tenant" );
 }
 
 pub mod workflow {
-    tonic::include_proto!("workflow");
+    tonic::include_proto!("workflow" );
 }
 
 pub mod audit {
-    tonic::include_proto!("audit");
+    tonic::include_proto!("audit" );
 }
 
 pub mod api_key {
-    tonic::include_proto!("api_key");
+    tonic::include_proto!("api_key" );
 }
 
 pub mod clean {
-    tonic::include_proto!("grpc_proto.clean");
+    tonic::include_proto!("grpc_proto.clean" );
 }
 
 pub mod browser {
-    tonic::include_proto!("browser");
+    tonic::include_proto!("browser" );
 }
 
 pub mod ctp {
-    tonic::include_proto!("ctp");
+    tonic::include_proto!("ctp" );
 }
 
 pub mod lpr {
-    tonic::include_proto!("lpr");
+    tonic::include_proto!("lpr" );
 }
 
 pub mod tow {
-    tonic::include_proto!("tow");
+    tonic::include_proto!("tow" );
 }
 
 pub mod socialops {
-    tonic::include_proto!("socialops");
+    tonic::include_proto!("socialops" );
 }
 
 pub mod hik {
-    tonic::include_proto!("hik");
+    tonic::include_proto!("hik" );
 }
 
 pub mod xlt {
-    tonic::include_proto!("xlt");
+    tonic::include_proto!("xlt" );
 }
 
 pub mod ebike {
-    tonic::include_proto!("ebike");
+    tonic::include_proto!("ebike" );
 }
 
 pub mod pay {
-    tonic::include_proto!("pay");
+    tonic::include_proto!("pay" );
 }
 
 pub mod billing {
-    tonic::include_proto!("erp.billing.v1");
+    tonic::include_proto!("erp.billing.v1" );
 }
 
 #[cfg(test)]

@@ -27,7 +27,7 @@
 //! #[tokio::main]
 //! async fn main() -> Result<(), Box<dyn std::error::Error>> {
 //!     let config = ServiceConfig {
-//!         service_name: "my-service",
+//!         service_name: "my-service" ,
 //!         http_port: 8080,
 //!         grpc_port: 9080,
 //!         grpc_addr: "0.0.0.0:9080".to_string(),
@@ -101,26 +101,26 @@ impl ServiceConfig {
         let http_port = Self::get_http_port_from_env(default_http_port);
         let grpc_port = Self::get_grpc_port_from_env(default_grpc_port);
 
-        let http_host = if std::env::var("INTERNAL_ONLY")
+        let http_host = if std::env::var("INTERNAL_ONLY" )
             .unwrap_or_default()
             .to_lowercase()
             == "true"
         {
-            tracing::info!("服务 {} HTTP 配置为仅内网访问，绑定 127.0.0.1", service_name);
+            tracing::info!("服务 {} HTTP 配置为仅内网访问，绑定 127.0.0.1" , service_name);
             "127.0.0.1"
         } else {
             "0.0.0.0"
         };
 
-        let grpc_host = if std::env::var("PUBLIC_GRPC")
+        let grpc_host = if std::env::var("PUBLIC_GRPC" )
             .unwrap_or_default()
             .to_lowercase()
             == "true"
         {
-            tracing::info!("服务 {} gRPC 配置为公网访问，绑定 0.0.0.0", service_name);
+            tracing::info!("服务 {} gRPC 配置为公网访问，绑定 0.0.0.0" , service_name);
             "0.0.0.0"
         } else {
-            tracing::info!("服务 {} gRPC 配置为仅内网访问，绑定 127.0.0.1", service_name);
+            tracing::info!("服务 {} gRPC 配置为仅内网访问，绑定 127.0.0.1" , service_name);
             "127.0.0.1"
         };
 
@@ -128,14 +128,14 @@ impl ServiceConfig {
             service_name,
             http_port,
             grpc_port,
-            grpc_addr: format!("{}:{}", grpc_host, grpc_port),
-            http_addr: format!("{}:{}", http_host, http_port),
+            grpc_addr: format!("{}:{}" , grpc_host, grpc_port),
+            http_addr: format!("{}:{}" , http_host, http_port),
         }
     }
 
     /// 从环境变量获取 HTTP 端口
     fn get_http_port_from_env(default_port: u16) -> u16 {
-        std::env::var("HTTP_PORT")
+        std::env::var("HTTP_PORT" )
             .unwrap_or_else(|_| default_port.to_string())
             .parse()
             .unwrap_or(default_port)
@@ -143,7 +143,7 @@ impl ServiceConfig {
 
     /// 从环境变量获取 gRPC 端口
     fn get_grpc_port_from_env(default_port: u16) -> u16 {
-        std::env::var("GRPC_PORT")
+        std::env::var("GRPC_PORT" )
             .unwrap_or_else(|_| default_port.to_string())
             .parse()
             .unwrap_or(default_port)
@@ -151,7 +151,7 @@ impl ServiceConfig {
 
     /// 解析 gRPC 地址为 SocketAddr
     pub fn parse_addr(&self) -> SocketAddr {
-        self.grpc_addr.parse().expect("invalid grpc_addr in ServiceConfig")
+        self.grpc_addr.parse().expect("invalid grpc_addr in ServiceConfig" )
     }
 }
 
@@ -220,9 +220,9 @@ impl ServiceBootstrap {
         let http_addr = self.config.http_addr.clone();
         let service_name = self.config.service_name;
 
-        tracing::info!("{} 启动中", service_name);
-        tracing::info!("  - gRPC 监听: {}", grpc_addr);
-        tracing::info!("  - HTTP 监听: {}", http_addr);
+        tracing::info!("{} 启动中" , service_name);
+        tracing::info!("  - gRPC 监听: {}" , grpc_addr);
+        tracing::info!("  - HTTP 监听: {}" , http_addr);
 
         // 创建 HTTP 路由（默认只包含健康检查）
         let http_router = Self::default_http_router();
@@ -243,17 +243,17 @@ impl ServiceBootstrap {
         };
 
         // 同时启动 HTTP 和 gRPC 服务器
-        tracing::info!("{} 已启动", service_name);
+        tracing::info!("{} 已启动" , service_name);
         tokio::select! {
             _ = http_server => {
-                tracing::info!("HTTP 服务器已关闭");
+                tracing::info!("HTTP 服务器已关闭" );
             }
             _ = grpc_handle => {
-                tracing::info!("gRPC 服务器已关闭");
+                tracing::info!("gRPC 服务器已关闭" );
             }
         }
 
-        tracing::info!("{} 已关闭", service_name);
+        tracing::info!("{} 已关闭" , service_name);
         Ok(())
     }
 
@@ -272,7 +272,7 @@ impl ServiceBootstrap {
         F: FnOnce(SocketAddr) -> std::pin::Pin<Box<tokio::task::JoinHandle<()>>> + Send + 'static,
     {
         let config = self.config.clone();
-        tracing::info!("{} 启动中", config.service_name);
+        tracing::info!("{} 启动中" , config.service_name);
 
         // 创建 HTTP 路由（默认只包含健康检查）
         let http_router = Self::default_http_router();
@@ -293,11 +293,11 @@ impl ServiceBootstrap {
         // 等待 HTTP 服务器关闭（gRPC 服务器在后台运行）
         tokio::select! {
             _ = http_server => {
-                tracing::info!("HTTP 服务器已关闭");
+                tracing::info!("HTTP 服务器已关闭" );
             }
         }
 
-        tracing::info!("{} 已关闭", config.service_name);
+        tracing::info!("{} 已关闭" , config.service_name);
         Ok(())
     }
 
@@ -317,9 +317,9 @@ impl ServiceBootstrap {
         let grpc_addr = self.config.grpc_addr.clone();
         let http_addr = self.config.http_addr.clone();
 
-        tracing::info!("{} 启动中", service_name);
-        tracing::info!("  - gRPC 监听: {}", grpc_addr);
-        tracing::info!("  - HTTP 监听: {}", http_addr);
+        tracing::info!("{} 启动中" , service_name);
+        tracing::info!("  - gRPC 监听: {}" , grpc_addr);
+        tracing::info!("  - HTTP 监听: {}" , http_addr);
 
         // 创建数据库连接池
         let pool = db_pool_factory()?;
@@ -346,28 +346,28 @@ impl ServiceBootstrap {
         };
 
         // 同时启动 HTTP 和 gRPC 服务器
-        tracing::info!("{} 已启动", service_name);
+        tracing::info!("{} 已启动" , service_name);
         tokio::select! {
             _ = http_server => {
-                tracing::info!("HTTP 服务器已关闭");
+                tracing::info!("HTTP 服务器已关闭" );
             }
             _ = grpc_handle => {
-                tracing::info!("gRPC 服务器已关闭");
+                tracing::info!("gRPC 服务器已关闭" );
             }
         }
 
-        tracing::info!("{} 已关闭", service_name);
+        tracing::info!("{} 已关闭" , service_name);
         Ok(())
     }
 
     /// 默认 HTTP 路由（仅健康检查）
     fn default_http_router() -> Router {
         Router::new().route(
-            "/health",
+            "/health" ,
             axum::routing::get(|| async {
                 axum::Json(serde_json::json!({
-                    "status": "ok",
-                    "service": "myai",
+                    "status": "ok" ,
+                    "service": "myai" ,
                     "timestamp": chrono::Utc::now().to_rfc3339()
                 }))
             }),
@@ -381,11 +381,11 @@ impl ServiceBootstrap {
         tokio::spawn(async move {
             match tokio::signal::ctrl_c().await {
                 Ok(()) => {
-                    tracing::info!("收到 Ctrl+C 信号，正在关闭服务...");
+                    tracing::info!("收到 Ctrl+C 信号，正在关闭服务..." );
                     let _ = shutdown_tx.send(());
                 }
                 Err(e) => {
-                    tracing::error!("监听信号失败: {}", e);
+                    tracing::error!("监听信号失败: {}" , e);
                 }
             }
         });

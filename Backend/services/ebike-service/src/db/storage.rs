@@ -32,7 +32,7 @@ impl StorageRepository {
         self.add_history(info).await?;
 
         let rows: Vec<String> = sqlx::query_scalar!(
-            "SELECT code FROM public.storage WHERE code = $1",
+            "SELECT code FROM public.storage WHERE code = $1" ,
             &info.code,
         )
         .fetch_all(&self.pool)
@@ -91,7 +91,7 @@ impl StorageRepository {
 
     pub async fn del(&self, code: &str) -> Result<bool, Error> {
         sqlx::query!(
-            "UPDATE public.storage SET update_date = $1, delete = $2 WHERE code = $3",
+            "UPDATE public.storage SET update_date = $1, delete = $2 WHERE code = $3" ,
             Local::now().naive_local(),
             true,
             code,
@@ -110,12 +110,12 @@ impl StorageRepository {
         let rows = sqlx::query_as!(
             StorageInfo,
             r#"SELECT code,
-                      COALESCE(status, 0) AS "status!",
-                      COALESCE(provide, '') AS "provide!",
+                      COALESCE(status, 0) AS "status!" ,
+                      COALESCE(provide, '') AS "provide!" ,
                       gps,
-                      COALESCE(type, 0) AS "type!",
-                      COALESCE(sum, 0) AS "sum!",
-                      COALESCE(cur, 0) AS "cur!",
+                      COALESCE(type, 0) AS "type!" ,
+                      COALESCE(sum, 0) AS "sum!" ,
+                      COALESCE(cur, 0) AS "cur!" ,
                       alert, remark, points, delete, create_date, update_date,
                       COALESCE(gps_type, 0) AS "gps_type!"
                FROM public.storage
@@ -136,8 +136,8 @@ impl StorageRepository {
     pub async fn history(&self, code: &str) -> Result<Vec<StorageInfo>, Error> {
         let year = Local::now().year();
         let month = Local::now().month();
-        let table_name = safe_table_name("storage_history", year, month)
-            .map_err(|e| Error::Protocol(format!("Invalid table name: {e}").into()))?;
+        let table_name = safe_table_name("storage_history" , year, month)
+            .map_err(|e| Error::Protocol(format!("Invalid table name: {e}" ).into()))?;
         let query = format!(
             "SELECT code, status, provide, gps, type, sum, cur, alert, remark, points, delete, \
              create_date, update_date, gps_type FROM public.{table_name} \
@@ -154,8 +154,8 @@ impl StorageRepository {
     async fn add_history(&self, info: &StorageInfo) -> Result<bool, Error> {
         let year = Local::now().year();
         let month = Local::now().month();
-        let table_name = safe_table_name("storage_history", year, month)
-            .map_err(|e| Error::Protocol(format!("Invalid table name: {e}").into()))?;
+        let table_name = safe_table_name("storage_history" , year, month)
+            .map_err(|e| Error::Protocol(format!("Invalid table name: {e}" ).into()))?;
         // FIX [SQL-INJ-002]: 表名已通过 safe_table_name 白名单校验（格式：[a-zA-Z0-9_]+_YYYY_MM）
         // O4 修复: 确保动态表存在（月初首次写入必炸）
         let create_sql = format!(
@@ -206,7 +206,7 @@ impl StorageRepository {
 /// 为 storage 表添加复合索引：provide + status（用于条件查询）
 pub async fn ensure_storage_indexes(pool: &PgPool) -> Result<(), Error> {
     let _ = sqlx::query(
-        "CREATE INDEX IF NOT EXISTS idx_storage_provide_status ON public.storage(provide, status)",
+        "CREATE INDEX IF NOT EXISTS idx_storage_provide_status ON public.storage(provide, status)" ,
     )
     .execute(pool)
     .await;

@@ -427,21 +427,21 @@ impl MqttConfig {
     #[must_use]
     pub fn from_env() -> Self {
         Self {
-            host: std::env::var("XLT_MQTT_HOST")
+            host: std::env::var("XLT_MQTT_HOST" )
                 .unwrap_or_else(|_| "localhost".to_string()),
-            port: std::env::var("XLT_MQTT_PORT")
+            port: std::env::var("XLT_MQTT_PORT" )
                 .unwrap_or_else(|_| "1883".to_string())
                 .parse()
                 .unwrap_or(1883),
-            http_port: std::env::var("XLT_MQTT_HTTP_PORT")
+            http_port: std::env::var("XLT_MQTT_HTTP_PORT" )
                 .unwrap_or_else(|_| "18083".to_string())
                 .parse()
                 .unwrap_or(18083),
-            client_id: std::env::var("XLT_MQTT_CLIENT_ID")
+            client_id: std::env::var("XLT_MQTT_CLIENT_ID" )
                 .unwrap_or_else(|_| "xlt-service".to_string()),
-            username: std::env::var("XLT_MQTT_USERNAME")
+            username: std::env::var("XLT_MQTT_USERNAME" )
                 .unwrap_or_else(|_| "admin".to_string()),
-            password: std::env::var("XLT_MQTT_PASSWORD")
+            password: std::env::var("XLT_MQTT_PASSWORD" )
                 .unwrap_or_else(|_| "public".to_string()),
         }
     }
@@ -463,7 +463,7 @@ impl XltConfig {
     #[must_use]
     pub fn from_env() -> Self {
         Self {
-            redis_url: std::env::var("REDIS_URL")
+            redis_url: std::env::var("REDIS_URL" )
                 .unwrap_or_else(|_| "redis://127.0.0.1:6379".to_string()),
         }
     }

@@ -34,7 +34,7 @@ impl From<TenantId> for i64 {
 
 impl std::fmt::Display for TenantId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "TenantId({})", self.0)
+        write!(f, "TenantId({})" , self.0)
     }
 }
 
@@ -84,7 +84,7 @@ mod tests {
     #[test]
     fn test_tenant_id_display() {
         let id = TenantId::new(42);
-        assert_eq!(format!("{}", id), "TenantId(42)");
+        assert_eq!(format!("{}" , id), "TenantId(42)" );
     }
 
     #[test]
@@ -100,7 +100,7 @@ mod tests {
     fn test_tenant_id_serialization() {
         let id = TenantId::new(123);
         let json = serde_json::to_string(&id).unwrap();
-        assert_eq!(json, "123");
+        assert_eq!(json, "123" );
 
         let deserialized: TenantId = serde_json::from_str(&json).unwrap();
         assert_eq!(deserialized, id);

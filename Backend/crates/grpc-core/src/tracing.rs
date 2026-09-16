@@ -21,7 +21,7 @@
 //! ## 客户端使用
 //!
 //! ```rust,ignore
-//! let channel = grpc_core::tracing::build_traced_channel("http://localhost:9091", 30).await?;
+//! let channel = grpc_core::tracing::build_traced_channel("http://localhost:9091" , 30).await?;
 //! let client = MyServiceClient::new(channel);
 //! ```
 
@@ -145,10 +145,10 @@ where
 
         Box::pin(async move {
             let span = tracing::info_span!(
-                "grpc.server",
+                "grpc.server" ,
                 rpc.service = %service_name,
                 rpc.method = %method_name,
-                rpc.system = "grpc",
+                rpc.system = "grpc" ,
                 rpc.grpc.status_code = tracing::field::Empty,
             );
 
@@ -161,10 +161,10 @@ where
             match &result {
                 Ok(resp) => {
                     let status_code = i64::from(resp.status().as_u16());
-                    span.record("rpc.grpc.status_code", status_code);
+                    span.record("rpc.grpc.status_code" , status_code);
                 }
                 Err(_) => {
-                    span.record("rpc.grpc.status_code", 2i64);
+                    span.record("rpc.grpc.status_code" , 2i64);
                 }
             }
 
@@ -232,10 +232,10 @@ where
 
         Box::pin(async move {
             let span = tracing::info_span!(
-                "grpc.client",
+                "grpc.client" ,
                 rpc.service = %service_name,
                 rpc.method = %method_name,
-                rpc.system = "grpc",
+                rpc.system = "grpc" ,
                 rpc.grpc.status_code = tracing::field::Empty,
             );
 
@@ -244,10 +244,10 @@ where
             match &result {
                 Ok(resp) => {
                     let status_code = i64::from(resp.status().as_u16());
-                    span.record("rpc.grpc.status_code", status_code);
+                    span.record("rpc.grpc.status_code" , status_code);
                 }
                 Err(_) => {
-                    span.record("rpc.grpc.status_code", 2i64);
+                    span.record("rpc.grpc.status_code" , 2i64);
                 }
             }
 
@@ -306,20 +306,20 @@ mod tests {
     #[test]
     fn test_extract_service() {
         assert_eq!(
-            extract_service("/auth.AuthService/Login"),
+            extract_service("/auth.AuthService/Login" ),
             "auth.AuthService"
         );
         assert_eq!(
-            extract_service("/user.UserService/GetUser"),
+            extract_service("/user.UserService/GetUser" ),
             "user.UserService"
         );
-        assert_eq!(extract_service("no_slash"), "no_slash");
+        assert_eq!(extract_service("no_slash" ), "no_slash" );
     }
 
     #[test]
     fn test_extract_method() {
-        assert_eq!(extract_method("/auth.AuthService/Login"), "Login");
-        assert_eq!(extract_method("/user.UserService/GetUser"), "GetUser");
-        assert_eq!(extract_method("no_slash"), "no_slash");
+        assert_eq!(extract_method("/auth.AuthService/Login" ), "Login" );
+        assert_eq!(extract_method("/user.UserService/GetUser" ), "GetUser" );
+        assert_eq!(extract_method("no_slash" ), "no_slash" );
     }
 }

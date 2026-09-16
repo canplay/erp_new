@@ -20,11 +20,11 @@ use common::ApiResponse;
 /// 从 Authorization header 获取 JWT token，解析 `tenant_id`
 fn extract_tenant_id_from_headers(headers: &HeaderMap) -> Option<i64> {
     // 获取 Authorization header
-    let auth_header = headers.get("authorization")?;
+    let auth_header = headers.get("authorization" )?;
     let auth_str = auth_header.to_str().ok()?;
 
     // 提取 Bearer token
-    let token = auth_str.strip_prefix("Bearer ")?;
+    let token = auth_str.strip_prefix("Bearer " )?;
 
     // 解析 JWT payload（base64url 编码）
     let parts: Vec<&str> = token.split('.').collect();
@@ -39,13 +39,13 @@ fn extract_tenant_id_from_headers(headers: &HeaderMap) -> Option<i64> {
 
     // 解析 JSON 查找 tenant_id
     let value: serde_json::Value = serde_json::from_str(&json_str).ok()?;
-    value.get("tenant_id")?.as_i64()
+    value.get("tenant_id" )?.as_i64()
 }
 
 /// Base64 URL 解码（简化实现）
 fn decode_base64_url(input: &str) -> Result<Vec<u8>, ()> {
     // 处理 URL-safe base64
-    let input = input.replace('-', "+").replace('_', "/");
+    let input = input.replace('-', "+" ).replace('_', "/" );
     // 添加 padding
     let len = input.len();
     let padding = if len.is_multiple_of(4) {
@@ -53,7 +53,7 @@ fn decode_base64_url(input: &str) -> Result<Vec<u8>, ()> {
     } else {
         4 - len % 4
     };
-    let padded = format!("{}{}", input, "=".repeat(padding));
+    let padded = format!("{}{}" , input, "=".repeat(padding));
 
     // 使用 Engine API 解码（替代已弃用的 decode 函数）
     use base64::Engine;
@@ -177,10 +177,10 @@ pub async fn get_current_tenant(State(state): State<AppState>) -> Response {
             }))),
         )
             .into_response(),
-        Ok(None) => ApiResponse::<()>::not_found_response("租户不存在"),
+        Ok(None) => ApiResponse::<()>::not_found_response("租户不存在" ),
         Err(e) => {
-            tracing::error!("获取租户信息失败: {e}");
-            ApiResponse::<()>::error_response("获取租户信息失败")
+            tracing::error!("获取租户信息失败: {e}" );
+            ApiResponse::<()>::error_response("获取租户信息失败" )
         }
     }
 }
@@ -203,11 +203,11 @@ pub async fn update_tenant(
     };
 
     match state.repository.update(id, params).await {
-        Ok(true) => ApiResponse::<()>::ok_response("租户更新成功"),
-        Ok(false) => ApiResponse::<()>::not_found_response("租户不存在"),
+        Ok(true) => ApiResponse::<()>::ok_response("租户更新成功" ),
+        Ok(false) => ApiResponse::<()>::not_found_response("租户不存在" ),
         Err(e) => {
-            tracing::error!("更新租户失败: {e}");
-            ApiResponse::<()>::error_response("更新租户失败")
+            tracing::error!("更新租户失败: {e}" );
+            ApiResponse::<()>::error_response("更新租户失败" )
         }
     }
 }
@@ -243,8 +243,8 @@ pub async fn list_tenant_users(
         )
             .into_response(),
         Err(e) => {
-            tracing::error!("获取租户用户列表失败: {e}");
-            ApiResponse::<()>::error_response("获取用户列表失败")
+            tracing::error!("获取租户用户列表失败: {e}" );
+            ApiResponse::<()>::error_response("获取用户列表失败" )
         }
     }
 }
@@ -268,8 +268,8 @@ pub async fn add_tenant_user(
     {
         Ok(()) => (StatusCode::CREATED, Json(ApiResponse::<()>::success(()))).into_response(),
         Err(e) => {
-            tracing::error!("添加租户用户失败: {e}");
-            ApiResponse::<()>::error_response("添加用户失败")
+            tracing::error!("添加租户用户失败: {e}" );
+            ApiResponse::<()>::error_response("添加用户失败" )
         }
     }
 }
@@ -291,11 +291,11 @@ pub async fn update_tenant_user(
         )
         .await
     {
-        Ok(true) => ApiResponse::<()>::ok_response("用户更新成功"),
-        Ok(false) => ApiResponse::<()>::not_found_response("用户不存在"),
+        Ok(true) => ApiResponse::<()>::ok_response("用户更新成功" ),
+        Ok(false) => ApiResponse::<()>::not_found_response("用户不存在" ),
         Err(e) => {
-            tracing::error!("更新租户用户失败: {e}");
-            ApiResponse::<()>::error_response("更新用户失败")
+            tracing::error!("更新租户用户失败: {e}" );
+            ApiResponse::<()>::error_response("更新用户失败" )
         }
     }
 }
@@ -306,11 +306,11 @@ pub async fn remove_tenant_user(
     Path((tenant_id, user_id)): Path<(i64, i64)>,
 ) -> Response {
     match state.repository.remove_user(tenant_id, user_id).await {
-        Ok(true) => ApiResponse::<()>::ok_response("用户移除成功"),
-        Ok(false) => ApiResponse::<()>::not_found_response("用户不存在"),
+        Ok(true) => ApiResponse::<()>::ok_response("用户移除成功" ),
+        Ok(false) => ApiResponse::<()>::not_found_response("用户不存在" ),
         Err(e) => {
-            tracing::error!("移除租户用户失败: {e}");
-            ApiResponse::<()>::error_response("移除用户失败")
+            tracing::error!("移除租户用户失败: {e}" );
+            ApiResponse::<()>::error_response("移除用户失败" )
         }
     }
 }
@@ -323,14 +323,14 @@ pub async fn switch_tenant(
     match state.repository.find_by_id(req.tenant_id).await {
         Ok(Some(tenant)) => {
             if tenant.status != 1 {
-                return ApiResponse::<()>::error_response("租户已禁用");
+                return ApiResponse::<()>::error_response("租户已禁用" );
             }
-            ApiResponse::<()>::ok_response("切换成功")
+            ApiResponse::<()>::ok_response("切换成功" )
         }
-        Ok(None) => ApiResponse::<()>::not_found_response("租户不存在"),
+        Ok(None) => ApiResponse::<()>::not_found_response("租户不存在" ),
         Err(e) => {
-            tracing::error!("切换租户失败: {e}");
-            ApiResponse::<()>::error_response("切换租户失败")
+            tracing::error!("切换租户失败: {e}" );
+            ApiResponse::<()>::error_response("切换租户失败" )
         }
     }
 }
@@ -342,40 +342,40 @@ pub async fn list_plans(State(_state): State<AppState>) -> Response {
         StatusCode::OK,
         Json(ApiResponse::success(vec![
             serde_json::json!({
-                "id": "free",
-                "name": "免费版",
+                "id": "free" ,
+                "name": "免费版" ,
                 "price": 0,
-                "interval": "month",
+                "interval": "month" ,
                 "max_users": 5,
                 "max_storage": 1024 * 1024 * 1024, // 1GB
-                "features": ["基础功能", "5用户"]
+                "features": ["基础功能" , "5用户" ]
             }),
             serde_json::json!({
-                "id": "basic",
-                "name": "基础版",
+                "id": "basic" ,
+                "name": "基础版" ,
                 "price": 99,
-                "interval": "month",
+                "interval": "month" ,
                 "max_users": 50,
                 "max_storage": 100 * 1024 * 1024 * 1024, // 100GB
-                "features": ["全部基础功能", "50用户", "技术支持"]
+                "features": ["全部基础功能" , "50用户" , "技术支持" ]
             }),
             serde_json::json!({
-                "id": "pro",
-                "name": "专业版",
+                "id": "pro" ,
+                "name": "专业版" ,
                 "price": 299,
-                "interval": "month",
+                "interval": "month" ,
                 "max_users": 200,
                 "max_storage": 500 * 1024 * 1024 * 1024, // 500GB
-                "features": ["全部专业功能", "200用户", "优先支持", "API访问"]
+                "features": ["全部专业功能" , "200用户" , "优先支持" , "API访问" ]
             }),
             serde_json::json!({
-                "id": "enterprise",
-                "name": "企业版",
+                "id": "enterprise" ,
+                "name": "企业版" ,
                 "price": 999,
-                "interval": "month",
+                "interval": "month" ,
                 "max_users": -1, // 无限制
                 "max_storage": -1, // 无限制
-                "features": ["全部企业功能", "无限制用户", "专属支持", "私有部署"]
+                "features": ["全部企业功能" , "无限制用户" , "专属支持" , "私有部署" ]
             }),
         ])),
     )
@@ -388,10 +388,10 @@ pub async fn get_current_plan(State(_state): State<AppState>) -> Response {
     (
         StatusCode::OK,
         Json(ApiResponse::success(serde_json::json!({
-            "plan_id": "basic",
-            "name": "基础版",
+            "plan_id": "basic" ,
+            "name": "基础版" ,
             "price": 99,
-            "interval": "month",
+            "interval": "month" ,
             "max_users": 50,
             "current_users": 10,
             "max_storage": 100 * 1024 * 1024 * 1024,
@@ -412,7 +412,7 @@ pub async fn upgrade_plan(
     let tenant_id = extract_tenant_id_from_headers(&headers).unwrap_or(1);
 
     tracing::info!(
-        "升级套餐请求: tenant_id={}, plan_id={}, interval={}",
+        "升级套餐请求: tenant_id={}, plan_id={}, interval={}" ,
         tenant_id,
         req.plan_id,
         req.interval
@@ -424,7 +424,7 @@ pub async fn upgrade_plan(
         "basic" => 99.0,
         "pro" => 299.0,
         "enterprise" => 999.0,
-        _ => return ApiResponse::<()>::error_response("无效的套餐ID"),
+        _ => return ApiResponse::<()>::error_response("无效的套餐ID" ),
     };
 
     // 计算续费时长（月）
@@ -432,14 +432,14 @@ pub async fn upgrade_plan(
         "month" => 1,
         "quarter" => 3,
         "year" => 12,
-        _ => return ApiResponse::<()>::error_response("无效的付费周期"),
+        _ => return ApiResponse::<()>::error_response("无效的付费周期" ),
     };
 
     let total_amount = (price as i64) * months;
 
     // 模拟支付成功（实际生产环境需要集成真实支付网关）
     tracing::info!(
-        "模拟支付完成: plan_id={}, amount={}",
+        "模拟支付完成: plan_id={}, amount={}" ,
         req.plan_id,
         total_amount
     );
@@ -482,8 +482,8 @@ pub async fn get_usage_stats(State(state): State<AppState>) -> Response {
         )
             .into_response(),
         Err(e) => {
-            tracing::error!("获取使用统计失败: {e}");
-            ApiResponse::<()>::error_response("获取使用统计失败")
+            tracing::error!("获取使用统计失败: {e}" );
+            ApiResponse::<()>::error_response("获取使用统计失败" )
         }
     }
 }
@@ -516,8 +516,8 @@ pub async fn get_audit_logs(
         )
             .into_response(),
         Err(e) => {
-            tracing::error!("获取审计日志失败: {e}");
-            ApiResponse::<()>::error_response("获取审计日志失败")
+            tracing::error!("获取审计日志失败: {e}" );
+            ApiResponse::<()>::error_response("获取审计日志失败" )
         }
     }
 }
@@ -529,36 +529,36 @@ pub fn create_tenant_router(state: std::sync::Arc<AppState>) -> Router {
     Router::new()
         // 租户信息
         .route(
-            "/api/tenant/current",
+            "/api/tenant/current" ,
             axum::routing::get(get_current_tenant),
         )
-        .route("/api/tenant/:id", axum::routing::put(update_tenant))
+        .route("/api/tenant/:id" , axum::routing::put(update_tenant))
         // 租户用户管理
-        .route("/api/tenant/users", axum::routing::get(list_tenant_users))
-        .route("/api/tenant/users", axum::routing::post(add_tenant_user))
+        .route("/api/tenant/users" , axum::routing::get(list_tenant_users))
+        .route("/api/tenant/users" , axum::routing::post(add_tenant_user))
         .route(
-            "/api/tenant/users/:user_id",
+            "/api/tenant/users/:user_id" ,
             axum::routing::put(update_tenant_user),
         )
         .route(
-            "/api/tenant/users/:user_id",
+            "/api/tenant/users/:user_id" ,
             axum::routing::delete(remove_tenant_user),
         )
         // 租户切换
-        .route("/api/tenant/switch", axum::routing::post(switch_tenant))
+        .route("/api/tenant/switch" , axum::routing::post(switch_tenant))
         // 套餐管理
-        .route("/api/tenant/plans", axum::routing::get(list_plans))
+        .route("/api/tenant/plans" , axum::routing::get(list_plans))
         .route(
-            "/api/tenant/plan/current",
+            "/api/tenant/plan/current" ,
             axum::routing::get(get_current_plan),
         )
         .route(
-            "/api/tenant/plan/upgrade",
+            "/api/tenant/plan/upgrade" ,
             axum::routing::post(upgrade_plan),
         )
         // 使用统计
-        .route("/api/tenant/usage", axum::routing::get(get_usage_stats))
+        .route("/api/tenant/usage" , axum::routing::get(get_usage_stats))
         // 审计日志
-        .route("/api/tenant/audit-logs", axum::routing::get(get_audit_logs))
+        .route("/api/tenant/audit-logs" , axum::routing::get(get_audit_logs))
         .with_state((*state).clone())
 }

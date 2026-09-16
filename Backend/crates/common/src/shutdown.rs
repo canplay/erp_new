@@ -18,7 +18,7 @@
 //!     tokio::select! {
 //!         _ = run_server() => {},
 //!         _ = shutdown_signal() => {
-//!             tracing::info!("收到关闭信号，开始优雅关闭...");
+//!             tracing::info!("收到关闭信号，开始优雅关闭..." );
 //!         }
 //!     }
 //! }
@@ -40,13 +40,13 @@ pub async fn shutdown_signal_internal(timeout_secs: u64) {
     let ctrl_c = async {
         signal::ctrl_c()
             .await
-            .expect("Failed to install CTRL+C handler");
+            .expect("Failed to install CTRL+C handler" );
     };
 
     #[cfg(unix)]
     let terminate = async {
         signal::unix::signal(signal::unix::SignalKind::terminate())
-            .expect("Failed to install SIGTERM handler")
+            .expect("Failed to install SIGTERM handler" )
             .recv()
             .await;
     };
@@ -57,15 +57,15 @@ pub async fn shutdown_signal_internal(timeout_secs: u64) {
     // 同时监听两种关闭信号
     tokio::select! {
         () = ctrl_c => {
-            tracing::info!("收到 Ctrl+C 信号");
+            tracing::info!("收到 Ctrl+C 信号" );
         },
         () = terminate => {
-            tracing::info!("收到 SIGTERM 信号");
+            tracing::info!("收到 SIGTERM 信号" );
         },
     }
 
     // 等待优雅关闭超时
-    tracing::info!("正在等待服务优雅关闭（最多 {timeout_secs} 秒）...");
+    tracing::info!("正在等待服务优雅关闭（最多 {timeout_secs} 秒）..." );
     timeout(
         Duration::from_secs(timeout_secs),
         tokio::time::sleep(Duration::from_secs(timeout_secs)),
@@ -73,7 +73,7 @@ pub async fn shutdown_signal_internal(timeout_secs: u64) {
     .await
     .ok();
 
-    tracing::info!("关闭完成");
+    tracing::info!("关闭完成" );
 }
 
 /// 默认的 30 秒超时关闭信号
@@ -100,19 +100,19 @@ pub async fn shutdown_signal() {
 /// ```rust,ignore
 /// use service_core::shutdown_with_name;
 ///
-/// let shutdown = shutdown_with_name("auth-service");
+/// let shutdown = shutdown_with_name("auth-service" );
 /// ```
 pub async fn shutdown_with_name(service_name: &str) {
     let ctrl_c = async {
         signal::ctrl_c()
             .await
-            .expect("Failed to install CTRL+C handler");
+            .expect("Failed to install CTRL+C handler" );
     };
 
     #[cfg(unix)]
     let terminate = async {
         signal::unix::signal(signal::unix::SignalKind::terminate())
-            .expect("Failed to install signal handler")
+            .expect("Failed to install signal handler" )
             .recv()
             .await;
     };
@@ -122,10 +122,10 @@ pub async fn shutdown_with_name(service_name: &str) {
 
     tokio::select! {
         () = ctrl_c => {
-            tracing::info!("[{service_name}] 收到 Ctrl+C 信号，正在关闭...");
+            tracing::info!("[{service_name}] 收到 Ctrl+C 信号，正在关闭..." );
         }
         () = terminate => {
-            tracing::info!("[{service_name}] 收到终止信号，正在关闭...");
+            tracing::info!("[{service_name}] 收到终止信号，正在关闭..." );
         }
     }
 }

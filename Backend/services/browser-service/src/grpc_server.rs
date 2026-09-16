@@ -18,7 +18,7 @@ pub async fn start_grpc_server(
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let state = GrpcAppState::new(pool);
 
-    tracing::info!("[BrowserService] gRPC listening on {}", addr);
+    tracing::info!("[BrowserService] gRPC listening on {}" , addr);
 
     Server::builder().layer(tonic::service::interceptor::InterceptorLayer::new(common::grpc_auth_interceptor))
         .add_service(BrowserServiceServer::new(state))

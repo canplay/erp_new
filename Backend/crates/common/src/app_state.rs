@@ -40,7 +40,7 @@ impl<T> AppState<T> {
     pub fn new(inner: T) -> Self {
         Self {
             inner,
-            version: env!("CARGO_PKG_VERSION").to_string(),
+            version: env!("CARGO_PKG_VERSION" ).to_string(),
         }
     }
 
@@ -76,7 +76,7 @@ where
     pub fn from_arc(inner: Arc<T>) -> Self {
         Self {
             inner: (*inner).clone(),
-            version: env!("CARGO_PKG_VERSION").to_string(),
+            version: env!("CARGO_PKG_VERSION" ).to_string(),
         }
     }
 }
@@ -87,7 +87,7 @@ impl AppState<()> {
     pub fn default_state() -> Self {
         Self {
             inner: (),
-            version: env!("CARGO_PKG_VERSION").to_string(),
+            version: env!("CARGO_PKG_VERSION" ).to_string(),
         }
     }
 }

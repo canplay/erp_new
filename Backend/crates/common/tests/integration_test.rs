@@ -78,12 +78,12 @@ mod error_tests {
     #[test]
     fn test_app_error_unauthorized() {
         let e = AppError::Unauthorized("test".into());
-        assert!(e.to_string().contains("认证失败"));
+        assert!(e.to_string().contains("认证失败" ));
     }
 
     #[test]
     fn test_app_error_not_found() {
         let e = AppError::NotFound("resource".into());
-        assert!(e.to_string().contains("resource"));
+        assert!(e.to_string().contains("resource" ));
     }
 }

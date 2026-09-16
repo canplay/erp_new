@@ -135,7 +135,7 @@ async fn get_account(
         .map_err(|e| error_response(StatusCode::INTERNAL_SERVER_ERROR, &e.to_string()))?;
     match account {
         Some(a) => Ok(json_success(serde_json::json!(a))),
-        None => Err(error_response(StatusCode::NOT_FOUND, "Account not found")),
+        None => Err(error_response(StatusCode::NOT_FOUND, "Account not found" )),
     }
 }
 
@@ -150,8 +150,8 @@ async fn update_account(
         .await
         .map_err(|e| error_response(StatusCode::INTERNAL_SERVER_ERROR, &e.to_string()))?;
     match account {
-        Some(_) => Ok(json_social_status("updated")),
-        None => Err(error_response(StatusCode::NOT_FOUND, "Account not found")),
+        Some(_) => Ok(json_social_status("updated" )),
+        None => Err(error_response(StatusCode::NOT_FOUND, "Account not found" )),
     }
 }
 
@@ -167,7 +167,7 @@ async fn delete_account(
     if deleted {
         Ok(json_ok())
     } else {
-        Err(error_response(StatusCode::NOT_FOUND, "Account not found"))
+        Err(error_response(StatusCode::NOT_FOUND, "Account not found" ))
     }
 }
 
@@ -198,7 +198,7 @@ async fn get_content(
         .map_err(|e| error_response(StatusCode::INTERNAL_SERVER_ERROR, &e.to_string()))?;
     match content {
         Some(c) => Ok(Json(c)),
-        None => Err(error_response(StatusCode::NOT_FOUND, "Content not found")),
+        None => Err(error_response(StatusCode::NOT_FOUND, "Content not found" )),
     }
 }
 
@@ -213,9 +213,9 @@ async fn update_content(
         .await
         .map_err(|e| error_response(StatusCode::INTERNAL_SERVER_ERROR, &e.to_string()))?;
     if updated {
-        Ok(json_social_status("updated"))
+        Ok(json_social_status("updated" ))
     } else {
-        Err(error_response(StatusCode::NOT_FOUND, "Content not found"))
+        Err(error_response(StatusCode::NOT_FOUND, "Content not found" ))
     }
 }
 
@@ -228,12 +228,12 @@ async fn create_content_manual(
         .create(&body.title, &body.body, &body.content_type, body.source_url.as_deref())
         .await
         .map_err(|e| error_response(StatusCode::INTERNAL_SERVER_ERROR, &e.to_string()))?;
-    let id = result["id"].as_str().unwrap_or_default();
+    let id = result["id" ].as_str().unwrap_or_default();
     Ok(json_social_created(id))
 }
 
 fn error_response(status: StatusCode, message: &str) -> (StatusCode, Json<Value>) {
-    (status, json_error(&format!("{}", message)))
+    (status, json_error(&format!("{}" , message)))
 }
 
 // ===== Crawl Handlers =====
@@ -272,10 +272,10 @@ async fn create_source(
 ) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
     let mut config = serde_json::json!({});
     if let Some(ref kw) = body.keyword {
-        config["keyword"] = serde_json::json!(kw);
+        config["keyword" ] = serde_json::json!(kw);
     }
     if let Some(ref url) = body.url {
-        config["url"] = serde_json::json!(url);
+        config["url" ] = serde_json::json!(url);
     }
     let interval = body.crawl_interval.unwrap_or(3600);
 
@@ -290,8 +290,8 @@ async fn delete_source(
     Path(id): Path<Uuid>,
 ) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
     match state.crawl_service.delete_source(id).await {
-        Ok(true) => Ok(json_social_status("deleted")),
-        Ok(false) => Err(error_response(StatusCode::NOT_FOUND, "Source not found")),
+        Ok(true) => Ok(json_social_status("deleted" )),
+        Ok(false) => Err(error_response(StatusCode::NOT_FOUND, "Source not found" )),
         Err(e) => Err(error_response(StatusCode::INTERNAL_SERVER_ERROR, &e.to_string())),
     }
 }
@@ -299,19 +299,19 @@ async fn delete_source(
 pub fn routes() -> Router<Arc<HttpAppState>> {
     Router::new()
         // Accounts
-        .route("/api/v1/social-ops/accounts", get(list_accounts))
-        .route("/api/v1/social-ops/accounts", post(add_account))
-        .route("/api/v1/social-ops/accounts/:id", get(get_account))
-        .route("/api/v1/social-ops/accounts/:id", put(update_account))
-        .route("/api/v1/social-ops/accounts/:id", delete(delete_account))
+        .route("/api/v1/social-ops/accounts" , get(list_accounts))
+        .route("/api/v1/social-ops/accounts" , post(add_account))
+        .route("/api/v1/social-ops/accounts/:id" , get(get_account))
+        .route("/api/v1/social-ops/accounts/:id" , put(update_account))
+        .route("/api/v1/social-ops/accounts/:id" , delete(delete_account))
         // Contents
-        .route("/api/v1/social-ops/contents", get(list_contents))
-        .route("/api/v1/social-ops/contents/:id", get(get_content))
-        .route("/api/v1/social-ops/contents/:id", put(update_content))
-        .route("/api/v1/social-ops/contents/manual", post(create_content_manual))
+        .route("/api/v1/social-ops/contents" , get(list_contents))
+        .route("/api/v1/social-ops/contents/:id" , get(get_content))
+        .route("/api/v1/social-ops/contents/:id" , put(update_content))
+        .route("/api/v1/social-ops/contents/manual" , post(create_content_manual))
         // Crawl
-        .route("/api/v1/social-ops/crawl/trigger/:source_id", post(trigger_crawl))
-        .route("/api/v1/social-ops/crawl/sources", get(list_sources))
-        .route("/api/v1/social-ops/crawl/sources", post(create_source))
-        .route("/api/v1/social-ops/crawl/sources/:id", delete(delete_source))
+        .route("/api/v1/social-ops/crawl/trigger/:source_id" , post(trigger_crawl))
+        .route("/api/v1/social-ops/crawl/sources" , get(list_sources))
+        .route("/api/v1/social-ops/crawl/sources" , post(create_source))
+        .route("/api/v1/social-ops/crawl/sources/:id" , delete(delete_source))
 }

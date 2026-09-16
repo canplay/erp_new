@@ -18,22 +18,22 @@ use crate::repository::TenantRepository;
 /// Offboarding error types
 #[derive(Error, Debug)]
 pub enum OffboardingError {
-    #[error("Data export failed: {0}")]
+    #[error("Data export failed: {0}" )]
     DataExport(String),
 
-    #[error("User anonymization failed: {0}")]
+    #[error("User anonymization failed: {0}" )]
     UserAnonymization(String),
 
-    #[error("Schema drop failed: {0}")]
+    #[error("Schema drop failed: {0}" )]
     SchemaDrop(String),
 
-    #[error("Notification failed: {0}")]
+    #[error("Notification failed: {0}" )]
     Notification(String),
 
-    #[error("Tenant not found: {0}")]
+    #[error("Tenant not found: {0}" )]
     TenantNotFound(i64),
 
-    #[error("Rollback failed: {0}")]
+    #[error("Rollback failed: {0}" )]
     Rollback(String),
 }
 
@@ -199,7 +199,7 @@ impl OffboardingService {
         format: &DataExportFormat,
     ) -> OffboardingResult<String> {
         tracing::info!(
-            "Exporting data for tenant {} in {:?} format",
+            "Exporting data for tenant {} in {:?} format" ,
             tenant_id,
             format
         );
@@ -211,13 +211,13 @@ impl OffboardingService {
         // 4. Generate a download link with expiration
 
         let export_path = format!(
-            "/exports/tenant_{}/data_{}.{}",
+            "/exports/tenant_{}/data_{}.{}" ,
             tenant_id,
             Utc::now().timestamp(),
             match format {
-                DataExportFormat::Json => "json",
-                DataExportFormat::Csv => "csv",
-                DataExportFormat::Xml => "xml",
+                DataExportFormat::Json => "json" ,
+                DataExportFormat::Csv => "csv" ,
+                DataExportFormat::Xml => "xml" ,
             }
         );
 
@@ -229,7 +229,7 @@ impl OffboardingService {
 
     /// Step 2: Anonymize user data
     async fn anonymize_users(&self, tenant_id: i64) -> OffboardingResult<i64> {
-        tracing::info!("Anonymizing users for tenant {}", tenant_id);
+        tracing::info!("Anonymizing users for tenant {}" , tenant_id);
 
         // In a real implementation, this would:
         // 1. Replace PII with anonymized values
@@ -244,7 +244,7 @@ impl OffboardingService {
 
     /// Step 3: Drop tenant schema
     async fn drop_schema(&self, tenant_id: i64) -> OffboardingResult<String> {
-        tracing::info!("Dropping schema for tenant {}", tenant_id);
+        tracing::info!("Dropping schema for tenant {}" , tenant_id);
 
         // In a real implementation, this would:
         // 1. Find the tenant's schema name
@@ -254,7 +254,7 @@ impl OffboardingService {
         // FIX [SQL-INJ-008]: 验证 tenant_id 格式（必须是正整数）
         // schema 名格式：tenant_tenant_{tenant_id}
         // tenant_id 是 i64 类型，不存在 SQL 注入风险
-        let schema_name = format!("tenant_tenant_{}", tenant_id);
+        let schema_name = format!("tenant_tenant_{}" , tenant_id);
 
         // 验证生成的 schema 名格式正确
         common::sanitize_schema_name(&schema_name)
@@ -270,7 +270,7 @@ impl OffboardingService {
         requested_by: &str,
     ) -> OffboardingResult<()> {
         tracing::info!(
-            "Sending farewell notification for tenant {} (requested by {})",
+            "Sending farewell notification for tenant {} (requested by {})" ,
             tenant_id,
             requested_by
         );
@@ -294,21 +294,21 @@ impl OffboardingService {
             match step {
                 OffboardingStep::NotificationSent => {
                     // Notification sent - no rollback needed
-                    tracing::info!("Rolling back: notification (no-op)");
+                    tracing::info!("Rolling back: notification (no-op)" );
                 }
                 OffboardingStep::SchemaDropped(schema_name) => {
                     // Rollback schema drop - recreate schema
-                    tracing::info!("Rolling back: schema {}", schema_name);
+                    tracing::info!("Rolling back: schema {}" , schema_name);
                     // In production: recreate schema from backup
                 }
                 OffboardingStep::UsersAnonymized(count) => {
                     // Rollback anonymization - restore from backup
-                    tracing::info!("Rolling back: {} anonymized users", count);
+                    tracing::info!("Rolling back: {} anonymized users" , count);
                     // In production: restore from pre-anonymization backup
                 }
                 OffboardingStep::DataExported(path) => {
                     // Data exported - no rollback needed (export is read-only)
-                    tracing::info!("Rolling back: data export {} (no-op)", path);
+                    tracing::info!("Rolling back: data export {} (no-op)" , path);
                 }
                 OffboardingStep::Complete => {}
             }
@@ -402,22 +402,22 @@ mod tests {
     #[test]
     fn test_offboarding_step_serialization() {
         let step = OffboardingStep::DataExported("/path/to/export.json".to_string());
-        let json = serde_json::to_string(&step).expect("test assertion");
-        assert!(json.contains("export.json"));
+        let json = serde_json::to_string(&step).expect("test assertion" );
+        assert!(json.contains("export.json" ));
     }
 
     #[test]
     fn test_offboarding_status_serialization() {
         let status = OffboardingStatus::Completed;
-        let json = serde_json::to_string(&status).expect("test assertion");
-        assert!(json.contains("Completed"));
+        let json = serde_json::to_string(&status).expect("test assertion" );
+        assert!(json.contains("Completed" ));
     }
 
     #[test]
     fn test_data_export_format_serialization() {
         let format = DataExportFormat::Csv;
-        let json = serde_json::to_string(&format).expect("test assertion");
-        assert!(json.contains("Csv"));
+        let json = serde_json::to_string(&format).expect("test assertion" );
+        assert!(json.contains("Csv" ));
     }
 
     #[test]

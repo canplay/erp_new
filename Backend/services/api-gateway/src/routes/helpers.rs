@@ -29,7 +29,7 @@ pub fn json_not_implemented(msg: &str) -> Json<Value> {
 
 /// 错误响应（带 error Display）— 双参数版本，接受任意 Display 类型
 pub fn json_error_fmt(msg: &str, e: &impl std::fmt::Display) -> Json<Value> {
-    Json(json!({"success": false, "code": 500, "message": format!("{}: {}", msg, e)}))
+    Json(json!({"success": false, "code": 500, "message": format!("{}: {}" , msg, e)}))
 }
 
 /// 错误响应（带 StatusCode）— 用于 map_err 场景，返回 (StatusCode, Json<Value>) 元组
@@ -45,7 +45,7 @@ pub fn json_error_response_fmt(
 ) -> (StatusCode, Json<Value>) {
     (
         status,
-        Json(json!({"success": false, "code": status.as_u16(), "message": format!("{}: {}", msg, e)})),
+        Json(json!({"success": false, "code": status.as_u16(), "message": format!("{}: {}" , msg, e)})),
     )
 }
 
@@ -60,19 +60,19 @@ pub fn json_lpr_response(response: &grpc_proto::lpr::LprCallbackResponse) -> Jso
 }
 
 /// Deprecated: 空列表 — 使用 `json_success(Vec::new())` 替代
-#[deprecated(note = "使用 json_success(Vec::new()) 替代")]
+#[deprecated(note = "使用 json_success(Vec::new()) 替代" )]
 pub async fn stub_list() -> Json<Value> {
     Json(json!({"success": true, "code": 200, "data": {"list": [], "total": 0}}))
 }
 
 /// Deprecated: 空成功 — 使用 `json_ok()` 替代
-#[deprecated(note = "使用 json_ok() 替代")]
+#[deprecated(note = "使用 json_ok() 替代" )]
 pub async fn stub_ok() -> Json<Value> {
     Json(json!({"success": true, "code": 200}))
 }
 
 /// Deprecated: 空 JSON — 使用 `json_success(())` 替代
-#[deprecated(note = "使用 json_success(()) 替代")]
+#[deprecated(note = "使用 json_success(()) 替代" )]
 pub async fn stub_json() -> Json<Value> {
     Json(json!({"success": true, "code": 200, "data": null}))
 }
@@ -81,13 +81,13 @@ pub async fn stub_json() -> Json<Value> {
 /// a JSON error response on failure (eliminates ~10 duplicate get_*_client fns).
 ///
 /// Usage: `grpc_client!(state, audit_client)`
-/// Expands to: `state.grpc_clients.read().await.audit_client().await.map_err(|e| json_error(&format!("{} 不可用: {}", "audit_client", e)))?`
+/// Expands to: `state.grpc_clients.read().await.audit_client().await.map_err(|e| json_error(&format!("{} 不可用: {}" , "audit_client" , e)))?`
 #[macro_export]
 macro_rules! grpc_client {
     ($state:expr, $client:ident) => {
         match $state.grpc_clients.read().await.$client().await {
             Ok(c) => c,
-            Err(e) => return json_error(&format!("{} 不可用: {}", stringify!($client), e)),
+            Err(e) => return json_error(&format!("{} 不可用: {}" , stringify!($client), e)),
         }
     };
 }

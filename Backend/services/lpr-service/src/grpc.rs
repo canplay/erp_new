@@ -40,14 +40,14 @@ impl LprGrpcService {
             park_code: r.park_code.clone(),
             lane_code: r.lane_code.clone(),
             direction: r.direction.clone(),
-            pass_time: r.pass_time.format("%Y-%m-%dT%H:%M:%S").to_string(),
+            pass_time: r.pass_time.format("%Y-%m-%dT%H:%M:%S" ).to_string(),
             image_url: r.image_url.clone(),
             confidence: f64::from(r.confidence),
             status: r.status.clone(),
             related_order_id: r.related_order_id.clone(),
             remark: r.remark.clone(),
-            created_at: r.created_at.format("%Y-%m-%dT%H:%M:%S").to_string(),
-            updated_at: r.updated_at.format("%Y-%m-%dT%H:%M:%S").to_string(),
+            created_at: r.created_at.format("%Y-%m-%dT%H:%M:%S" ).to_string(),
+            updated_at: r.updated_at.format("%Y-%m-%dT%H:%M:%S" ).to_string(),
         }
     }
 }
@@ -56,7 +56,7 @@ impl LprGrpcService {
 impl LprService for LprGrpcService {
     async fn lpr_callback(&self, request: Request<LprCallbackRequest>) -> Result<Response<LprCallbackResponse>, Status> {
         let req = request.into_inner();
-        tracing::info!("车牌识别回调: 车牌={}, 方向={}", req.plate_no, req.direction);
+        tracing::info!("车牌识别回调: 车牌={}, 方向={}" , req.plate_no, req.direction);
 
         let create_req = CreatePassRecord {
             plate_no: req.plate_no.clone(),
@@ -75,16 +75,16 @@ impl LprService for LprGrpcService {
 
         match self.pass_service.process_callback(&create_req).await {
             Ok(result) => {
-                tracing::info!("车牌识别完成: id={}", result.record_id);
+                tracing::info!("车牌识别完成: id={}" , result.record_id);
                 Ok(Response::new(LprCallbackResponse {
                     success: true,
-                    message: format!("车牌 {} 处理完成, 开闸={}", req.plate_no, if result.gate_opened {"是"} else {"否"}),
+                    message: format!("车牌 {} 处理完成, 开闸={}" , req.plate_no, if result.gate_opened {"是" } else {"否" }),
                     code: 0,
                 }))
             }
             Err(e) => {
-                tracing::error!("车牌识别处理失败: {e}");
-                Ok(Response::new(LprCallbackResponse { success: false, message: format!("失败: {e}"), code: 1 }))
+                tracing::error!("车牌识别处理失败: {e}" );
+                Ok(Response::new(LprCallbackResponse { success: false, message: format!("失败: {e}" ), code: 1 }))
             }
         }
     }
@@ -94,7 +94,7 @@ impl LprService for LprGrpcService {
         let records = self.pass_service.list_records(
             &req.plate_no, &req.park_code, &req.direction, &req.status,
             req.page.max(1), req.page_size.max(20),
-        ).await.map_err(|e| Status::internal(format!("{e}")))?;
+        ).await.map_err(|e| Status::internal(format!("{e}" )))?;
 
         let proto_records: Vec<PassRecordInfo> = records.iter().map(Self::record_to_proto).collect();
         Ok(Response::new(ListPassRecordsResponse {
@@ -107,13 +107,13 @@ impl LprService for LprGrpcService {
     async fn get_pass_record(&self, request: Request<GetPassRecordRequest>) -> Result<Response<PassRecordInfo>, Status> {
         let req = request.into_inner();
         let record = self.pass_service.get_record(req.id).await
-            .map_err(|e| Status::not_found(format!("{e}")))?;
+            .map_err(|e| Status::not_found(format!("{e}" )))?;
         Ok(Response::new(Self::record_to_proto(&record)))
     }
 
     async fn get_pass_stats(&self, _request: Request<GetPassStatsRequest>) -> Result<Response<PassStatsResponse>, Status> {
         let stats = self.pass_service.get_stats().await
-            .map_err(|e| Status::internal(format!("{e}")))?;
+            .map_err(|e| Status::internal(format!("{e}" )))?;
         Ok(Response::new(PassStatsResponse {
             total_pass: stats.total_pass,
             total_entry: stats.total_entry,
@@ -126,7 +126,7 @@ impl LprService for LprGrpcService {
     async fn get_vehicle_auth(&self, request: Request<GetVehicleAuthRequest>) -> Result<Response<VehicleAuthInfo>, Status> {
         let req = request.into_inner();
         let auth = self.pass_service.get_vehicle_auth(&req.plate_no, &req.park_code).await
-            .map_err(|e| Status::internal(format!("{e}")))?;
+            .map_err(|e| Status::internal(format!("{e}" )))?;
         Ok(Response::new(VehicleAuthInfo {
             is_authorized: auth.is_authorized,
             auth_type: auth.auth_type,
@@ -139,7 +139,7 @@ impl LprService for LprGrpcService {
 
 fn parse_pass_time(time_str: &str) -> NaiveDateTime {
     if time_str.is_empty() { return chrono::Utc::now().naive_utc(); }
-    if let Ok(dt) = NaiveDateTime::parse_from_str(time_str, "%Y-%m-%dT%H:%M:%S") { return dt; }
-    if let Ok(dt) = NaiveDateTime::parse_from_str(time_str, "%Y-%m-%dT%H:%M:%S%.f") { return dt; }
+    if let Ok(dt) = NaiveDateTime::parse_from_str(time_str, "%Y-%m-%dT%H:%M:%S" ) { return dt; }
+    if let Ok(dt) = NaiveDateTime::parse_from_str(time_str, "%Y-%m-%dT%H:%M:%S%.f" ) { return dt; }
     chrono::Utc::now().naive_utc()
 }

@@ -16,7 +16,7 @@ use common::service_bootstrap::{ServiceBootstrap, ServiceConfig};
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 使用 ServiceBootstrap 统一启动器
-    let config = ServiceConfig::from_env("lpr-service", 8099, 9099);
+    let config = ServiceConfig::from_env("lpr-service" , 8099, 9099);
 
     let bootstrap = ServiceBootstrap::new(config);
 
@@ -27,7 +27,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let grpc_fn = move |addr: SocketAddr| {
         Box::pin(tokio::spawn(async move {
             if let Err(e) = grpc_server::start_grpc_server(addr, grpc_service).await {
-                tracing::error!("gRPC error: {e}");
+                tracing::error!("gRPC error: {e}" );
             }
         }))
     };

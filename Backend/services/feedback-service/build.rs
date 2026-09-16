@@ -9,8 +9,8 @@
 //!         .build_server(true)
 //!         .build_client(true)
 //!         .compile(
-//!             &["../../protos/feedback.proto"],
-//!             &["../../protos"]
+//!             &["../../protos/feedback.proto" ],
+//!             &["../../protos" ]
 //!         )?;
 //!     Ok(())
 //! }

@@ -1,4 +1,4 @@
-#![recursion_limit = "256"]
+#![recursion_limit = "256" ]
 
 //! API Gateway Library
 //!
@@ -71,9 +71,9 @@ pub struct CircuitBreakerManager {
 
 impl std::fmt::Debug for CircuitBreakerManager {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("CircuitBreakerManager")
-            .field("config", &self.config)
-            .field("breakers", &"...")
+        f.debug_struct("CircuitBreakerManager" )
+            .field("config" , &self.config)
+            .field("breakers" , &"..." )
             .finish()
     }
 }
@@ -146,7 +146,7 @@ impl CircuitBreakerManager {
     pub fn reset(&self, service_name: &str) {
         let breaker = self.get_breaker(service_name);
         breaker.reset(service_name);
-        tracing::info!("熔断器已重置: {service_name}");
+        tracing::info!("熔断器已重置: {service_name}" );
     }
 
     /// 重置所有熔断器
@@ -155,7 +155,7 @@ impl CircuitBreakerManager {
         for (name, breaker) in breakers.iter() {
             breaker.reset(name);
         }
-        tracing::info!("所有熔断器已重置");
+        tracing::info!("所有熔断器已重置" );
     }
 
     /// 获取服务统计信息

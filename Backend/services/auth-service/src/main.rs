@@ -17,26 +17,26 @@ use std::sync::Arc;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 使用 ServiceBootstrap 统一启动器
-    let config = ServiceConfig::from_env("auth-service", 8081, 9091);
+    let config = ServiceConfig::from_env("auth-service" , 8081, 9091);
 
     let bootstrap = ServiceBootstrap::new(config);
 
     // 从环境变量获取 JWT 配置
-    let jwt_secret = std::env::var("JWT_SECRET")
-        .expect("JWT_SECRET must be set - configure it in production environment");
-    let jwt_issuer = std::env::var("JWT_ISSUER").unwrap_or_else(|_| "myai".to_string());
-    let jwt_audience = std::env::var("JWT_AUDIENCE").unwrap_or_else(|_| "myai-users".to_string());
-    let access_token_ttl = std::env::var("JWT_ACCESS_TOKEN_TTL")
+    let jwt_secret = std::env::var("JWT_SECRET" )
+        .expect("JWT_SECRET must be set - configure it in production environment" );
+    let jwt_issuer = std::env::var("JWT_ISSUER" ).unwrap_or_else(|_| "myai".to_string());
+    let jwt_audience = std::env::var("JWT_AUDIENCE" ).unwrap_or_else(|_| "myai-users".to_string());
+    let access_token_ttl = std::env::var("JWT_ACCESS_TOKEN_TTL" )
         .unwrap_or_else(|_| "3600".to_string())
         .parse::<u64>()
         .unwrap_or(3600);
-    let refresh_token_ttl = std::env::var("JWT_REFRESH_TOKEN_TTL")
+    let refresh_token_ttl = std::env::var("JWT_REFRESH_TOKEN_TTL" )
         .unwrap_or_else(|_| "604800".to_string())
         .parse::<u64>()
         .unwrap_or(604800);
 
     // 创建数据库连接池
-    let database_url = std::env::var("DATABASE_URL")
+    let database_url = std::env::var("DATABASE_URL" )
         .unwrap_or_else(|_| "postgres://postgres:${DATABASE_PASSWORD}@localhost:5432/myai".to_string());
     let pool = sqlx::PgPool::connect(&database_url).await?;
 

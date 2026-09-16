@@ -78,7 +78,7 @@ async fn list_invoices_handler(
 ) -> Json<Value> {
     let mut client = match state.grpc_clients.read().await.clean_client().await {
         Ok(c) => c,
-        Err(e) => return json_error_fmt("clean-service 不可用", &e),
+        Err(e) => return json_error_fmt("clean-service 不可用" , &e),
     };
     match client.list_invoices(
         q.page.unwrap_or(1),
@@ -91,7 +91,7 @@ async fn list_invoices_handler(
         q.zone.clone(),
     ).await {
         Ok(resp) => json_success(json!({"list": resp.invoices, "total": resp.total})),
-        Err(e) => json_error_fmt("查询发票列表失败", &e),
+        Err(e) => json_error_fmt("查询发票列表失败" , &e),
     }
 }
 
@@ -102,7 +102,7 @@ async fn list_orders_handler(
 ) -> Json<Value> {
     let mut client = match state.grpc_clients.read().await.clean_client().await {
         Ok(c) => c,
-        Err(e) => return json_error_fmt("clean-service 不可用", &e),
+        Err(e) => return json_error_fmt("clean-service 不可用" , &e),
     };
     match client.list_orders(
         q.page.unwrap_or(1),
@@ -112,7 +112,7 @@ async fn list_orders_handler(
         q.cashier.clone(),
     ).await {
         Ok(resp) => json_success(json!({"list": resp.orders, "total": resp.total})),
-        Err(e) => json_error_fmt("查询订单列表失败", &e),
+        Err(e) => json_error_fmt("查询订单列表失败" , &e),
     }
 }
 
@@ -123,7 +123,7 @@ async fn list_formal_bills_handler(
 ) -> Json<Value> {
     let mut client = match state.grpc_clients.read().await.clean_client().await {
         Ok(c) => c,
-        Err(e) => return json_error_fmt("clean-service 不可用", &e),
+        Err(e) => return json_error_fmt("clean-service 不可用" , &e),
     };
     match client.list_formal_bills(
         q.page.unwrap_or(1),
@@ -135,7 +135,7 @@ async fn list_formal_bills_handler(
         q.create_date_end.clone(),
     ).await {
         Ok(resp) => json_success(json!({"list": resp.bills, "total": resp.total})),
-        Err(e) => json_error_fmt("查询正式账单失败", &e),
+        Err(e) => json_error_fmt("查询正式账单失败" , &e),
     }
 }
 
@@ -146,7 +146,7 @@ async fn list_payment_web_handler(
 ) -> Json<Value> {
     let mut client = match state.grpc_clients.read().await.clean_client().await {
         Ok(c) => c,
-        Err(e) => return json_error_fmt("clean-service 不可用", &e),
+        Err(e) => return json_error_fmt("clean-service 不可用" , &e),
     };
     match client.list_payment_webs(
         q.page.unwrap_or(1),
@@ -160,7 +160,7 @@ async fn list_payment_web_handler(
         q.payment_date_end.clone(),
     ).await {
         Ok(resp) => json_success(json!({"list": resp.payments, "total": resp.total})),
-        Err(e) => json_error_fmt("查询支付记录失败", &e),
+        Err(e) => json_error_fmt("查询支付记录失败" , &e),
     }
 }
 
@@ -171,7 +171,7 @@ async fn get_statistics_handler(
 ) -> Json<Value> {
     let mut client = match state.grpc_clients.read().await.clean_client().await {
         Ok(c) => c,
-        Err(e) => return json_error_fmt("clean-service 不可用", &e),
+        Err(e) => return json_error_fmt("clean-service 不可用" , &e),
     };
     match client.get_statistics(q.statistics_type.unwrap_or_default()).await {
         Ok(resp) => json_success(json!({
@@ -179,7 +179,7 @@ async fn get_statistics_handler(
             "paid": resp.paid,
             "unpaid": resp.unpaid,
         })),
-        Err(e) => json_error_fmt("获取统计数据失败", &e),
+        Err(e) => json_error_fmt("获取统计数据失败" , &e),
     }
 }
 
@@ -231,24 +231,24 @@ async fn clean_payment_web_total() -> Json<Value> {
 
 pub fn routes() -> Router<Arc<AppState>> {
     Router::new()
-        .route("/api/clean/invoices", get(list_invoices_handler))
-        .route("/api/clean/orders", get(list_orders_handler))
-        .route("/api/clean/bills", get(list_formal_bills_handler))
-        .route("/api/clean/payments", get(list_payment_web_handler))
-        .route("/api/clean/stats", get(get_statistics_handler))
-        .route("/api/clean/invoice/count", get(clean_invoice_count))
-        .route("/api/clean/invoice/info", get(clean_invoice_info))
-        .route("/api/clean/invoice/update", post(clean_invoice_update))
-        .route("/api/clean/order/count", get(clean_order_count))
-        .route("/api/clean/order/info", get(clean_order_info))
-        .route("/api/clean/staff/info", post(clean_staff_info))
-        .route("/api/clean/formal/count", get(clean_formal_count))
-        .route("/api/clean/formal/info", get(clean_formal_info))
-        .route("/api/clean/formal/total", get(clean_formal_total))
-        .route("/api/clean/payment/info/count", get(clean_payment_info_count))
-        .route("/api/clean/payment/info/info", get(clean_payment_info_info))
-        .route("/api/clean/payment/info/total", get(clean_payment_info_total))
-        .route("/api/clean/payment/web/count", get(clean_payment_web_count))
-        .route("/api/clean/payment/web/info", get(clean_payment_web_info))
-        .route("/api/clean/payment/web/total", get(clean_payment_web_total))
+        .route("/api/clean/invoices" , get(list_invoices_handler))
+        .route("/api/clean/orders" , get(list_orders_handler))
+        .route("/api/clean/bills" , get(list_formal_bills_handler))
+        .route("/api/clean/payments" , get(list_payment_web_handler))
+        .route("/api/clean/stats" , get(get_statistics_handler))
+        .route("/api/clean/invoice/count" , get(clean_invoice_count))
+        .route("/api/clean/invoice/info" , get(clean_invoice_info))
+        .route("/api/clean/invoice/update" , post(clean_invoice_update))
+        .route("/api/clean/order/count" , get(clean_order_count))
+        .route("/api/clean/order/info" , get(clean_order_info))
+        .route("/api/clean/staff/info" , post(clean_staff_info))
+        .route("/api/clean/formal/count" , get(clean_formal_count))
+        .route("/api/clean/formal/info" , get(clean_formal_info))
+        .route("/api/clean/formal/total" , get(clean_formal_total))
+        .route("/api/clean/payment/info/count" , get(clean_payment_info_count))
+        .route("/api/clean/payment/info/info" , get(clean_payment_info_info))
+        .route("/api/clean/payment/info/total" , get(clean_payment_info_total))
+        .route("/api/clean/payment/web/count" , get(clean_payment_web_count))
+        .route("/api/clean/payment/web/info" , get(clean_payment_web_info))
+        .route("/api/clean/payment/web/total" , get(clean_payment_web_total))
 }

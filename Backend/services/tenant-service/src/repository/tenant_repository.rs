@@ -8,13 +8,13 @@ use thiserror::Error;
 /// Repository 错误类型
 #[derive(Error, Debug)]
 pub enum TenantRepositoryError {
-    #[error("租户不存在")]
+    #[error("租户不存在" )]
     NotFound,
 
-    #[error("租户已存在")]
+    #[error("租户已存在" )]
     AlreadyExists,
 
-    #[error("数据库错误: {0}")]
+    #[error("数据库错误: {0}" )]
     Database(#[from] sqlx::Error),
 }
 
@@ -144,11 +144,11 @@ impl TenantRepository {
         let row = sqlx::query!(
             r#"
             SELECT id, name, code, domain, description,
-                   COALESCE(max_users, 0) AS "max_users!",
-                   COALESCE(max_storage, 0) AS "max_storage!",
-                   COALESCE(status, 0) AS "status!",
+                   COALESCE(max_users, 0) AS "max_users!" ,
+                   COALESCE(max_storage, 0) AS "max_storage!" ,
+                   COALESCE(status, 0) AS "status!" ,
                    expires_at,
-                   COALESCE(created_at, NOW()) AS "created_at!",
+                   COALESCE(created_at, NOW()) AS "created_at!" ,
                    COALESCE(updated_at, NOW()) AS "updated_at!"
             FROM tenants
             WHERE id = $1
@@ -181,11 +181,11 @@ impl TenantRepository {
         let row = sqlx::query!(
             r#"
             SELECT id, name, code, domain, description,
-                   COALESCE(max_users, 0) AS "max_users!",
-                   COALESCE(max_storage, 0) AS "max_storage!",
-                   COALESCE(status, 0) AS "status!",
+                   COALESCE(max_users, 0) AS "max_users!" ,
+                   COALESCE(max_storage, 0) AS "max_storage!" ,
+                   COALESCE(status, 0) AS "status!" ,
                    expires_at,
-                   COALESCE(created_at, NOW()) AS "created_at!",
+                   COALESCE(created_at, NOW()) AS "created_at!" ,
                    COALESCE(updated_at, NOW()) AS "updated_at!"
             FROM tenants
             WHERE code = $1
@@ -221,12 +221,12 @@ impl TenantRepository {
 
         // 按关键字过滤 / 全量查询, 分别物化为 TenantListItem
         let (items, total) = if let Some(kw) = keyword {
-            let keyword_pattern = format!("%{kw}%");
+            let keyword_pattern = format!("%{kw}%" );
             let rows = sqlx::query!(
                 r#"
                 SELECT t.id, t.name, t.code,
-                       COALESCE(t.status, 0) AS "status!",
-                       COALESCE(t.max_users, 0)::bigint AS "max_users!",
+                       COALESCE(t.status, 0) AS "status!" ,
+                       COALESCE(t.max_users, 0)::bigint AS "max_users!" ,
                        COALESCE(t.created_at, NOW()) AS "created_at!"
                 FROM tenants t
                 WHERE t.name ILIKE $1 OR t.code ILIKE $1
@@ -241,7 +241,7 @@ impl TenantRepository {
             .await?;
 
             let total = sqlx::query_scalar!(
-                "SELECT COUNT(*) FROM tenants WHERE name ILIKE $1 OR code ILIKE $1",
+                "SELECT COUNT(*) FROM tenants WHERE name ILIKE $1 OR code ILIKE $1" ,
                 &keyword_pattern,
             )
             .fetch_one(&self.pool)
@@ -252,7 +252,7 @@ impl TenantRepository {
             let mut items = Vec::new();
             for r in rows {
                 let user_count = sqlx::query_scalar!(
-                    "SELECT COUNT(*) FROM tenant_users WHERE tenant_id = $1",
+                    "SELECT COUNT(*) FROM tenant_users WHERE tenant_id = $1" ,
                     r.id,
                 )
                 .fetch_one(&self.pool)
@@ -276,8 +276,8 @@ impl TenantRepository {
             let rows = sqlx::query!(
                 r#"
                 SELECT t.id, t.name, t.code,
-                       COALESCE(t.status, 0) AS "status!",
-                       COALESCE(t.max_users, 0)::bigint AS "max_users!",
+                       COALESCE(t.status, 0) AS "status!" ,
+                       COALESCE(t.max_users, 0)::bigint AS "max_users!" ,
                        COALESCE(t.created_at, NOW()) AS "created_at!"
                 FROM tenants t
                 ORDER BY t.created_at DESC
@@ -289,7 +289,7 @@ impl TenantRepository {
             .fetch_all(&self.pool)
             .await?;
 
-            let total = sqlx::query_scalar!("SELECT COUNT(*) FROM tenants")
+            let total = sqlx::query_scalar!("SELECT COUNT(*) FROM tenants" )
                 .fetch_one(&self.pool)
                 .await?
                 .unwrap_or(0);
@@ -298,7 +298,7 @@ impl TenantRepository {
             let mut items = Vec::new();
             for r in rows {
                 let user_count = sqlx::query_scalar!(
-                    "SELECT COUNT(*) FROM tenant_users WHERE tenant_id = $1",
+                    "SELECT COUNT(*) FROM tenant_users WHERE tenant_id = $1" ,
                     r.id,
                 )
                 .fetch_one(&self.pool)
@@ -399,7 +399,7 @@ impl TenantRepository {
 
     /// 删除租户
     pub async fn delete(&self, id: i64) -> Result<bool, TenantRepositoryError> {
-        let result = sqlx::query!("DELETE FROM tenants WHERE id = $1", id)
+        let result = sqlx::query!("DELETE FROM tenants WHERE id = $1" , id)
             .execute(&self.pool)
             .await?;
 
@@ -515,7 +515,7 @@ impl TenantRepository {
         user_id: i64,
     ) -> Result<bool, TenantRepositoryError> {
         let result = sqlx::query!(
-            "DELETE FROM tenant_users WHERE tenant_id = $1 AND user_id = $2",
+            "DELETE FROM tenant_users WHERE tenant_id = $1 AND user_id = $2" ,
             tenant_id,
             user_id,
         )
@@ -533,7 +533,7 @@ impl TenantRepository {
         // 获取用户统计
         let user_stats = sqlx::query!(
             r#"
-            SELECT COUNT(*) AS "total!",
+            SELECT COUNT(*) AS "total!" ,
                    COUNT(*) FILTER (WHERE status = 1) AS "active!"
             FROM tenant_users
             WHERE tenant_id = $1
@@ -614,7 +614,7 @@ impl TenantRepository {
     /// 通过查询文件表统计租户已使用的存储空间
     async fn get_storage_usage(&self, tenant_id: i64) -> Result<i64, TenantRepositoryError> {
         let size = sqlx::query_scalar!(
-            "SELECT COALESCE(SUM(file_size), 0)::bigint FROM files WHERE tenant_id = $1",
+            "SELECT COALESCE(SUM(file_size), 0)::bigint FROM files WHERE tenant_id = $1" ,
             tenant_id,
         )
         .fetch_optional(&self.pool)

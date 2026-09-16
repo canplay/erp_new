@@ -20,9 +20,9 @@ use crate::services::{HikService, SignoService};
 /// 创建 Hik Service 应用
 pub fn create_app(state: AppState) -> Router {
     Router::new()
-        .route("/api/hik/exec", post(exec))
-        .route("/api/hik/coupon", post(coupon))
-        .route("/api/hik/signo/open", post(signo_open))
+        .route("/api/hik/exec" , post(exec))
+        .route("/api/hik/coupon" , post(coupon))
+        .route("/api/hik/signo/open" , post(signo_open))
         .with_state(state)
 }
 

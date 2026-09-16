@@ -80,7 +80,7 @@ async fn get_device(
     let devices = state.device_store.read().await;
     match devices.devices().iter().find(|d| d.id == id && d.user_id == claims.sub) {
         Some(d) => json_success(json!(d)),
-        None => json_error("设备不存在"),
+        None => json_error("设备不存在" ),
     }
 }
 
@@ -95,7 +95,7 @@ async fn trust_device(
         d.is_trusted = true;
         json_ok()
     } else {
-        json_error("设备不存在")
+        json_error("设备不存在" )
     }
 }
 
@@ -110,7 +110,7 @@ async fn untrust_device(
         d.is_trusted = false;
         json_ok()
     } else {
-        json_error("设备不存在")
+        json_error("设备不存在" )
     }
 }
 
@@ -125,7 +125,7 @@ async fn kick_device(
         d.is_active = false;
         json_ok()
     } else {
-        json_error("设备不存在")
+        json_error("设备不存在" )
     }
 }
 
@@ -154,7 +154,7 @@ async fn delete_device(
     if devices.devices().len() < len_before {
         json_ok()
     } else {
-        json_error("设备不存在")
+        json_error("设备不存在" )
     }
 }
 
@@ -172,9 +172,9 @@ async fn list_all_devices(
     if let Some(ref kw) = q.keyword {
         let kw_lower = kw.to_lowercase();
         result.retain(|d| {
-            d.device_name.as_deref().unwrap_or("").to_lowercase().contains(&kw_lower)
-                || d.browser.as_deref().unwrap_or("").to_lowercase().contains(&kw_lower)
-                || d.os.as_deref().unwrap_or("").to_lowercase().contains(&kw_lower)
+            d.device_name.as_deref().unwrap_or("" ).to_lowercase().contains(&kw_lower)
+                || d.browser.as_deref().unwrap_or("" ).to_lowercase().contains(&kw_lower)
+                || d.os.as_deref().unwrap_or("" ).to_lowercase().contains(&kw_lower)
                 || d.ip_address.to_lowercase().contains(&kw_lower)
         });
     }
@@ -221,18 +221,18 @@ async fn kick_all_user_devices(Path(_user_id): Path<i64>) -> Json<Value> { json_
 
 pub fn routes() -> Router<Arc<AppState>> {
     Router::new()
-        .route("/api/devices", get(list_my_devices))
-        .route("/api/devices/my", get(list_my_devices))
-        .route("/api/devices/kick-other", put(kick_other_devices))
-        .route("/api/devices/batch", delete(batch_delete_devices))
-        .route("/api/devices/{id}", get(get_device).delete(delete_device))
-        .route("/api/devices/{id}/trust", put(trust_device))
-        .route("/api/devices/{id}/untrust", put(untrust_device))
-        .route("/api/devices/{id}/kick", put(kick_device))
-        .route("/api/admin/devices", get(list_all_devices))
-        .route("/api/admin/devices/statistics", get(device_statistics))
-        .route("/api/admin/devices/overview", get(device_overview))
-        .route("/api/admin/devices/abnormal", get(device_abnormal))
-        .route("/api/admin/devices/user/{user_id}", get(list_user_devices))
-        .route("/api/admin/devices/user/{user_id}/kick-all", put(kick_all_user_devices))
+        .route("/api/devices" , get(list_my_devices))
+        .route("/api/devices/my" , get(list_my_devices))
+        .route("/api/devices/kick-other" , put(kick_other_devices))
+        .route("/api/devices/batch" , delete(batch_delete_devices))
+        .route("/api/devices/{id}" , get(get_device).delete(delete_device))
+        .route("/api/devices/{id}/trust" , put(trust_device))
+        .route("/api/devices/{id}/untrust" , put(untrust_device))
+        .route("/api/devices/{id}/kick" , put(kick_device))
+        .route("/api/admin/devices" , get(list_all_devices))
+        .route("/api/admin/devices/statistics" , get(device_statistics))
+        .route("/api/admin/devices/overview" , get(device_overview))
+        .route("/api/admin/devices/abnormal" , get(device_abnormal))
+        .route("/api/admin/devices/user/{user_id}" , get(list_user_devices))
+        .route("/api/admin/devices/user/{user_id}/kick-all" , put(kick_all_user_devices))
 }

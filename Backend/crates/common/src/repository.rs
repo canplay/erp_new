@@ -10,10 +10,10 @@ use sqlx::PgPool;
 #[derive(Debug, Clone, Default, Deserialize)]
 pub struct PageQuery {
     /// 页码（从1开始）
-    #[serde(default = "default_page")]
+    #[serde(default = "default_page" )]
     pub page: i32,
     /// 每页数量
-    #[serde(default = "default_page_size")]
+    #[serde(default = "default_page_size" )]
     pub page_size: i32,
 }
 
@@ -102,22 +102,22 @@ impl<T> PageResult<T> {
 /// Repository 错误类型
 #[derive(Debug, thiserror::Error)]
 pub enum RepositoryError {
-    #[error("记录不存在: {0}")]
+    #[error("记录不存在: {0}" )]
     NotFound(String),
 
-    #[error("记录已存在")]
+    #[error("记录已存在" )]
     AlreadyExists,
 
-    #[error("数据库错误: {0}")]
+    #[error("数据库错误: {0}" )]
     DatabaseError(#[from] sqlx::Error),
 
-    #[error("参数错误: {0}")]
+    #[error("参数错误: {0}" )]
     InvalidParam(String),
 
-    #[error("删除失败: {0}")]
+    #[error("删除失败: {0}" )]
     DeleteFailed(String),
 
-    #[error("更新失败: {0}")]
+    #[error("更新失败: {0}" )]
     UpdateFailed(String),
 }
 
@@ -169,9 +169,9 @@ macro_rules! impl_paginate {
     ($entity:ident, $table:expr) => {
         fn paginate_query(&self, query: &PageQuery) -> String {
             // FIX [SQL-INJ-003]: 校验表名格式，防止 SQL 注入
-            common::sanitize_identifier($table).expect("Invalid table name in paginate_query");
+            common::sanitize_identifier($table).expect("Invalid table name in paginate_query" );
             format!(
-                "SELECT * FROM {} ORDER BY id DESC LIMIT {} OFFSET {}",
+                "SELECT * FROM {} ORDER BY id DESC LIMIT {} OFFSET {}" ,
                 $table,
                 query.limit(),
                 query.offset()
@@ -180,8 +180,8 @@ macro_rules! impl_paginate {
 
         fn count_query(&self) -> String {
             // FIX [SQL-INJ-003]: 校验表名格式，防止 SQL 注入
-            common::sanitize_identifier($table).expect("Invalid table name in count_query");
-            format!("SELECT COUNT(*) FROM {}", $table)
+            common::sanitize_identifier($table).expect("Invalid table name in count_query" );
+            format!("SELECT COUNT(*) FROM {}" , $table)
         }
     };
 }

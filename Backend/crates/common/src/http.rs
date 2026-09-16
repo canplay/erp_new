@@ -171,7 +171,7 @@ pub fn batch_result_response(
         status,
         Json(json!({
             "success": fail_count == 0,
-            "message": format!("成功 {} 个，失败 {} 个", success_count, fail_count),
+            "message": format!("成功 {} 个，失败 {} 个" , success_count, fail_count),
             "data": {
                 "success_count": success_count,
                 "fail_count": fail_count,
@@ -186,19 +186,19 @@ pub fn batch_result_response(
 pub fn csv_download_response(content: String, filename: &str) -> impl IntoResponse {
     match axum::response::Response::builder()
         .status(StatusCode::OK)
-        .header("Content-Type", "text/csv; charset=utf-8")
+        .header("Content-Type" , "text/csv; charset=utf-8" )
         .header(
-            "Content-Disposition",
-            format!("attachment; filename={filename}"),
+            "Content-Disposition" ,
+            format!("attachment; filename={filename}" ),
         )
         .body(axum::body::Body::from(content))
     {
         Ok(resp) => resp,
         Err(e) => {
-            tracing::error!("csv_download_response 构建失败: {e}");
+            tracing::error!("csv_download_response 构建失败: {e}" );
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                "构建响应失败",
+                "构建响应失败" ,
             )
                 .into_response()
         }

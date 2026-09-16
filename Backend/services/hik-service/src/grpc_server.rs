@@ -12,7 +12,7 @@ use crate::hik_service::AppState;
 use crate::models::HikRequest as ServiceHikRequest;
 
 pub async fn start_grpc_server(addr: SocketAddr, state: AppState) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    tracing::info!("[HikService] gRPC listening on {addr}");
+    tracing::info!("[HikService] gRPC listening on {addr}" );
     Server::builder().layer(tonic::service::interceptor::InterceptorLayer::new(common::grpc_auth_interceptor))
         .add_service(HikServiceServer::new(GrpcHikService { state: Arc::new(state) }))
         .serve_with_shutdown(addr, shutdown_signal())
@@ -60,7 +60,7 @@ impl HikService for GrpcHikService {
             })),
             Err(e) => Ok(Response::new(GenericResponse {
                 code: 1,
-                message: format!("{e}"),
+                message: format!("{e}" ),
                 data: String::new(),
             })),
         }
@@ -77,7 +77,7 @@ impl HikService for GrpcHikService {
                 })),
                 Err(e) => Ok(Response::new(GenericResponse {
                     code: 1,
-                    message: format!("{e}"),
+                    message: format!("{e}" ),
                     data: String::new(),
                 })),
             }
@@ -94,7 +94,7 @@ impl HikService for GrpcHikService {
         let req = request.into_inner();
         match self.state.signo_service.open_gate(&req.place, &req.name).await {
             Ok(msg) => Ok(Response::new(SignoResponse { message: msg, status: 1 })),
-            Err(e) => Ok(Response::new(SignoResponse { message: format!("{e}"), status: 0 })),
+            Err(e) => Ok(Response::new(SignoResponse { message: format!("{e}" ), status: 0 })),
         }
     }
 }

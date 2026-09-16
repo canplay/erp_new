@@ -117,7 +117,7 @@ pub async fn list_feedback(
         .list(&params)
         .await
         .map(PaginatedFeedbackInfo::from)
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 /// 获取反馈详情
@@ -130,7 +130,7 @@ pub async fn get_feedback(
         .find_by_id(id)
         .await
         .map(|opt| opt.map(FeedbackInfo::from))
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 /// 创建反馈
@@ -152,7 +152,7 @@ pub async fn create_feedback(
             contact.as_deref(),
         )
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 /// 处理反馈
@@ -166,7 +166,7 @@ pub async fn handle_feedback(
         .repository
         .handle(id, &status, &reply)
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 /// 转交反馈
@@ -179,7 +179,7 @@ pub async fn transfer_feedback(
         .repository
         .transfer(id, handler_id)
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 /// 回复反馈
@@ -193,16 +193,16 @@ pub async fn reply_feedback(
         .add_reply(id, &reply)
         .await
         .map(|()| true)
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 /// 关闭反馈
 pub async fn close_feedback(state: Arc<FeedbackAppState>, id: i64) -> Result<bool, Status> {
     state
         .repository
-        .handle(id, "closed", "")
+        .handle(id, "closed" , "" )
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 /// 删除反馈
@@ -211,7 +211,7 @@ pub async fn delete_feedback(state: Arc<FeedbackAppState>, id: i64) -> Result<bo
         .repository
         .delete(id)
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 /// 批量处理反馈
@@ -226,7 +226,7 @@ pub async fn batch_handle_feedback(
         .batch_handle(&ids, &status, reply.as_deref())
         .await
         .map(|count| count as i64)
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 /// 获取统计信息
@@ -259,7 +259,7 @@ pub async fn get_statistics(
             avg_response_time: s.avg_response_time,
             satisfaction_rate: s.satisfaction_rate,
         })
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 // ============== 导出服务实现 ==============
@@ -302,12 +302,12 @@ impl common::service_bootstrap::GrpcServiceBuilder for FeedbackGrpcService {
     fn build_grpc_server(&self, grpc_addr: &str) -> Result<tokio::task::JoinHandle<()>, Box<dyn std::error::Error + Send + Sync>> {
         use tonic::transport::Server;
 
-        let addr: SocketAddr = grpc_addr.parse().map_err(|e| -> Box<dyn std::error::Error + Send + Sync> { format!("invalid grpc addr: {e}").into() })?;
+        let addr: SocketAddr = grpc_addr.parse().map_err(|e| -> Box<dyn std::error::Error + Send + Sync> { format!("invalid grpc addr: {e}" ).into() })?;
         let server = FeedbackServiceServer::new(FeedbackGrpcService::new(self.state.clone()));
         let handle = tokio::spawn(async move {
             if let Err(e) = Server::builder()
                 .add_service(server).serve(addr).await {
-                tracing::error!("gRPC server error: {}", e);
+                tracing::error!("gRPC server error: {}" , e);
             }
         });
         Ok(handle)

@@ -36,8 +36,8 @@ impl FileService for FileGrpcService {
     ) -> Result<Response<UploadResponse>, Status> {
         let req = request.into_inner();
         // Generate a simple file_id for tracking uploads
-        let file_id = format!("upload_{}", chrono::Utc::now().timestamp_millis());
-        let upload_url = format!("/api/files/upload/{}/{}", file_id, req.filename);
+        let file_id = format!("upload_{}" , chrono::Utc::now().timestamp_millis());
+        let upload_url = format!("/api/files/upload/{}/{}" , file_id, req.filename);
         Ok(Response::new(UploadResponse {
             file_id,
             upload_url,
@@ -51,10 +51,10 @@ impl FileService for FileGrpcService {
     ) -> Result<Response<UploadChunkResponse>, Status> {
         let req = request.into_inner();
         // Simulate chunk storage by writing chunk data to temp location
-        let chunk_dir = format!("/tmp/chunks/{}", req.file_id);
-        std::fs::create_dir_all(&chunk_dir).map_err(|e| Status::internal(format!("IO error: {e}")))?;
-        let chunk_path = format!("{}/chunk_{}", chunk_dir, req.chunk_index);
-        std::fs::write(&chunk_path, &req.data).map_err(|e| Status::internal(format!("IO error: {e}")))?;
+        let chunk_dir = format!("/tmp/chunks/{}" , req.file_id);
+        std::fs::create_dir_all(&chunk_dir).map_err(|e| Status::internal(format!("IO error: {e}" )))?;
+        let chunk_path = format!("{}/chunk_{}" , chunk_dir, req.chunk_index);
+        std::fs::write(&chunk_path, &req.data).map_err(|e| Status::internal(format!("IO error: {e}" )))?;
         // Count uploaded chunks
         let uploaded_chunks = std::fs::read_dir(&chunk_dir)
             .map(|d| d.filter_map(Result::ok).count() as i32)
@@ -71,7 +71,7 @@ impl FileService for FileGrpcService {
         request: Request<CompleteUploadRequest>,
     ) -> Result<Response<CompleteUploadResponse>, Status> {
         let req = request.into_inner();
-        let chunk_dir = format!("/tmp/chunks/{}", req.file_id);
+        let chunk_dir = format!("/tmp/chunks/{}" , req.file_id);
         // Find all chunk files and merge them
         let mut chunk_files: Vec<_> = std::fs::read_dir(&chunk_dir)
             .map(|d| d.filter_map(Result::ok).collect())
@@ -86,9 +86,9 @@ impl FileService for FileGrpcService {
         let hash: u64 = merged.iter().fold(5381u64, |h, &b| -> u64 {
             h.wrapping_mul(33).wrapping_add(b as u64)
         });
-        let hash_str = format!("{:x}", hash);
+        let hash_str = format!("{:x}" , hash);
         // Store merged file
-        let storage_path = format!("uploads/{}.bin", req.file_id);
+        let storage_path = format!("uploads/{}.bin" , req.file_id);
         std::fs::write(&storage_path, &merged).ok();
         // Cleanup chunks
         std::fs::remove_dir_all(&chunk_dir).ok();
@@ -96,14 +96,14 @@ impl FileService for FileGrpcService {
         let file_size = merged.len() as i64;
         let sys_file = crate::models::SysFile {
             id: 0,
-            file_name: format!("{}.bin", req.file_id),
+            file_name: format!("{}.bin" , req.file_id),
             original_name: "uploaded_file".to_string(),
             file_size,
             mime_type: Some("application/octet-stream".to_string()),
             storage_path: storage_path.clone(),
             storage_type: "local".to_string(),
             bucket: None,
-            url: Some(format!("/files/{}", storage_path)),
+            url: Some(format!("/files/{}" , storage_path)),
             md5: Some(hash_str.clone()),
             created_by: None,
             tenant_id: None,
@@ -112,13 +112,13 @@ impl FileService for FileGrpcService {
             deleted_at: None,
         };
         let id = self.state().repository.insert(&sys_file).await
-            .map_err(|e| Status::internal(format!("Database error: {e}")))?;
+            .map_err(|e| Status::internal(format!("Database error: {e}" )))?;
         Ok(Response::new(CompleteUploadResponse {
             file: Some(FileInfo {
                 id: id.to_string(),
-                filename: format!("{}.bin", req.file_id),
+                filename: format!("{}.bin" , req.file_id),
                 original_filename: "uploaded_file".to_string(),
-                url: format!("/files/{}", storage_path),
+                url: format!("/files/{}" , storage_path),
                 file_type: FileType::Other as i32,
                 mime_type: "application/octet-stream".to_string(),
                 size: file_size,
@@ -170,7 +170,7 @@ impl FileService for FileGrpcService {
         let id: i64 = req
             .id
             .parse()
-            .map_err(|_| Status::invalid_argument("invalid file id"))?;
+            .map_err(|_| Status::invalid_argument("invalid file id" ))?;
 
         let result = crate::grpc_handlers::get_file(self.state().clone(), id).await?;
 
@@ -191,7 +191,7 @@ impl FileService for FileGrpcService {
             let id: i64 = req
                 .id
                 .parse()
-                .map_err(|_| Status::invalid_argument("invalid file id"))?;
+                .map_err(|_| Status::invalid_argument("invalid file id" ))?;
             if crate::grpc_handlers::delete_file(self.state().clone(), id).await? {
                 count += 1;
             }
@@ -219,7 +219,7 @@ impl FileService for FileGrpcService {
     ) -> Result<Response<GetDownloadUrlResponse>, Status> {
         let req = request.into_inner();
         // Return a signed URL or internal download endpoint
-        let url = format!("/api/v1/files/{}/download", req.file_id);
+        let url = format!("/api/v1/files/{}/download" , req.file_id);
         Ok(Response::new(GetDownloadUrlResponse { url, expires_at: 0 }))
     }
 
@@ -240,9 +240,9 @@ impl FileService for FileGrpcService {
         let uuid = uuid::Uuid::new_v4();
         let folder_id = uuid.to_string();
         let path = if req.parent_id.is_empty() {
-            format!("/{}", req.name)
+            format!("/{}" , req.name)
         } else {
-            format!("/{}/{}", req.parent_id, req.name)
+            format!("/{}/{}" , req.parent_id, req.name)
         };
         Ok(Response::new(CreateFolderResponse {
             folder: Some(Folder {

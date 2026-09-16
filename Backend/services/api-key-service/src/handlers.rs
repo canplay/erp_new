@@ -36,7 +36,7 @@ pub struct AppState {
 /// API Gateway 会将 JWT 验证后的用户信息通过 x-user-id header 传递
 fn extract_user_id(headers: &axum::http::HeaderMap) -> i64 {
     headers
-        .get("x-user-id")
+        .get("x-user-id" )
         .and_then(|v| v.to_str().ok())
         .and_then(|s| s.parse::<i64>().ok())
         .unwrap_or(1) // 默认用户ID为1（匿名用户或开发模式）
@@ -64,11 +64,11 @@ pub async fn create_key(
     api_key.tenant_id = payload.tenant_id;
 
     if let Err(e) = state.repository.create(&api_key).await {
-        error!("创建 API Key 失败: {}", e);
+        error!("创建 API Key 失败: {}" , e);
         return Err(AppError::Database(e));
             }
 
-    info!("创建API密钥: {}", api_key.id);
+    info!("创建API密钥: {}" , api_key.id);
 
     Ok(json_api_key_created(&key_id, &key_secret, &api_key.name, &api_key.permission_level.to_string(), api_key.expires_at.map(|d| d.to_rfc3339())))
 }
@@ -110,8 +110,8 @@ pub async fn list_keys(
             json_api_key_list(page_keys, total, query.page.unwrap_or(1), query.page_size.unwrap_or(20))
         }
         Err(e) => {
-            error!("获取密钥列表失败: {}", e);
-            json_api_key_error(500, "获取密钥列表失败")
+            error!("获取密钥列表失败: {}" , e);
+            json_api_key_error(500, "获取密钥列表失败" )
         }
     }
 }
@@ -126,7 +126,7 @@ pub async fn get_key(
         Ok(Some(key)) => Ok(json_api_key_detail(&key)),
         Ok(None) => Err(AppError::ApiKeyNotFound(id)),
         Err(e) => {
-            error!("获取密钥详情失败: {}", e);
+            error!("获取密钥详情失败: {}" , e);
             Err(AppError::DatabaseError(e.to_string()))
         }
     }
@@ -170,11 +170,11 @@ pub async fn update_key(
     updated.updated_at = Utc::now();
 
     if let Err(e) = state.repository.update(&updated).await {
-        error!("更新 API Key 失败: {}", e);
+        error!("更新 API Key 失败: {}" , e);
         return Err(AppError::Database(e));
             }
 
-    info!("更新API密钥: {}", id);
+    info!("更新API密钥: {}" , id);
 
     Ok(json_api_key_updated(&updated))
 }
@@ -187,11 +187,11 @@ pub async fn delete_key(
 ) -> AppResult<impl IntoResponse> {
     match state.repository.delete(&id).await {
         Ok(()) => {
-            info!("删除API密钥: {}", id);
+            info!("删除API密钥: {}" , id);
             Ok(json_api_key_deleted())
         }
         Err(e) => {
-            error!("删除 API Key 失败: {}", e);
+            error!("删除 API Key 失败: {}" , e);
             Err(AppError::DatabaseError(e.to_string()))
         }
     }
@@ -225,8 +225,8 @@ pub async fn validate_key(
         }
         Ok(None) => json_api_key_invalid(),
         Err(e) => {
-            error!("验证密钥失败: {}", e);
-            json_validation_error("验证失败")
+            error!("验证密钥失败: {}" , e);
+            json_validation_error("验证失败" )
         }
     }
 }
@@ -248,13 +248,13 @@ pub async fn disable_key(
     updated.updated_at = Utc::now();
 
     if let Err(e) = state.repository.update(&updated).await {
-        error!("禁用 API Key 失败: {}", e);
+        error!("禁用 API Key 失败: {}" , e);
         return Err(AppError::Database(e));
             }
 
-    info!("禁用API密钥: {}", id);
+    info!("禁用API密钥: {}" , id);
 
-    Ok(json_api_key_simple("密钥已禁用"))
+    Ok(json_api_key_simple("密钥已禁用" ))
 }
 
 /// 启用密钥
@@ -274,13 +274,13 @@ pub async fn enable_key(
     updated.updated_at = Utc::now();
 
     if let Err(e) = state.repository.update(&updated).await {
-        error!("启用 API Key 失败: {}", e);
+        error!("启用 API Key 失败: {}" , e);
         return Err(AppError::Database(e));
             }
 
-    info!("启用API密钥: {}", id);
+    info!("启用API密钥: {}" , id);
 
-    Ok(json_api_key_simple("密钥已启用"))
+    Ok(json_api_key_simple("密钥已启用" ))
 }
 
 /// 获取统计信息
@@ -293,8 +293,8 @@ pub async fn get_stats(
     match state.repository.list_by_user(user_id, 1, 1).await {
         Ok((_, total)) => json_api_key_stats(total),
         Err(e) => {
-            error!("获取统计信息失败: {}", e);
-json_api_key_error(500, "获取统计信息失败")
+            error!("获取统计信息失败: {}" , e);
+json_api_key_error(500, "获取统计信息失败" )
         }
     }
 }

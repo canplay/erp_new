@@ -30,7 +30,7 @@ impl CarColorRepository {
         let items: Vec<CarColor> = sqlx::query_as!(
             CarColor,
             r#"SELECT id,
-                COALESCE(name, '') AS "name!",
+                COALESCE(name, '') AS "name!" ,
                 remark,
                 sort_order,
                 status
@@ -49,7 +49,7 @@ impl CarColorRepository {
         let item: Option<CarColor> = sqlx::query_as!(
             CarColor,
             r#"SELECT id,
-                COALESCE(name, '') AS "name!",
+                COALESCE(name, '') AS "name!" ,
                 remark,
                 sort_order,
                 status

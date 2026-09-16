@@ -9,19 +9,19 @@ use thiserror::Error;
 /// 角色仓储错误类型
 #[derive(Error, Debug)]
 pub enum RoleRepositoryError {
-    #[error("数据库错误: {0}")]
+    #[error("数据库错误: {0}" )]
     Database(#[from] sqlx::Error),
 
-    #[error("角色不存在")]
+    #[error("角色不存在" )]
     NotFound,
 
-    #[error("角色已存在")]
+    #[error("角色已存在" )]
     AlreadyExists,
 
-    #[error("角色有关联用户，无法删除")]
+    #[error("角色有关联用户，无法删除" )]
     HasAssociatedUsers,
 
-    #[error("角色有子角色，无法删除")]
+    #[error("角色有子角色，无法删除" )]
     HasChildRoles,
 }
 
@@ -114,7 +114,7 @@ impl RoleRepository {
     ) -> Result<i64, RoleRepositoryError> {
         // 检查代码是否已存在
         let exists = sqlx::query!(
-            r#"SELECT EXISTS(SELECT 1 FROM roles WHERE code = $1) AS "exists!""#,
+            r#"SELECT EXISTS(SELECT 1 FROM roles WHERE code = $1) AS "exists!" "#,
             code
         )
         .fetch_one(&self.pool)
@@ -128,7 +128,7 @@ impl RoleRepository {
         // 计算层级深度
         let level = if let Some(pid) = parent_id {
             let row = sqlx::query!(
-                "SELECT level FROM roles WHERE id = $1",
+                "SELECT level FROM roles WHERE id = $1" ,
                 pid
             )
             .fetch_optional(&self.pool)
@@ -153,7 +153,7 @@ impl RoleRepository {
         let row = sqlx::query!(
             r"INSERT INTO roles (name, code, description, role_type, parent_id, level, status)
                VALUES ($1, $2, $3, $4, $5, $6, 1)
-               RETURNING id",
+               RETURNING id" ,
             name,
             code,
             description.as_deref(),
@@ -172,13 +172,13 @@ impl RoleRepository {
         let row = sqlx::query_as!(
             Role,
             r#"SELECT id, name, code, description,
-                      COALESCE(role_type, 'user') AS "role_type!",
+                      COALESCE(role_type, 'user') AS "role_type!" ,
                       parent_id,
-                      COALESCE(level, 0) AS "level!",
-                      COALESCE(sort_order, 0) AS "sort_order!",
-                      COALESCE(status, 1) AS "status!",
-                      COALESCE(is_default, false) AS "is_default!",
-                      COALESCE(created_at, NOW()) AS "created_at!",
+                      COALESCE(level, 0) AS "level!" ,
+                      COALESCE(sort_order, 0) AS "sort_order!" ,
+                      COALESCE(status, 1) AS "status!" ,
+                      COALESCE(is_default, false) AS "is_default!" ,
+                      COALESCE(created_at, NOW()) AS "created_at!" ,
                       COALESCE(updated_at, NOW()) AS "updated_at!"
                FROM roles WHERE code = $1"#,
             code,
@@ -194,13 +194,13 @@ impl RoleRepository {
         let row = sqlx::query_as!(
             Role,
             r#"SELECT id, name, code, description,
-                      COALESCE(role_type, 'user') AS "role_type!",
+                      COALESCE(role_type, 'user') AS "role_type!" ,
                       parent_id,
-                      COALESCE(level, 0) AS "level!",
-                      COALESCE(sort_order, 0) AS "sort_order!",
-                      COALESCE(status, 1) AS "status!",
-                      COALESCE(is_default, false) AS "is_default!",
-                      COALESCE(created_at, NOW()) AS "created_at!",
+                      COALESCE(level, 0) AS "level!" ,
+                      COALESCE(sort_order, 0) AS "sort_order!" ,
+                      COALESCE(status, 1) AS "status!" ,
+                      COALESCE(is_default, false) AS "is_default!" ,
+                      COALESCE(created_at, NOW()) AS "created_at!" ,
                       COALESCE(updated_at, NOW()) AS "updated_at!"
                FROM roles WHERE id = $1"#,
             role_id,
@@ -228,13 +228,13 @@ impl RoleRepository {
                    updated_at = NOW()
                WHERE code = $4
                RETURNING id, name, code, description,
-                         COALESCE(role_type, 'user') AS "role_type!",
+                         COALESCE(role_type, 'user') AS "role_type!" ,
                          parent_id,
-                         COALESCE(level, 0) AS "level!",
-                         COALESCE(sort_order, 0) AS "sort_order!",
-                         COALESCE(status, 1) AS "status!",
-                         COALESCE(is_default, false) AS "is_default!",
-                         COALESCE(created_at, NOW()) AS "created_at!",
+                         COALESCE(level, 0) AS "level!" ,
+                         COALESCE(sort_order, 0) AS "sort_order!" ,
+                         COALESCE(status, 1) AS "status!" ,
+                         COALESCE(is_default, false) AS "is_default!" ,
+                         COALESCE(created_at, NOW()) AS "created_at!" ,
                          COALESCE(updated_at, NOW()) AS "updated_at!"
 "#,
             name.as_deref(),
@@ -254,7 +254,7 @@ impl RoleRepository {
         let role = self.find_by_code(code).await?;
         if let Some(role) = role {
             let child_count =
-                sqlx::query!("SELECT COUNT(*) as count FROM roles WHERE parent_id = $1", role.id)
+                sqlx::query!("SELECT COUNT(*) as count FROM roles WHERE parent_id = $1" , role.id)
                     .fetch_one(&self.pool)
                     .await?
                     .count
@@ -266,7 +266,7 @@ impl RoleRepository {
 
             // 检查是否有用户关联
             let user_count =
-                sqlx::query!("SELECT COUNT(*) as count FROM user_roles WHERE role_id = $1", role.id)
+                sqlx::query!("SELECT COUNT(*) as count FROM user_roles WHERE role_id = $1" , role.id)
                     .fetch_one(&self.pool)
                     .await?
                     .count
@@ -277,12 +277,12 @@ impl RoleRepository {
             }
 
             // 删除角色权限关联
-            sqlx::query!("DELETE FROM role_permissions WHERE role_id = $1", role.id)
+            sqlx::query!("DELETE FROM role_permissions WHERE role_id = $1" , role.id)
                 .execute(&self.pool)
                 .await?;
 
             // 删除角色
-            let result = sqlx::query!("DELETE FROM roles WHERE code = $1", code)
+            let result = sqlx::query!("DELETE FROM roles WHERE code = $1" , code)
                 .execute(&self.pool)
                 .await?;
 
@@ -304,11 +304,11 @@ impl RoleRepository {
         let rows = sqlx::query_as!(
             RoleListItem,
             r#"SELECT r.id, r.name, r.code, r.description,
-                      COALESCE(r.role_type, 'user') AS "role_type!",
-                      COALESCE(r.level, 0) AS "level!",
-                      COALESCE(r.status, 1) AS "status!",
-                      COALESCE(r.is_default, false) AS "is_default!",
-                      COALESCE(r.created_at, NOW()) AS "created_at!",
+                      COALESCE(r.role_type, 'user') AS "role_type!" ,
+                      COALESCE(r.level, 0) AS "level!" ,
+                      COALESCE(r.status, 1) AS "status!" ,
+                      COALESCE(r.is_default, false) AS "is_default!" ,
+                      COALESCE(r.created_at, NOW()) AS "created_at!" ,
                       COUNT(ur.id) AS "user_count!"
                FROM roles r
                LEFT JOIN user_roles ur ON r.id = ur.role_id
@@ -326,7 +326,7 @@ impl RoleRepository {
         // 获取总数
         let total_row = sqlx::query!(
             r"SELECT COUNT(*) as count FROM roles
-               WHERE ($1::text IS NULL OR name ILIKE '%' || $1 || '%' OR code ILIKE '%' || $1 || '%')",
+               WHERE ($1::text IS NULL OR name ILIKE '%' || $1 || '%' OR code ILIKE '%' || $1 || '%')" ,
             keyword,
         )
         .fetch_one(&self.pool)
@@ -361,12 +361,12 @@ impl RoleRepository {
         let rows = sqlx::query_as!(
             Permission,
             r#"SELECT p.id, p.name, p.code,
-                      COALESCE(p.permission_type, '') AS "permission_type!",
+                      COALESCE(p.permission_type, '') AS "permission_type!" ,
                       p.parent_id,
-                      COALESCE(p.path, '') AS "path!",
-                      COALESCE(p.method, '') AS "method!",
-                      COALESCE(p.icon, '') AS "icon!",
-                      COALESCE(p.sort_order, 0) AS "sort_order!",
+                      COALESCE(p.path, '') AS "path!" ,
+                      COALESCE(p.method, '') AS "method!" ,
+                      COALESCE(p.icon, '') AS "icon!" ,
+                      COALESCE(p.sort_order, 0) AS "sort_order!" ,
                       COALESCE(p.status, 1) AS "status!"
                FROM permissions p
                INNER JOIN role_permissions rp ON p.id = rp.permission_id
@@ -405,7 +405,7 @@ impl RoleRepository {
             return Ok(Vec::new());
         }
         let rows = sqlx::query!(
-            "SELECT id FROM permissions WHERE code = ANY($1)",
+            "SELECT id FROM permissions WHERE code = ANY($1)" ,
             codes,
         )
         .fetch_all(&self.pool)
@@ -425,14 +425,14 @@ impl RoleRepository {
         let mut tx = self.pool.begin().await?;
 
         // 删除现有权限
-        sqlx::query!("DELETE FROM role_permissions WHERE role_id = $1", role_id)
+        sqlx::query!("DELETE FROM role_permissions WHERE role_id = $1" , role_id)
             .execute(&mut *tx)
             .await?;
 
         // 插入新权限
         for perm_id in permission_ids {
             sqlx::query!(
-                "INSERT INTO role_permissions (role_id, permission_id) VALUES ($1, $2)",
+                "INSERT INTO role_permissions (role_id, permission_id) VALUES ($1, $2)" ,
                 role_id,
                 perm_id,
             )
@@ -454,7 +454,7 @@ impl RoleRepository {
         let offset = (page - 1).max(0) * page_size;
 
         let rows = sqlx::query!(
-            "SELECT user_id FROM user_roles WHERE role_id = $1\n               ORDER BY created_at DESC\n               LIMIT $2 OFFSET $3",
+            "SELECT user_id FROM user_roles WHERE role_id = $1\n               ORDER BY created_at DESC\n               LIMIT $2 OFFSET $3" ,
             role_id,
             i64::from(page_size),
             i64::from(offset),
@@ -462,7 +462,7 @@ impl RoleRepository {
         .fetch_all(&self.pool)
         .await?;
 
-        let total_row = sqlx::query!("SELECT COUNT(*) as count FROM user_roles WHERE role_id = $1", role_id)
+        let total_row = sqlx::query!("SELECT COUNT(*) as count FROM user_roles WHERE role_id = $1" , role_id)
             .fetch_one(&self.pool)
             .await?;
 
@@ -477,12 +477,12 @@ impl RoleRepository {
         let rows = sqlx::query_as!(
             Permission,
             r#"SELECT id, name, code,
-                      COALESCE(permission_type, '') AS "permission_type!",
+                      COALESCE(permission_type, '') AS "permission_type!" ,
                       parent_id,
-                      COALESCE(path, '') AS "path!",
-                      COALESCE(method, '') AS "method!",
-                      COALESCE(icon, '') AS "icon!",
-                      COALESCE(sort_order, 0) AS "sort_order!",
+                      COALESCE(path, '') AS "path!" ,
+                      COALESCE(method, '') AS "method!" ,
+                      COALESCE(icon, '') AS "icon!" ,
+                      COALESCE(sort_order, 0) AS "sort_order!" ,
                       COALESCE(status, 1) AS "status!"
                FROM permissions
                ORDER BY sort_order, id"#,
@@ -519,7 +519,7 @@ impl RoleRepository {
 
         // 获取源角色的权限
         let rows = sqlx::query!(
-            "SELECT permission_id FROM role_permissions WHERE role_id = $1",
+            "SELECT permission_id FROM role_permissions WHERE role_id = $1" ,
             source_role_id,
         )
         .fetch_all(&mut *tx)
@@ -534,7 +534,7 @@ impl RoleRepository {
         for target_id in target_role_ids {
             // 删除现有权限
             sqlx::query!(
-                "DELETE FROM role_permissions WHERE role_id = $1",
+                "DELETE FROM role_permissions WHERE role_id = $1" ,
                 target_id,
             )
             .execute(&mut *tx)
@@ -543,7 +543,7 @@ impl RoleRepository {
             // 复制权限
             for perm_id in &permission_ids {
                 sqlx::query!(
-                    "INSERT INTO role_permissions (role_id, permission_id) VALUES ($1, $2)",
+                    "INSERT INTO role_permissions (role_id, permission_id) VALUES ($1, $2)" ,
                     target_id,
                     perm_id,
                 )
@@ -568,7 +568,7 @@ impl RoleRepository {
         let row = sqlx::query!(
             r"INSERT INTO role_templates (name, description, permissions, role_type)
                VALUES ($1, $2, $3, $4)
-               RETURNING id",
+               RETURNING id" ,
             name,
             description.as_deref(),
             serde_json::to_value(&permissions).unwrap_or_default(),
@@ -629,7 +629,7 @@ impl RoleRepository {
                    description = COALESCE($2, description),
                    permissions = COALESCE($3, permissions),
                    updated_at = NOW()
-               WHERE id = $4 AND is_system = FALSE",
+               WHERE id = $4 AND is_system = FALSE" ,
             name.as_deref(),
             description.as_deref(),
             permissions.map(|p| serde_json::to_value(&p).unwrap_or_default()),
@@ -644,7 +644,7 @@ impl RoleRepository {
     /// 删除角色模板
     pub async fn delete_template(&self, id: i64) -> Result<bool, RoleRepositoryError> {
         let result = sqlx::query!(
-            "DELETE FROM role_templates WHERE id = $1 AND is_system = FALSE",
+            "DELETE FROM role_templates WHERE id = $1 AND is_system = FALSE" ,
             id,
         )
         .execute(&self.pool)
@@ -696,7 +696,7 @@ impl RoleRepository {
     ) -> Result<(), RoleRepositoryError> {
         // 删除现有数据权限
         sqlx::query!(
-            "DELETE FROM role_data_permissions WHERE role_id = $1",
+            "DELETE FROM role_data_permissions WHERE role_id = $1" ,
             role_id.to_string(),
         )
         .execute(&self.pool)
@@ -705,19 +705,19 @@ impl RoleRepository {
         // 插入新数据权限
         for perm in permissions {
             let resource_type = perm
-                .get("resource_type")
+                .get("resource_type" )
                 .and_then(|v| v.as_str())
-                .unwrap_or("");
+                .unwrap_or("" );
             let data_scope = perm
-                .get("data_scope")
+                .get("data_scope" )
                 .and_then(|v| v.as_str())
-                .unwrap_or("all");
-            let filter_expression = perm.get("filter_expression").and_then(|v| v.as_str());
-            let allowed_department_ids = perm.get("allowed_department_ids");
-            let allowed_user_ids = perm.get("allowed_user_ids");
-            let priority = perm.get("priority").and_then(serde_json::Value::as_i64).unwrap_or(0) as i32;
+                .unwrap_or("all" );
+            let filter_expression = perm.get("filter_expression" ).and_then(|v| v.as_str());
+            let allowed_department_ids = perm.get("allowed_department_ids" );
+            let allowed_user_ids = perm.get("allowed_user_ids" );
+            let priority = perm.get("priority" ).and_then(serde_json::Value::as_i64).unwrap_or(0) as i32;
             let enabled = perm
-                .get("enabled")
+                .get("enabled" )
                 .and_then(serde_json::Value::as_bool)
                 .unwrap_or(true);
 
@@ -725,7 +725,7 @@ impl RoleRepository {
                 r"INSERT INTO role_data_permissions
                    (id, role_id, resource_type, data_scope, filter_expression,
                     allowed_department_ids, allowed_user_ids, priority, enabled)
-                   VALUES (gen_random_uuid()::text, $1, $2, $3, $4, $5, $6, $7, $8)",
+                   VALUES (gen_random_uuid()::text, $1, $2, $3, $4, $5, $6, $7, $8)" ,
                 role_id.to_string(),
                 resource_type,
                 data_scope,
@@ -784,7 +784,7 @@ impl RoleRepository {
     ) -> Result<(), RoleRepositoryError> {
         // 删除现有字段权限
         sqlx::query!(
-            "DELETE FROM role_field_permissions WHERE role_id = $1",
+            "DELETE FROM role_field_permissions WHERE role_id = $1" ,
             role_id.to_string(),
         )
         .execute(&self.pool)
@@ -793,23 +793,23 @@ impl RoleRepository {
         // 插入新字段权限
         for perm in permissions {
             let resource_type = perm
-                .get("resource_type")
+                .get("resource_type" )
                 .and_then(|v| v.as_str())
-                .unwrap_or("");
+                .unwrap_or("" );
             let field_name = perm
-                .get("field_name")
+                .get("field_name" )
                 .and_then(|v| v.as_str())
-                .unwrap_or("");
+                .unwrap_or("" );
             let permission = perm
-                .get("permission")
+                .get("permission" )
                 .and_then(|v| v.as_str())
-                .unwrap_or("read_write");
-            let mask_pattern = perm.get("mask_pattern").and_then(|v| v.as_str());
+                .unwrap_or("read_write" );
+            let mask_pattern = perm.get("mask_pattern" ).and_then(|v| v.as_str());
 
             sqlx::query!(
                 r"INSERT INTO role_field_permissions
                    (id, role_id, resource_type, field_name, permission, mask_pattern)
-                   VALUES (gen_random_uuid()::text, $1, $2, $3, $4, $5)",
+                   VALUES (gen_random_uuid()::text, $1, $2, $3, $4, $5)" ,
                 role_id.to_string(),
                 resource_type,
                 field_name,
@@ -872,7 +872,7 @@ impl RoleRepository {
     ) -> Result<(), RoleRepositoryError> {
         // 删除现有继承关系
         sqlx::query!(
-            "DELETE FROM permission_inheritances WHERE child_role_id = $1::text",
+            "DELETE FROM permission_inheritances WHERE child_role_id = $1::text" ,
             role_id.to_string(),
         )
         .execute(&self.pool)
@@ -885,7 +885,7 @@ impl RoleRepository {
                     r"INSERT INTO permission_inheritances
                        (id, parent_role_id, child_role_id, inherit_data_permissions,
                         inherit_field_permissions, override_child_permissions, priority)
-                       VALUES (gen_random_uuid()::text, $1, $2, TRUE, TRUE, FALSE, $3)",
+                       VALUES (gen_random_uuid()::text, $1, $2, TRUE, TRUE, FALSE, $3)" ,
                     parent.id.to_string(),
                     role_id.to_string(),
                     idx as i32,
@@ -902,7 +902,7 @@ impl RoleRepository {
     pub async fn remove_inherit(&self, role_id: i64) -> Result<bool, RoleRepositoryError> {
         let result =
             sqlx::query!(
-                "DELETE FROM permission_inheritances WHERE child_role_id = $1::text",
+                "DELETE FROM permission_inheritances WHERE child_role_id = $1::text" ,
                 role_id.to_string(),
             )
             .execute(&self.pool)
@@ -923,7 +923,7 @@ impl RoleRepository {
             .ok_or(RoleRepositoryError::NotFound)?;
 
         let template_rows = sqlx::query!(
-            "SELECT permissions FROM role_templates WHERE id = $1",
+            "SELECT permissions FROM role_templates WHERE id = $1" ,
             template_id,
         )
         .fetch_optional(&self.pool)
@@ -937,7 +937,7 @@ impl RoleRepository {
             let mut permission_ids = Vec::new();
             for code in perms {
                 let perm_row = sqlx::query!(
-                    "SELECT id FROM permissions WHERE code = $1",
+                    "SELECT id FROM permissions WHERE code = $1" ,
                     code,
                 )
                 .fetch_optional(&self.pool)

@@ -25,7 +25,7 @@ impl CrawlerAdapter for XiaohongshuCrawler {
         keyword: &str,
         client: &BrowserClient,
     ) -> anyhow::Result<Vec<RawContent>> {
-        tracing::info!("[XiaohongshuCrawler] crawling '{}' via browser-service", keyword);
+        tracing::info!("[XiaohongshuCrawler] crawling '{}' via browser-service" , keyword);
 
         let session_id = client.create_session().await?;
 
@@ -42,7 +42,7 @@ impl CrawlerAdapter for XiaohongshuCrawler {
 
         let _ = client.close_session(&session_id).await;
 
-        tracing::info!("[XiaohongshuCrawler] found {} results", results.len());
+        tracing::info!("[XiaohongshuCrawler] found {} results" , results.len());
         Ok(results)
     }
 }
@@ -51,12 +51,12 @@ fn parse_xiaohongshu_text(text: &str, keyword: &str) -> Vec<RawContent> {
     let mut results = Vec::new();
     for line in text.lines() {
         let trimmed = line.trim();
-        if trimmed.len() > 15 && !trimmed.starts_with("//") && !trimmed.starts_with("/*") {
+        if trimmed.len() > 15 && !trimmed.starts_with("//" ) && !trimmed.starts_with("/*" ) {
             results.push(RawContent {
                 text: trimmed.to_string(),
                 images: vec![],
                 source: "xiaohongshu".to_string(),
-                url: format!("https://www.xiaohongshu.com/search_result?keyword={}", urlencoding::encode(keyword)),
+                url: format!("https://www.xiaohongshu.com/search_result?keyword={}" , urlencoding::encode(keyword)),
             });
         }
         if results.len() >= 20 {

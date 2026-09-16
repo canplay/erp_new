@@ -38,17 +38,17 @@ pub enum QuotaType {
 impl QuotaType {
     pub fn as_str(&self) -> &'static str {
         match self {
-            Self::MaxUsers => "max_users",
-            Self::MaxStorageGb => "max_storage_gb",
-            Self::MonthlyApiCalls => "monthly_api_calls",
-            Self::MonthlyFileUploads => "monthly_file_uploads",
-            Self::MaxFileSizeMb => "max_file_size_mb",
-            Self::MaxGroupMembers => "max_group_members",
-            Self::MaxGroups => "max_groups",
-            Self::MessageRetentionDays => "message_retention_days",
-            Self::MaxChannels => "max_channels",
-            Self::MaxRoles => "max_roles",
-            Self::MaxPermissions => "max_permissions",
+            Self::MaxUsers => "max_users" ,
+            Self::MaxStorageGb => "max_storage_gb" ,
+            Self::MonthlyApiCalls => "monthly_api_calls" ,
+            Self::MonthlyFileUploads => "monthly_file_uploads" ,
+            Self::MaxFileSizeMb => "max_file_size_mb" ,
+            Self::MaxGroupMembers => "max_group_members" ,
+            Self::MaxGroups => "max_groups" ,
+            Self::MessageRetentionDays => "message_retention_days" ,
+            Self::MaxChannels => "max_channels" ,
+            Self::MaxRoles => "max_roles" ,
+            Self::MaxPermissions => "max_permissions" ,
         }
     }
 
@@ -72,17 +72,17 @@ impl QuotaType {
     /// 获取默认单位
     pub fn unit(&self) -> &'static str {
         match self {
-            Self::MaxUsers => "users",
-            Self::MaxStorageGb => "GB",
-            Self::MonthlyApiCalls => "calls/month",
-            Self::MonthlyFileUploads => "uploads/month",
-            Self::MaxFileSizeMb => "MB",
-            Self::MaxGroupMembers => "members",
-            Self::MaxGroups => "groups",
-            Self::MessageRetentionDays => "days",
-            Self::MaxChannels => "channels",
-            Self::MaxRoles => "roles",
-            Self::MaxPermissions => "permissions",
+            Self::MaxUsers => "users" ,
+            Self::MaxStorageGb => "GB" ,
+            Self::MonthlyApiCalls => "calls/month" ,
+            Self::MonthlyFileUploads => "uploads/month" ,
+            Self::MaxFileSizeMb => "MB" ,
+            Self::MaxGroupMembers => "members" ,
+            Self::MaxGroups => "groups" ,
+            Self::MessageRetentionDays => "days" ,
+            Self::MaxChannels => "channels" ,
+            Self::MaxRoles => "roles" ,
+            Self::MaxPermissions => "permissions" ,
         }
     }
 }

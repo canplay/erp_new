@@ -41,7 +41,7 @@ impl ServiceInstance {
     /// 获取完整的 gRPC 地址
     #[must_use]
     pub fn grpc_addr(&self) -> String {
-        format!("http://{}:{}", self.addr, self.grpc_port)
+        format!("http://{}:{}" , self.addr, self.grpc_port)
     }
 
     /// 设置 HTTP 端口
@@ -87,7 +87,7 @@ impl ServiceDiscovery {
             .entry(service_name.clone())
             .or_default()
             .push(instance);
-        tracing::info!("服务实例已注册: {service_name}");
+        tracing::info!("服务实例已注册: {service_name}" );
     }
 
     /// 注销服务实例
@@ -95,7 +95,7 @@ impl ServiceDiscovery {
         let mut services = self.services.write();
         if let Some(instances) = services.get_mut(service_name) {
             instances.retain(|i| i.addr != addr);
-            tracing::info!("服务实例已注销: {service_name} @ {addr}");
+            tracing::info!("服务实例已注销: {service_name} @ {addr}" );
         }
     }
 
@@ -152,20 +152,20 @@ impl Clone for ServiceDiscovery {
 /// 静态服务配置（用于配置文件）
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct StaticServiceConfig {
-    #[serde(rename = "services")]
+    #[serde(rename = "services" )]
     services: Vec<ServiceConfig>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ServiceConfig {
     pub name: String,
-    #[serde(rename = "addr")]
+    #[serde(rename = "addr" )]
     pub addr: String,
-    #[serde(rename = "grpc_port")]
+    #[serde(rename = "grpc_port" )]
     pub grpc_port: u16,
-    #[serde(rename = "http_port", default)]
+    #[serde(rename = "http_port" , default)]
     pub http_port: Option<u16>,
-    #[serde(default = "default_weight")]
+    #[serde(default = "default_weight" )]
     pub weight: u32,
 }
 

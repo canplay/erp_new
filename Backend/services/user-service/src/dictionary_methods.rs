@@ -49,7 +49,7 @@
         let req = request.into_inner();
 
         if req.code.is_empty() || req.name.is_empty() {
-            return Err(Status::invalid_argument("字典类型编码和名称不能为空"));
+            return Err(Status::invalid_argument("字典类型编码和名称不能为空" ));
         }
 
         let description = if req.description.is_empty() {
@@ -95,7 +95,7 @@
             .map_err(|e| Status::internal(e.to_string()))?;
 
         if existing.is_none() {
-            return Err(Status::not_found("字典类型不存在"));
+            return Err(Status::not_found("字典类型不存在" ));
         }
 
         self.state
@@ -127,7 +127,7 @@
             .map_err(|e| Status::internal(e.to_string()))?;
 
         if !success {
-            return Err(Status::not_found("字典类型不存在"));
+            return Err(Status::not_found("字典类型不存在" ));
         }
 
         Ok(Response::new(DeleteDictionaryTypeResponse { success: true }))
@@ -189,7 +189,7 @@
             item: Some(DictionaryItemInfo {
                 id: item_id, type_id: req.type_id, label: req.label, value: req.value,
                 sort: sort.unwrap_or(0), status: status.unwrap_or(1), is_default: is_default.unwrap_or(false),
-                remark: remark.unwrap_or("").to_string(),
+                remark: remark.unwrap_or("" ).to_string(),
                 created_at: Utc::now().timestamp(), updated_at: Utc::now().timestamp(),
             }),
         }))
@@ -202,7 +202,7 @@
         let req = request.into_inner();
         let exists = self.state.announcement_repository.find_dictionary_item_by_id(req.id).await
             .map_err(|e| Status::internal(e.to_string()))?;
-        if exists.is_none() { return Err(Status::not_found("字典项不存在")); }
+        if exists.is_none() { return Err(Status::not_found("字典项不存在" )); }
 
         let label = if req.label.is_empty() { None } else { Some(req.label) };
         let value = if req.value.is_empty() { None } else { Some(req.value) };
@@ -213,8 +213,8 @@
 
         let update_params = crate::repository::UpdateDictionaryItemParams {
             id: req.id,
-            label: label.as_deref().unwrap_or(""),
-            value: value.as_deref().unwrap_or(""),
+            label: label.as_deref().unwrap_or("" ),
+            value: value.as_deref().unwrap_or("" ),
             sort: sort_val,
             status: status_val,
             is_default: is_default_val,
@@ -234,7 +234,7 @@
         let req = request.into_inner();
         let success = self.state.announcement_repository.delete_dictionary_item(req.id).await
             .map_err(|e| Status::internal(e.to_string()))?;
-        if !success { return Err(Status::not_found("字典项不存在")); }
+        if !success { return Err(Status::not_found("字典项不存在" )); }
         Ok(Response::new(DeleteDictionaryItemResponse { success: true }))
     }
 
@@ -255,7 +255,7 @@
                     created_at: t.created_at.timestamp(), updated_at: t.updated_at.timestamp(),
                 }),
             })),
-            None => Err(Status::not_found("字典类型不存在")),
+            None => Err(Status::not_found("字典类型不存在" )),
         }
     }
 
@@ -278,7 +278,7 @@
                     updated_at: item.updated_at.timestamp(),
                 }),
             })),
-            None => Err(Status::not_found("字典项不存在")),
+            None => Err(Status::not_found("字典项不存在" )),
         }
     }
 

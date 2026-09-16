@@ -65,8 +65,8 @@ impl JwtConfig {
     #[must_use]
     pub fn from_env() -> Self {
         Self {
-            secret: std::env::var("JWT_SECRET")
-                .expect("JWT_SECRET 环境变量未设置，请在 .env 或环境中配置"),
+            secret: std::env::var("JWT_SECRET" )
+                .expect("JWT_SECRET 环境变量未设置，请在 .env 或环境中配置" ),
             issuer: Some("myai".to_string()), // 审计修复 B7: 统一默认值
         }
     }
@@ -101,7 +101,7 @@ impl JwtValidator {
     /// 从 Authorization header 提取 token
     #[must_use]
     pub fn extract_token(auth_header: &str) -> Option<&str> {
-        auth_header.strip_prefix("Bearer ")
+        auth_header.strip_prefix("Bearer " )
     }
 }
 
@@ -128,7 +128,7 @@ impl IntoResponse for AuthError {
                 "Authorization 格式错误，期望: Bearer <token>".to_string(),
             ),
             Self::InvalidToken(msg) => {
-                (StatusCode::UNAUTHORIZED, format!("Token 无效: {msg}"))
+                (StatusCode::UNAUTHORIZED, format!("Token 无效: {msg}" ))
             }
         };
 
@@ -154,7 +154,7 @@ where
         // 从 Authorization header 获取 token
         let auth_header = parts
             .headers
-            .get("Authorization")
+            .get("Authorization" )
             .and_then(|v| v.to_str().ok())
             .ok_or(AuthError::MissingHeader)?;
 
@@ -209,7 +209,7 @@ mod tests {
 
     #[test]
     fn test_verify_valid_token() {
-        let token = create_test_token(1, "testuser", "admin");
+        let token = create_test_token(1, "testuser" , "admin" );
         // 使用与 create_test_token 相同的 secret
         let config = JwtConfig {
             secret: "your-secret-key-change-in-production".to_string(),
@@ -219,15 +219,15 @@ mod tests {
 
         let claims = validator.verify(&token).unwrap();
         assert_eq!(claims.sub, 1);
-        assert_eq!(claims.username, "testuser");
-        assert_eq!(claims.role, "admin");
+        assert_eq!(claims.username, "testuser" );
+        assert_eq!(claims.role, "admin" );
     }
 
     #[test]
     fn test_extract_token() {
         let header = "Bearer abc123";
         let token = JwtValidator::extract_token(header);
-        assert_eq!(token, Some("abc123"));
+        assert_eq!(token, Some("abc123" ));
 
         let invalid_header = "Basic abc123";
         let token = JwtValidator::extract_token(invalid_header);
@@ -246,7 +246,7 @@ mod tests {
 
         let user = AuthUser::from_claims(claims);
         assert_eq!(user.user_id, 42);
-        assert_eq!(user.username, "testuser");
+        assert_eq!(user.username, "testuser" );
         assert!(user.is_admin());
     }
 }

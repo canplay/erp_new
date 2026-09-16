@@ -16,7 +16,7 @@ pub struct JwtConfig {
 impl Default for JwtConfig {
     fn default() -> Self {
         Self {
-            secret: std::env::var("JWT_SECRET")
+            secret: std::env::var("JWT_SECRET" )
                 .unwrap_or_else(|_| "default-test-secret-do-not-use-in-production".to_string()),
             issuer: "backend-rust".to_string(),
             audience: "backend-rust".to_string(),
@@ -32,13 +32,13 @@ impl JwtConfig {
         // JWT secret 长度必须 >= 32 字符，否则存在安全风险
         if self.secret.len() < 32 {
             return Err(ConfigError::Message(format!(
-                "JWT secret 长度必须 >= 32 字符（当前: {}），请设置安全的密钥",
+                "JWT secret 长度必须 >= 32 字符（当前: {}），请设置安全的密钥" ,
                 self.secret.len()
             )));
         }
         // 检查是否为默认密钥（仅在环境变量 JWT_REQUIRE_STRONG_SECRET=true 时检查）
         if self.secret == "default-test-secret-do-not-use-in-production" {
-            let require_strong = std::env::var("JWT_REQUIRE_STRONG_SECRET")
+            let require_strong = std::env::var("JWT_REQUIRE_STRONG_SECRET" )
                 .unwrap_or_else(|_| "false".to_string())
                 .to_lowercase() == "true";
             if require_strong {

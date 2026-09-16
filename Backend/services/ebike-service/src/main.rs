@@ -16,7 +16,7 @@ use ebike_service::{{create_state, grpc_server}};
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 使用 ServiceBootstrap 统一启动器
-    let config = ServiceConfig::from_env("ebike-service", 8098, 9100);
+    let config = ServiceConfig::from_env("ebike-service" , 8098, 9100);
 
     let bootstrap = ServiceBootstrap::new(config);
 

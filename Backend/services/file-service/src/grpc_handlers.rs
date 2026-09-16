@@ -77,7 +77,7 @@ pub async fn list_files(
             None,
         )
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))?;
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))?;
 
     let file_infos: Vec<FileInfo> = files.into_iter().map(FileInfo::from).collect();
     Ok((file_infos, total))
@@ -90,7 +90,7 @@ pub async fn get_file(state: Arc<FileAppState>, id: i64) -> Result<Option<FileIn
         .find_by_id(id)
         .await
         .map(|opt| opt.map(FileInfo::from))
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 /// 删除文件
@@ -99,7 +99,7 @@ pub async fn delete_file(state: Arc<FileAppState>, id: i64) -> Result<bool, Stat
         .repository
         .delete(id)
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 /// 批量删除文件
@@ -108,7 +108,7 @@ pub async fn batch_delete_files(state: Arc<FileAppState>, ids: Vec<i64>) -> Resu
         .repository
         .batch_delete(&ids)
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 /// 检查文件是否被使用
@@ -117,7 +117,7 @@ pub async fn check_file_in_use(state: Arc<FileAppState>, id: i64) -> Result<bool
         .repository
         .is_file_in_use(id)
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 // ============== 文件分类接口 ==============
@@ -180,12 +180,12 @@ impl common::service_bootstrap::GrpcServiceBuilder for FileGrpcService {
     fn build_grpc_server(&self, grpc_addr: &str) -> Result<tokio::task::JoinHandle<()>, Box<dyn std::error::Error + Send + Sync>> {
         use tonic::transport::Server;
 
-        let addr: SocketAddr = grpc_addr.parse().map_err(|e| -> Box<dyn std::error::Error + Send + Sync> { format!("invalid grpc addr: {e}").into() })?;
+        let addr: SocketAddr = grpc_addr.parse().map_err(|e| -> Box<dyn std::error::Error + Send + Sync> { format!("invalid grpc addr: {e}" ).into() })?;
         let server = FileServiceServer::new(FileGrpcService::new(self.state.clone()));
         let handle = tokio::spawn(async move {
             if let Err(e) = Server::builder()
                 .add_service(server).serve(addr).await {
-                tracing::error!("gRPC server error: {}", e);
+                tracing::error!("gRPC server error: {}" , e);
             }
         });
         Ok(handle)

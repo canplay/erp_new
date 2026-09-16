@@ -206,7 +206,7 @@ pub async fn list_users(
                         "page": page,
                         "page_size": page_size
                     }),
-            )
+            ))
                 .into_response()
         }
         Err(e) => {
@@ -685,7 +685,7 @@ pub async fn import_users(
                 } else {
                     errors
                 }
-            }, &format!("导入完成: 成功 {),
+            }, &format!("导入完成: 成功 {}"),
     )
         .into_response()
 }
@@ -701,7 +701,8 @@ pub async fn export_users(
         Ok(result) => {
             // 预分配 String 容量以提高性能
             let mut csv_content = String::with_capacity(result.users.len() * 200);
-            csv_content.push_str("id,username,nickname,email,phone,role,status,created_at\n");
+            csv_content.push_str("id,username,nickname,email,phone,role,status,created_at");
+            csv_content.push('\n');
 
             for user in result.users {
                 use std::fmt::Write as FmtWrite;
@@ -787,7 +788,7 @@ pub async fn batch_update_user_role(
                             "message": e.message
                         })
                     }).collect::<Vec<_>>()
-                }, &format!("成功更新 {),
+                }, &format!("成功更新 {}"),
         ).into_response(),
         Err(e) => {
             tracing::error!("批量更新用户角色失败: {e:?}");
@@ -826,7 +827,7 @@ pub async fn batch_update_user_status(
                             "message": e.message
                         })
                     }).collect::<Vec<_>>()
-                }, &format!("成功更新 {),
+                }, &format!("成功更新 {}"),
         ).into_response(),
         Err(e) => {
             tracing::error!("批量更新用户状态失败: {e:?}");
@@ -856,7 +857,7 @@ pub async fn batch_delete_users(
                             "message": e.message
                         })
                     }).collect::<Vec<_>>()
-                }, &format!("成功删除 {),
+                }, &format!("成功删除 {}"),
         ).into_response(),
         Err(e) => {
             tracing::error!("批量删除用户失败: {e:?}");

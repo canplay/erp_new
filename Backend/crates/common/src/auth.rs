@@ -70,7 +70,7 @@ impl JwtValidator {
             &validation,
         )
         .map(|t| t.claims)
-        .map_err(|e| format!("JWT 验证失败: {e}"))
+        .map_err(|e| format!("JWT 验证失败: {e}" ))
     }
 
     /// 生成 JWT 令牌
@@ -83,7 +83,7 @@ impl JwtValidator {
 
         let now = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
-            .map_err(|e| format!("时间错误: {e}"))?
+            .map_err(|e| format!("时间错误: {e}" ))?
             .as_secs() as usize;
 
         let claims = JwtClaims {
@@ -101,13 +101,13 @@ impl JwtValidator {
             &claims,
             &EncodingKey::from_secret(self.secret.as_bytes()),
         )
-        .map_err(|e| format!("JWT 编码失败: {e}"))
+        .map_err(|e| format!("JWT 编码失败: {e}" ))
     }
 
     /// 从 Authorization header 提取 Bearer token
     #[must_use]
     pub fn extract_token(auth_header: &str) -> Option<&str> {
-        auth_header.strip_prefix("Bearer ")
+        auth_header.strip_prefix("Bearer " )
     }
 }
 
@@ -125,17 +125,17 @@ impl UserContext {
         let headers = request.headers();
 
         let user_id = headers
-            .get("x-user-id")
+            .get("x-user-id" )
             .and_then(|v| v.to_str().ok())
             .and_then(|s| s.parse().ok())?;
 
         let username = headers
-            .get("x-user-name")
+            .get("x-user-name" )
             .and_then(|v| v.to_str().ok())
             .map(std::string::ToString::to_string)?;
 
         let role = headers
-            .get("x-user-role")
+            .get("x-user-role" )
             .and_then(|v| v.to_str().ok())
             .map(std::string::ToString::to_string)?;
 
@@ -168,16 +168,16 @@ mod tests {
     #[test]
     fn test_from_request() {
         let mut request = Request::builder();
-        request = request.header("x-user-id", "123");
-        request = request.header("x-user-name", "testuser");
-        request = request.header("x-user-role", "admin");
+        request = request.header("x-user-id" , "123" );
+        request = request.header("x-user-name" , "testuser" );
+        request = request.header("x-user-role" , "admin" );
 
         let request = request.body(Body::empty()).unwrap();
         let ctx = UserContext::from_request(&request).unwrap();
 
         assert_eq!(ctx.user_id, 123);
-        assert_eq!(ctx.username, "testuser");
-        assert_eq!(ctx.role, "admin");
+        assert_eq!(ctx.username, "testuser" );
+        assert_eq!(ctx.role, "admin" );
         assert!(ctx.is_admin());
     }
 
@@ -198,13 +198,13 @@ mod tests {
         );
 
         let token = validator
-            .generate(123, "testuser", "admin")
+            .generate(123, "testuser" , "admin" )
             .unwrap();
 
         let claims = validator.verify(&token).unwrap();
         assert_eq!(claims.sub, 123);
-        assert_eq!(claims.username, "testuser");
-        assert_eq!(claims.role, "admin");
+        assert_eq!(claims.username, "testuser" );
+        assert_eq!(claims.role, "admin" );
         assert_eq!(claims.iss, Some("my-issuer".to_string()));
         assert_eq!(claims.aud, Some("my-audience".to_string()));
     }
@@ -218,7 +218,7 @@ mod tests {
         );
 
         let token = validator
-            .generate(123, "testuser", "admin")
+            .generate(123, "testuser" , "admin" )
             .unwrap();
 
         let wrong_validator = JwtValidator::new(
@@ -239,7 +239,7 @@ mod tests {
         );
 
         let token = validator
-            .generate(123, "testuser", "admin")
+            .generate(123, "testuser" , "admin" )
             .unwrap();
 
         let wrong_validator = JwtValidator::new(
@@ -260,12 +260,12 @@ mod tests {
         );
 
         let token = validator
-            .generate(123, "testuser", "admin")
+            .generate(123, "testuser" , "admin" )
             .unwrap();
 
         let claims = validator.verify(&token).unwrap();
         assert_eq!(claims.sub, 123);
-        assert_eq!(claims.username, "testuser");
+        assert_eq!(claims.username, "testuser" );
         assert_eq!(claims.iss, None);
         assert_eq!(claims.aud, None);
     }
@@ -273,11 +273,11 @@ mod tests {
     #[test]
     fn test_jwt_extract_token() {
         assert_eq!(
-            JwtValidator::extract_token("Bearer abc123"),
-            Some("abc123")
+            JwtValidator::extract_token("Bearer abc123" ),
+            Some("abc123" )
         );
         assert_eq!(
-            JwtValidator::extract_token("Basic abc123"),
+            JwtValidator::extract_token("Basic abc123" ),
             None
         );
     }

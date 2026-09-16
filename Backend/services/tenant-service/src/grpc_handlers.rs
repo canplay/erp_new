@@ -135,7 +135,7 @@ pub async fn get_tenant(state: Arc<TenantAppState>, id: i64) -> Result<Option<Te
         .find_by_id(id)
         .await
         .map(|opt| opt.map(TenantInfo::from))
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 /// 获取租户列表
@@ -157,7 +157,7 @@ pub async fn list_tenants(
                 .collect(),
             total: result.total,
         })
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 /// 创建租户
@@ -181,7 +181,7 @@ pub async fn create_tenant(
             max_storage,
         )
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 /// 更新租户参数
@@ -215,7 +215,7 @@ pub async fn update_tenant(
             },
         )
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 /// 删除租户
@@ -224,7 +224,7 @@ pub async fn delete_tenant(state: Arc<TenantAppState>, id: i64) -> Result<bool, 
         .repository
         .delete(id)
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 /// 获取租户用户列表
@@ -239,7 +239,7 @@ pub async fn list_tenant_users(
         .list_users(tenant_id, page, page_size, None, None)
         .await
         .map(|result| result.users.into_iter().map(TenantUserInfo::from).collect())
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 /// 添加租户用户
@@ -262,7 +262,7 @@ pub async fn add_tenant_user(
         )
         .await
         .map(|()| true)
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 /// 更新租户用户
@@ -284,7 +284,7 @@ pub async fn update_tenant_user(
             position.as_deref(),
         )
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 /// 移除租户用户
@@ -297,7 +297,7 @@ pub async fn remove_tenant_user(
         .repository
         .remove_user(tenant_id, user_id)
         .await
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 /// 获取使用统计
@@ -317,7 +317,7 @@ pub async fn get_usage_stats(
             monthly_api_calls: s.monthly_api_calls,
             api_call_limit: s.api_call_limit,
         })
-        .map_err(|e| Status::internal(format!("Database error: {e}")))
+        .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 // ============== 租户生命周期接口 ==============
@@ -332,7 +332,7 @@ pub async fn activate_tenant(
         .activate_tenant(tenant_core::TenantId::new(tenant_id))
         .await
         .map(|_| "active".to_string())
-        .map_err(|e| Status::internal(format!("Lifecycle error: {e}")))
+        .map_err(|e| Status::internal(format!("Lifecycle error: {e}" )))
 }
 
 /// 暂停租户
@@ -346,7 +346,7 @@ pub async fn suspend_tenant(
         .suspend_tenant(tenant_core::TenantId::new(tenant_id), reason)
         .await
         .map(|_| "suspended".to_string())
-        .map_err(|e| Status::internal(format!("Lifecycle error: {e}")))
+        .map_err(|e| Status::internal(format!("Lifecycle error: {e}" )))
 }
 
 /// 续期租户
@@ -360,7 +360,7 @@ pub async fn renew_tenant(
         .renew_tenant(tenant_core::TenantId::new(tenant_id), days)
         .await
         .map(|_| Utc::now() + chrono::Duration::days(days))
-        .map_err(|e| Status::internal(format!("Lifecycle error: {e}")))
+        .map_err(|e| Status::internal(format!("Lifecycle error: {e}" )))
 }
 
 /// 获取租户状态
@@ -372,7 +372,7 @@ pub async fn get_tenant_state(
         .lifecycle
         .get_tenant_state(tenant_core::TenantId::new(tenant_id))
         .await
-        .map_err(|e| Status::internal(format!("Lifecycle error: {e}")))
+        .map_err(|e| Status::internal(format!("Lifecycle error: {e}" )))
 }
 
 /// 获取即将过期的租户
@@ -390,7 +390,7 @@ pub async fn list_expiring_tenants(
                 .map(|t| (t.value(), "".to_string(), Utc::now(), 0))
                 .collect()
         })
-        .map_err(|e| Status::internal(format!("Lifecycle error: {e}")))
+        .map_err(|e| Status::internal(format!("Lifecycle error: {e}" )))
 }
 
 // ============== 导出服务实现 ==============
@@ -500,7 +500,7 @@ impl TenantService for TenantGrpcService {
                     updated_at: t.updated_at.timestamp(),
                 }),
             })),
-            None => Err(Status::not_found("租户不存在")),
+            None => Err(Status::not_found("租户不存在" )),
         }
     }
 
@@ -661,7 +661,7 @@ impl TenantService for TenantGrpcService {
                 success: true,
                 state: "active".to_string(),
             }))
-            .map_err(|e| Status::internal(format!("Lifecycle error: {e}")))
+            .map_err(|e| Status::internal(format!("Lifecycle error: {e}" )))
     }
 
     /// 租户生命周期管理 — suspend
@@ -678,7 +678,7 @@ impl TenantService for TenantGrpcService {
                 success: true,
                 state: "suspended".to_string(),
             }))
-            .map_err(|e| Status::internal(format!("Lifecycle error: {e}")))
+            .map_err(|e| Status::internal(format!("Lifecycle error: {e}" )))
     }
 
     /// 租户生命周期管理 — renew
@@ -695,7 +695,7 @@ impl TenantService for TenantGrpcService {
                 success: true,
                 new_expires_at: 0,
             }))
-            .map_err(|e| Status::internal(format!("Lifecycle error: {e}")))
+            .map_err(|e| Status::internal(format!("Lifecycle error: {e}" )))
     }
 
     /// 租户生命周期管理 — get state
@@ -718,7 +718,7 @@ impl TenantService for TenantGrpcService {
                     is_operational,
                 })
             })
-            .map_err(|e| Status::internal(format!("Lifecycle error: {e}")))
+            .map_err(|e| Status::internal(format!("Lifecycle error: {e}" )))
     }
 
     /// 租户生命周期管理 — list expiring
@@ -740,7 +740,7 @@ impl TenantService for TenantGrpcService {
                     }).collect(),
                 })
             })
-            .map_err(|e| Status::internal(format!("Lifecycle error: {e}")))
+            .map_err(|e| Status::internal(format!("Lifecycle error: {e}" )))
     }
 
     /// 租户主题 — get
@@ -800,12 +800,12 @@ impl common::service_bootstrap::GrpcServiceBuilder for TenantGrpcService {
     fn build_grpc_server(&self, grpc_addr: &str) -> Result<tokio::task::JoinHandle<()>, Box<dyn std::error::Error + Send + Sync>> {
         use tonic::transport::Server;
 
-        let addr: SocketAddr = grpc_addr.parse().map_err(|e| -> Box<dyn std::error::Error + Send + Sync> { format!("invalid grpc addr: {e}").into() })?;
+        let addr: SocketAddr = grpc_addr.parse().map_err(|e| -> Box<dyn std::error::Error + Send + Sync> { format!("invalid grpc addr: {e}" ).into() })?;
         let server = TenantServiceServer::new(TenantGrpcService::new(self.state.clone()));
         let handle = tokio::spawn(async move {
             if let Err(e) = Server::builder()
                 .add_service(server).serve(addr).await {
-                tracing::error!("gRPC server error: {}", e);
+                tracing::error!("gRPC server error: {}" , e);
             }
         });
         Ok(handle)

@@ -42,7 +42,7 @@ pub async fn quota_enforcement_middleware(
 ) -> Result<Response<Body>, StatusCode> {
     // 简化实现：仅记录请求，实际配额检查在业务逻辑中处理
     if let Some(tenant_id) = current_tenant_id(&request) {
-        debug!(tenant_id = %tenant_id, "Quota check passed (simplified)");
+        debug!(tenant_id = %tenant_id, "Quota check passed (simplified)" );
     }
     
     let response = next.run(request).await;

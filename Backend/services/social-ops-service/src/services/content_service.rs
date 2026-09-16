@@ -28,7 +28,7 @@ impl ContentService {
              ORDER BY created_at DESC LIMIT $2 OFFSET $3"#).bind(status).bind(page_size).bind(offset)
         .fetch_all(&self.db).await?;
 
-        let total: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM socialops.content_items WHERE ($1::text IS NULL OR status = $1)").bind(status)
+        let total: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM socialops.content_items WHERE ($1::text IS NULL OR status = $1)" ).bind(status)
         .fetch_one(&self.db).await
         .unwrap_or(Some(0))
         .unwrap_or(0);
@@ -36,7 +36,7 @@ impl ContentService {
         let items = rows.into_iter().map(|row| {
             serde_json::json!({
                 "id": row.id, "source_type": row.source_type, "content_type": row.content_type,
-                "title": row.title, "body_preview": row.body.as_deref().unwrap_or("").chars().take(200).collect::<String>(),
+                "title": row.title, "body_preview": row.body.as_deref().unwrap_or(" ").chars().take(200).collect::<String>(),
                 "status": row.status, "created_at": row.created_str
             })
         }).collect();
@@ -62,7 +62,7 @@ impl ContentService {
         let source_hash = source_url.map(hash_url);
         let row = sqlx::query(r#"INSERT INTO socialops.content_items (title, body, content_type, source_url, source_hash, source_type, status)
              VALUES ($1, $2, $3, $4, $5, 'manual', 'draft')
-             RETURNING id, title AS "title!", body AS "body!", content_type, status"#).bind(title).bind(body).bind(content_type).bind(source_url).bind(source_hash.as_deref()).bind()
+             RETURNING id, title AS "title!" , body AS "body!" , content_type, status"#).bind(title).bind(body).bind(content_type).bind(source_url).bind(source_hash.as_deref()).bind()
         .fetch_one(&self.db).await?;
 
         Ok(serde_json::json!({
@@ -72,7 +72,7 @@ impl ContentService {
     }
 
     pub async fn update_status(&self, id: Uuid, status: &str) -> Result<bool, sqlx::Error> {
-        let r = sqlx::query("UPDATE socialops.content_items SET status = $1, updated_at = NOW() WHERE id = $2").bind(status).bind(id)
+        let r = sqlx::query("UPDATE socialops.content_items SET status = $1, updated_at = NOW() WHERE id = $2" ).bind(status).bind(id)
         .execute(&self.db).await?;
         Ok(r.rows_affected() > 0)
     }

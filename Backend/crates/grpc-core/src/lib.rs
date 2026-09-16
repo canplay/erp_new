@@ -5,7 +5,7 @@
 mod client;
 mod discovery;
 mod pool;
-#[cfg(feature = "telemetry")]
+#[cfg(feature = "telemetry" )]
 pub mod tracing;
 
 pub use client::*;

@@ -36,7 +36,7 @@ async fn lpr_callback_handler(
 ) -> Result<Json<serde_json::Value>, AppError> {
     let clients = state.grpc_clients.read().await;
     let mut client = clients.lpr_client().await.map_err(|e| {
-        tracing::error!("lpr-service 不可用: {e}");
+        tracing::error!("lpr-service 不可用: {e}" );
         AppError::ServiceUnavailable("lpr-service 不可用".into())
     })?;
 
@@ -60,8 +60,8 @@ async fn lpr_callback_handler(
     match result {
         Ok(response) => Ok(json_lpr_response(&response)),
         Err(e) => {
-            tracing::error!("gRPC LPR 回调转发失败: {e}");
-            Err(AppError::ServiceUnavailable(format!("lpr-service 调用失败: {e}")))
+            tracing::error!("gRPC LPR 回调转发失败: {e}" );
+            Err(AppError::ServiceUnavailable(format!("lpr-service 调用失败: {e}" )))
         }
     }
 }
@@ -81,7 +81,7 @@ async fn vehicle_auth_handler(
 ) -> Result<Json<serde_json::Value>, AppError> {
     let clients = state.grpc_clients.read().await;
     let mut client = clients.lpr_client().await.map_err(|e| {
-        tracing::error!("lpr-service 不可用: {e}");
+        tracing::error!("lpr-service 不可用: {e}" );
         AppError::ServiceUnavailable("lpr-service 不可用".into())
     })?;
 
@@ -101,8 +101,8 @@ async fn vehicle_auth_handler(
             "valid_until": response.valid_until,
         }))),
         Err(e) => {
-            tracing::error!("gRPC LPR 车辆授权转发失败: {e}");
-            Ok(json_error(&format!("lpr-service 调用失败: {e}")))
+            tracing::error!("gRPC LPR 车辆授权转发失败: {e}" );
+            Ok(json_error(&format!("lpr-service 调用失败: {e}" )))
         }
     }
 }
@@ -110,7 +110,7 @@ async fn vehicle_auth_handler(
 /// 路由定义
 pub fn routes() -> Router<Arc<AppState>> {
     Router::new()
-        .route("/api/v1/lpr/callback", post(lpr_callback_handler))
-        .route("/api/lpr/callback", post(lpr_callback_handler))
-        .route("/api/lpr/vehicle/auth", post(vehicle_auth_handler))
+        .route("/api/v1/lpr/callback" , post(lpr_callback_handler))
+        .route("/api/lpr/callback" , post(lpr_callback_handler))
+        .route("/api/lpr/vehicle/auth" , post(vehicle_auth_handler))
 }

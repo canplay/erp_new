@@ -19,7 +19,7 @@ pub struct LocalStorageConfig {
 impl Default for LocalStorageConfig {
     fn default() -> Self {
         Self {
-            base_path: PathBuf::from("./uploads"),
+            base_path: PathBuf::from("./uploads" ),
             base_url: "/uploads".to_string(),
         }
     }
@@ -29,8 +29,8 @@ impl LocalStorageConfig {
     /// 从环境变量加载配置
     pub fn from_env() -> Self {
         Self {
-            base_path: std::env::var("UPLOAD_BASE_PATH").map_or_else(|_| PathBuf::from("./uploads"), PathBuf::from),
-            base_url: std::env::var("UPLOAD_BASE_URL").unwrap_or_else(|_| "/uploads".to_string()),
+            base_path: std::env::var("UPLOAD_BASE_PATH" ).map_or_else(|_| PathBuf::from("./uploads" ), PathBuf::from),
+            base_url: std::env::var("UPLOAD_BASE_URL" ).unwrap_or_else(|_| "/uploads".to_string()),
         }
     }
 }
@@ -107,7 +107,7 @@ impl StorageBackend for LocalStorage {
     }
 
     fn get_url(&self, key: &str) -> String {
-        format!("{}/{}", self.config.base_url.trim_end_matches('/'), key)
+        format!("{}/{}" , self.config.base_url.trim_end_matches('/'), key)
     }
 }
 
@@ -118,12 +118,12 @@ mod tests {
     #[test]
     fn test_generate_storage_path() {
         let config = LocalStorageConfig {
-            base_path: PathBuf::from("./uploads"),
+            base_path: PathBuf::from("./uploads" ),
             base_url: "/uploads".to_string(),
         };
 
-        let storage = LocalStorage::new(config).expect("storage creation should not fail");
-        let path = storage.get_url("abc123.jpg");
-        assert_eq!(path, "/uploads/abc123.jpg");
+        let storage = LocalStorage::new(config).expect("storage creation should not fail" );
+        let path = storage.get_url("abc123.jpg" );
+        assert_eq!(path, "/uploads/abc123.jpg" );
     }
 }

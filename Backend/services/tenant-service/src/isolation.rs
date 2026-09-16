@@ -272,24 +272,24 @@ impl TenantIsolationManager {
     pub async fn generate_filter(&self, tenant_id: &str, _table_name: &str) -> AppResult<String> {
         // FIX [SQL-INJ-006]: 校验 tenant_id 格式，防止 SQL 注入
         if let Err(e) = common::sanitize_identifier(tenant_id) {
-            return Err(AppError::InvalidParam(format!("Invalid tenant_id: {e}")));
+            return Err(AppError::InvalidParam(format!("Invalid tenant_id: {e}" )));
         }
         let policies = self.policies.read().await;
         if let Some(policy) = policies.get(tenant_id) {
             let filter = match policy.isolation_level {
                 IsolationLevel::Full => {
-                    format!("database = '{tenant_id}'")
+                    format!("database = '{tenant_id}'" )
                 }
                 IsolationLevel::Schema => {
-                    format!("schema = '{tenant_id}'")
+                    format!("schema = '{tenant_id}'" )
                 }
                 IsolationLevel::RowLevel => {
-                    format!("tenant_id = '{tenant_id}'")
+                    format!("tenant_id = '{tenant_id}'" )
                 }
             };
             Ok(filter)
         } else {
-            Ok(format!("tenant_id = '{tenant_id}'"))
+            Ok(format!("tenant_id = '{tenant_id}'" ))
         }
     }
 
@@ -307,18 +307,18 @@ impl TenantIsolationManager {
     pub async fn build_filtered_query(&self, table: &str, base_query: Option<&str>) -> AppResult<String> {
         // FIX [SQL-INJ-007]: 校验表名格式
         if let Err(e) = common::sanitize_identifier(table) {
-            return Err(AppError::InvalidParam(format!("Invalid table name: {e}")));
+            return Err(AppError::InvalidParam(format!("Invalid table name: {e}" )));
         }
         let ctx = self.context.read().await;
         if let Some(context) = ctx.as_ref() {
             let tenant_filter = self.generate_filter(&context.tenant_id, table).await?;
             let query = match base_query {
-                Some(query) => format!("{query} AND {tenant_filter}"),
-                None => format!("SELECT * FROM {table} WHERE {tenant_filter}"),
+                Some(query) => format!("{query} AND {tenant_filter}" ),
+                None => format!("SELECT * FROM {table} WHERE {tenant_filter}" ),
             };
             Ok(query)
         } else {
-            Ok(base_query.map_or_else(|| format!("SELECT * FROM {table}"), std::string::ToString::to_string))
+            Ok(base_query.map_or_else(|| format!("SELECT * FROM {table}" ), std::string::ToString::to_string))
         }
     }
 
@@ -487,9 +487,9 @@ mod tests {
         let result = manager.register_tenant(tenant.clone()).await;
         assert!(result);
 
-        let fetched = manager.get_tenant("tenant_001").await;
+        let fetched = manager.get_tenant("tenant_001" ).await;
         assert!(fetched.is_some());
-        assert_eq!(fetched.expect("tenant should exist").name, "测试租户");
+        assert_eq!(fetched.expect("tenant should exist" ).name, "测试租户" );
     }
 
     #[tokio::test]
@@ -507,9 +507,9 @@ mod tests {
 
         manager.set_isolation_policy(policy).await;
 
-        let fetched = manager.get_isolation_policy("tenant_001").await;
+        let fetched = manager.get_isolation_policy("tenant_001" ).await;
         assert!(fetched.is_some());
-        assert!(fetched.expect("tenant should exist").encryption_enabled);
+        assert!(fetched.expect("tenant should exist" ).encryption_enabled);
     }
 
     #[tokio::test]
@@ -517,27 +517,27 @@ mod tests {
         let manager = TenantIsolationManager::default_manager();
 
         // 设置上下文
-        let context = TenantContext::new("tenant_001")
-            .with_user("user_001")
+        let context = TenantContext::new("tenant_001" )
+            .with_user("user_001" )
             .with_roles(vec!["admin".to_string()]);
         manager.set_context(context).await;
 
         // 生成过滤条件
-        let filter = manager.generate_filter("tenant_001", "users").await.unwrap();
-        assert_eq!(filter, "tenant_id = 'tenant_001'");
+        let filter = manager.generate_filter("tenant_001" , "users" ).await.unwrap();
+        assert_eq!(filter, "tenant_id = 'tenant_001'" );
 
         // 构建过滤查询
         let query = manager
-            .build_filtered_query("users", Some("status = 'active'"))
+            .build_filtered_query("users" , Some("status = 'active'" ))
             .await
             .unwrap();
-        assert!(query.contains("tenant_id = 'tenant_001'"));
-        assert!(query.contains("status = 'active'"));
+        assert!(query.contains("tenant_id = 'tenant_001'" ));
+        assert!(query.contains("status = 'active'" ));
 
         // 清除上下文
         manager.clear_context().await;
-        let query = manager.build_filtered_query("users", None).await.unwrap();
-        assert_eq!(query, "SELECT * FROM users");
+        let query = manager.build_filtered_query("users" , None).await.unwrap();
+        assert_eq!(query, "SELECT * FROM users" );
     }
 
     #[tokio::test]
@@ -545,15 +545,15 @@ mod tests {
         let manager = TenantIsolationManager::default_manager();
 
         // 设置上下文
-        let context = TenantContext::new("tenant_001");
+        let context = TenantContext::new("tenant_001" );
         manager.set_context(context).await;
 
         // 同租户访问 - 允许
-        let allowed = manager.validate_cross_tenant_access("tenant_001").await;
+        let allowed = manager.validate_cross_tenant_access("tenant_001" ).await;
         assert!(allowed);
 
         // 跨租户访问 - 默认拒绝
-        let allowed = manager.validate_cross_tenant_access("tenant_002").await;
+        let allowed = manager.validate_cross_tenant_access("tenant_002" ).await;
         assert!(!allowed);
 
         // 启用跨租户策略
@@ -564,7 +564,7 @@ mod tests {
         };
         manager.set_isolation_policy(policy).await;
 
-        let allowed = manager.validate_cross_tenant_access("tenant_002").await;
+        let allowed = manager.validate_cross_tenant_access("tenant_002" ).await;
         assert!(allowed);
     }
 
@@ -589,12 +589,12 @@ mod tests {
 
         // 暂停租户
         let updated = manager
-            .update_tenant_state("tenant_001", TenantState::Suspended)
+            .update_tenant_state("tenant_001" , TenantState::Suspended)
             .await;
         assert!(updated);
 
-        let fetched = manager.get_tenant("tenant_001").await;
-        assert_eq!(fetched.expect("tenant should exist").state, TenantState::Suspended);
+        let fetched = manager.get_tenant("tenant_001" ).await;
+        assert_eq!(fetched.expect("tenant should exist" ).state, TenantState::Suspended);
     }
 
     #[tokio::test]
@@ -604,9 +604,9 @@ mod tests {
         // 注册多个租户
         for i in 1..=5 {
             let tenant = Tenant {
-                id: format!("tenant_{:03}", i),
-                name: format!("租户 {}", i),
-                code: format!("t{}", i),
+                id: format!("tenant_{:03}" , i),
+                name: format!("租户 {}" , i),
+                code: format!("t{}" , i),
                 isolation_level: IsolationLevel::RowLevel,
                 state: if i <= 3 {
                     TenantState::Active

@@ -49,7 +49,7 @@ pub struct AppState;
 /// 创建 HTTP 应用（仅健康检查）
 pub fn create_app(state: AppState) -> Router {
     Router::new()
-        .route("/health", get(|| async { "OK" }))
+        .route("/health" , get(|| async { "OK" }))
         .with_state(state)
 }
 
@@ -62,7 +62,7 @@ pub fn create_state() -> AppState {
 /// 创建数据库连接池
 pub async fn create_db_pool() -> Result<PgPool, sqlx::Error> {
     let database_url =
-        std::env::var("DATABASE_URL").unwrap_or_else(|_| {
+        std::env::var("DATABASE_URL" ).unwrap_or_else(|_| {
             "postgres://postgres:***@localhost:5432/myai".to_string()
         });
     PgPool::connect(&database_url).await
@@ -71,20 +71,20 @@ pub async fn create_db_pool() -> Result<PgPool, sqlx::Error> {
 /// 创建 Redis 连接（可选）
 pub async fn create_redis_conn() -> Option<ConnectionManager> {
     let redis_url =
-        std::env::var("REDIS_URL").unwrap_or_else(|_| "redis://127.0.0.1:6379".to_string());
+        std::env::var("REDIS_URL" ).unwrap_or_else(|_| "redis://127.0.0.1:6379".to_string());
     match redis::Client::open(redis_url.as_str()) {
         Ok(client) => match client.get_connection_manager().await {
             Ok(conn) => {
-                tracing::info!("Redis 连接成功");
+                tracing::info!("Redis 连接成功" );
                 Some(conn)
             }
             Err(e) => {
-                tracing::warn!("Redis 连接失败，将以无缓存模式运行: {e}");
+                tracing::warn!("Redis 连接失败，将以无缓存模式运行: {e}" );
                 None
             }
         },
         Err(e) => {
-            tracing::warn!("Redis URL 无效，将以无缓存模式运行: {e}");
+            tracing::warn!("Redis URL 无效，将以无缓存模式运行: {e}" );
             None
         }
     }

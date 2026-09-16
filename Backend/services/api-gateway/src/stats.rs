@@ -89,7 +89,7 @@ fn month_start_ts() -> i64 {
 fn fmt_label(ts: i64) -> String {
     let dt = chrono::DateTime::from_timestamp(ts, 0)
         .unwrap_or_else(|| chrono::DateTime::from_timestamp(0, 0).unwrap_or_default());
-    dt.format("%m-%d").to_string()
+    dt.format("%m-%d" ).to_string()
 }
 
 /// 获取仪表盘统计数据（供 lib.rs 路由调用）
@@ -130,7 +130,7 @@ pub async fn get_dashboard_stats(
                     page += 1;
                 }
                 Err(e) => {
-                    tracing::warn!("【统计】ListUsers 失败: {e}");
+                    tracing::warn!("【统计】ListUsers 失败: {e}" );
                     break;
                 }
             }
@@ -153,7 +153,7 @@ pub async fn get_dashboard_stats(
             });
         }
     } else {
-        tracing::warn!("【统计】user-service gRPC 不可用");
+        tracing::warn!("【统计】user-service gRPC 不可用" );
     }
 
     // ---------- 登录统计：gRPC ListLoginLogs（本月） ----------
@@ -172,7 +172,7 @@ pub async fn get_dashboard_stats(
             .await
         {
             Ok(resp) => login_attempts = resp.total,
-            Err(e) => tracing::warn!("【统计】ListLoginLogs(全部) 失败: {e}"),
+            Err(e) => tracing::warn!("【统计】ListLoginLogs(全部) 失败: {e}" ),
         }
         // 失败
         match audit_client
@@ -180,7 +180,7 @@ pub async fn get_dashboard_stats(
             .await
         {
             Ok(resp) => failed_logins = resp.total,
-            Err(e) => tracing::warn!("【统计】ListLoginLogs(失败) 失败: {e}"),
+            Err(e) => tracing::warn!("【统计】ListLoginLogs(失败) 失败: {e}" ),
         }
         // 成功
         match audit_client
@@ -188,7 +188,7 @@ pub async fn get_dashboard_stats(
             .await
         {
             Ok(resp) => successful_logins = resp.total,
-            Err(e) => tracing::warn!("【统计】ListLoginLogs(成功) 失败: {e}"),
+            Err(e) => tracing::warn!("【统计】ListLoginLogs(成功) 失败: {e}" ),
         }
         // 活跃用户（本月成功登录的去重 user_id）与登录类型分布（分页拉取，避免全表加载）
         let mut page: i32 = 1;
@@ -211,13 +211,13 @@ pub async fn get_dashboard_stats(
                     page += 1;
                 }
                 Err(e) => {
-                    tracing::warn!("【统计】ListLoginLogs(活跃) 失败: {e}");
+                    tracing::warn!("【统计】ListLoginLogs(活跃) 失败: {e}" );
                     break;
                 }
             }
         }
     } else {
-        tracing::warn!("【统计】audit-service gRPC 不可用");
+        tracing::warn!("【统计】audit-service gRPC 不可用" );
     }
 
     let active_users = active_user_ids.len() as i64;
@@ -250,5 +250,5 @@ pub async fn get_dashboard_stats(
 
 /// 创建统计路由
 pub fn create_stats_router() -> Router<Arc<AppState>> {
-    Router::new().route("/dashboard", get(get_dashboard_stats))
+    Router::new().route("/dashboard" , get(get_dashboard_stats))
 }

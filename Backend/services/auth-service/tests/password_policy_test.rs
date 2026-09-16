@@ -3,7 +3,7 @@ mod password_policy_tests {
     #[test]
     fn test_password_minimum_length_8() {
         let weak = "1234567";
-        assert!(weak.len() < 8, "Password should be rejected if < 8 chars");
+        assert!(weak.len() < 8, "Password should be rejected if < 8 chars" );
     }
 
     #[test]

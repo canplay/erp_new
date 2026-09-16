@@ -37,7 +37,7 @@ const fn detect_env() -> &'static str {
 pub fn init_logging() -> anyhow::Result<()> {
     let env = detect_env();
     log_core::init_logging(env)?;
-    tracing::info!("日志系统已初始化: log-core (环境: {env})");
+    tracing::info!("日志系统已初始化: log-core (环境: {env})" );
     Ok(())
 }
 
@@ -55,7 +55,7 @@ pub fn init_logging_with_config(config: log_core::LogConfig) -> anyhow::Result<(
 pub fn init_service_logging(service_name: &str) -> anyhow::Result<()> {
     let env = detect_env();
     log_core::init_service_logging(service_name, env)?;
-    tracing::info!("日志系统已初始化: {service_name} service");
+    tracing::info!("日志系统已初始化: {service_name} service" );
     Ok(())
 }
 
@@ -77,7 +77,7 @@ pub fn init_tracing(service_name: &str) {
     init_env();
 
     let env = detect_env();
-    let version = env!("CARGO_PKG_VERSION");
+    let version = env!("CARGO_PKG_VERSION" );
 
     // 先设置一个基础的 tracing subscriber 直接输出到 stdout
     // 确保即使 log-core 初始化失败，kubectl logs / Rancher 也能看到日志
@@ -90,7 +90,7 @@ pub fn init_tracing(service_name: &str) {
         .with_timer(ChronoLocal::new("%Y-%m-%dT%H:%M:%S%.3f%:z".to_string()))
         .with_env_filter(
             tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("info"))
+                .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("info" ))
         )
         .try_init();
     // 桥接 log crate 到 tracing
@@ -99,12 +99,12 @@ pub fn init_tracing(service_name: &str) {
     // 在根 span 中注入统一字段（service/version/env）
     // 确保所有服务的日志都有统一的结构化字段
     let _root_span = tracing::info_span!(
-        "service",
+        "service" ,
         service = service_name,
         version = version,
         env = env,
     );
-    tracing::info!(service = %service_name, version = version, env = env, "日志系统初始化完成 (stdout)");
+    tracing::info!(service = %service_name, version = version, env = env, "日志系统初始化完成 (stdout)" );
 
     // 注意：K8s 容器环境使用 stdout 日志即可，由容器运行时自动轮转
     // RKE2 默认配置：containerLogMaxSize=10Mi, containerLogMaxFiles=5
@@ -135,7 +135,7 @@ fn init_logging_with_otel(
         })?;
     }
 
-    tracing::info!("日志系统已初始化: log-core (环境: {env}, 服务: {service_name})");
+    tracing::info!("日志系统已初始化: log-core (环境: {env}, 服务: {service_name})" );
     Ok(())
 }
 
@@ -145,7 +145,7 @@ pub async fn run_server(
     addr: SocketAddr,
     service_name: &str,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    tracing::info!("{service_name} starting on {addr}");
+    tracing::info!("{service_name} starting on {addr}" );
     let listener = TcpListener::bind(addr).await?;
     axum::serve(listener, app).await?;
     Ok(())
@@ -153,13 +153,13 @@ pub async fn run_server(
 
 /// 健康检查响应（JSON 格式，符合 K8s 探针期望）
 ///
-/// 返回 `{ "status": "ok", "service": "<name>" }` 格式。
+/// 返回 `{ "status": "ok" , "service": "<name>" }` 格式。
 /// K8s liveness/readiness 探针通常期望 JSON 或 HTTP 200 响应。
 #[axum::debug_handler]
 pub async fn health_handler() -> axum::Json<serde_json::Value> {
     axum::Json(serde_json::json!({
-        "status": "ok",
-        "service": "myai",
+        "status": "ok" ,
+        "service": "myai" ,
         "timestamp": chrono::Utc::now().to_rfc3339()
     }))
 }

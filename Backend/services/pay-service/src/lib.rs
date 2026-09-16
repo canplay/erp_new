@@ -29,22 +29,22 @@ use crate::handlers::{
 pub fn create_app(state: AppState) -> Router {
     Router::new()
         // 健康检查
-        .route("/health", get(|| async { "OK" }))
+        .route("/health" , get(|| async { "OK" }))
         // ============ 基础支付接口 ============
-        .route("/api/pay/count", get(count))
-        .route("/api/pay/list", get(list))
-        .route("/api/pay/latest/:user_id", get(latest))
-        .route("/api/pay/create", post(create_order))
+        .route("/api/pay/count" , get(count))
+        .route("/api/pay/list" , get(list))
+        .route("/api/pay/latest/:user_id" , get(latest))
+        .route("/api/pay/create" , post(create_order))
         // ============ CCB 建设银行支付接口 ============
-        .route("/api/pay/ccb/query", get(ccb_query))
-        .route("/api/pay/ccb/create", post(ccb_create))
-        .route("/api/pay/ccb/verify/:order_id", get(ccb_verify))
-        .route("/api/pay/ccb/refund", post(ccb_refund))
+        .route("/api/pay/ccb/query" , get(ccb_query))
+        .route("/api/pay/ccb/create" , post(ccb_create))
+        .route("/api/pay/ccb/verify/:order_id" , get(ccb_verify))
+        .route("/api/pay/ccb/refund" , post(ccb_refund))
         // ============ UMS 银联支付接口 ============
-        .route("/api/pay/ums/query", get(ums_query))
-        .route("/api/pay/ums/create", post(ums_create))
-        .route("/api/pay/ums/close", post(ums_close))
-        .route("/api/pay/ums/refund", post(ums_refund))
-        .route("/api/pay/ums/info/:order", get(ums_info))
+        .route("/api/pay/ums/query" , get(ums_query))
+        .route("/api/pay/ums/create" , post(ums_create))
+        .route("/api/pay/ums/close" , post(ums_close))
+        .route("/api/pay/ums/refund" , post(ums_refund))
+        .route("/api/pay/ums/info/:order" , get(ums_info))
         .with_state(state)
 }

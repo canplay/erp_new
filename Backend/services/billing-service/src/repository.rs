@@ -224,7 +224,7 @@ impl BillingRepository {
     ) -> Result<(Vec<InvoiceRow>, i64), sqlx::Error> {
         let offset = (page - 1) * page_size;
 
-        let status_filter = status.map(|s| format!("AND status = '{}'", s)).unwrap_or_default();
+        let status_filter = status.map(|s| format!("AND status = '{}'" , s)).unwrap_or_default();
 
         let invoices = sqlx::query_as::<_, InvoiceRow>(
             r#"

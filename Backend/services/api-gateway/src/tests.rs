@@ -19,46 +19,46 @@ mod test_mod {
         let state = RateLimitState::new(100, 60, 20);
         assert_eq!(state.max_requests, 100);
         assert_eq!(state.window_secs, 60);
-        assert_eq!(state.remaining("test_key"), 100);
+        assert_eq!(state.remaining("test_key" ), 100);
     }
 
     #[test]
     fn test_rate_limit_allow_first_request() {
         let state = RateLimitState::new(10, 60, 2);
-        assert!(state.check_rate_limit("client1"));
+        assert!(state.check_rate_limit("client1" ));
     }
 
     #[test]
     fn test_rate_limit_remaining_after_request() {
         let state = RateLimitState::new(10, 60, 2);
-        state.check_rate_limit("client1");
-        assert_eq!(state.remaining("client1"), 9);
+        state.check_rate_limit("client1" );
+        assert_eq!(state.remaining("client1" ), 9);
     }
 
     #[test]
     fn test_rate_limit_exceed_limit() {
         let state = RateLimitState::new(2, 60, 0);
-        assert!(state.check_rate_limit("client1"));
-        assert!(state.check_rate_limit("client1"));
+        assert!(state.check_rate_limit("client1" ));
+        assert!(state.check_rate_limit("client1" ));
         // 第三次请求应该被拒绝
-        assert!(!state.check_rate_limit("client1"));
+        assert!(!state.check_rate_limit("client1" ));
     }
 
     #[test]
     fn test_rate_limit_different_clients() {
         let state = RateLimitState::new(1, 60, 0);
-        assert!(state.check_rate_limit("client1"));
+        assert!(state.check_rate_limit("client1" ));
         // client1 被限流
-        assert!(!state.check_rate_limit("client1"));
+        assert!(!state.check_rate_limit("client1" ));
         // client2 应该不受影响
-        assert!(state.check_rate_limit("client2"));
+        assert!(state.check_rate_limit("client2" ));
     }
 
     #[test]
     fn test_rate_limit_remaining_unknown_key() {
         let state = RateLimitState::new(100, 60, 20);
         // 未知 key 应该返回最大请求数
-        assert_eq!(state.remaining("unknown_key"), 100);
+        assert_eq!(state.remaining("unknown_key" ), 100);
     }
 
     #[test]
@@ -119,9 +119,9 @@ mod route_tests {
             crate::grpc_clients::register_services_to_discovery(&service_discovery);
 
             let jwt_service = auth_core::JwtService::new(
-                "test-secret-key-for-unit-tests-only-do-not-use-in-production",
-                "test-issuer",
-                "test-audience",
+                "test-secret-key-for-unit-tests-only-do-not-use-in-production" ,
+                "test-issuer" ,
+                "test-audience" ,
                 3600,
                 604800,
             );
@@ -133,7 +133,7 @@ mod route_tests {
             // 注意：由于 repository 需要 PgPool，我们使用一个 mock pool
             // 实际上这些 repository 在测试中不会被真正使用（因为它们需要真实的数据库连接）
             // 但我们仍需要提供某种形式的 pool 来满足类型系统
-            let pool = sqlx::PgPool::connect_lazy("postgres://localhost:5432/test").expect("test assertion");
+            let pool = sqlx::PgPool::connect_lazy("postgres://localhost:5432/test" ).expect("test assertion" );
 
             Arc::new(AppState {
                 service_discovery,
@@ -189,8 +189,8 @@ mod route_tests {
 
     /// 从响应体中提取 JSON Value
     async fn extract_json(body: Body) -> Value {
-        let bytes = body.collect().await.expect("test assertion").to_bytes();
-        let body_str = String::from_utf8(bytes.to_vec()).expect("test assertion");
+        let bytes = body.collect().await.expect("test assertion" ).to_bytes();
+        let body_str = String::from_utf8(bytes.to_vec()).expect("test assertion" );
         if body_str.is_empty() {
             Value::Null
         } else {
@@ -210,12 +210,12 @@ mod route_tests {
             let response = app
                 .oneshot(
                     Request::builder()
-                        .uri("/health")
+                        .uri("/health" )
                         .body(Body::empty())
-                        .expect("test assertion"),
+                        .expect("test assertion" ),
                 )
                 .await
-                .expect("test assertion");
+                .expect("test assertion" );
             assert_eq!(response.status(), StatusCode::OK);
         }
 
@@ -226,12 +226,12 @@ mod route_tests {
             let response = app
                 .oneshot(
                     Request::builder()
-                        .uri("/ready")
+                        .uri("/ready" )
                         .body(Body::empty())
-                        .expect("test assertion"),
+                        .expect("test assertion" ),
                 )
                 .await
-                .expect("test assertion");
+                .expect("test assertion" );
             // 没有 gRPC 服务连接，返回 503
             assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
         }
@@ -243,16 +243,16 @@ mod route_tests {
             let response = app
                 .oneshot(
                     Request::builder()
-                        .uri("/health/detailed")
+                        .uri("/health/detailed" )
                         .body(Body::empty())
-                        .expect("test assertion"),
+                        .expect("test assertion" ),
                 )
                 .await
-                .expect("test assertion");
+                .expect("test assertion" );
             assert_eq!(response.status(), StatusCode::OK);
             let body = response.into_body();
             let json = extract_json(body).await;
-            assert!(json.get("data").is_some());
+            assert!(json.get("data" ).is_some());
         }
 
         #[tokio::test]
@@ -262,12 +262,12 @@ mod route_tests {
             let response = app
                 .oneshot(
                     Request::builder()
-                        .uri("/health/discovery")
+                        .uri("/health/discovery" )
                         .body(Body::empty())
-                        .expect("test assertion"),
+                        .expect("test assertion" ),
                 )
                 .await
-                .expect("test assertion");
+                .expect("test assertion" );
             assert_eq!(response.status(), StatusCode::OK);
         }
 
@@ -278,12 +278,12 @@ mod route_tests {
             let response = app
                 .oneshot(
                     Request::builder()
-                        .uri("/health/database")
+                        .uri("/health/database" )
                         .body(Body::empty())
-                        .expect("test assertion"),
+                        .expect("test assertion" ),
                 )
                 .await
-                .expect("test assertion");
+                .expect("test assertion" );
             assert_eq!(response.status(), StatusCode::OK);
         }
     }
@@ -300,25 +300,25 @@ mod route_tests {
             let response = app
                 .oneshot(
                     Request::builder()
-                        .method("POST")
-                        .uri("/api/user/login")
-                        .header(CONTENT_TYPE, "application/json")
+                        .method("POST" )
+                        .uri("/api/user/login" )
+                        .header(CONTENT_TYPE, "application/json" )
                         .body(Body::from(
                             serde_json::to_string(&json!({
-                                "username": "testuser",
+                                "username": "testuser" ,
                                 "password": "testpass123"
                             }))
-                            .expect("test assertion"),
+                            .expect("test assertion" ),
                         ))
-                        .expect("test assertion"),
+                        .expect("test assertion" ),
                 )
                 .await
-                .expect("test assertion");
+                .expect("test assertion" );
             assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
             let body = response.into_body();
             let json = extract_json(body).await;
-            assert_eq!(json["success"], false);
-            assert!(json["message"].as_str().expect("test assertion").contains("认证服务不可用"));
+            assert_eq!(json["success" ], false);
+            assert!(json["message" ].as_str().expect("test assertion" ).contains("认证服务不可用" ));
         }
 
         #[tokio::test]
@@ -328,21 +328,21 @@ mod route_tests {
             let response = app
                 .oneshot(
                     Request::builder()
-                        .method("POST")
-                        .uri("/api/user/register")
-                        .header(CONTENT_TYPE, "application/json")
+                        .method("POST" )
+                        .uri("/api/user/register" )
+                        .header(CONTENT_TYPE, "application/json" )
                         .body(Body::from(
                             serde_json::to_string(&json!({
-                                "username": "newuser",
-                                "password": "newpass123",
+                                "username": "newuser" ,
+                                "password": "newpass123" ,
                                 "email": "test@example.com"
                             }))
-                            .expect("test assertion"),
+                            .expect("test assertion" ),
                         ))
-                        .expect("test assertion"),
+                        .expect("test assertion" ),
                 )
                 .await
-                .expect("test assertion");
+                .expect("test assertion" );
             assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
         }
 
@@ -353,19 +353,19 @@ mod route_tests {
             let response = app
                 .oneshot(
                     Request::builder()
-                        .method("POST")
-                        .uri("/api/auth/refresh")
-                        .header(CONTENT_TYPE, "application/json")
+                        .method("POST" )
+                        .uri("/api/auth/refresh" )
+                        .header(CONTENT_TYPE, "application/json" )
                         .body(Body::from(
                             serde_json::to_string(&json!({
                                 "refresh_token": "some-refresh-token"
                             }))
-                            .expect("test assertion"),
+                            .expect("test assertion" ),
                         ))
-                        .expect("test assertion"),
+                        .expect("test assertion" ),
                 )
                 .await
-                .expect("test assertion");
+                .expect("test assertion" );
             assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
         }
 
@@ -379,20 +379,20 @@ mod route_tests {
             let response = app
                 .oneshot(
                     Request::builder()
-                        .method("PUT")
-                        .uri("/api/user/password")
-                        .header(CONTENT_TYPE, "application/json")
+                        .method("PUT" )
+                        .uri("/api/user/password" )
+                        .header(CONTENT_TYPE, "application/json" )
                         .body(Body::from(
                             serde_json::to_string(&json!({
-                                "oldPassword": "oldpass123",
+                                "oldPassword": "oldpass123" ,
                                 "newPassword": "123"
                             }))
-                            .expect("test assertion"),
+                            .expect("test assertion" ),
                         ))
-                        .expect("test assertion"),
+                        .expect("test assertion" ),
                 )
                 .await
-                .expect("test assertion");
+                .expect("test assertion" );
             // 因为没有 JWT Extension，handler 会尝试从 Extension 获取 claims
             // 这会导致 panic 或错误，所以我们需要测试 400 的情况
             // 实际上没有 Extension 会导致 500，但弱密码检查在前
@@ -408,19 +408,19 @@ mod route_tests {
             let response = app
                 .oneshot(
                     Request::builder()
-                        .method("POST")
-                        .uri("/api/user/login")
-                        .header(CONTENT_TYPE, "application/json")
+                        .method("POST" )
+                        .uri("/api/user/login" )
+                        .header(CONTENT_TYPE, "application/json" )
                         .body(Body::from(
                             serde_json::to_string(&json!({
                                 "password": "testpass123"
                             }))
-                            .expect("test assertion"),
+                            .expect("test assertion" ),
                         ))
-                        .expect("test assertion"),
+                        .expect("test assertion" ),
                 )
                 .await
-                .expect("test assertion");
+                .expect("test assertion" );
             // auth_client 失败在前，返回 503
             assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
         }
@@ -432,16 +432,16 @@ mod route_tests {
             let response = app
                 .oneshot(
                     Request::builder()
-                        .method("POST")
-                        .uri("/api/user/register")
-                        .header(CONTENT_TYPE, "application/json")
+                        .method("POST" )
+                        .uri("/api/user/register" )
+                        .header(CONTENT_TYPE, "application/json" )
                         .body(Body::from(
-                            serde_json::to_string(&json!({})).expect("test assertion"),
+                            serde_json::to_string(&json!({})).expect("test assertion" ),
                         ))
-                        .expect("test assertion"),
+                        .expect("test assertion" ),
                 )
                 .await
-                .expect("test assertion");
+                .expect("test assertion" );
             assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
         }
     }
@@ -458,16 +458,16 @@ mod route_tests {
             let response = app
                 .oneshot(
                     Request::builder()
-                        .uri("/api/admin/users")
+                        .uri("/api/admin/users" )
                         .body(Body::empty())
-                        .expect("test assertion"),
+                        .expect("test assertion" ),
                 )
                 .await
-                .expect("test assertion");
+                .expect("test assertion" );
             // gRPC 不可用时返回 500 (json_error)
             let body = response.into_body();
             let json = extract_json(body).await;
-            assert_eq!(json["success"], false);
+            assert_eq!(json["success" ], false);
         }
 
         #[tokio::test]
@@ -477,23 +477,23 @@ mod route_tests {
             let response = app
                 .oneshot(
                     Request::builder()
-                        .method("POST")
-                        .uri("/api/admin/users")
-                        .header(CONTENT_TYPE, "application/json")
+                        .method("POST" )
+                        .uri("/api/admin/users" )
+                        .header(CONTENT_TYPE, "application/json" )
                         .body(Body::from(
                             serde_json::to_string(&json!({
-                                "username": "testuser",
+                                "username": "testuser" ,
                                 "password": "testpass123"
                             }))
-                            .expect("test assertion"),
+                            .expect("test assertion" ),
                         ))
-                        .expect("test assertion"),
+                        .expect("test assertion" ),
                 )
                 .await
-                .expect("test assertion");
+                .expect("test assertion" );
             let body = response.into_body();
             let json = extract_json(body).await;
-            assert_eq!(json["success"], false);
+            assert_eq!(json["success" ], false);
         }
 
         #[tokio::test]
@@ -503,15 +503,15 @@ mod route_tests {
             let response = app
                 .oneshot(
                     Request::builder()
-                        .uri("/api/admin/users/1")
+                        .uri("/api/admin/users/1" )
                         .body(Body::empty())
-                        .expect("test assertion"),
+                        .expect("test assertion" ),
                 )
                 .await
-                .expect("test assertion");
+                .expect("test assertion" );
             let body = response.into_body();
             let json = extract_json(body).await;
-            assert_eq!(json["success"], false);
+            assert_eq!(json["success" ], false);
         }
 
         #[tokio::test]
@@ -521,22 +521,22 @@ mod route_tests {
             let response = app
                 .oneshot(
                     Request::builder()
-                        .method("PUT")
-                        .uri("/api/admin/users/1")
-                        .header(CONTENT_TYPE, "application/json")
+                        .method("PUT" )
+                        .uri("/api/admin/users/1" )
+                        .header(CONTENT_TYPE, "application/json" )
                         .body(Body::from(
                             serde_json::to_string(&json!({
                                 "nickname": "updated"
                             }))
-                            .expect("test assertion"),
+                            .expect("test assertion" ),
                         ))
-                        .expect("test assertion"),
+                        .expect("test assertion" ),
                 )
                 .await
-                .expect("test assertion");
+                .expect("test assertion" );
             let body = response.into_body();
             let json = extract_json(body).await;
-            assert_eq!(json["success"], false);
+            assert_eq!(json["success" ], false);
         }
 
         #[tokio::test]
@@ -546,16 +546,16 @@ mod route_tests {
             let response = app
                 .oneshot(
                     Request::builder()
-                        .method("DELETE")
-                        .uri("/api/admin/users/1")
+                        .method("DELETE" )
+                        .uri("/api/admin/users/1" )
                         .body(Body::empty())
-                        .expect("test assertion"),
+                        .expect("test assertion" ),
                 )
                 .await
-                .expect("test assertion");
+                .expect("test assertion" );
             let body = response.into_body();
             let json = extract_json(body).await;
-            assert_eq!(json["success"], false);
+            assert_eq!(json["success" ], false);
         }
 
         #[tokio::test]
@@ -565,17 +565,17 @@ mod route_tests {
             let response = app
                 .oneshot(
                     Request::builder()
-                        .method("POST")
-                        .uri("/api/admin/users/import")
+                        .method("POST" )
+                        .uri("/api/admin/users/import" )
                         .body(Body::empty())
-                        .expect("test assertion"),
+                        .expect("test assertion" ),
                 )
                 .await
-                .expect("test assertion");
+                .expect("test assertion" );
             assert_eq!(response.status(), StatusCode::OK);
             let body = response.into_body();
             let json = extract_json(body).await;
-            assert_eq!(json["code"], 501);
+            assert_eq!(json["code" ], 501);
         }
 
         #[tokio::test]
@@ -585,16 +585,16 @@ mod route_tests {
             let response = app
                 .oneshot(
                     Request::builder()
-                        .uri("/api/admin/users/export")
+                        .uri("/api/admin/users/export" )
                         .body(Body::empty())
-                        .expect("test assertion"),
+                        .expect("test assertion" ),
                 )
                 .await
-                .expect("test assertion");
+                .expect("test assertion" );
             assert_eq!(response.status(), StatusCode::OK);
             let body = response.into_body();
             let json = extract_json(body).await;
-            assert_eq!(json["code"], 501);
+            assert_eq!(json["code" ], 501);
         }
     }
 
@@ -611,17 +611,17 @@ mod route_tests {
             let response = app
                 .oneshot(
                     Request::builder()
-                        .uri("/api/admin/announcements")
+                        .uri("/api/admin/announcements" )
                         .body(Body::empty())
-                        .expect("test assertion"),
+                        .expect("test assertion" ),
                 )
                 .await
-                .expect("test assertion");
+                .expect("test assertion" );
             assert_eq!(response.status(), StatusCode::OK);
             let body = response.into_body();
             let json = extract_json(body).await;
-            assert_eq!(json["success"], true);
-            assert_eq!(json["data"]["total"], 0);
+            assert_eq!(json["success" ], true);
+            assert_eq!(json["data" ]["total" ], 0);
         }
 
         #[tokio::test]
@@ -631,24 +631,24 @@ mod route_tests {
             let response = app
                 .oneshot(
                     Request::builder()
-                        .method("POST")
-                        .uri("/api/admin/announcements")
-                        .header(CONTENT_TYPE, "application/json")
+                        .method("POST" )
+                        .uri("/api/admin/announcements" )
+                        .header(CONTENT_TYPE, "application/json" )
                         .body(Body::from(
                             serde_json::to_string(&json!({
-                                "title": "Test Announcement",
+                                "title": "Test Announcement" ,
                                 "content": "Content"
                             }))
-                            .expect("test assertion"),
+                            .expect("test assertion" ),
                         ))
-                        .expect("test assertion"),
+                        .expect("test assertion" ),
                 )
                 .await
-                .expect("test assertion");
+                .expect("test assertion" );
             assert_eq!(response.status(), StatusCode::OK);
             let body = response.into_body();
             let json = extract_json(body).await;
-            assert_eq!(json["success"], true);
+            assert_eq!(json["success" ], true);
         }
 
         #[tokio::test]
@@ -658,12 +658,12 @@ mod route_tests {
             let response = app
                 .oneshot(
                     Request::builder()
-                        .uri("/api/announcements/active")
+                        .uri("/api/announcements/active" )
                         .body(Body::empty())
-                        .expect("test assertion"),
+                        .expect("test assertion" ),
                 )
                 .await
-                .expect("test assertion");
+                .expect("test assertion" );
             assert_eq!(response.status(), StatusCode::OK);
         }
     }
@@ -680,17 +680,17 @@ mod route_tests {
             let response = app
                 .oneshot(
                     Request::builder()
-                        .uri("/api/config/system-configs")
+                        .uri("/api/config/system-configs" )
                         .body(Body::empty())
-                        .expect("test assertion"),
+                        .expect("test assertion" ),
                 )
                 .await
-                .expect("test assertion");
+                .expect("test assertion" );
             assert_eq!(response.status(), StatusCode::OK);
             let body = response.into_body();
             let json = extract_json(body).await;
-            assert_eq!(json["success"], true);
-            assert_eq!(json["data"], json!([]));
+            assert_eq!(json["success" ], true);
+            assert_eq!(json["data" ], json!([]));
         }
 
         #[tokio::test]
@@ -700,19 +700,19 @@ mod route_tests {
             let response = app
                 .oneshot(
                     Request::builder()
-                        .method("PUT")
-                        .uri("/api/config/system-configs/theme")
-                        .header(CONTENT_TYPE, "application/json")
+                        .method("PUT" )
+                        .uri("/api/config/system-configs/theme" )
+                        .header(CONTENT_TYPE, "application/json" )
                         .body(Body::from(
                             serde_json::to_string(&json!({
                                 "value": "dark"
                             }))
-                            .expect("test assertion"),
+                            .expect("test assertion" ),
                         ))
-                        .expect("test assertion"),
+                        .expect("test assertion" ),
                 )
                 .await
-                .expect("test assertion");
+                .expect("test assertion" );
             assert_eq!(response.status(), StatusCode::OK);
         }
     }
@@ -729,15 +729,15 @@ mod route_tests {
             let response = app
                 .oneshot(
                     Request::builder()
-                        .uri("/api/roles")
+                        .uri("/api/roles" )
                         .body(Body::empty())
-                        .expect("test assertion"),
+                        .expect("test assertion" ),
                 )
                 .await
-                .expect("test assertion");
+                .expect("test assertion" );
             let body = response.into_body();
             let json = extract_json(body).await;
-            assert_eq!(json["success"], false);
+            assert_eq!(json["success" ], false);
         }
 
         #[tokio::test]
@@ -747,23 +747,23 @@ mod route_tests {
             let response = app
                 .oneshot(
                     Request::builder()
-                        .method("POST")
-                        .uri("/api/roles")
-                        .header(CONTENT_TYPE, "application/json")
+                        .method("POST" )
+                        .uri("/api/roles" )
+                        .header(CONTENT_TYPE, "application/json" )
                         .body(Body::from(
                             serde_json::to_string(&json!({
-                                "name": "test_role",
+                                "name": "test_role" ,
                                 "description": "Test"
                             }))
-                            .expect("test assertion"),
+                            .expect("test assertion" ),
                         ))
-                        .expect("test assertion"),
+                        .expect("test assertion" ),
                 )
                 .await
-                .expect("test assertion");
+                .expect("test assertion" );
             let body = response.into_body();
             let json = extract_json(body).await;
-            assert_eq!(json["success"], false);
+            assert_eq!(json["success" ], false);
         }
     }
 
@@ -779,15 +779,15 @@ mod route_tests {
             let response = app
                 .oneshot(
                     Request::builder()
-                        .uri("/api/admin/departments")
+                        .uri("/api/admin/departments" )
                         .body(Body::empty())
-                        .expect("test assertion"),
+                        .expect("test assertion" ),
                 )
                 .await
-                .expect("test assertion");
+                .expect("test assertion" );
             let body = response.into_body();
             let json = extract_json(body).await;
-            assert_eq!(json["success"], false);
+            assert_eq!(json["success" ], false);
         }
 
         #[tokio::test]
@@ -797,15 +797,15 @@ mod route_tests {
             let response = app
                 .oneshot(
                     Request::builder()
-                        .uri("/api/admin/departments/tree")
+                        .uri("/api/admin/departments/tree" )
                         .body(Body::empty())
-                        .expect("test assertion"),
+                        .expect("test assertion" ),
                 )
                 .await
-                .expect("test assertion");
+                .expect("test assertion" );
             let body = response.into_body();
             let json = extract_json(body).await;
-            assert_eq!(json["success"], false);
+            assert_eq!(json["success" ], false);
         }
     }
 
@@ -821,15 +821,15 @@ mod route_tests {
             let response = app
                 .oneshot(
                     Request::builder()
-                        .uri("/api/admin/dictionary/types")
+                        .uri("/api/admin/dictionary/types" )
                         .body(Body::empty())
-                        .expect("test assertion"),
+                        .expect("test assertion" ),
                 )
                 .await
-                .expect("test assertion");
+                .expect("test assertion" );
             let body = response.into_body();
             let json = extract_json(body).await;
-            assert_eq!(json["success"], false);
+            assert_eq!(json["success" ], false);
         }
 
         #[tokio::test]
@@ -839,15 +839,15 @@ mod route_tests {
             let response = app
                 .oneshot(
                     Request::builder()
-                        .uri("/api/admin/dictionary/items")
+                        .uri("/api/admin/dictionary/items" )
                         .body(Body::empty())
-                        .expect("test assertion"),
+                        .expect("test assertion" ),
                 )
                 .await
-                .expect("test assertion");
+                .expect("test assertion" );
             let body = response.into_body();
             let json = extract_json(body).await;
-            assert_eq!(json["success"], false);
+            assert_eq!(json["success" ], false);
         }
 
         #[tokio::test]
@@ -857,15 +857,15 @@ mod route_tests {
             let response = app
                 .oneshot(
                     Request::builder()
-                        .uri("/api/admin/dictionary/all-enabled")
+                        .uri("/api/admin/dictionary/all-enabled" )
                         .body(Body::empty())
-                        .expect("test assertion"),
+                        .expect("test assertion" ),
                 )
                 .await
-                .expect("test assertion");
+                .expect("test assertion" );
             let body = response.into_body();
             let json = extract_json(body).await;
-            assert_eq!(json["success"], false);
+            assert_eq!(json["success" ], false);
         }
     }
 
@@ -879,26 +879,26 @@ mod route_tests {
             let state = mock_state!();
             let token = state
                 .jwt_service
-                .generate_access_token(1, "testuser", "admin")
-                .expect("test assertion");
-            let claims = state.jwt_service.verify_token(&token).expect("test assertion");
+                .generate_access_token(1, "testuser" , "admin" )
+                .expect("test assertion" );
+            let claims = state.jwt_service.verify_token(&token).expect("test assertion" );
             assert_eq!(claims.sub, 1);
-            assert_eq!(claims.username, "testuser");
-            assert_eq!(claims.role, "admin");
+            assert_eq!(claims.username, "testuser" );
+            assert_eq!(claims.role, "admin" );
         }
 
         #[tokio::test]
         async fn test_jwt_refresh_token_generation_and_validation() {
             let state = mock_state!();
-            let refresh_token = state.jwt_service.generate_refresh_token(42).expect("test assertion");
-            let user_id = state.jwt_service.verify_refresh_token(&refresh_token).expect("test assertion");
+            let refresh_token = state.jwt_service.generate_refresh_token(42).expect("test assertion" );
+            let user_id = state.jwt_service.verify_refresh_token(&refresh_token).expect("test assertion" );
             assert_eq!(user_id, 42);
         }
 
         #[tokio::test]
         async fn test_jwt_invalid_token_returns_error() {
             let state = mock_state!();
-            let result = state.jwt_service.verify_token("invalid.token.here");
+            let result = state.jwt_service.verify_token("invalid.token.here" );
             assert!(result.is_err());
         }
 
@@ -907,13 +907,13 @@ mod route_tests {
             let state = mock_state!();
             let token = state
                 .jwt_service
-                .generate_access_token(1, "testuser", "admin")
-                .expect("test assertion");
+                .generate_access_token(1, "testuser" , "admin" )
+                .expect("test assertion" );
             // 使用不同的 secret 创建新的 JwtService
             let other_service = auth_core::JwtService::new(
-                "different-secret",
-                "test-issuer",
-                "test-audience",
+                "different-secret" ,
+                "test-issuer" ,
+                "test-audience" ,
                 3600,
                 604800,
             );
@@ -934,7 +934,7 @@ mod route_tests {
             let result = clients.auth_client().await;
             // Just verify it's an error
             match result {
-                Ok(_) => panic!("Expected error, got Ok"),
+                Ok(_) => panic!("Expected error, got Ok" ),
                 Err(_) => {}
             }
         }
@@ -945,7 +945,7 @@ mod route_tests {
             let clients = state.grpc_clients.read().await;
             let result = clients.user_client().await;
             match result {
-                Ok(_) => panic!("Expected error, got Ok"),
+                Ok(_) => panic!("Expected error, got Ok" ),
                 Err(_) => {}
             }
         }
@@ -956,7 +956,7 @@ mod route_tests {
             let clients = state.grpc_clients.read().await;
             let result = clients.cms_client().await;
             match result {
-                Ok(_) => panic!("Expected error, got Ok"),
+                Ok(_) => panic!("Expected error, got Ok" ),
                 Err(_) => {}
             }
         }
@@ -967,7 +967,7 @@ mod route_tests {
             let clients = state.grpc_clients.read().await;
             let result = clients.workflow_client().await;
             match result {
-                Ok(_) => panic!("Expected error, got Ok"),
+                Ok(_) => panic!("Expected error, got Ok" ),
                 Err(_) => {}
             }
         }
@@ -978,7 +978,7 @@ mod route_tests {
             let clients = state.grpc_clients.read().await;
             let result = clients.audit_client().await;
             match result {
-                Ok(_) => panic!("Expected error, got Ok"),
+                Ok(_) => panic!("Expected error, got Ok" ),
                 Err(_) => {}
             }
         }
@@ -989,7 +989,7 @@ mod route_tests {
             let clients = state.grpc_clients.read().await;
             let result = clients.file_client().await;
             match result {
-                Ok(_) => panic!("Expected error, got Ok"),
+                Ok(_) => panic!("Expected error, got Ok" ),
                 Err(_) => {}
             }
         }
@@ -1000,7 +1000,7 @@ mod route_tests {
             let clients = state.grpc_clients.read().await;
             let result = clients.tenant_client().await;
             match result {
-                Ok(_) => panic!("Expected error, got Ok"),
+                Ok(_) => panic!("Expected error, got Ok" ),
                 Err(_) => {}
             }
         }
@@ -1017,9 +1017,9 @@ mod route_tests {
         async fn test_is_service_available_returns_false() {
             let state = mock_state!();
             let clients = state.grpc_clients.read().await;
-            assert!(!clients.is_service_available("auth").await);
-            assert!(!clients.is_service_available("user").await);
-            assert!(!clients.is_service_available("cms").await);
+            assert!(!clients.is_service_available("auth" ).await);
+            assert!(!clients.is_service_available("user" ).await);
+            assert!(!clients.is_service_available("cms" ).await);
         }
     }
 
@@ -1031,8 +1031,8 @@ mod route_tests {
         #[tokio::test]
         async fn test_circuit_breaker_initial_state() {
             let state = mock_state!();
-            let breaker = state.circuit_breaker_manager.get_breaker("auth-service");
-            assert!(breaker.allow("auth-service"));
+            let breaker = state.circuit_breaker_manager.get_breaker("auth-service" );
+            assert!(breaker.allow("auth-service" ));
         }
 
         #[tokio::test]
@@ -1041,25 +1041,25 @@ mod route_tests {
             for _ in 0..10 {
                 state
                     .circuit_breaker_manager
-                    .record_result("test-service", false);
+                    .record_result("test-service" , false);
             }
             // 熔断器应该打开
-            assert!(!state.circuit_breaker_manager.allow_request("test-service"));
+            assert!(!state.circuit_breaker_manager.allow_request("test-service" ));
         }
 
         #[tokio::test]
         async fn test_circuit_breaker_reset() {
             let state = mock_state!();
-            state.circuit_breaker_manager.record_result("test-svc", false);
-            state.circuit_breaker_manager.reset("test-svc");
-            assert!(state.circuit_breaker_manager.allow_request("test-svc"));
+            state.circuit_breaker_manager.record_result("test-svc" , false);
+            state.circuit_breaker_manager.reset("test-svc" );
+            assert!(state.circuit_breaker_manager.allow_request("test-svc" ));
         }
 
         #[tokio::test]
         async fn test_circuit_breaker_get_all_states() {
             let state = mock_state!();
             // Initialize a breaker first
-            state.circuit_breaker_manager.get_breaker("test-service");
+            state.circuit_breaker_manager.get_breaker("test-service" );
             let states = state.circuit_breaker_manager.get_all_states();
             // 至少有一个服务状态被初始化
             assert!(!states.is_empty());
@@ -1089,9 +1089,9 @@ mod route_tests {
         #[tokio::test]
         async fn test_password_service_hash_and_verify() {
             let service = auth_core::PasswordService;
-            let hash = service.hash_password("testpass123").expect("test assertion");
-            assert!(service.verify_password("testpass123", &hash));
-            assert!(!service.verify_password("wrongpass", &hash));
+            let hash = service.hash_password("testpass123" ).expect("test assertion" );
+            assert!(service.verify_password("testpass123" , &hash));
+            assert!(!service.verify_password("wrongpass" , &hash));
         }
 
         #[tokio::test]
@@ -1100,21 +1100,21 @@ mod route_tests {
             // bcrypt hash for "password123"
             let bcrypt_hash = "$2b$12$LmJ.xbHzhGUj5E8ZvSXk6O5p9XyZ3Q1w2v4c6b8a0d2e4f6g8h0i";
             // 验证兼容模式（即使 hash 格式错误也应安全返回 false）
-            assert!(!service.verify_bcrypt("wrong", bcrypt_hash));
+            assert!(!service.verify_bcrypt("wrong" , bcrypt_hash));
         }
 
         #[tokio::test]
         async fn test_weak_password_rejected() {
             use common::validation::validate_password;
-            assert!(validate_password("123").is_err());
-            assert!(validate_password("").is_err());
+            assert!(validate_password("123" ).is_err());
+            assert!(validate_password("" ).is_err());
         }
 
         #[tokio::test]
         async fn test_valid_password_accepted() {
             use common::validation::validate_password;
-            assert!(validate_password("12345678").is_ok());
-            assert!(validate_password("strongpassword").is_ok());
+            assert!(validate_password("12345678" ).is_ok());
+            assert!(validate_password("strongpassword" ).is_ok());
         }
     }
 
@@ -1126,30 +1126,30 @@ mod route_tests {
         #[tokio::test]
         async fn test_json_success() {
             let result = crate::routes::helpers::json_success(json!({"id": 1}));
-            assert_eq!(result.0["success"], true);
-            assert_eq!(result.0["code"], 200);
+            assert_eq!(result.0["success" ], true);
+            assert_eq!(result.0["code" ], 200);
         }
 
         #[tokio::test]
         async fn test_json_ok() {
             let result = crate::routes::helpers::json_ok();
-            assert_eq!(result.0["success"], true);
-            assert_eq!(result.0["code"], 200);
+            assert_eq!(result.0["success" ], true);
+            assert_eq!(result.0["code" ], 200);
         }
 
         #[tokio::test]
         async fn test_json_error() {
-            let result = crate::routes::helpers::json_error("test error");
-            assert_eq!(result.0["success"], false);
-            assert_eq!(result.0["code"], 500);
-            assert_eq!(result.0["message"], "test error");
+            let result = crate::routes::helpers::json_error("test error" );
+            assert_eq!(result.0["success" ], false);
+            assert_eq!(result.0["code" ], 500);
+            assert_eq!(result.0["message" ], "test error" );
         }
 
         #[tokio::test]
         async fn test_json_error_fmt() {
             let result =
-                crate::routes::helpers::json_error_fmt("operation failed", &"detail error");
-            assert_eq!(result.0["message"], "operation failed: detail error");
+                crate::routes::helpers::json_error_fmt("operation failed" , &"detail error" );
+            assert_eq!(result.0["message" ], "operation failed: detail error" );
         }
     }
 
@@ -1160,22 +1160,22 @@ mod route_tests {
 
         #[tokio::test]
         async fn test_parse_grpc_url_with_port() {
-            let (host, port) = crate::grpc_clients::parse_grpc_url("http://localhost:9090");
-            assert_eq!(host, "localhost");
+            let (host, port) = crate::grpc_clients::parse_grpc_url("http://localhost:9090" );
+            assert_eq!(host, "localhost" );
             assert_eq!(port, 9090);
         }
 
         #[tokio::test]
         async fn test_parse_grpc_url_without_port() {
-            let (host, port) = crate::grpc_clients::parse_grpc_url("http://auth-service");
-            assert_eq!(host, "auth-service");
+            let (host, port) = crate::grpc_clients::parse_grpc_url("http://auth-service" );
+            assert_eq!(host, "auth-service" );
             assert_eq!(port, 9091); // default
         }
 
         #[tokio::test]
         async fn test_parse_grpc_url_https() {
-            let (host, port) = crate::grpc_clients::parse_grpc_url("https://secure-host:443");
-            assert_eq!(host, "secure-host");
+            let (host, port) = crate::grpc_clients::parse_grpc_url("https://secure-host:443" );
+            assert_eq!(host, "secure-host" );
             assert_eq!(port, 443);
         }
     }
@@ -1194,45 +1194,45 @@ mod route_tests {
         async fn test_service_defs_contains_auth() {
             let auth_def = crate::grpc_clients::SERVICE_DEFS
                 .iter()
-                .find(|d| d.key == "auth");
+                .find(|d| d.key == "auth" );
             assert!(auth_def.is_some());
-            assert_eq!(auth_def.expect("test assertion").name, "auth-service");
+            assert_eq!(auth_def.expect("test assertion" ).name, "auth-service" );
         }
 
         #[tokio::test]
         async fn test_service_defs_contains_user() {
             let user_def = crate::grpc_clients::SERVICE_DEFS
                 .iter()
-                .find(|d| d.key == "user");
+                .find(|d| d.key == "user" );
             assert!(user_def.is_some());
-            assert_eq!(user_def.expect("test assertion").name, "user-service");
+            assert_eq!(user_def.expect("test assertion" ).name, "user-service" );
         }
 
         #[tokio::test]
         async fn test_service_defs_contains_cms() {
             let cms_def = crate::grpc_clients::SERVICE_DEFS
                 .iter()
-                .find(|d| d.key == "cms");
+                .find(|d| d.key == "cms" );
             assert!(cms_def.is_some());
-            assert_eq!(cms_def.expect("test assertion").name, "cms-service");
+            assert_eq!(cms_def.expect("test assertion" ).name, "cms-service" );
         }
 
         #[tokio::test]
         async fn test_service_defs_contains_workflow() {
             let wf_def = crate::grpc_clients::SERVICE_DEFS
                 .iter()
-                .find(|d| d.key == "workflow");
+                .find(|d| d.key == "workflow" );
             assert!(wf_def.is_some());
-            assert_eq!(wf_def.expect("test assertion").name, "workflow-service");
+            assert_eq!(wf_def.expect("test assertion" ).name, "workflow-service" );
         }
 
         #[tokio::test]
         async fn test_service_defs_contains_file() {
             let file_def = crate::grpc_clients::SERVICE_DEFS
                 .iter()
-                .find(|d| d.key == "file");
+                .find(|d| d.key == "file" );
             assert!(file_def.is_some());
-            assert_eq!(file_def.expect("test assertion").name, "file-service");
+            assert_eq!(file_def.expect("test assertion" ).name, "file-service" );
         }
     }
 }

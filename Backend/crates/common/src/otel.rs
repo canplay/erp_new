@@ -33,7 +33,7 @@ impl OtelGuard {
     pub fn shutdown(&self) {
         if let Some(provider) = &self.tracer_provider
             && let Err(e) = provider.shutdown() {
-                tracing::warn!("OpenTelemetry provider shutdown error: {e}");
+                tracing::warn!("OpenTelemetry provider shutdown error: {e}" );
             }
     }
 }
@@ -50,19 +50,19 @@ pub fn init_otel(
     service_name: &str,
 ) -> Option<Box<dyn tracing_subscriber::layer::Layer<tracing_subscriber::Registry> + Send + Sync + 'static>>
 {
-    let enabled = std::env::var("OTEL_ENABLED")
+    let enabled = std::env::var("OTEL_ENABLED" )
         .ok()
-        .is_none_or(|v| v == "true" || v == "1");
+        .is_none_or(|v| v == "true" || v == "1" );
 
     if !enabled {
-        tracing::info!("OpenTelemetry 已禁用 (OTEL_ENABLED=false)");
+        tracing::info!("OpenTelemetry 已禁用 (OTEL_ENABLED=false)" );
         return None;
     }
 
-    let endpoint = std::env::var("OTEL_EXPORTER_OTLP_ENDPOINT")
+    let endpoint = std::env::var("OTEL_EXPORTER_OTLP_ENDPOINT" )
         .unwrap_or_else(|_| "http://localhost:4317".to_string());
 
-    tracing::info!("OpenTelemetry 初始化中, 端点: {endpoint}");
+    tracing::info!("OpenTelemetry 初始化中, 端点: {endpoint}" );
 
     let tracer_provider = match build_tracer_provider(service_name, &endpoint) {
         Ok(provider) => provider,
@@ -95,8 +95,8 @@ fn build_tracer_provider(
         .with_batch_exporter(exporter)
         .with_resource(
             opentelemetry_sdk::Resource::builder()
-                .with_attribute(KeyValue::new("service.name", service_name.to_string()))
-                .with_attribute(KeyValue::new("service.version", env!("CARGO_PKG_VERSION")))
+                .with_attribute(KeyValue::new("service.name" , service_name.to_string()))
+                .with_attribute(KeyValue::new("service.version" , env!("CARGO_PKG_VERSION" )))
                 .build(),
         )
         .build();
@@ -117,7 +117,7 @@ pub fn current_trace_id() -> Option<String> {
     if trace_id == TraceId::INVALID {
         None
     } else {
-        Some(format!("{trace_id:032x}"))
+        Some(format!("{trace_id:032x}" ))
     }
 }
 
@@ -132,7 +132,7 @@ pub fn current_span_id() -> Option<String> {
     if span_id == SpanId::INVALID {
         None
     } else {
-        Some(format!("{span_id:016x}"))
+        Some(format!("{span_id:016x}" ))
     }
 }
 

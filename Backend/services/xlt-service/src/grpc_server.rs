@@ -13,7 +13,7 @@ use crate::xlt::AppState;
 use crate::models::{BillingRequest as ServiceBillingRequest, VehicleEvent as ServiceVehicleEvent};
 
 pub async fn start_grpc_server(addr: SocketAddr, state: AppState) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    tracing::info!("[XltService] gRPC listening on {addr}");
+    tracing::info!("[XltService] gRPC listening on {addr}" );
     Server::builder().layer(tonic::service::interceptor::InterceptorLayer::new(common::grpc_auth_interceptor))
         .add_service(XltServiceServer::new(GrpcXltService { state: Arc::new(state) }))
         .serve_with_shutdown(addr, shutdown_signal())
@@ -55,7 +55,7 @@ impl XltService for GrpcXltService {
             })),
             Err(e) => Ok(Response::new(GenericResponse {
                 code: 1,
-                message: format!("{e}"),
+                message: format!("{e}" ),
                 data: String::new(),
             })),
         }
@@ -71,7 +71,7 @@ impl XltService for GrpcXltService {
             })),
             Err(e) => Ok(Response::new(GenericResponse {
                 code: 1,
-                message: format!("{e}"),
+                message: format!("{e}" ),
                 data: String::new(),
             })),
         }
@@ -93,7 +93,7 @@ impl XltService for GrpcXltService {
                 duration_minutes: vehicle.duration_minutes,
                 amount: vehicle.amount,
             })),
-            Err(e) => Err(Status::not_found(format!("{e}"))),
+            Err(e) => Err(Status::not_found(format!("{e}" ))),
         }
     }
 
@@ -115,7 +115,7 @@ impl XltService for GrpcXltService {
                 total_amount: result.total_amount,
                 rule: result.rule,
             })),
-            Err(e) => Err(Status::internal(format!("{e}"))),
+            Err(e) => Err(Status::internal(format!("{e}" ))),
         }
     }
 
@@ -134,7 +134,7 @@ impl XltService for GrpcXltService {
         let envelope: Result<crate::models::MqttEnvelope, _> = serde_json::from_str(&req.payload);
         match envelope {
             Ok(env) => {
-                tracing::info!("MQTT回调: topic={}, command={}, sn={}", req.topic, env.command, env.sn);
+                tracing::info!("MQTT回调: topic={}, command={}, sn={}" , req.topic, env.command, env.sn);
                 self.state.device_manager.dispatch(env).await;
                 Ok(Response::new(GenericResponse {
                     code: 200,
@@ -142,7 +142,7 @@ impl XltService for GrpcXltService {
                     data: String::new(),
                 }))
             }
-            Err(e) => Err(Status::invalid_argument(format!("解析MQTT消息失败: {e}"))),
+            Err(e) => Err(Status::invalid_argument(format!("解析MQTT消息失败: {e}" ))),
         }
     }
 
@@ -164,7 +164,7 @@ impl XltService for GrpcXltService {
         let req = request.into_inner();
         match self.state.mqtt_gateway.send_open(&req.sn, &req.request_id).await {
             Ok(()) => Ok(Response::new(GenericResponse { code: 0, message: "success".to_string(), data: String::new() })),
-            Err(e) => Ok(Response::new(GenericResponse { code: 1, message: format!("{e}"), data: String::new() })),
+            Err(e) => Ok(Response::new(GenericResponse { code: 1, message: format!("{e}" ), data: String::new() })),
         }
     }
 
@@ -172,7 +172,7 @@ impl XltService for GrpcXltService {
         let req = request.into_inner();
         match self.state.mqtt_gateway.send_close(&req.sn, &req.request_id).await {
             Ok(()) => Ok(Response::new(GenericResponse { code: 0, message: "success".to_string(), data: String::new() })),
-            Err(e) => Ok(Response::new(GenericResponse { code: 1, message: format!("{e}"), data: String::new() })),
+            Err(e) => Ok(Response::new(GenericResponse { code: 1, message: format!("{e}" ), data: String::new() })),
         }
     }
 }

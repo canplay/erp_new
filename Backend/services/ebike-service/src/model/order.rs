@@ -15,7 +15,7 @@ pub struct OrderInfo {
     /// 车辆类型（预留字段，当前所有写入路径均硬编码为 0，暂不使用）。
     /// 用途：未来可能区分共享单车/电单车/摩托车等车型。
     /// 状态：已文档化，等待业务需求。
-    #[sqlx(rename = "type")]
+    #[sqlx(rename = "type" )]
     pub r#type: i64,
     pub time: Option<Value>,
     pub create_date: Option<NaiveDateTime>,
@@ -77,21 +77,21 @@ mod tests {
             gps_type: Some(1),
         };
 
-        let json = serde_json::to_string(&order).expect("test assertion");
-        assert!(json.contains("\"code\":\"ORD001\""));
-        assert!(json.contains("\"payable\":100"));
-        assert!(json.contains("\"hash\":\"abc123\""));
+        let json = serde_json::to_string(&order).expect("test assertion" );
+        assert!(json.contains("\"code\":\"ORD001\"" ));
+        assert!(json.contains("\"payable\":100" ));
+        assert!(json.contains("\"hash\":\"abc123\"" ));
     }
 
     #[test]
     fn test_order_info_deserialization() {
         let json = r#"{
-            "code": "ORD002",
+            "code": "ORD002" ,
             "status": 0,
-            "provide": "",
+            "provide": " ",
             "speed": 0.0,
             "type": 0,
-            "hash": "",
+            "hash": " ",
             "payable": 0,
             "pay": 0,
             "refund": 0.0,
@@ -100,7 +100,7 @@ mod tests {
             "pay_status": 0,
             "paytype": 0
         }"#;
-        let order: OrderInfo = serde_json::from_str(json).expect("test assertion");
+        let order: OrderInfo = serde_json::from_str(json).expect("test assertion" );
         assert_eq!(order.code, Some("ORD002".to_string()));
         assert_eq!(order.status, 0);
     }
@@ -110,7 +110,7 @@ mod tests {
         let order = OrderInfo::default();
         assert!(order.code.is_none());
         assert_eq!(order.status, 0);
-        assert_eq!(order.hash, "");
+        assert_eq!(order.hash, " ");
         assert_eq!(order.payable, 0);
     }
 }

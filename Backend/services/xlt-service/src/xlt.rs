@@ -92,10 +92,10 @@ pub async fn mqtt_callback(
     Json(msg): Json<MqttCallbackPayload>,
 ) -> AppResult<Json<serde_json::Value>> {
     let envelope: MqttEnvelope = serde_json::from_str(&msg.payload)
-        .map_err(|e| AppError::Internal(format!("解析MQTT消息失败: {e}")))?;
+        .map_err(|e| AppError::Internal(format!("解析MQTT消息失败: {e}" )))?;
 
     tracing::info!(
-        "MQTT回调: topic={}, command={}, sn={}",
+        "MQTT回调: topic={}, command={}, sn={}" ,
         msg.topic,
         envelope.command,
         envelope.sn
@@ -105,7 +105,7 @@ pub async fn mqtt_callback(
     match envelope.command.as_str() {
         "Conn" => {
             if let Ok(conn) = serde_json::from_str::<crate::models::ConnData>(&envelope.data) {
-                state.device_manager.register_device(&envelope.sn, "", &conn.dev_info, &envelope.version).await;
+                state.device_manager.register_device(&envelope.sn, " ", &conn.dev_info, &envelope.version).await;
             }
         }
         "HeartBeat" => {
@@ -114,7 +114,7 @@ pub async fn mqtt_callback(
         "DeviceAlarm" => {
             if let Ok(alarm) = serde_json::from_str::<crate::models::DeviceAlarmData>(&envelope.data) {
                 tracing::warn!(
-                    "设备告警: sn={}, type={}, code={}, desc={}, time={}",
+                    "设备告警: sn={}, type={}, code={}, desc={}, time={}" ,
                     envelope.sn, alarm.alarm_type, alarm.alarm_code, alarm.alarm_desc, alarm.alarm_time
                 );
             }
@@ -122,7 +122,7 @@ pub async fn mqtt_callback(
         "VehicleDetection" => {
             if let Ok(det) = serde_json::from_str::<crate::models::VehicleDetectionData>(&envelope.data) {
                 tracing::info!(
-                    "车辆检测: sn={}, has_car={}, trigger={}, time={}",
+                    "车辆检测: sn={}, has_car={}, trigger={}, time={}" ,
                     envelope.sn, det.has_car, det.trigger_source, det.detect_time
                 );
             }
@@ -132,7 +132,7 @@ pub async fn mqtt_callback(
 
     state.device_manager.dispatch(envelope).await;
 
-    Ok(json_ok(200, "success"))
+    Ok(json_ok(200, "success" ))
 }
 
 /// 获取设备列表
@@ -177,5 +177,5 @@ pub async fn close_barrier(
 
 /// 健康检查
 pub async fn health() -> Json<serde_json::Value> {
-    json_health("xlt-service")
+    json_health("xlt-service" )
 }

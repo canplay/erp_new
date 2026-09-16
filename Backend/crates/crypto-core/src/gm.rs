@@ -8,18 +8,18 @@
 //! use crypto_core::GmCrypto;
 //!
 //! // 创建加密工具
-//! let gm = GmCrypto::new("0123456789abcdef0123456789abcdef").unwrap();
+//! let gm = GmCrypto::new("0123456789abcdef0123456789abcdef" ).unwrap();
 //!
 //! // SM3 哈希
-//! let hash = GmCrypto::sm3_hash(b"hello");
+//! let hash = GmCrypto::sm3_hash(b"hello" );
 //!
 //! // SM4 ECB 加密
-//! let encrypted = gm.sm4_encrypt(b"secret").unwrap();
+//! let encrypted = gm.sm4_encrypt(b"secret" ).unwrap();
 //! let decrypted = gm.sm4_decrypt(&encrypted).unwrap();
 //!
 //! // SM4 CBC 加密
 //! let iv = GmCrypto::generate_iv();
-//! let cbc_encrypted = gm.sm4_cbc_encrypt(b"secret", &iv).unwrap();
+//! let cbc_encrypted = gm.sm4_cbc_encrypt(b"secret" , &iv).unwrap();
 //! ```
 
 use generic_array::typenum::U16;
@@ -39,19 +39,19 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum CryptoError {
-    #[error("SM2签名失败: {0}")]
+    #[error("SM2签名失败: {0}" )]
     Sm2SignError(String),
 
-    #[error("SM2验签失败: {0}")]
+    #[error("SM2验签失败: {0}" )]
     Sm2VerifyError(String),
 
-    #[error("SM4加密失败: {0}")]
+    #[error("SM4加密失败: {0}" )]
     Sm4EncryptError(String),
 
-    #[error("SM4解密失败: {0}")]
+    #[error("SM4解密失败: {0}" )]
     Sm4DecryptError(String),
 
-    #[error("密钥格式错误: {0}")]
+    #[error("密钥格式错误: {0}" )]
     KeyFormatError(String),
 }
 
@@ -74,7 +74,7 @@ impl GmCrypto {
     /// 创建新的国密工具实例 (仅 SM4)
     pub fn new(sm4_key: &str) -> Result<Self, CryptoError> {
         let key_bytes = hex::decode(sm4_key)
-            .map_err(|e| CryptoError::KeyFormatError(format!("SM4密钥格式错误: {e}")))?;
+            .map_err(|e| CryptoError::KeyFormatError(format!("SM4密钥格式错误: {e}" )))?;
 
         if key_bytes.len() != 16 {
             return Err(CryptoError::KeyFormatError("SM4密钥必须为16字节".into()));
@@ -140,7 +140,7 @@ impl GmCrypto {
     /// SM2 签名
     pub fn sm2_sign(&self, data: &[u8], private_key: &[u8; 32]) -> Result<String, CryptoError> {
         let signing_key = SigningKey::from_bytes(private_key.into())
-            .map_err(|e| CryptoError::Sm2SignError(format!("私钥格式错误: {e:?}")))?;
+            .map_err(|e| CryptoError::Sm2SignError(format!("私钥格式错误: {e:?}" )))?;
 
         // 对数据进行哈希 (使用 SHA256 作为 ECDSA 签名的基础)
         let mut hasher = Sha256::new();
@@ -161,10 +161,10 @@ impl GmCrypto {
     ) -> Result<bool, CryptoError> {
         // 解析签名
         let signature_bytes = hex::decode(signature_hex)
-            .map_err(|e| CryptoError::Sm2VerifyError(format!("签名格式错误: {e}")))?;
+            .map_err(|e| CryptoError::Sm2VerifyError(format!("签名格式错误: {e}" )))?;
 
         let signature = K256Signature::from_slice(&signature_bytes)
-            .map_err(|e| CryptoError::Sm2VerifyError(format!("签名格式错误: {e:?}")))?;
+            .map_err(|e| CryptoError::Sm2VerifyError(format!("签名格式错误: {e:?}" )))?;
 
         // 构建公钥
         // 公钥格式: 64字节 (x || y)，需要加上 0x04 前缀变成 65 字节
@@ -172,10 +172,10 @@ impl GmCrypto {
         uncompressed[1..].copy_from_slice(public_key);
 
         let sec1_point = Sec1Point::<Secp256k1>::from_bytes(&uncompressed)
-            .map_err(|e| CryptoError::Sm2VerifyError(format!("公钥格式错误: {e:?}")))?;
+            .map_err(|e| CryptoError::Sm2VerifyError(format!("公钥格式错误: {e:?}" )))?;
 
         let verifying_key = VerifyingKey::from_sec1_point(&sec1_point)
-            .map_err(|e| CryptoError::Sm2VerifyError(format!("公钥格式错误: {e:?}")))?;
+            .map_err(|e| CryptoError::Sm2VerifyError(format!("公钥格式错误: {e:?}" )))?;
 
         // 对数据进行哈希
         let mut hasher = Sha256::new();
@@ -190,7 +190,7 @@ impl GmCrypto {
     #[allow(dead_code)]
     pub fn parse_sm2_private_key(hex_str: &str) -> Result<[u8; 32], CryptoError> {
         let key_bytes = hex::decode(hex_str)
-            .map_err(|e| CryptoError::KeyFormatError(format!("SM2私钥格式错误: {e}")))?;
+            .map_err(|e| CryptoError::KeyFormatError(format!("SM2私钥格式错误: {e}" )))?;
 
         key_bytes
             .as_slice()
@@ -202,7 +202,7 @@ impl GmCrypto {
     #[allow(dead_code)]
     pub fn parse_sm2_public_key(hex_str: &str) -> Result<[u8; 64], CryptoError> {
         let key_bytes = hex::decode(hex_str)
-            .map_err(|e| CryptoError::KeyFormatError(format!("SM2公钥格式错误: {e}")))?;
+            .map_err(|e| CryptoError::KeyFormatError(format!("SM2公钥格式错误: {e}" )))?;
 
         key_bytes
             .as_slice()
@@ -246,11 +246,11 @@ impl GmCrypto {
 
         let mut result = Vec::new();
         let mut previous_block: [u8; 16] = iv.try_into()
-            .expect("IV长度必须为16字节（已在函数入口校验）");
+            .expect("IV长度必须为16字节（已在函数入口校验）" );
 
         for chunk in padded_data.chunks(16) {
             let mut block: Array<u8, U16> = chunk.try_into()
-                .expect("chunk(16)应产生16字节块——已确保输入是16的倍数");
+                .expect("chunk(16)应产生16字节块——已确保输入是16的倍数" );
 
             for i in 0..16 {
                 block[i] ^= previous_block[i];
@@ -271,7 +271,7 @@ impl GmCrypto {
         }
 
         let encrypted_bytes = hex::decode(ciphertext)
-            .map_err(|e| CryptoError::KeyFormatError(format!("密文格式错误: {e}")))?;
+            .map_err(|e| CryptoError::KeyFormatError(format!("密文格式错误: {e}" )))?;
 
         if encrypted_bytes.len() % 16 != 0 {
             return Err(CryptoError::Sm4DecryptError(
@@ -284,11 +284,11 @@ impl GmCrypto {
 
         let mut result = Vec::new();
         let mut previous_block: [u8; 16] = iv.try_into()
-            .expect("IV长度必须为16字节（已在函数入口校验）");
+            .expect("IV长度必须为16字节（已在函数入口校验）" );
 
         for chunk in encrypted_bytes.chunks(16) {
             let mut block: Array<u8, U16> = chunk.try_into()
-                .expect("chunk(16)应产生16字节块——已确保输入是16的倍数");
+                .expect("chunk(16)应产生16字节块——已确保输入是16的倍数" );
             let ciphertext_block = chunk.to_vec();
 
             cipher.decrypt_block(&mut block);
@@ -331,10 +331,10 @@ impl GmCrypto {
         iv_hex: &str,
     ) -> Result<String, CryptoError> {
         let iv_bytes = hex::decode(iv_hex)
-            .map_err(|e| CryptoError::KeyFormatError(format!("IV格式错误: {e}")))?;
+            .map_err(|e| CryptoError::KeyFormatError(format!("IV格式错误: {e}" )))?;
         let decrypted = self.sm4_cbc_decrypt(ciphertext, &iv_bytes)?;
         String::from_utf8(decrypted)
-            .map_err(|e| CryptoError::KeyFormatError(format!("解密后数据格式错误: {e}")))
+            .map_err(|e| CryptoError::KeyFormatError(format!("解密后数据格式错误: {e}" )))
     }
 
     // ==================== SM4 ECB 模式 ====================
@@ -352,7 +352,7 @@ impl GmCrypto {
         let mut result = Vec::new();
         for chunk in padded_data.chunks(16) {
             let mut block: Array<u8, U16> = chunk.try_into()
-                .expect("chunk(16)应产生16字节块——已确保输入是16的倍数");
+                .expect("chunk(16)应产生16字节块——已确保输入是16的倍数" );
             cipher.encrypt_block(&mut block);
             result.extend_from_slice(block.as_slice());
         }
@@ -363,7 +363,7 @@ impl GmCrypto {
     /// SM4解密 (ECB模式)
     pub fn sm4_decrypt(&self, ciphertext: &str) -> Result<Vec<u8>, CryptoError> {
         let encrypted_bytes = hex::decode(ciphertext)
-            .map_err(|e| CryptoError::KeyFormatError(format!("密文格式错误: {e}")))?;
+            .map_err(|e| CryptoError::KeyFormatError(format!("密文格式错误: {e}" )))?;
 
         let cipher = Sm4::new_from_slice(&self.sm4_key)
             .map_err(|e| CryptoError::Sm4DecryptError(e.to_string()))?;
@@ -371,7 +371,7 @@ impl GmCrypto {
         let mut result = Vec::new();
         for chunk in encrypted_bytes.chunks(16) {
             let mut block: Array<u8, U16> = chunk.try_into()
-                .expect("chunk(16)应产生16字节块——已确保输入是16的倍数");
+                .expect("chunk(16)应产生16字节块——已确保输入是16的倍数" );
             cipher.decrypt_block(&mut block);
             result.extend_from_slice(block.as_slice());
         }
@@ -397,7 +397,7 @@ impl GmCrypto {
     pub fn decrypt_string(&self, encrypted: &str) -> Result<String, CryptoError> {
         let decrypted = self.sm4_decrypt(encrypted)?;
         String::from_utf8(decrypted)
-            .map_err(|e| CryptoError::KeyFormatError(format!("解密后数据格式错误: {e}")))
+            .map_err(|e| CryptoError::KeyFormatError(format!("解密后数据格式错误: {e}" )))
     }
 }
 
@@ -452,7 +452,7 @@ mod tests {
         let valid = gm
             .sm2_verify(data, &signature, &keypair.public_key)
             .unwrap();
-        assert!(valid, "SM2 signature verification failed");
+        assert!(valid, "SM2 signature verification failed" );
     }
 
     #[test]
@@ -473,12 +473,12 @@ mod tests {
         let valid2 = gm
             .sm2_verify(wrong_data, &signature, &keypair.public_key)
             .unwrap();
-        assert!(!valid2, "SM2 verification should fail for modified data");
+        assert!(!valid2, "SM2 verification should fail for modified data" );
     }
 
     #[test]
     fn test_invalid_sm4_key_length() {
-        let result = GmCrypto::new("0123456789abcdef");
+        let result = GmCrypto::new("0123456789abcdef" );
         assert!(result.is_err());
     }
 

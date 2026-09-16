@@ -31,7 +31,7 @@ impl ServiceConfig {
     /// 获取服务地址
     #[must_use]
     pub fn address(&self) -> String {
-        format!("{}:{}", self.host, self.port)
+        format!("{}:{}" , self.host, self.port)
     }
 }
 
@@ -58,32 +58,32 @@ impl AppConfig {
     /// 从配置文件和环境变量加载配置
     pub fn load() -> Result<Self, ConfigError> {
         // 校验必要的环境变量
-        if std::env::var("DATABASE_URL").is_err() {
+        if std::env::var("DATABASE_URL" ).is_err() {
             return Err(ConfigError::Message(
                 "DATABASE_URL is required".to_string(),
             ));
         }
 
-        if std::env::var("JWT_SECRET").is_err() {
+        if std::env::var("JWT_SECRET" ).is_err() {
             return Err(ConfigError::Message(
                 "JWT_SECRET is required".to_string(),
             ));
         }
 
         let config = Config::builder()
-            .set_default("service.name", "service")?
-            .set_default("service.host", "0.0.0.0")?
-            .set_default("service.port", 8080)?
-            .set_default("database.max_connections", 10)?
-            .set_default("database.min_connections", 2)?
-            .set_default("database.connect_timeout_secs", 30)?
-            .set_default("database.idle_timeout_secs", 600)?
-            .set_default("database.max_lifetime_secs", 1800)?
-            .set_default("redis.max_connections", 10)?
-            .set_default("jwt.access_token_expiry_secs", 3600)?
-            .set_default("jwt.refresh_token_expiry_secs", 604800)?
-            .add_source(File::with_name("config").required(false))
-            .add_source(Environment::with_prefix("APP").separator("__"))
+            .set_default("service.name" , "service" )?
+            .set_default("service.host" , "0.0.0.0" )?
+            .set_default("service.port" , 8080)?
+            .set_default("database.max_connections" , 10)?
+            .set_default("database.min_connections" , 2)?
+            .set_default("database.connect_timeout_secs" , 30)?
+            .set_default("database.idle_timeout_secs" , 600)?
+            .set_default("database.max_lifetime_secs" , 1800)?
+            .set_default("redis.max_connections" , 10)?
+            .set_default("jwt.access_token_expiry_secs" , 3600)?
+            .set_default("jwt.refresh_token_expiry_secs" , 604800)?
+            .add_source(File::with_name("config" ).required(false))
+            .add_source(Environment::with_prefix("APP" ).separator("__" ))
             .build()?;
 
         config.try_deserialize()
@@ -108,12 +108,12 @@ impl AppConfig {
 
 /// 从环境变量解析端口，支持默认值
 ///
-/// 用法: `let port = parse_port_from_env("SERVICE_PORT", 8080);`
+/// 用法: `let port = parse_port_from_env("SERVICE_PORT" , 8080);`
 ///
 /// # 示例
 /// ```ignore
 /// // 所有服务统一使用:
-/// let port = common::config::parse_port_from_env("SERVICE_PORT", 8080);
+/// let port = common::config::parse_port_from_env("SERVICE_PORT" , 8080);
 /// ```
 #[must_use]
 pub fn parse_port_from_env(var_name: &str, default: u16) -> u16 {

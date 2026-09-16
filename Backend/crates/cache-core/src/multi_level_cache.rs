@@ -98,14 +98,14 @@ impl MultiLevelCache {
         // 先查 L1
         if let Some(ref l1) = self.l1
             && let Some(value) = l1.get::<T>(key) {
-                tracing::debug!("MultiLevelCache L1 hit: {key}");
+                tracing::debug!("MultiLevelCache L1 hit: {key}" );
                 return Some(value);
             }
 
         // L1 未命中，查 L2
         if let Some(ref l2) = self.l2
             && let Ok(Some(value)) = l2.get::<T>(key).await {
-                tracing::debug!("MultiLevelCache L2 hit: {key}");
+                tracing::debug!("MultiLevelCache L2 hit: {key}" );
 
                 // 回填 L1
                 if let Some(ref l1) = self.l1 {
@@ -115,7 +115,7 @@ impl MultiLevelCache {
                 return Some(value);
             }
 
-        tracing::debug!("MultiLevelCache miss: {key}");
+        tracing::debug!("MultiLevelCache miss: {key}" );
         None
     }
 
@@ -133,7 +133,7 @@ impl MultiLevelCache {
             l2.set(key, value, self.config.l2_ttl_seconds).await?;
         }
 
-        tracing::debug!("MultiLevelCache set: {key}");
+        tracing::debug!("MultiLevelCache set: {key}" );
         Ok(())
     }
 
@@ -149,7 +149,7 @@ impl MultiLevelCache {
             l2.delete(key).await?;
         }
 
-        tracing::debug!("MultiLevelCache delete: {key}");
+        tracing::debug!("MultiLevelCache delete: {key}" );
         Ok(())
     }
 

@@ -39,7 +39,7 @@
                     created_at: a.created_at.timestamp(), updated_at: a.updated_at.timestamp(),
                 }),
             })),
-            None => Err(Status::not_found("公告不存在")),
+            None => Err(Status::not_found("公告不存在" )),
         }
     }
 
@@ -71,7 +71,7 @@
         let req = request.into_inner();
         let exists = self.state.announcement_repository.find_by_id(req.id).await
             .map_err(|e| Status::internal(e.to_string()))?;
-        if exists.is_none() { return Err(Status::not_found("公告不存在")); }
+        if exists.is_none() { return Err(Status::not_found("公告不存在" )); }
 
         let title = if req.title.is_empty() { None } else { Some(req.title) };
         let content = if req.content.is_empty() { None } else { Some(req.content) };
@@ -93,6 +93,6 @@
         let req = request.into_inner();
         let success = self.state.announcement_repository.delete(req.id).await
             .map_err(|e| Status::internal(e.to_string()))?;
-        if !success { return Err(Status::not_found("公告不存在")); }
+        if !success { return Err(Status::not_found("公告不存在" )); }
         Ok(Response::new(DeleteAnnouncementResponse { success: true }))
     }

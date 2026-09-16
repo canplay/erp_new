@@ -35,9 +35,9 @@ impl SignoService {
         let pkey_lower = pkey.to_lowercase();
 
         // 计算MD5 token
-        let token_input = format!("{url}{pkey_lower}");
-        let token = format!("{:x}", md5::compute(token_input.as_bytes()));
-        let full_url = format!("{url}&Token={token}");
+        let token_input = format!("{url}{pkey_lower}" );
+        let token = format!("{:x}" , md5::compute(token_input.as_bytes()));
+        let full_url = format!("{url}&Token={token}" );
 
         // 发送请求
         let client = reqwest::Client::new();

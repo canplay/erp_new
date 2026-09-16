@@ -58,7 +58,7 @@ impl Default for LogConfig {
     fn default() -> Self {
         Self {
             env: "development".to_string(),
-            log_dir: PathBuf::from("logs"),
+            log_dir: PathBuf::from("logs" ),
             file_name_pattern: "{service}.log".to_string(),
             max_file_size: 100,
             max_keep_days: 30,
@@ -69,7 +69,7 @@ impl Default for LogConfig {
             syslog_enabled: false,
             syslog_host: None,
             syslog_port: None,
-            service_name: std::env::var("SERVICE_NAME").unwrap_or_else(|_| {
+            service_name: std::env::var("SERVICE_NAME" ).unwrap_or_else(|_| {
                 std::env::args()
                     .next()
                     .unwrap_or_else(|| "unknown".to_string())
@@ -80,7 +80,7 @@ impl Default for LogConfig {
 
 /// 日志级别
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize)]
-#[serde(rename_all = "lowercase")]
+#[serde(rename_all = "lowercase" )]
 pub enum LogLevel {
     /// 跟踪级别 - 最详细
     Trace,
@@ -162,12 +162,12 @@ impl LogLevel {
 impl std::fmt::Display for LogLevel {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Trace => write!(f, "TRACE"),
-            Self::Debug => write!(f, "DEBUG"),
-            Self::Info => write!(f, "INFO"),
-            Self::Warn => write!(f, "WARN"),
-            Self::Error => write!(f, "ERROR"),
-            Self::Fatal => write!(f, "FATAL"),
+            Self::Trace => write!(f, "TRACE" ),
+            Self::Debug => write!(f, "DEBUG" ),
+            Self::Info => write!(f, "INFO" ),
+            Self::Warn => write!(f, "WARN" ),
+            Self::Error => write!(f, "ERROR" ),
+            Self::Fatal => write!(f, "FATAL" ),
         }
     }
 }
@@ -301,19 +301,19 @@ pub struct LogEntry {
     /// 消息
     pub message: String,
     /// 上下文
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none" )]
     pub context: Option<LogContext>,
     /// 源文件
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none" )]
     pub file: Option<String>,
     /// 源行号
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none" )]
     pub line: Option<u32>,
     /// 线程ID
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none" )]
     pub thread_id: Option<String>,
     /// 服务名称
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none" )]
     pub service: Option<String>,
 }
 
@@ -371,46 +371,46 @@ impl LogEntry {
         let ctx_str = if let Some(ctx) = &self.context {
             let mut parts = Vec::new();
             if let Some(trace_id) = &ctx.trace_id {
-                parts.push(format!("trace_id={trace_id}"));
+                parts.push(format!("trace_id={trace_id}" ));
             }
             if let Some(user_id) = &ctx.user_id {
-                parts.push(format!("user_id={user_id}"));
+                parts.push(format!("user_id={user_id}" ));
             }
             if let Some(request_id) = &ctx.request_id {
-                parts.push(format!("request_id={request_id}"));
+                parts.push(format!("request_id={request_id}" ));
             }
             if let Some(duration_ms) = ctx.duration_ms {
-                parts.push(format!("duration={duration_ms}ms"));
+                parts.push(format!("duration={duration_ms}ms" ));
             }
             if let Some(operation) = &ctx.operation {
-                parts.push(format!("op={operation}"));
+                parts.push(format!("op={operation}" ));
             }
             for (k, v) in &ctx.extra {
-                parts.push(format!("{k}={v}"));
+                parts.push(format!("{k}={v}" ));
             }
             if parts.is_empty() {
                 String::new()
             } else {
-                format!(" [{}]", parts.join(" "))
+                format!(" [{}]" , parts.join(" " ))
             }
         } else {
             String::new()
         };
 
         let loc_str = if let (Some(file), Some(line)) = (&self.file, self.line) {
-            format!(" ({file}:{line})")
+            format!(" ({file}:{line})" )
         } else {
             String::new()
         };
 
         let service_str = if let Some(service) = &self.service {
-            format!("[{service}] ")
+            format!("[{service}] " )
         } else {
             String::new()
         };
 
         format!(
-            "{} {}{}{}{}{}",
+            "{} {}{}{}{}{}" ,
             self.timestamp, service_str, self.level, self.target, ctx_str, loc_str
         )
     }
@@ -445,10 +445,10 @@ where
     // 构建环境过滤器
     let env_filter = if config.env == "production" {
         tracing_subscriber::EnvFilter::try_from_default_env()
-            .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("info"))
+            .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("info" ))
     } else {
         tracing_subscriber::EnvFilter::try_from_default_env()
-            .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("debug"))
+            .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("debug" ))
     };
 
     // 创建日志目录
@@ -465,9 +465,9 @@ where
         let file_appender = tracing_appender::rolling::Builder::new()
             .rotation(tracing_appender::rolling::Rotation::DAILY)
             .max_log_files(config.max_keep_files as usize)
-            .filename_suffix("log")
+            .filename_suffix("log" )
             .build(&config.log_dir)
-            .map_err(|e| anyhow::anyhow!("Failed to create log directory: {e}"))?;
+            .map_err(|e| anyhow::anyhow!("Failed to create log directory: {e}" ))?;
 
         let (non_blocking_file, guard_file) = tracing_appender::non_blocking(file_appender);
 
@@ -529,8 +529,8 @@ where
 
     // 记录初始化信息
     tracing::info!(
-        target: "log_core",
-        "{{\"service\":\"{}\",\"event\":\"logging_initialized\",\"env\":\"{}\",\"log_dir\":\"{}\"}}",
+        target: "log_core" ,
+        "{{\"service\":\"{}\",\"event\":\"logging_initialized\",\"env\":\"{}\",\"log_dir\":\"{}\"}}" ,
         service_name, config.env, config.log_dir.display()
     );
 
@@ -544,7 +544,7 @@ static LOG_GUARDS: OnceLock<Vec<tracing_appender::non_blocking::WorkerGuard>> = 
 #[must_use]
 pub fn current_timestamp() -> String {
     chrono::Local::now()
-        .format("%Y-%m-%d %H:%M:%S%.3f")
+        .format("%Y-%m-%d %H:%M:%S%.3f" )
         .to_string()
 }
 
@@ -552,7 +552,7 @@ pub fn current_timestamp() -> String {
 #[must_use]
 pub fn current_utc_timestamp() -> String {
     chrono::Utc::now()
-        .format("%Y-%m-%dT%H:%M:%S%.3fZ")
+        .format("%Y-%m-%dT%H:%M:%S%.3fZ" )
         .to_string()
 }
 
@@ -560,7 +560,7 @@ pub fn current_utc_timestamp() -> String {
 #[must_use]
 pub fn iso_timestamp() -> String {
     chrono::Utc::now()
-        .format("%Y-%m-%dT%H:%M:%S%.3fZ")
+        .format("%Y-%m-%dT%H:%M:%S%.3fZ" )
         .to_string()
 }
 
@@ -568,11 +568,11 @@ pub fn iso_timestamp() -> String {
 #[must_use]
 pub fn format_duration(ms: u64) -> String {
     if ms < 1000 {
-        format!("{ms}ms")
+        format!("{ms}ms" )
     } else if ms < 60000 {
-        format!("{:.2}s", ms as f64 / 1000.0)
+        format!("{:.2}s" , ms as f64 / 1000.0)
     } else {
-        format!("{:.2}m", ms as f64 / 60000.0)
+        format!("{:.2}m" , ms as f64 / 60000.0)
     }
 }
 
@@ -592,20 +592,20 @@ macro_rules! log_with_context {
         let ctx = $context;
         let entry = log_core::LogEntry::new($level, $target, $message)
             .with_context(ctx)
-            .with_thread_id(format!("{:?}", std::thread::current().id()));
+            .with_thread_id(format!("{:?}" , std::thread::current().id()));
 
         match $level {
             log_core::LogLevel::Trace | log_core::LogLevel::Debug => {
-                tracing::debug!(target: $target, "{}", entry.to_json());
+                tracing::debug!(target: $target, "{}" , entry.to_json());
             }
             log_core::LogLevel::Info => {
-                tracing::info!(target: $target, "{}", entry.to_json());
+                tracing::info!(target: $target, "{}" , entry.to_json());
             }
             log_core::LogLevel::Warn => {
-                tracing::warn!(target: $target, "{}", entry.to_json());
+                tracing::warn!(target: $target, "{}" , entry.to_json());
             }
             log_core::LogLevel::Error | log_core::LogLevel::Fatal => {
-                tracing::error!(target: $target, "{}", entry.to_json());
+                tracing::error!(target: $target, "{}" , entry.to_json());
             }
         }
     };
@@ -616,10 +616,10 @@ macro_rules! log_with_context {
 macro_rules! log_info {
     ($target:expr, $message:expr $(, $key:ident = $value:expr)*) => {
         let mut ctx = log_core::LogContext::new();
-        $(ctx = ctx.with_field(stringify($key), format!("{:?}", $value));)*
+        $(ctx = ctx.with_field(stringify($key), format!("{:?}" , $value));)*
         let entry = log_core::LogEntry::new(log_core::LogLevel::Info, $target, $message)
             .with_context(ctx);
-        tracing::info!(target: $target, "{}", entry.to_json());
+        tracing::info!(target: $target, "{}" , entry.to_json());
     };
 }
 
@@ -628,10 +628,10 @@ macro_rules! log_info {
 macro_rules! log_debug {
     ($target:expr, $message:expr $(, $key:ident = $value:expr)*) => {
         let mut ctx = log_core::LogContext::new();
-        $(ctx = ctx.with_field(stringify($key), format!("{:?}", $value));)*
+        $(ctx = ctx.with_field(stringify($key), format!("{:?}" , $value));)*
         let entry = log_core::LogEntry::new(log_core::LogLevel::Debug, $target, $message)
             .with_context(ctx);
-        tracing::debug!(target: $target, "{}", entry.to_json());
+        tracing::debug!(target: $target, "{}" , entry.to_json());
     };
 }
 
@@ -640,10 +640,10 @@ macro_rules! log_debug {
 macro_rules! log_warn {
     ($target:expr, $message:expr $(, $key:ident = $value:expr)*) => {
         let mut ctx = log_core::LogContext::new();
-        $(ctx = ctx.with_field(stringify($key), format!("{:?}", $value));)*
+        $(ctx = ctx.with_field(stringify($key), format!("{:?}" , $value));)*
         let entry = log_core::LogEntry::new(log_core::LogLevel::Warn, $target, $message)
             .with_context(ctx);
-        tracing::warn!(target: $target, "{}", entry.to_json());
+        tracing::warn!(target: $target, "{}" , entry.to_json());
     };
 }
 
@@ -652,10 +652,10 @@ macro_rules! log_warn {
 macro_rules! log_error {
     ($target:expr, $message:expr $(, $key:ident = $value:expr)*) => {
         let mut ctx = log_core::LogContext::new();
-        $(ctx = ctx.with_field(stringify($key), format!("{:?}", $value));)*
+        $(ctx = ctx.with_field(stringify($key), format!("{:?}" , $value));)*
         let entry = log_core::LogEntry::new(log_core::LogLevel::Error, $target, $message)
             .with_context(ctx);
-        tracing::error!(target: $target, "{}", entry.to_json());
+        tracing::error!(target: $target, "{}" , entry.to_json());
     };
 }
 
@@ -664,11 +664,11 @@ macro_rules! log_error {
 macro_rules! log_request {
     ($target:expr, $method:expr, $path:expr, $status:expr, $duration_ms:expr $(, $key:ident = $value:expr)*) => {
         let mut ctx = log_core::LogContext::new()
-            .with_field("method", $method)
-            .with_field("path", $path)
-            .with_field("status", format!("{}", $status))
+            .with_field("method" , $method)
+            .with_field("path" , $path)
+            .with_field("status" , format!("{}" , $status))
             .with_duration_ms($duration_ms);
-        $(ctx = ctx.with_field(stringify($key), format!("{:?}", $value));)*
+        $(ctx = ctx.with_field(stringify($key), format!("{:?}" , $value));)*
         let level = if $status >= 500 {
             log_core::LogLevel::Error
         } else if $status >= 400 {
@@ -676,12 +676,12 @@ macro_rules! log_request {
         } else {
             log_core::LogLevel::Info
         };
-        let entry = log_core::LogEntry::new(level, $target, format!("HTTP {} {} -> {}", $method, $path, $status))
+        let entry = log_core::LogEntry::new(level, $target, format!("HTTP {} {} -> {}" , $method, $path, $status))
             .with_context(ctx);
         match level {
-            log_core::LogLevel::Warn => tracing::warn!(target: $target, "{}", entry.to_json()),
-            log_core::LogLevel::Error => tracing::error!(target: $target, "{}", entry.to_json()),
-            _ => tracing::info!(target: $target, "{}", entry.to_json()),
+            log_core::LogLevel::Warn => tracing::warn!(target: $target, "{}" , entry.to_json()),
+            log_core::LogLevel::Error => tracing::error!(target: $target, "{}" , entry.to_json()),
+            _ => tracing::info!(target: $target, "{}" , entry.to_json()),
         }
     };
 }
@@ -693,7 +693,7 @@ macro_rules! log_performance {
         let mut ctx = log_core::LogContext::new()
             .with_operation($operation)
             .with_duration_ms($duration_ms);
-        $(ctx = ctx.with_field(stringify($key), format!("{:?}", $value));)*
+        $(ctx = ctx.with_field(stringify($key), format!("{:?}" , $value));)*
 
         let level = if $duration_ms > 1000 {
             log_core::LogLevel::Warn
@@ -702,12 +702,12 @@ macro_rules! log_performance {
         };
 
         let duration_str = log_core::format_duration($duration_ms);
-        let entry = log_core::LogEntry::new(level, $target, format!("Performance: {} took {}", $operation, duration_str))
+        let entry = log_core::LogEntry::new(level, $target, format!("Performance: {} took {}" , $operation, duration_str))
             .with_context(ctx);
 
         match level {
-            log_core::LogLevel::Warn => tracing::warn!(target: $target, "{}", entry.to_json()),
-            _ => tracing::info!(target: $target, "{}", entry.to_json()),
+            log_core::LogLevel::Warn => tracing::warn!(target: $target, "{}" , entry.to_json()),
+            _ => tracing::info!(target: $target, "{}" , entry.to_json()),
         }
     };
 }
@@ -717,9 +717,9 @@ macro_rules! log_performance {
 macro_rules! log_security {
     ($target:expr, $action:expr, $result:expr $(, $key:ident = $value:expr)*) => {
         let mut ctx = log_core::LogContext::new()
-            .with_field("action", $action)
-            .with_field("result", $result);
-        $(ctx = ctx.with_field(stringify($key), format!("{:?}", $value));)*
+            .with_field("action" , $action)
+            .with_field("result" , $result);
+        $(ctx = ctx.with_field(stringify($key), format!("{:?}" , $value));)*
 
         let level = match $result {
             "success" | "allowed" => log_core::LogLevel::Info,
@@ -727,12 +727,12 @@ macro_rules! log_security {
             _ => log_core::LogLevel::Info,
         };
 
-        let entry = log_core::LogEntry::new(level, $target, format!("Security: {} - {}", $action, $result))
+        let entry = log_core::LogEntry::new(level, $target, format!("Security: {} - {}" , $action, $result))
             .with_context(ctx);
 
         match level {
-            log_core::LogLevel::Warn => tracing::warn!(target: $target, "{}", entry.to_json()),
-            _ => tracing::info!(target: $target, "{}", entry.to_json()),
+            log_core::LogLevel::Warn => tracing::warn!(target: $target, "{}" , entry.to_json()),
+            _ => tracing::info!(target: $target, "{}" , entry.to_json()),
         }
     };
 }
@@ -744,11 +744,11 @@ macro_rules! log_grpc {
         let mut ctx = log_core::LogContext::new()
             .with_operation($method)
             .with_service($service)
-            .with_field("grpc_method", $method)
-            .with_field("grpc_service", $service)
-            .with_field("status", $status)
+            .with_field("grpc_method" , $method)
+            .with_field("grpc_service" , $service)
+            .with_field("status" , $status)
             .with_duration_ms($duration_ms);
-        $(ctx = ctx.with_field(stringify($key), format!("{:?}", $value));)*
+        $(ctx = ctx.with_field(stringify($key), format!("{:?}" , $value));)*
 
         let level = match $status {
             "OK" | "0" => log_core::LogLevel::Info,
@@ -756,12 +756,12 @@ macro_rules! log_grpc {
         };
 
         let duration_str = log_core::format_duration($duration_ms);
-        let entry = log_core::LogEntry::new(level, $target, format!("gRPC {} on {} took {} ({})", $method, $service, duration_str, $status))
+        let entry = log_core::LogEntry::new(level, $target, format!("gRPC {} on {} took {} ({})" , $method, $service, duration_str, $status))
             .with_context(ctx);
 
         match level {
-            log_core::LogLevel::Warn => tracing::warn!(target: $target, "{}", entry.to_json()),
-            _ => tracing::info!(target: $target, "{}", entry.to_json()),
+            log_core::LogLevel::Warn => tracing::warn!(target: $target, "{}" , entry.to_json()),
+            _ => tracing::info!(target: $target, "{}" , entry.to_json()),
         }
     };
 }
@@ -771,10 +771,10 @@ macro_rules! log_grpc {
 macro_rules! log_sql {
     ($target:expr, $query:expr, $duration_ms:expr $(, $key:ident = $value:expr)*) => {
         let mut ctx = log_core::LogContext::new()
-            .with_operation("sql_query")
-            .with_field("sql", $query)
+            .with_operation("sql_query" )
+            .with_field("sql" , $query)
             .with_duration_ms($duration_ms);
-        $(ctx = ctx.with_field(stringify($key), format!("{:?}", $value));)*
+        $(ctx = ctx.with_field(stringify($key), format!("{:?}" , $value));)*
 
         let level = if $duration_ms > 500 {
             log_core::LogLevel::Warn
@@ -783,12 +783,12 @@ macro_rules! log_sql {
         };
 
         let duration_str = log_core::format_duration($duration_ms);
-        let entry = log_core::LogEntry::new(level, $target, format!("SQL query took {}: {}", duration_str, $query))
+        let entry = log_core::LogEntry::new(level, $target, format!("SQL query took {}: {}" , duration_str, $query))
             .with_context(ctx);
 
         match level {
-            log_core::LogLevel::Warn => tracing::warn!(target: $target, "{}", entry.to_json()),
-            _ => tracing::debug!(target: $target, "{}", entry.to_json()),
+            log_core::LogLevel::Warn => tracing::warn!(target: $target, "{}" , entry.to_json()),
+            _ => tracing::debug!(target: $target, "{}" , entry.to_json()),
         }
     };
 }
@@ -800,9 +800,9 @@ macro_rules! log_service_start {
         let entry = log_core::LogEntry::new(
             log_core::LogLevel::Info,
             $target,
-            format!("{} service started on {}:{}", $service, $host, $port)
+            format!("{} service started on {}:{}" , $service, $host, $port)
         ).with_service($service);
-        tracing::info!(target: $target, "{}", entry.to_json());
+        tracing::info!(target: $target, "{}" , entry.to_json());
     };
 }
 
@@ -813,9 +813,9 @@ macro_rules! log_service_stop {
         let entry = log_core::LogEntry::new(
             log_core::LogLevel::Info,
             $target,
-            format!("{} service stopped", $service)
+            format!("{} service stopped" , $service)
         ).with_service($service);
-        tracing::info!(target: $target, "{}", entry.to_json());
+        tracing::info!(target: $target, "{}" , entry.to_json());
     };
 }
 
@@ -825,9 +825,9 @@ macro_rules! log_circuit_breaker {
     ($target:expr, $service:expr, $action:expr, $state:expr $(, $key:ident = $value:expr)*) => {
         let mut ctx = log_core::LogContext::new()
             .with_service($service)
-            .with_field("action", $action)
-            .with_field("state", $state);
-        $(ctx = ctx.with_field(stringify($key), format!("{:?}", $value));)*
+            .with_field("action" , $action)
+            .with_field("state" , $state);
+        $(ctx = ctx.with_field(stringify($key), format!("{:?}" , $value));)*
 
         let level = match $state {
             "open" | "forced_open" => log_core::LogLevel::Warn,
@@ -835,12 +835,12 @@ macro_rules! log_circuit_breaker {
             _ => log_core::LogLevel::Debug,
         };
 
-        let entry = log_core::LogEntry::new(level, $target, format!("Circuit breaker {} on {}: {}", $action, $service, $state))
+        let entry = log_core::LogEntry::new(level, $target, format!("Circuit breaker {} on {}: {}" , $action, $service, $state))
             .with_context(ctx);
 
         match level {
-            log_core::LogLevel::Warn => tracing::warn!(target: $target, "{}", entry.to_json()),
-            _ => tracing::info!(target: $target, "{}", entry.to_json()),
+            log_core::LogLevel::Warn => tracing::warn!(target: $target, "{}" , entry.to_json()),
+            _ => tracing::info!(target: $target, "{}" , entry.to_json()),
         }
     };
 }
@@ -853,10 +853,10 @@ macro_rules! log_circuit_breaker {
 pub fn init_service_logging(service_name: &str, env: &str) -> anyhow::Result<()> {
     let config = LogConfig {
         env: env.to_string(),
-        log_dir: PathBuf::from(format!("logs/{service_name}")),
+        log_dir: PathBuf::from(format!("logs/{service_name}" )),
         file_name_pattern: "{service}.log"
             .to_string()
-            .replace("{service}", service_name),
+            .replace("{service}" , service_name),
         service_name: service_name.to_string(),
         ..Default::default()
     };
@@ -870,43 +870,43 @@ mod tests {
     #[test]
     fn test_log_context() {
         let ctx = LogContext::new()
-            .with_trace_id("trace-123")
-            .with_user_id("user-456")
+            .with_trace_id("trace-123" )
+            .with_user_id("user-456" )
             .with_duration_ms(100)
-            .with_field("action", "login")
-            .with_client_ip("192.0.2.1");
+            .with_field("action" , "login" )
+            .with_client_ip("192.0.2.1" );
 
         assert_eq!(ctx.trace_id, Some("trace-123".to_string()));
         assert_eq!(ctx.user_id, Some("user-456".to_string()));
         assert_eq!(ctx.duration_ms, Some(100));
-        assert_eq!(ctx.extra.get("action"), Some(&"login".to_string()));
+        assert_eq!(ctx.extra.get("action" ), Some(&"login".to_string()));
         assert_eq!(ctx.client_ip, Some("192.0.2.1".to_string()));
     }
 
     #[test]
     fn test_log_entry() {
         let ctx = LogContext::new()
-            .with_user_id("user-123")
+            .with_user_id("user-123" )
             .with_duration_ms(50);
 
-        let entry = LogEntry::new(LogLevel::Info, "test_module", "Test message")
+        let entry = LogEntry::new(LogLevel::Info, "test_module" , "Test message" )
             .with_context(ctx)
-            .with_location("test.rs", 42);
+            .with_location("test.rs" , 42);
 
         assert_eq!(entry.level, LogLevel::Info);
-        assert_eq!(entry.target, "test_module");
-        assert_eq!(entry.message, "Test message");
+        assert_eq!(entry.target, "test_module" );
+        assert_eq!(entry.message, "Test message" );
         assert!(entry.context.is_some());
 
         // 测试 JSON 序列化
         let json = entry.to_json();
-        assert!(json.contains("test_module"));
-        assert!(json.contains("Test message"));
+        assert!(json.contains("test_module" ));
+        assert!(json.contains("Test message" ));
 
         // 测试美化输出
         let pretty = entry.to_pretty();
-        assert!(pretty.contains("INFO"));
-        assert!(pretty.contains("test_module"));
+        assert!(pretty.contains("INFO" ));
+        assert!(pretty.contains("test_module" ));
     }
 
     #[test]
@@ -920,22 +920,22 @@ mod tests {
 
     #[test]
     fn test_log_level_from_str() {
-        assert_eq!(LogLevel::from_str_ignore_case("debug"), LogLevel::Debug);
-        assert_eq!(LogLevel::from_str_ignore_case("INFO"), LogLevel::Info);
-        assert_eq!(LogLevel::from_str_ignore_case("warn"), LogLevel::Warn);
-        assert_eq!(LogLevel::from_str_ignore_case("warning"), LogLevel::Warn);
-        assert_eq!(LogLevel::from_str_ignore_case("error"), LogLevel::Error);
-        assert_eq!(LogLevel::from_str_ignore_case("fatal"), LogLevel::Fatal);
-        assert_eq!(LogLevel::from_str_ignore_case("unknown"), LogLevel::Info); // 默认值
+        assert_eq!(LogLevel::from_str_ignore_case("debug" ), LogLevel::Debug);
+        assert_eq!(LogLevel::from_str_ignore_case("INFO" ), LogLevel::Info);
+        assert_eq!(LogLevel::from_str_ignore_case("warn" ), LogLevel::Warn);
+        assert_eq!(LogLevel::from_str_ignore_case("warning" ), LogLevel::Warn);
+        assert_eq!(LogLevel::from_str_ignore_case("error" ), LogLevel::Error);
+        assert_eq!(LogLevel::from_str_ignore_case("fatal" ), LogLevel::Fatal);
+        assert_eq!(LogLevel::from_str_ignore_case("unknown" ), LogLevel::Info); // 默认值
     }
 
     #[test]
     fn test_duration_format() {
-        assert_eq!(format_duration(50), "50ms");
-        assert_eq!(format_duration(1000), "1.00s");
-        assert_eq!(format_duration(1500), "1.50s");
-        assert_eq!(format_duration(60000), "1.00m");
-        assert_eq!(format_duration(90000), "1.50m");
+        assert_eq!(format_duration(50), "50ms" );
+        assert_eq!(format_duration(1000), "1.00s" );
+        assert_eq!(format_duration(1500), "1.50s" );
+        assert_eq!(format_duration(60000), "1.00m" );
+        assert_eq!(format_duration(90000), "1.50m" );
     }
 
     #[test]

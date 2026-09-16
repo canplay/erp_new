@@ -53,13 +53,13 @@ impl DataType {
     #[must_use]
     pub fn description(&self) -> &'static str {
         match self {
-            DataType::Drop => "降板",
-            DataType::Rise => "升板",
-            DataType::Heartbeat => "心跳",
-            DataType::VehicleEntry => "车辆入位",
-            DataType::VehicleExit => "车辆出位",
-            DataType::Reset => "复位",
-            DataType::TheftEvasion => "逃费",
+            DataType::Drop => "降板" ,
+            DataType::Rise => "升板" ,
+            DataType::Heartbeat => "心跳" ,
+            DataType::VehicleEntry => "车辆入位" ,
+            DataType::VehicleExit => "车辆出位" ,
+            DataType::Reset => "复位" ,
+            DataType::TheftEvasion => "逃费" ,
         }
     }
 }
@@ -100,12 +100,12 @@ impl CtpErrorCode {
     #[must_use]
     pub fn description(&self) -> &'static str {
         match self {
-            CtpErrorCode::Success => "操作成功",
-            CtpErrorCode::AuthFailed => "请求验证失败",
-            CtpErrorCode::DeviceNotConnected => "请求设备未连接",
-            CtpErrorCode::InvalidParams => "请求参数字符串格式或内容非法",
-            CtpErrorCode::Timeout => "请求任务处理超时",
-            CtpErrorCode::DeviceNotFound => "请求设备无档案记录",
+            CtpErrorCode::Success => "操作成功" ,
+            CtpErrorCode::AuthFailed => "请求验证失败" ,
+            CtpErrorCode::DeviceNotConnected => "请求设备未连接" ,
+            CtpErrorCode::InvalidParams => "请求参数字符串格式或内容非法" ,
+            CtpErrorCode::Timeout => "请求任务处理超时" ,
+            CtpErrorCode::DeviceNotFound => "请求设备无档案记录" ,
         }
     }
 }
@@ -130,7 +130,7 @@ pub struct CtpResponse {
 
 /// 锁控制命令类型
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-#[serde(rename_all = "lowercase")]
+#[serde(rename_all = "lowercase" )]
 pub enum CmdType {
     /// 开锁
     Up,
@@ -166,7 +166,7 @@ pub struct LockDevice {
 
 /// 锁设备状态枚举
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-#[serde(rename_all = "lowercase")]
+#[serde(rename_all = "lowercase" )]
 pub enum LockStatus {
     /// 已锁定
     Locked,
@@ -219,13 +219,13 @@ impl CtpConfig {
     #[must_use]
     pub fn from_env() -> Self {
         Self {
-            api_base_url: std::env::var("CTP_API_URL")
+            api_base_url: std::env::var("CTP_API_URL" )
                 .unwrap_or_else(|_| "http://localhost:8080".to_string()),
-            factory_id: std::env::var("CTP_FACTORY_ID")
+            factory_id: std::env::var("CTP_FACTORY_ID" )
                 .unwrap_or_else(|_| "1".to_string()),
-            app_secret: std::env::var("CTP_APP_SECRET")
+            app_secret: std::env::var("CTP_APP_SECRET" )
                 .unwrap_or_else(|_| "A1B2C3D4E5F6".to_string()),
-            redis_url: std::env::var("REDIS_URL")
+            redis_url: std::env::var("REDIS_URL" )
                 .unwrap_or_else(|_| "redis://127.0.0.1:6379".to_string()),
         }
     }

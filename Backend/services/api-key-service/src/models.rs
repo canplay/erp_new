@@ -21,10 +21,10 @@ pub enum KeyStatus {
 impl std::fmt::Display for KeyStatus {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            KeyStatus::Active => write!(f, "active"),
-            KeyStatus::Inactive => write!(f, "inactive"),
-            KeyStatus::Expired => write!(f, "expired"),
-            KeyStatus::Revoked => write!(f, "revoked"),
+            KeyStatus::Active => write!(f, "active" ),
+            KeyStatus::Inactive => write!(f, "inactive" ),
+            KeyStatus::Expired => write!(f, "expired" ),
+            KeyStatus::Revoked => write!(f, "revoked" ),
         }
     }
 }
@@ -41,9 +41,9 @@ pub enum PermissionLevel {
 impl std::fmt::Display for PermissionLevel {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            PermissionLevel::ReadOnly => write!(f, "read_only"),
-            PermissionLevel::ReadWrite => write!(f, "read_write"),
-            PermissionLevel::Admin => write!(f, "admin"),
+            PermissionLevel::ReadOnly => write!(f, "read_only" ),
+            PermissionLevel::ReadWrite => write!(f, "read_write" ),
+            PermissionLevel::Admin => write!(f, "admin" ),
         }
     }
 }
@@ -60,7 +60,7 @@ impl ApiKey {
         user_id: i64,
     ) -> (Self, String, String) {
         // 生成随机密钥
-        let key_id = format!("ak_{}", &Uuid::new_v4().to_string().replace('-', "")[..24]);
+        let key_id = format!("ak_{}" , &Uuid::new_v4().to_string().replace('-', "" )[..24]);
         // 使用 rand::random 生成 32 字节的随机数据
         let key_secret: String = (0..32)
             .map(|_| {
@@ -70,7 +70,7 @@ impl ApiKey {
             })
             .collect();
 
-        let key = format!("{key_id}_{key_secret}");
+        let key = format!("{key_id}_{key_secret}" );
         let key_hash = Self::hash_key(&key);
         let key_hint = key_secret[key_secret.len().saturating_sub(4)..].to_string();
 
@@ -105,7 +105,7 @@ impl ApiKey {
         use sha2::{Digest, Sha256};
         let mut hasher = Sha256::new();
         hasher.update(key.as_bytes());
-        hasher.finalize().iter().map(|b| format!("{b:02x}")).collect()
+        hasher.finalize().iter().map(|b| format!("{b:02x}" )).collect()
     }
 
     /// 验证密钥

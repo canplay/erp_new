@@ -201,16 +201,16 @@ mod tests {
             false_positive_rate: 0.01,
         });
 
-        assert!(!bf.contains("key1"));
-        bf.add("key1");
-        assert!(bf.contains("key1"));
-        assert!(!bf.contains("key2"));
+        assert!(!bf.contains("key1" ));
+        bf.add("key1" );
+        assert!(bf.contains("key1" ));
+        assert!(!bf.contains("key2" ));
     }
 
     #[test]
     fn test_bloom_filter_batch() {
         let mut bf = BloomFilter::default();
-        let keys: Vec<&str> = (0..100).map(|i| format!("key{}", i).leak()).collect();
+        let keys: Vec<&str> = (0..100).map(|i| format!("key{}" , i).leak()).collect();
         bf.add_batch(&keys);
 
         for key in &keys {
@@ -223,13 +223,13 @@ mod tests {
         let mut guard = CachePenetrationGuard::new(BloomFilterConfig::default());
 
         // 初始状态：key 可能存在
-        assert_eq!(guard.should_query("unknown_key"), Ok(true));
+        assert_eq!(guard.should_query("unknown_key" ), Ok(true));
 
         // 记录未命中
-        guard.record_miss("unknown_key");
-        assert_eq!(guard.should_query("unknown_key"), Ok(false));
+        guard.record_miss("unknown_key" );
+        assert_eq!(guard.should_query("unknown_key" ), Ok(false));
 
         // key 在布隆过滤器中
-        assert!(guard.might_exist("unknown_key"));
+        assert!(guard.might_exist("unknown_key" ));
     }
 }

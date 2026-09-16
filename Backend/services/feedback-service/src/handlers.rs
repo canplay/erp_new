@@ -168,8 +168,8 @@ pub async fn list_feedback(
     match state.repository.list(&query_params).await {
         Ok(result) => (StatusCode::OK, Json(ApiResponse::success(result))).into_response(),
         Err(e) => {
-            tracing::error!("获取反馈列表失败: {e}");
-            ApiResponse::<()>::error("获取列表失败")
+            tracing::error!("获取反馈列表失败: {e}" );
+            ApiResponse::<()>::error("获取列表失败" )
         }
     }
 }
@@ -180,10 +180,10 @@ pub async fn get_feedback_detail(State(state): State<AppState>, Path(id): Path<i
         Ok(Some(feedback)) => {
             (StatusCode::OK, Json(ApiResponse::success(feedback))).into_response()
         }
-        Ok(None) => ApiResponse::<()>::not_found("反馈不存在"),
+        Ok(None) => ApiResponse::<()>::not_found("反馈不存在" ),
         Err(e) => {
-            tracing::error!("获取反馈详情失败: {e}");
-            ApiResponse::<()>::error("获取详情失败")
+            tracing::error!("获取反馈详情失败: {e}" );
+            ApiResponse::<()>::error("获取详情失败" )
         }
     }
 }
@@ -199,11 +199,11 @@ pub async fn handle_feedback(
         .handle(id, &req.status, &req.handler_reply)
         .await
     {
-        Ok(true) => ApiResponse::<()>::ok("处理成功"),
-        Ok(false) => ApiResponse::<()>::not_found("反馈不存在"),
+        Ok(true) => ApiResponse::<()>::ok("处理成功" ),
+        Ok(false) => ApiResponse::<()>::not_found("反馈不存在" ),
         Err(e) => {
-            tracing::error!("处理反馈失败: {e}");
-            ApiResponse::<()>::error("处理失败")
+            tracing::error!("处理反馈失败: {e}" );
+            ApiResponse::<()>::error("处理失败" )
         }
     }
 }
@@ -215,11 +215,11 @@ pub async fn transfer_feedback(
     Json(req): Json<TransferFeedbackRequest>,
 ) -> Response {
     match state.repository.transfer(id, req.handler_id).await {
-        Ok(true) => ApiResponse::<()>::ok("转交成功"),
-        Ok(false) => ApiResponse::<()>::not_found("反馈不存在"),
+        Ok(true) => ApiResponse::<()>::ok("转交成功" ),
+        Ok(false) => ApiResponse::<()>::not_found("反馈不存在" ),
         Err(e) => {
-            tracing::error!("转交反馈失败: {e}");
-            ApiResponse::<()>::error("转交失败")
+            tracing::error!("转交反馈失败: {e}" );
+            ApiResponse::<()>::error("转交失败" )
         }
     }
 }
@@ -231,22 +231,22 @@ pub async fn reply_feedback(
     Json(req): Json<ReplyFeedbackRequest>,
 ) -> Response {
     match state.repository.add_reply(id, &req.reply).await {
-        Ok(()) => ApiResponse::<()>::ok("回复成功"),
+        Ok(()) => ApiResponse::<()>::ok("回复成功" ),
         Err(e) => {
-            tracing::error!("回复反馈失败: {e}");
-            ApiResponse::<()>::error("回复失败")
+            tracing::error!("回复反馈失败: {e}" );
+            ApiResponse::<()>::error("回复失败" )
         }
     }
 }
 
 /// 关闭反馈
 pub async fn close_feedback(State(state): State<AppState>, Path(id): Path<i64>) -> Response {
-    match state.repository.handle(id, "closed", "").await {
-        Ok(true) => ApiResponse::<()>::ok("已关闭"),
-        Ok(false) => ApiResponse::<()>::not_found("反馈不存在"),
+    match state.repository.handle(id, "closed" , "" ).await {
+        Ok(true) => ApiResponse::<()>::ok("已关闭" ),
+        Ok(false) => ApiResponse::<()>::not_found("反馈不存在" ),
         Err(e) => {
-            tracing::error!("关闭反馈失败: {e}");
-            ApiResponse::<()>::error("关闭失败")
+            tracing::error!("关闭反馈失败: {e}" );
+            ApiResponse::<()>::error("关闭失败" )
         }
     }
 }
@@ -254,11 +254,11 @@ pub async fn close_feedback(State(state): State<AppState>, Path(id): Path<i64>) 
 /// 删除反馈
 pub async fn delete_feedback(State(state): State<AppState>, Path(id): Path<i64>) -> Response {
     match state.repository.delete(id).await {
-        Ok(true) => ApiResponse::<()>::ok("删除成功"),
-        Ok(false) => ApiResponse::<()>::not_found("反馈不存在"),
+        Ok(true) => ApiResponse::<()>::ok("删除成功" ),
+        Ok(false) => ApiResponse::<()>::not_found("反馈不存在" ),
         Err(e) => {
-            tracing::error!("删除反馈失败: {e}");
-            ApiResponse::<()>::error("删除失败")
+            tracing::error!("删除反馈失败: {e}" );
+            ApiResponse::<()>::error("删除失败" )
         }
     }
 }
@@ -273,10 +273,10 @@ pub async fn batch_handle_feedback(
         .batch_handle(&req.ids, &req.status, req.handler_reply.as_deref())
         .await
     {
-        Ok(count) => ApiResponse::<()>::ok(&format!("已处理 {count} 条反馈")),
+        Ok(count) => ApiResponse::<()>::ok(&format!("已处理 {count} 条反馈" )),
         Err(e) => {
-            tracing::error!("批量处理失败: {e}");
-            ApiResponse::<()>::error("批量处理失败")
+            tracing::error!("批量处理失败: {e}" );
+            ApiResponse::<()>::error("批量处理失败" )
         }
     }
 }
@@ -300,8 +300,8 @@ pub async fn get_feedback_statistics(
     match state.repository.get_statistics(&query_params).await {
         Ok(stats) => (StatusCode::OK, Json(ApiResponse::success(stats))).into_response(),
         Err(e) => {
-            tracing::error!("获取统计失败: {e}");
-            ApiResponse::<()>::error("获取统计失败")
+            tracing::error!("获取统计失败: {e}" );
+            ApiResponse::<()>::error("获取统计失败" )
         }
     }
 }
@@ -325,8 +325,8 @@ pub async fn get_feedback_type_statistics(
     match state.repository.get_type_statistics(&query_params).await {
         Ok(stats) => (StatusCode::OK, Json(ApiResponse::success(stats))).into_response(),
         Err(e) => {
-            tracing::error!("获取类型统计失败: {e}");
-            ApiResponse::<()>::error("获取统计失败")
+            tracing::error!("获取类型统计失败: {e}" );
+            ApiResponse::<()>::error("获取统计失败" )
         }
     }
 }
@@ -336,8 +336,8 @@ pub async fn get_feedback_handlers(State(state): State<AppState>) -> Response {
     match state.repository.get_handlers().await {
         Ok(handlers) => (StatusCode::OK, Json(ApiResponse::success(handlers))).into_response(),
         Err(e) => {
-            tracing::error!("获取处理人列表失败: {e}");
-            ApiResponse::<()>::error("获取失败")
+            tracing::error!("获取处理人列表失败: {e}" );
+            ApiResponse::<()>::error("获取失败" )
         }
     }
 }
@@ -367,8 +367,8 @@ pub async fn submit_feedback(
         )
             .into_response(),
         Err(e) => {
-            tracing::error!("提交反馈失败: {e}");
-            ApiResponse::<()>::error("提交失败")
+            tracing::error!("提交反馈失败: {e}" );
+            ApiResponse::<()>::error("提交失败" )
         }
     }
 }
@@ -379,48 +379,48 @@ pub async fn submit_feedback(
 pub fn create_feedback_router(state: std::sync::Arc<AppState>) -> Router {
     Router::new()
         // 管理员 API
-        .route("/api/admin/feedback", axum::routing::get(list_feedback))
+        .route("/api/admin/feedback" , axum::routing::get(list_feedback))
         .route(
-            "/api/admin/feedback/:id",
+            "/api/admin/feedback/:id" ,
             axum::routing::get(get_feedback_detail),
         )
         .route(
-            "/api/admin/feedback/:id/handle",
+            "/api/admin/feedback/:id/handle" ,
             axum::routing::put(handle_feedback),
         )
         .route(
-            "/api/admin/feedback/:id/transfer",
+            "/api/admin/feedback/:id/transfer" ,
             axum::routing::put(transfer_feedback),
         )
         .route(
-            "/api/admin/feedback/:id/reply",
+            "/api/admin/feedback/:id/reply" ,
             axum::routing::post(reply_feedback),
         )
         .route(
-            "/api/admin/feedback/:id/close",
+            "/api/admin/feedback/:id/close" ,
             axum::routing::put(close_feedback),
         )
         .route(
-            "/api/admin/feedback/:id",
+            "/api/admin/feedback/:id" ,
             axum::routing::delete(delete_feedback),
         )
         .route(
-            "/api/admin/feedback/batch-handle",
+            "/api/admin/feedback/batch-handle" ,
             axum::routing::put(batch_handle_feedback),
         )
         .route(
-            "/api/admin/feedback/statistics",
+            "/api/admin/feedback/statistics" ,
             axum::routing::get(get_feedback_statistics),
         )
         .route(
-            "/api/admin/feedback/statistics/by-type",
+            "/api/admin/feedback/statistics/by-type" ,
             axum::routing::get(get_feedback_type_statistics),
         )
         .route(
-            "/api/admin/feedback/handlers",
+            "/api/admin/feedback/handlers" ,
             axum::routing::get(get_feedback_handlers),
         )
         // 用户端 API
-        .route("/api/feedback", axum::routing::post(submit_feedback))
+        .route("/api/feedback" , axum::routing::post(submit_feedback))
         .with_state((*state).clone())
 }

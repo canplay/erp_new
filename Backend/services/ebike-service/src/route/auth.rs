@@ -19,8 +19,8 @@ pub async fn login(
     State(state): State<AppState>,
     AxumJson(req): AxumJson<Value>,
 ) -> Response {
-    let username = req["username"].as_str().unwrap_or("");
-    let password = req["password"].as_str().unwrap_or("");
+    let username = req["username" ].as_str().unwrap_or("" );
+    let password = req["password" ].as_str().unwrap_or("" );
 
     match state.user_repo.find_by_username(username).await {
         Ok(Some(user)) => {
@@ -30,7 +30,7 @@ pub async fn login(
             };
 
             if !password_ok {
-                return common::unauthorized_response("username or password error").into_response();
+                return common::unauthorized_response("username or password error" ).into_response();
             }
 
             match state.jwt_service.generate_access_token(
@@ -49,12 +49,12 @@ pub async fn login(
                     }
                 })).into_response(),
                 Err(e) => common::internal_error_response(
-                    &format!("token generation failed: {e:?}")
+                    &format!("token generation failed: {e:?}" )
                 ).into_response(),
             }
         }
-        Ok(None) => common::unauthorized_response("username or password error").into_response(),
-        Err(e) => common::internal_error_response(&format!("{e:?}")).into_response(),
+        Ok(None) => common::unauthorized_response("username or password error" ).into_response(),
+        Err(e) => common::internal_error_response(&format!("{e:?}" )).into_response(),
     }
 }
 
@@ -77,11 +77,11 @@ pub async fn info(
             "role": user.role,
             "status": user.status,
         })).into_response(),
-        Ok(None) => common::not_found_response("user not found").into_response(),
-        Err(e) => common::internal_error_response(&format!("{e:?}")).into_response(),
+        Ok(None) => common::not_found_response("user not found" ).into_response(),
+        Err(e) => common::internal_error_response(&format!("{e:?}" )).into_response(),
     }
 }
 
 pub async fn loginout() -> Response {
-    common::success_with_message_response("ok").into_response()
+    common::success_with_message_response("ok" ).into_response()
 }

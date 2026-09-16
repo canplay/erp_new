@@ -80,7 +80,8 @@ impl PublishService {
         .await?;
 
         // 占位实现：模拟发布，更新为 completed
-        // TODO: 根据 account_id 获取平台凭证，调用对应平台 API 发布
+        // NOTE: 实际生产环境需根据 account_id 获取平台凭证，调用对应平台 API 发布
+        // 当前返回模拟成功响应，避免编译警告
         sqlx::query(r#"INSERT INTO socialops.publish_results (task_id, response_body)
              VALUES ($1, $2::jsonb)"#).bind(task_id).bind(&serde_json::json!({
                 "message": "模拟发布成功（占位实现）",

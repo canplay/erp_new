@@ -36,8 +36,6 @@ use redis::aio::ConnectionManager;
 use sqlx::PgPool;
 use std::sync::Arc;
 
-use crate::pass_service::PassService;
-
 /// gRPC 应用状态
 #[derive(Clone)]
 pub struct GrpcAppState {

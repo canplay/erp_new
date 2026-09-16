@@ -25,6 +25,7 @@ pub mod billing;
 pub mod device_manager;
 pub mod grpc_server;
 pub mod helpers;
+pub mod models;
 pub mod mqtt_gateway;
 pub mod parking;
 pub mod xlt;
@@ -36,10 +37,9 @@ use std::sync::Arc;
 
 use crate::billing::BillingService;
 use crate::device_manager::DeviceManager;
+use crate::models::MqttConfig;
 use crate::mqtt_gateway::MqttGateway;
 use crate::parking::ParkingService;
-use crate::xlt::AppState;
-use crate::models::MqttConfig;
 
 pub fn create_app(state: AppState) -> Router {
     Router::new()

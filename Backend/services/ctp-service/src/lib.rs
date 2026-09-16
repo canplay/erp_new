@@ -31,7 +31,6 @@ pub use ctp::AppState;
 use axum::{Router, routing::get, routing::post};
 use std::sync::Arc;
 
-use crate::ctp::AppState;
 use crate::services::CtpDeviceService;
 
 /// 创建 HTTP 应用

@@ -407,8 +407,7 @@ mod tests {
 
     #[test]
     fn test_casdoor_config_default() {
-        // Security fix: 使用 serial_test + temp_env 替代 unsafe set_var
-        let _guard = unsafe { std::env::set_var("CASDOOR_CLIENT_SECRET", "test-secret-for-unit-test"); };
+        std::env::set_var("CASDOOR_CLIENT_SECRET", "test-secret-for-unit-test");
         let config = CasdoorConfig::default();
         assert_eq!(config.endpoint, "http://localhost:8000");
         assert_eq!(config.organization, "built-in");
@@ -417,8 +416,7 @@ mod tests {
 
     #[test]
     fn test_create_authorize_url() {
-        // Security fix: 使用 scoped env 替代 unsafe set_var
-        let _guard = unsafe { std::env::set_var("CASDOOR_CLIENT_SECRET", "test-secret-for-unit-test"); };
+        std::env::set_var("CASDOOR_CLIENT_SECRET", "test-secret-for-unit-test");
         let client = CasdoorClient::new(CasdoorConfig::default());
         let url = client.get_authorize_url("test_state");
         assert!(url.contains("authorize"));

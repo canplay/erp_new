@@ -18,14 +18,8 @@ impl OptionsRepository {
     }
 
     pub async fn query(&self) -> Result<Vec<OptionsInfo>, Error> {
-        let rows = sqlx::query_as!(
-            OptionsInfo,
-            r#"SELECT COALESCE(name, '') AS "name!" ,
-                      COALESCE(options, '{}'::json) AS "options!" ,
-                      COALESCE(level, 0) AS "level!" ,
-                      create_date, update_date, delete
-               FROM public.options WHERE delete = false"#,
-        )
+        let rows = sqlx::query_as::<_, OptionsInfo>(r#"SELECT COALESCE(name, '') AS ").bind(name!").bind(COALESCE(options, '{}'::json) AS "options!").bind(COALESCE(level, 0) AS "level!").bind(create_date).bind(update_date).bind(delete
+               FROM public.options WHERE delete = false"#)
         .fetch_all(&self.pool)
         .await?;
 
@@ -44,32 +38,16 @@ impl OptionsRepository {
     }
 
     pub async fn update(&self, info: &OptionsInfo) -> Result<bool, Error> {
-        let rows = sqlx::query!("SELECT name FROM public.options WHERE name = $1" , &info.name)
+        let rows = sqlx::query("SELECT name FROM public.options WHERE name = $1").bind(&info.name)
             .fetch_all(&self.pool)
             .await?;
 
         if rows.is_empty() {
-            sqlx::query!(
-                "INSERT INTO public.options VALUES ($1, $2, $3, $4, $5, $6)" ,
-                &info.name,
-                &info.options,
-                Local::now().naive_local(),
-                Local::now().naive_local(),
-                false,
-                info.level,
-            )
+            sqlx::query("INSERT INTO public.options VALUES ($1, $2, $3, $4, $5, $6)").bind(&info.name).bind(&info.options).bind(Local::now().naive_local()).bind(Local::now().naive_local()).bind(false).bind(info.level)
             .execute(&self.pool)
             .await?;
         } else {
-            sqlx::query!(
-                "UPDATE public.options SET name = $1, options = $2, update_date = $3, delete = $4, level = $5 WHERE name = $6" ,
-                &info.name,
-                &info.options,
-                Local::now().naive_local(),
-                false,
-                info.level,
-                &info.name,
-            )
+            sqlx::query("UPDATE public.options SET name = $1, options = $2, update_date = $3, delete = $4, level = $5 WHERE name = $6").bind(&info.name).bind(&info.options).bind(Local::now().naive_local()).bind(false).bind(info.level).bind(&info.name)
             .execute(&self.pool)
             .await?;
         }

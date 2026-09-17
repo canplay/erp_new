@@ -31,50 +31,19 @@ impl StorageRepository {
     pub async fn add(&self, info: &StorageInfo) -> Result<bool, Error> {
         self.add_history(info).await?;
 
-        let rows: Vec<String> = sqlx::query_scalar!(
-            "SELECT code FROM public.storage WHERE code = $1" ,
-            &info.code,
-        )
+        let rows: Vec<String> = sqlx::query_scalar::<_, _>("SELECT code FROM public.storage WHERE code = $1").bind(&info.code)
         .fetch_all(&self.pool)
         .await?;
 
         if rows.is_empty() {
-            sqlx::query!(
-                "INSERT INTO public.storage (code, status, provide, gps, create_date, update_date, \
+            sqlx::query("INSERT INTO public.storage (code, status, provide, gps, create_date, update_date, \
                  delete, alert, remark, sum, cur, points, gps_type) \
-                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)",
-                &info.code,
-                info.status,
-                &info.provide,
-                info.gps.as_ref(),
-                Local::now().naive_local(),
-                Local::now().naive_local(),
-                false,
-                info.alert.as_deref(),
-                info.remark.as_deref(),
-                info.sum,
-                info.cur,
-                info.points.as_deref(),
-                info.gps_type,
-            )
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)").bind(&info.code).bind(info.status).bind(&info.provide).bind(info.gps.as_ref()).bind(Local::now().naive_local()).bind(Local::now().naive_local()).bind(false).bind(info.alert.as_deref()).bind(info.remark.as_deref()).bind(info.sum).bind(info.cur).bind(info.points.as_deref()).bind(info.gps_type)
             .execute(&self.pool)
             .await?;
         } else {
-            sqlx::query!(
-                "UPDATE public.storage SET provide = $1, gps = $2, update_date = $3, delete = $4, \
-                 alert = $5, remark = $6, sum = $7, cur = $8, gps_type = $9, status = $10 WHERE code = $11",
-                &info.provide,
-                info.gps.as_ref(),
-                Local::now().naive_local(),
-                false,
-                info.alert.as_deref(),
-                info.remark.as_deref(),
-                info.sum,
-                info.cur,
-                info.gps_type,
-                info.status,
-                &info.code,
-            )
+            sqlx::query("UPDATE public.storage SET provide = $1, gps = $2, update_date = $3, delete = $4, \
+                 alert = $5, remark = $6, sum = $7, cur = $8, gps_type = $9, status = $10 WHERE code = $11").bind(&info.provide).bind(info.gps.as_ref()).bind(Local::now().naive_local()).bind(false).bind(info.alert.as_deref()).bind(info.remark.as_deref()).bind(info.sum).bind(info.cur).bind(info.gps_type).bind(info.status).bind(&info.code)
             .execute(&self.pool)
             .await?;
         }
@@ -90,12 +59,7 @@ impl StorageRepository {
     }
 
     pub async fn del(&self, code: &str) -> Result<bool, Error> {
-        sqlx::query!(
-            "UPDATE public.storage SET update_date = $1, delete = $2 WHERE code = $3" ,
-            Local::now().naive_local(),
-            true,
-            code,
-        )
+        sqlx::query("UPDATE public.storage SET update_date = $1, delete = $2 WHERE code = $3").bind(Local::now().naive_local()).bind(true).bind(code)
         .execute(&self.pool)
         .await?;
         Ok(true)
@@ -107,26 +71,13 @@ impl StorageRepository {
         provide: &str,
         status: i64,
     ) -> Result<Vec<StorageInfo>, Error> {
-        let rows = sqlx::query_as!(
-            StorageInfo,
-            r#"SELECT code,
-                      COALESCE(status, 0) AS "status!" ,
-                      COALESCE(provide, '') AS "provide!" ,
-                      gps,
-                      COALESCE(type, 0) AS "type!" ,
-                      COALESCE(sum, 0) AS "sum!" ,
-                      COALESCE(cur, 0) AS "cur!" ,
-                      alert, remark, points, delete, create_date, update_date,
-                      COALESCE(gps_type, 0) AS "gps_type!"
+        let rows = sqlx::query_as::<_, StorageInfo>(r#"SELECT code,
+                      COALESCE(status, 0) AS ").bind(status!").bind(COALESCE(provide, '') AS "provide!").bind(gps).bind(COALESCE(type, 0) AS "type!").bind(COALESCE(sum, 0) AS "sum!").bind(COALESCE(cur, 0) AS "cur!").bind(alert).bind(remark).bind(points).bind(delete).bind(create_date).bind(update_date).bind(COALESCE(gps_type, 0) AS "gps_type!"
                FROM public.storage
                WHERE delete = false
                  AND ($1 = '' OR code = $1)
                  AND ($2 = '' OR provide = $2)
-                 AND ($3::BIGINT = -1 OR status = $3::BIGINT)"#,
-            code,
-            provide,
-            status,
-        )
+                 AND ($3::BIGINT = -1 OR status = $3::BIGINT)"#).bind(code).bind(provide).bind(status)
         .fetch_all(&self.pool)
         .await?;
 

@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE task_records SET status = 'completed', completed_at = NOW(), result = $2 WHERE id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Jsonb"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "2c04cdd35e21fd2c0f6773c5e6deef650c4b5169b48f63a83ba30f25225bed4c"
+}

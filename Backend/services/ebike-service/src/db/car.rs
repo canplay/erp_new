@@ -60,50 +60,18 @@ impl CarRepository {
         // Insert history
         self.add_history(info).await?;
 
-        let rows: Vec<String> = sqlx::query_scalar!(
-            "SELECT code FROM public.car WHERE code = $1" ,
-            &info.code,
-        )
+        let rows: Vec<String> = sqlx::query_scalar::<_, _>("SELECT code FROM public.car WHERE code = $1").bind(&info.code)
         .fetch_all(&self.pool)
         .await?;
 
         if rows.is_empty() {
-            sqlx::query!(
-                "INSERT INTO public.car (code, status, provide, speed, gps, time, create_date, update_date, delete, alert, remark, type, gps_type) \
-                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)",
-                &info.code,
-                info.status,
-                &info.provide,
-                info.speed,
-                info.gps.as_ref(),
-                info.time.as_ref(),
-                Local::now().naive_local(),
-                Local::now().naive_local(),
-                false,
-                info.alert.as_deref(),
-                info.remark.as_deref(),
-                info.r#type,
-                info.gps_type,
-            )
+            sqlx::query("INSERT INTO public.car (code, status, provide, speed, gps, time, create_date, update_date, delete, alert, remark, type, gps_type) \
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)").bind(&info.code).bind(info.status).bind(&info.provide).bind(info.speed).bind(info.gps.as_ref()).bind(info.time.as_ref()).bind(Local::now().naive_local()).bind(Local::now().naive_local()).bind(false).bind(info.alert.as_deref()).bind(info.remark.as_deref()).bind(info.r#type).bind(info.gps_type)
             .execute(&self.pool)
             .await?;
         } else {
-            sqlx::query!(
-                "UPDATE public.car SET status = $1, provide = $2, speed = $3, gps = $4, time = $5, \
-                 update_date = $6, delete = $7, alert = $8, remark = $9, type = $10, gps_type = $11 WHERE code = $12",
-                info.status,
-                &info.provide,
-                info.speed,
-                info.gps.as_ref(),
-                info.time.as_ref(),
-                Local::now().naive_local(),
-                false,
-                info.alert.as_deref(),
-                info.remark.as_deref(),
-                info.r#type,
-                info.gps_type,
-                &info.code,
-            )
+            sqlx::query("UPDATE public.car SET status = $1, provide = $2, speed = $3, gps = $4, time = $5, \
+                 update_date = $6, delete = $7, alert = $8, remark = $9, type = $10, gps_type = $11 WHERE code = $12").bind(info.status).bind(&info.provide).bind(info.speed).bind(info.gps.as_ref()).bind(info.time.as_ref()).bind(Local::now().naive_local()).bind(false).bind(info.alert.as_deref()).bind(info.remark.as_deref()).bind(info.r#type).bind(info.gps_type).bind(&info.code)
             .execute(&self.pool)
             .await?;
         }
@@ -121,22 +89,11 @@ impl CarRepository {
     pub async fn del(&self, code: &str, provide: &str) -> Result<bool, Error> {
         // provide 非空时按运营方过滤，保证数据隔离（运营方只能删自己的车）
         if provide.is_empty() {
-            sqlx::query!(
-                "UPDATE public.car SET update_date = $1, delete = $2 WHERE code = $3" ,
-                Local::now().naive_local(),
-                true,
-                code,
-            )
+            sqlx::query("UPDATE public.car SET update_date = $1, delete = $2 WHERE code = $3").bind(Local::now().naive_local()).bind(true).bind(code)
             .execute(&self.pool)
             .await?;
         } else {
-            sqlx::query!(
-                "UPDATE public.car SET update_date = $1, delete = $2 WHERE code = $3 AND provide = $4" ,
-                Local::now().naive_local(),
-                true,
-                code,
-                provide,
-            )
+            sqlx::query("UPDATE public.car SET update_date = $1, delete = $2 WHERE code = $3 AND provide = $4").bind(Local::now().naive_local()).bind(true).bind(code).bind(provide)
             .execute(&self.pool)
             .await?;
         }
@@ -153,16 +110,8 @@ impl CarRepository {
         limit: i64,
         offset: i64,
     ) -> Result<Vec<CarInfo>, Error> {
-        let rows = sqlx::query_as!(
-            CarInfo,
-            r#"SELECT code,
-                      COALESCE(status, 0) AS "status!" ,
-                      COALESCE(provide, '') AS "provide!" ,
-                      COALESCE(speed, 0) AS "speed!" ,
-                      gps,
-                      COALESCE(type, 0) AS "type!" ,
-                      time, alert, remark, delete, create_date, update_date,
-                      COALESCE(gps_type, 0) AS "gps_type!"
+        let rows = sqlx::query_as::<_, CarInfo>(r#"SELECT code,
+                      COALESCE(status, 0) AS ").bind(status!").bind(COALESCE(provide, '') AS "provide!").bind(COALESCE(speed, 0) AS "speed!").bind(gps).bind(COALESCE(type, 0) AS "type!").bind(time).bind(alert).bind(remark).bind(delete).bind(create_date).bind(update_date).bind(COALESCE(gps_type, 0) AS "gps_type!"
                FROM public.car
                WHERE delete = false
                  AND ($1 = '' OR code = $1)
@@ -170,15 +119,7 @@ impl CarRepository {
                  AND ($3::BIGINT = -1 OR status = $3::BIGINT)
                  AND ($4 = '' OR (time::json->'start')::TEXT LIKE $4)
                  AND ($5 = '' OR (time::json->'end')::TEXT LIKE $5)
-               LIMIT $6 OFFSET $7"#,
-            code,
-            provide,
-            status,
-            &format!("%{time_start}%" ),
-            &format!("%{time_end}%" ),
-            limit,
-            offset,
-        )
+               LIMIT $6 OFFSET $7"#).bind(code).bind(provide).bind(status).bind(&format!("%{time_start}%" )).bind(&format!("%{time_end}%" )).bind(limit).bind(offset)
         .fetch_all(&self.pool)
         .await?;
 
@@ -249,25 +190,14 @@ impl CarRepository {
         violation_type: &str,
     ) -> Result<(), Error> {
         // 同车辆同类型未处理的违停不重复创建
-        let existing = sqlx::query!(
-            "SELECT id FROM violations WHERE car_code = $1 AND violation_type = $2 AND status = 0" ,
-            car_code,
-            violation_type,
-        )
+        let existing = sqlx::query("SELECT id FROM violations WHERE car_code = $1 AND violation_type = $2 AND status = 0").bind(car_code).bind(violation_type)
         .fetch_optional(&self.pool)
         .await?;
         if existing.is_some() {
             return Ok(());
         }
-        sqlx::query!(
-            "INSERT INTO violations (car_code, provide, lng, lat, violation_type, status, created_at) \
-             VALUES ($1, $2, $3, $4, $5, 0, NOW())",
-            car_code,
-            provide,
-            lng,
-            lat,
-            violation_type,
-        )
+        sqlx::query("INSERT INTO violations (car_code, provide, lng, lat, violation_type, status, created_at) \
+             VALUES ($1, $2, $3, $4, $5, 0, NOW())").bind(car_code).bind(provide).bind(lng).bind(lat).bind(violation_type)
         .execute(&self.pool)
         .await?;
         Ok(())
@@ -286,24 +216,12 @@ impl CarRepository {
         .execute(&self.pool)
         .await;
 
-        let rows = sqlx::query_as!(
-            ViolationRecord,
-            r#"SELECT id::BIGINT AS "id!" ,
-                      car_code, provide,
-                      COALESCE(lng, '') AS "lng!" ,
-                      COALESCE(lat, '') AS "lat!" ,
-                      COALESCE(violation_type, '') AS "violation_type!" ,
-                      COALESCE(status, 0) AS "status!" ,
-                      COALESCE(created_at, NOW()::timestamp) AS "created_at!" ,
-                      resolved_at, remark
+        let rows = sqlx::query_as::<_, ViolationRecord>(r#"SELECT id::BIGINT AS ").bind(id!").bind(car_code).bind(provide).bind(COALESCE(lng, '') AS "lng!").bind(COALESCE(lat, '') AS "lat!").bind(COALESCE(violation_type, '') AS "violation_type!").bind(COALESCE(status, 0) AS "status!").bind(COALESCE(created_at, NOW()::timestamp) AS "created_at!").bind(resolved_at).bind(remark
                FROM violations
                WHERE ($1 = '' OR provide = $1)
                  AND ($2::BIGINT = -1 OR status = $2::BIGINT)
                ORDER BY created_at DESC
-               LIMIT 200"#,
-            provide,
-            status,
-        )
+               LIMIT 200"#).bind(provide).bind(status)
         .fetch_all(&self.pool)
         .await?;
         Ok(rows)
@@ -318,11 +236,7 @@ impl CarRepository {
         .execute(&self.pool)
         .await?;
 
-        sqlx::query!(
-            "UPDATE violations SET status = 2, resolved_at = NOW(), remark = $1 WHERE id::BIGINT = $2" ,
-            remark,
-            id,
-        )
+        sqlx::query("UPDATE violations SET status = 2, resolved_at = NOW(), remark = $1 WHERE id::BIGINT = $2").bind(remark).bind(id)
         .execute(&self.pool)
         .await?;
         Ok(true)

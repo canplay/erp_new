@@ -1,0 +1,88 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, instance_id, node_id, node_name, assignee, status, comment,\n                      COALESCE(started_at, NOW()) AS \"started_at!\" ,\n                      completed_at, result, form_data, timeout_at\n             FROM task_records WHERE assignee = $1 AND status = 'pending' ORDER BY started_at",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 1,
+        "name": "instance_id",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "node_id",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "node_name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "assignee",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 5,
+        "name": "status",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 6,
+        "name": "comment",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 7,
+        "name": "started_at!",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 8,
+        "name": "completed_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 9,
+        "name": "result",
+        "type_info": "Jsonb"
+      },
+      {
+        "ordinal": 10,
+        "name": "form_data",
+        "type_info": "Jsonb"
+      },
+      {
+        "ordinal": 11,
+        "name": "timeout_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      null,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "3d19809330a4d3e150e4e031b75b200011f8e11732e3cb0380d22a0acb08dadc"
+}

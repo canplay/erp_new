@@ -156,7 +156,7 @@ impl FeedbackRepository {
     ) -> Result<i64, FeedbackRepositoryError> {
         let id = sqlx::query_scalar!(
             r#"
-            INSERT INTO feedbacks (user_id, type, title, content, contact, status, created_at, updated_at)
+            INSERT INTO sys_feedback (user_id, type, title, content, contact, status, created_at, updated_at)
             VALUES ($1, $2, $3, $4, $5, 'pending', NOW(), NOW())
             RETURNING id
             "#,
@@ -182,7 +182,7 @@ impl FeedbackRepository {
                    f.handler_reply, f.handler_time, f.rating::int,
                    COALESCE(f.created_at, NOW()) AS "created_at!" ,
                    COALESCE(f.updated_at, NOW()) AS "updated_at!"
-            FROM feedbacks f
+            FROM sys_feedback f
             LEFT JOIN users u ON f.user_id = u.id
             LEFT JOIN users h ON f.handler_id = h.id
             WHERE f.id = $1
@@ -211,7 +211,7 @@ impl FeedbackRepository {
         let total: i64 = sqlx::query_scalar!(
             r#"
             SELECT COUNT(*)
-            FROM feedbacks f
+            FROM sys_feedback f
             WHERE ($1::text IS NULL OR f.type = $1)
               AND ($2::text IS NULL OR f.status = $2)
               AND ($3::text IS NULL OR (f.title LIKE $3 OR f.content LIKE $3))
@@ -232,7 +232,7 @@ impl FeedbackRepository {
                    f.handler_reply, f.handler_time, f.rating::int,
                    COALESCE(f.created_at, NOW()) AS "created_at!" ,
                    COALESCE(f.updated_at, NOW()) AS "updated_at!"
-            FROM feedbacks f
+            FROM sys_feedback f
             LEFT JOIN users u ON f.user_id = u.id
             LEFT JOIN users h ON f.handler_id = h.id
             WHERE ($1::text IS NULL OR f.type = $1)
@@ -267,7 +267,7 @@ impl FeedbackRepository {
     ) -> Result<bool, FeedbackRepositoryError> {
         let result = sqlx::query!(
             r#"
-            UPDATE feedbacks
+            UPDATE sys_feedback
             SET status = $1, handler_reply = $2, handler_time = NOW(), updated_at = NOW()
             WHERE id = $3
             "#,
@@ -288,7 +288,7 @@ impl FeedbackRepository {
         handler_id: i64,
     ) -> Result<bool, FeedbackRepositoryError> {
         let result = sqlx::query!(
-            "UPDATE feedbacks SET handler_id = $1, status = 'processing', updated_at = NOW() WHERE id = $2" ,
+            "UPDATE sys_feedback SET handler_id = $1, status = 'processing', updated_at = NOW() WHERE id = $2" ,
             handler_id,
             id,
         )
@@ -302,7 +302,7 @@ impl FeedbackRepository {
     pub async fn add_reply(&self, id: i64, reply: &str) -> Result<(), FeedbackRepositoryError> {
         sqlx::query!(
             r#"
-            UPDATE feedbacks
+            UPDATE sys_feedback
             SET handler_reply = COALESCE(handler_reply, '') || E'\n' || $1,
                 handler_time = NOW(),
                 updated_at = NOW()
@@ -319,7 +319,7 @@ impl FeedbackRepository {
 
     /// 删除反馈
     pub async fn delete(&self, id: i64) -> Result<bool, FeedbackRepositoryError> {
-        let result = sqlx::query!("DELETE FROM feedbacks WHERE id = $1" , id)
+        let result = sqlx::query!("DELETE FROM sys_feedback WHERE id = $1" , id)
             .execute(&self.pool)
             .await?;
 
@@ -335,7 +335,7 @@ impl FeedbackRepository {
     ) -> Result<usize, FeedbackRepositoryError> {
         let result = sqlx::query!(
             r#"
-            UPDATE feedbacks
+            UPDATE sys_feedback
             SET status = $1, handler_reply = $2, handler_time = NOW(), updated_at = NOW()
             WHERE id = ANY($3)
             "#,
@@ -354,30 +354,30 @@ impl FeedbackRepository {
         &self,
         _params: &FeedbackQueryParams,
     ) -> Result<FeedbackStatistics, FeedbackRepositoryError> {
-        let total: i64 = sqlx::query_scalar!("SELECT COUNT(*) FROM feedbacks" )
+        let total: i64 = sqlx::query_scalar!("SELECT COUNT(*) FROM sys_feedback" )
             .fetch_one(&self.pool)
             .await?
             .unwrap_or(0);
         let pending: i64 = sqlx::query_scalar!(
-            "SELECT COUNT(*) FROM feedbacks WHERE status = 'pending'"
+            "SELECT COUNT(*) FROM sys_feedback WHERE status = 'pending'"
         )
         .fetch_one(&self.pool)
         .await?
         .unwrap_or(0);
         let processing: i64 = sqlx::query_scalar!(
-            "SELECT COUNT(*) FROM feedbacks WHERE status = 'processing'"
+            "SELECT COUNT(*) FROM sys_feedback WHERE status = 'processing'"
         )
         .fetch_one(&self.pool)
         .await?
         .unwrap_or(0);
         let resolved: i64 = sqlx::query_scalar!(
-            "SELECT COUNT(*) FROM feedbacks WHERE status = 'resolved'"
+            "SELECT COUNT(*) FROM sys_feedback WHERE status = 'resolved'"
         )
         .fetch_one(&self.pool)
         .await?
         .unwrap_or(0);
         let rejected: i64 = sqlx::query_scalar!(
-            "SELECT COUNT(*) FROM feedbacks WHERE status = 'rejected'"
+            "SELECT COUNT(*) FROM sys_feedback WHERE status = 'rejected'"
         )
         .fetch_one(&self.pool)
         .await?
@@ -402,7 +402,7 @@ impl FeedbackRepository {
         let rows = sqlx::query!(
             r#"
             SELECT type, COUNT(*) AS "count!"
-            FROM feedbacks
+            FROM sys_feedback
             GROUP BY type
             ORDER BY COUNT(*) DESC
             "#,
@@ -438,7 +438,7 @@ impl FeedbackRepository {
             r#"
             SELECT DISTINCT u.id, u.username AS name
             FROM users u
-            INNER JOIN feedbacks f ON u.id = f.handler_id
+            INNER JOIN sys_feedback f ON u.id = f.handler_id
             WHERE f.handler_id IS NOT NULL
             "#,
         )

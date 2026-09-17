@@ -29,7 +29,7 @@ impl From<UserRepositoryError> for common::AppError {
 }
 
 /// 用户基本信息（扩展版）
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, sqlx::FromRow)]
 pub struct UserInfo {
     pub id: i64,
     pub username: String,
@@ -62,50 +62,26 @@ impl UserRepository {
         &self,
         username: &str,
     ) -> Result<Option<UserInfo>, UserRepositoryError> {
-        let row = sqlx::query!(
-            "SELECT id, username, password_hash, email, phone, nickname, status, role, must_change_password FROM users WHERE username = $1" ,
-            username as &str,
+        let row = sqlx::query_as::<_, UserInfo>(
+            "SELECT id, username, password_hash, email, phone, nickname, status, role, must_change_password FROM users WHERE username = $1"
         )
-        .fetch_optional(&self.pool)
-        .await?;
+            .bind(username)
+            .fetch_optional(&self.pool)
+            .await?;
 
-        Ok(row.map(|r| {
-            let status: i32 = r.status.unwrap_or(1);
-
-            UserInfo {
-                id: r.id,
-                username: r.username,
-                password_hash: r.password_hash,
-                email: r.email,
-                phone: r.phone,
-                nickname: r.nickname,
-                status,
-                role: r.role.unwrap_or_default(),
-                must_change_password: r.must_change_password.unwrap_or(true),
-            }
-        }))
+        Ok(row)
     }
 
     /// 根据用户ID查找用户
     pub async fn find_by_id(&self, user_id: i64) -> Result<Option<UserInfo>, UserRepositoryError> {
-        let row = sqlx::query!(
-            "SELECT id, username, password_hash, email, phone, nickname, status, role, must_change_password FROM users WHERE id = $1" ,
-            user_id,
+        let row = sqlx::query_as::<_, UserInfo>(
+            "SELECT id, username, password_hash, email, phone, nickname, status, role, must_change_password FROM users WHERE id = $1"
         )
-        .fetch_optional(&self.pool)
-        .await?;
+            .bind(user_id)
+            .fetch_optional(&self.pool)
+            .await?;
 
-        Ok(row.map(|r| UserInfo {
-            id: r.id,
-            username: r.username,
-            password_hash: r.password_hash,
-            email: r.email,
-            phone: r.phone,
-            nickname: r.nickname,
-            status: r.status.unwrap_or(1),
-            role: r.role.unwrap_or_default(),
-            must_change_password: r.must_change_password.unwrap_or(true),
-        }))
+        Ok(row)
     }
 
     /// 创建新用户
@@ -120,28 +96,28 @@ impl UserRepository {
             return Err(UserRepositoryError::AlreadyExists);
         }
 
-        let row = sqlx::query!(
-            "INSERT INTO users (username, email, password_hash, created_at) VALUES ($1, $2, $3, NOW()) RETURNING id" ,
-            username as &str,
-            email,
-            password_hash as &str,
+        let row = sqlx::query_scalar::<_, i64>(
+            "INSERT INTO users (username, email, password_hash, created_at) VALUES ($1, $2, $3, NOW()) RETURNING id"
         )
-        .fetch_one(&self.pool)
-        .await?;
+            .bind(username)
+            .bind(email)
+            .bind(password_hash)
+            .fetch_one(&self.pool)
+            .await?;
 
-        Ok(row.id)
+        Ok(row)
     }
 
     /// 检查用户名是否存在
     pub async fn exists(&self, username: &str) -> Result<bool, UserRepositoryError> {
-        let row = sqlx::query!(
-            r#"SELECT EXISTS(SELECT 1 FROM users WHERE username = $1) AS "exists!" "#,
-            username as &str,
+        let row = sqlx::query_scalar::<_, bool>(
+            r#"SELECT EXISTS(SELECT 1 FROM users WHERE username = $1)"#
         )
-        .fetch_one(&self.pool)
-        .await?;
+            .bind(username)
+            .fetch_one(&self.pool)
+            .await?;
 
-        Ok(row.exists)
+        Ok(row)
     }
 
     /// 更新用户密码
@@ -151,11 +127,11 @@ impl UserRepository {
         new_password_hash: &str,
     ) -> Result<(), UserRepositoryError> {
         let result =
-            sqlx::query!(
-                "UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2" ,
-                new_password_hash as &str,
-                user_id,
+            sqlx::query(
+                "UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2"
             )
+            .bind(new_password_hash)
+            .bind(user_id)
             .execute(&self.pool)
             .await?;
 
@@ -176,15 +152,20 @@ impl UserRepository {
         email: Option<&str>,
     ) -> Result<(), UserRepositoryError> {
         // 构建动态更新语句
-        let result = sqlx::query!(
-            "UPDATE users SET \n                nickname = COALESCE($1, nickname),\n                phone = COALESCE($2, phone),\n                email = COALESCE($3, email),\n                updated_at = NOW()\n             WHERE id = $4" ,
-            nickname,
-            phone,
-            email,
-            user_id,
+        let result = sqlx::query(
+            "UPDATE users SET 
+                nickname = COALESCE($1, nickname),
+                phone = COALESCE($2, phone),
+                email = COALESCE($3, email),
+                updated_at = NOW()
+             WHERE id = $4"
         )
-        .execute(&self.pool)
-        .await?;
+            .bind(nickname)
+            .bind(phone)
+            .bind(email)
+            .bind(user_id)
+            .execute(&self.pool)
+            .await?;
 
         if result.rows_affected() == 0 {
             return Err(UserRepositoryError::NotFound);
@@ -198,12 +179,12 @@ impl UserRepository {
         &self,
         user_id: i64,
     ) -> Result<(), UserRepositoryError> {
-        sqlx::query!(
-            "UPDATE users SET must_change_password = false, updated_at = NOW() WHERE id = $1" ,
-            user_id,
+        sqlx::query(
+            "UPDATE users SET must_change_password = false, updated_at = NOW() WHERE id = $1"
         )
-        .execute(&self.pool)
-        .await?;
+            .bind(user_id)
+            .execute(&self.pool)
+            .await?;
         Ok(())
     }
 
@@ -213,13 +194,13 @@ impl UserRepository {
         user_id: i64,
         avatar: &str,
     ) -> Result<(), UserRepositoryError> {
-        let result = sqlx::query!(
-            "UPDATE users SET avatar = $1, updated_at = NOW() WHERE id = $2" ,
-            avatar as &str,
-            user_id,
+        let result = sqlx::query(
+            "UPDATE users SET avatar = $1, updated_at = NOW() WHERE id = $2"
         )
-        .execute(&self.pool)
-        .await?;
+            .bind(avatar)
+            .bind(user_id)
+            .execute(&self.pool)
+            .await?;
 
         if result.rows_affected() == 0 {
             return Err(UserRepositoryError::NotFound);

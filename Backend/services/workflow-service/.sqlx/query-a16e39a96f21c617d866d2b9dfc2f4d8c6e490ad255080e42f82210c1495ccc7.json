@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE schedule_tasks SET status = 'paused' WHERE id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "a16e39a96f21c617d866d2b9dfc2f4d8c6e490ad255080e42f82210c1495ccc7"
+}

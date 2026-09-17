@@ -39,7 +39,7 @@ impl AccountService {
     pub async fn create(&self, req: &CreateAccountRequest) -> Result<SocialAccount, sqlx::Error> {
         sqlx::query_as::<_, SocialAccount>(r#"INSERT INTO socialops.social_accounts (user_id, platform, account_name, config_json)
              VALUES ($1, $2, $3, $4)
-             RETURNING id, user_id, platform, account_name, account_id, avatar_url, is_active, config_json, created_at, updated_at"#).bind(req.user_id).bind(&req.platform).bind(&req.account_name).bind(req.config.as_ref()).bind()
+             RETURNING id, user_id, platform, account_name, account_id, avatar_url, is_active, config_json, created_at, updated_at"#).bind(req.user_id).bind(&req.platform).bind(&req.account_name).bind(req.config.as_ref())
         .fetch_one(&self.db)
         .await
     }
@@ -51,7 +51,7 @@ impl AccountService {
                  is_active = COALESCE($4, is_active),
                  updated_at = NOW()
              WHERE id = $1
-             RETURNING id, user_id, platform, account_name, account_id, avatar_url, is_active, config_json, created_at, updated_at"#).bind(id).bind(req.account_name.as_deref()).bind(req.config.as_ref()).bind(req.is_active).bind()
+             RETURNING id, user_id, platform, account_name, account_id, avatar_url, is_active, config_json, created_at, updated_at"#).bind(id).bind(req.account_name.as_deref()).bind(req.config.as_ref()).bind(req.is_active)
         .fetch_optional(&self.db)
         .await
     }

@@ -1,0 +1,73 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, workflow_id, workflow_version, status, current_node_id,\n                      COALESCE(variables, '{}'::jsonb) AS variables,\n                      started_by, started_at, completed_at\n             FROM workflow_instances\n             WHERE ($1::text IS NULL OR workflow_id = $1) AND ($2::text IS NULL OR status = $2)\n             ORDER BY started_at DESC LIMIT $3 OFFSET $4",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 1,
+        "name": "workflow_id",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "workflow_version",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 3,
+        "name": "status",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "current_node_id",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 5,
+        "name": "variables",
+        "type_info": "Jsonb"
+      },
+      {
+        "ordinal": 6,
+        "name": "started_by",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 7,
+        "name": "started_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 8,
+        "name": "completed_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      null,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "c469263d64079ed3330c7e655615f71cd344cb1f21ca5d649c30c3f232650933"
+}

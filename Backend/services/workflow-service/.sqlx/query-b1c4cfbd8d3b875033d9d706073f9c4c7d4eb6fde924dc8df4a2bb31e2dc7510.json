@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM workflow_edges WHERE workflow_id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "b1c4cfbd8d3b875033d9d706073f9c4c7d4eb6fde924dc8df4a2bb31e2dc7510"
+}

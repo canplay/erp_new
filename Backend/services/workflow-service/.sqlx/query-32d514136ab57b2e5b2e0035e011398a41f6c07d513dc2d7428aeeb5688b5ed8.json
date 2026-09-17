@@ -1,0 +1,76 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, workflow_id, name, node_type, position_x, position_y,\n                      COALESCE(config, '{}'::jsonb) AS config,\n                      timeout,\n                      COALESCE(auto_complete, false) AS \"auto_complete!\" ,\n                      COALESCE(created_at, NOW()) AS \"created_at!\"\n             FROM workflow_nodes WHERE workflow_id = $1 ORDER BY position_x, position_y",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 1,
+        "name": "workflow_id",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "node_type",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "position_x",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 5,
+        "name": "position_y",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 6,
+        "name": "config",
+        "type_info": "Jsonb"
+      },
+      {
+        "ordinal": 7,
+        "name": "timeout",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 8,
+        "name": "auto_complete!",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 9,
+        "name": "created_at!",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      null,
+      true,
+      null,
+      null
+    ]
+  },
+  "hash": "32d514136ab57b2e5b2e0035e011398a41f6c07d513dc2d7428aeeb5688b5ed8"
+}

@@ -294,10 +294,9 @@ impl WorkflowEngine {
 
         // 修复 B19-1: 持久化节点变量（原实现忽略传入的 _variables 参数）
         if let Some(ref vars) = _variables {
-            let vars_json = serde_json::to_string(vars).unwrap_or_else(|_| "{}".to_string());
             sqlx::query!(
                 r"UPDATE workflow_instances SET variables = $1::jsonb WHERE id = $2" ,
-                vars_json.as_str(),
+                vars,
                 instance_id,
             )
             .execute(&mut *tx)

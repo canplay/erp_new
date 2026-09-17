@@ -41,7 +41,7 @@ impl CrawlService {
     pub async fn create_source(&self, platform: &str, name: &str, config: &Value, interval: i32) -> Result<Value, sqlx::Error> {
         let row = sqlx::query(r#"INSERT INTO socialops.crawl_sources (platform, source_name, source_config, crawl_interval)
              VALUES ($1, $2, $3, $4)
-             RETURNING id, platform, source_name AS "source_name!" , crawl_interval"#).bind(platform).bind(name).bind(config).bind(interval).bind()
+             RETURNING id, platform, source_name AS "source_name!" , crawl_interval"#).bind(platform).bind(name).bind(config).bind(interval)
         .fetch_one(&self.db).await?;
 
         Ok(serde_json::json!({
@@ -77,7 +77,7 @@ impl CrawlService {
             if exists == 0 {
                 let title = item.text.chars().take(100).collect::<String>();
                 sqlx::query(r#"INSERT INTO socialops.content_items (source_type, content_type, title, body, source_url, source_hash, author_name, status)
-                     VALUES ('crawled', 'video', $1, $2, $3, $4, $5, 'draft')"#).bind(&title).bind(&item.text).bind(&item.url).bind(&source_hash).bind(&item.source).bind()
+                     VALUES ('crawled', 'video', $1, $2, $3, $4, $5, 'draft')"#).bind(&title).bind(&item.text).bind(&item.url).bind(&source_hash).bind(&item.source)
                 .execute(&self.db).await?;
                 new_count += 1;
             }
@@ -115,7 +115,7 @@ impl CrawlService {
                 let title = item.text.chars().take(100).collect::<String>();
                 sqlx::query(r#"INSERT INTO socialops.content_items
                        (source_type, content_type, title, body, source_url, source_hash, author_name, status)
-                       VALUES ('crawled', 'post', $1, $2, $3, $4, $5, 'draft')"#).bind(&title).bind(&item.text).bind(&item.url).bind(&source_hash).bind(&item.source).bind()
+                       VALUES ('crawled', 'post', $1, $2, $3, $4, $5, 'draft')"#).bind(&title).bind(&item.text).bind(&item.url).bind(&source_hash).bind(&item.source)
                 .execute(&self.db).await?;
                 new_count += 1;
             }
@@ -123,7 +123,7 @@ impl CrawlService {
 
         let total = results.len() as i32;
         sqlx::query(r#"UPDATE socialops.crawl_tasks SET status = 'completed', items_found = $1, items_new = $2,
-               completed_at = NOW() WHERE id = $3"#).bind(total).bind(new_count).bind(task_id).bind()
+               completed_at = NOW() WHERE id = $3"#).bind(total).bind(new_count).bind(task_id)
         .execute(&self.db).await?;
 
         Ok(new_count)

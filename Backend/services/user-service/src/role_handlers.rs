@@ -130,19 +130,19 @@ pub async fn list_roles(
             (
                 StatusCode::OK,
                 json_success(serde_json::json!({
-                        "list": roles,
-                        "total": result.total,
-                        "page": page,
-                        "page_size": page_size
-                    }),
+                    "list": roles,
+                    "total": result.total,
+                    "page": page,
+                    "page_size": page_size
+                })),
             )
                 .into_response()
         }
         Err(e) => {
-            tracing::error!("查询角色列表失败: {e}" );
+            tracing::error!("查询角色列表失败: {e}");
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                json_error("查询角色列表失败" ),
+                json_error("查询角色列表失败"),
             )
                 .into_response()
         }
@@ -158,30 +158,30 @@ pub async fn get_role(
         Ok(Some(role)) => (
             StatusCode::OK,
             json_success(serde_json::json!({
-                    "id": role.id,
-                    "name": role.name,
-                    "code": role.code,
-                    "description": role.description,
-                    "role_type": role.role_type,
-                    "parent_id": role.parent_id,
-                    "level": role.level,
-                    "status": role.status,
-                    "is_default": role.is_default,
-                    "created_at": role.created_at.to_rfc3339(),
-                    "updated_at": role.updated_at.to_rfc3339(),
-                }),
+                "id": role.id,
+                "name": role.name,
+                "code": role.code,
+                "description": role.description,
+                "role_type": role.role_type,
+                "parent_id": role.parent_id,
+                "level": role.level,
+                "status": role.status,
+                "is_default": role.is_default,
+                "created_at": role.created_at.to_rfc3339(),
+                "updated_at": role.updated_at.to_rfc3339(),
+            })),
         )
             .into_response(),
         Ok(None) => (
             StatusCode::NOT_FOUND,
-            json_error("角色不存在" ),
+            json_error("角色不存在"),
         )
             .into_response(),
         Err(e) => {
-            tracing::error!("查询角色失败: {e}" );
+            tracing::error!("查询角色失败: {e}");
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                json_error("查询角色失败" ),
+                json_error("查询角色失败"),
             )
                 .into_response()
         }
@@ -196,7 +196,7 @@ pub async fn create_role(
     if req.name.is_empty() || req.code.is_empty() {
         return (
             StatusCode::BAD_REQUEST,
-            json_error("角色名称和代码不能为空" ),
+            json_error("角色名称和代码不能为空"),
         )
             .into_response();
     }
@@ -207,7 +207,7 @@ pub async fn create_role(
             &req.name,
             &req.code,
             req.description,
-            req.role_type.as_deref().unwrap_or("custom" ),
+            req.role_type.as_deref().unwrap_or("custom"),
             req.parent_id,
         )
         .await
@@ -215,21 +215,21 @@ pub async fn create_role(
         Ok(id) => (
             StatusCode::CREATED,
             json_success(serde_json::json!({
-                    "id": id,
-                    "code": req.code
-                }),
+                "id": id,
+                "code": req.code
+            })),
         )
             .into_response(),
         Err(RoleRepositoryError::AlreadyExists) => (
             StatusCode::CONFLICT,
-            json_error("角色代码已存在" ),
+            json_error("角色代码已存在"),
         )
             .into_response(),
         Err(e) => {
-            tracing::error!("创建角色失败: {e}" );
+            tracing::error!("创建角色失败: {e}");
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                json_error("创建角色失败" ),
+                json_error("创建角色失败"),
             )
                 .into_response()
         }
@@ -250,22 +250,22 @@ pub async fn update_role(
         Ok(Some(role)) => (
             StatusCode::OK,
             json_success(serde_json::json!({
-                    "id": role.id,
-                    "name": role.name,
-                    "code": role.code,
-                }),
+                "id": role.id,
+                "name": role.name,
+                "code": role.code,
+            })),
         )
             .into_response(),
         Ok(None) => (
             StatusCode::NOT_FOUND,
-            json_error("角色不存在" ),
+            json_error("角色不存在"),
         )
             .into_response(),
         Err(e) => {
-            tracing::error!("更新角色失败: {e}" );
+            tracing::error!("更新角色失败: {e}");
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                json_error("更新角色失败" ),
+                json_error("更新角色失败"),
             )
                 .into_response()
         }
@@ -280,29 +280,29 @@ pub async fn delete_role(
     match state.role_repository.delete(&code).await {
         Ok(true) => (
             StatusCode::OK,
-            json_ok_msg("角色删除成功" ),
+            json_ok_msg("角色删除成功"),
         )
             .into_response(),
         Ok(false) => (
             StatusCode::NOT_FOUND,
-            json_error("角色不存在" ),
+            json_error("角色不存在"),
         )
             .into_response(),
         Err(RoleRepositoryError::HasAssociatedUsers) => (
             StatusCode::CONFLICT,
-            json_error("角色有用户关联，无法删除" ),
+            json_error("角色有用户关联，无法删除"),
         )
             .into_response(),
         Err(RoleRepositoryError::HasChildRoles) => (
             StatusCode::CONFLICT,
-            json_error("角色有子角色，无法删除" ),
+            json_error("角色有子角色，无法删除"),
         )
             .into_response(),
         Err(e) => {
-            tracing::error!("删除角色失败: {e}" );
+            tracing::error!("删除角色失败: {e}");
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                json_error("删除角色失败" ),
+                json_error("删除角色失败"),
             )
                 .into_response()
         }
@@ -333,29 +333,29 @@ pub async fn get_role_permissions(
 
                 (
                     StatusCode::OK,
-                    json_success(perm_list),
+                    json_success(serde_json::json!(perm_list)),
                 )
                     .into_response()
             }
             Err(e) => {
-                tracing::error!("获取角色权限失败: {e}" );
+                tracing::error!("获取角色权限失败: {e}");
                 (
                     StatusCode::INTERNAL_SERVER_ERROR,
-                    json_error("获取角色权限失败" ),
+                    json_error("获取角色权限失败"),
                 )
                     .into_response()
             }
         },
         Ok(None) => (
             StatusCode::NOT_FOUND,
-            json_error("角色不存在" ),
+            json_error("角色不存在"),
         )
             .into_response(),
         Err(e) => {
-            tracing::error!("查询角色失败: {e}" );
+            tracing::error!("查询角色失败: {e}");
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                json_error("查询角色失败" ),
+                json_error("查询角色失败"),
             )
                 .into_response()
         }
@@ -377,14 +377,14 @@ pub async fn update_role_permissions(
             {
                 Ok(()) => (
                     StatusCode::OK,
-                    json_ok_msg("权限更新成功" ),
+                    json_ok_msg("权限更新成功"),
                 )
                     .into_response(),
                 Err(e) => {
-                    tracing::error!("更新角色权限失败: {e}" );
+                    tracing::error!("更新角色权限失败: {e}");
                     (
                         StatusCode::INTERNAL_SERVER_ERROR,
-                        json_error("更新角色权限失败" ),
+                        json_error("更新角色权限失败"),
                     )
                         .into_response()
                 }
@@ -392,14 +392,14 @@ pub async fn update_role_permissions(
         }
         Ok(None) => (
             StatusCode::NOT_FOUND,
-            json_error("角色不存在" ),
+            json_error("角色不存在"),
         )
             .into_response(),
         Err(e) => {
-            tracing::error!("查询角色失败: {e}" );
+            tracing::error!("查询角色失败: {e}");
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                json_error("查询角色失败" ),
+                json_error("查询角色失败"),
             )
                 .into_response()
         }
@@ -425,18 +425,18 @@ pub async fn get_role_users(
                 Ok((user_ids, total)) => (
                     StatusCode::OK,
                     json_success(serde_json::json!({
-                            "user_ids": user_ids,
-                            "total": total,
-                            "page": page,
-                            "page_size": page_size
-                        }),
+                        "user_ids": user_ids,
+                        "total": total,
+                        "page": page,
+                        "page_size": page_size
+                    })),
                 )
                     .into_response(),
                 Err(e) => {
-                    tracing::error!("获取角色用户失败: {e}" );
+                    tracing::error!("获取角色用户失败: {e}");
                     (
                         StatusCode::INTERNAL_SERVER_ERROR,
-                        json_error("获取角色用户失败" ),
+                        json_error("获取角色用户失败"),
                     )
                         .into_response()
                 }
@@ -444,14 +444,14 @@ pub async fn get_role_users(
         }
         Ok(None) => (
             StatusCode::NOT_FOUND,
-            json_error("角色不存在" ),
+            json_error("角色不存在"),
         )
             .into_response(),
         Err(e) => {
-            tracing::error!("查询角色失败: {e}" );
+            tracing::error!("查询角色失败: {e}");
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                json_error("查询角色失败" ),
+                json_error("查询角色失败"),
             )
                 .into_response()
         }
@@ -469,15 +469,15 @@ pub async fn copy_role_permissions(
         Ok(None) => {
             return (
                 StatusCode::NOT_FOUND,
-                json_error("源角色不存在" ),
+                json_error("源角色不存在"),
             )
                 .into_response();
         }
         Err(e) => {
-            tracing::error!("查询源角色失败: {e}" );
+            tracing::error!("查询源角色失败: {e}");
             return (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                json_error("查询源角色失败" ),
+                json_error("查询源角色失败"),
             )
                 .into_response();
         }
@@ -491,15 +491,15 @@ pub async fn copy_role_permissions(
             Ok(None) => {
                 return (
                     StatusCode::NOT_FOUND,
-                    json_error(&format!("{}" , format!("目标角色 {)),
+                    json_error(&format!("目标角色 '{}' 不存在", target_code)),
                 )
                     .into_response();
             }
             Err(e) => {
-                tracing::error!("查询目标角色失败: {e}" );
+                tracing::error!("查询目标角色失败: {e}");
                 return (
                     StatusCode::INTERNAL_SERVER_ERROR,
-                    json_error("查询目标角色失败" ),
+                    json_error("查询目标角色失败"),
                 )
                     .into_response();
             }
@@ -514,14 +514,14 @@ pub async fn copy_role_permissions(
     {
         Ok(()) => (
             StatusCode::OK,
-            json_ok_msg("权限复制成功" ),
+            json_ok_msg("权限复制成功"),
         )
             .into_response(),
         Err(e) => {
-            tracing::error!("复制角色权限失败: {e}" );
+            tracing::error!("复制角色权限失败: {e}");
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                json_error("复制角色权限失败" ),
+                json_error("复制角色权限失败"),
             )
                 .into_response()
         }
@@ -548,15 +548,15 @@ pub async fn list_permissions(State(state): State<HttpAppState>) -> impl IntoRes
 
             (
                 StatusCode::OK,
-                json_success(perm_list),
+                json_success(serde_json::json!(perm_list)),
             )
                 .into_response()
         }
         Err(e) => {
-            tracing::error!("获取权限列表失败: {e}" );
+            tracing::error!("获取权限列表失败: {e}");
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                json_error("获取权限列表失败" ),
+                json_error("获取权限列表失败"),
             )
                 .into_response()
         }
@@ -581,14 +581,14 @@ pub async fn get_role_data_permissions(
         Ok(None) => {
             return (
                 StatusCode::NOT_FOUND,
-                json_error("角色不存在" ),
+                json_error("角色不存在"),
             )
                 .into_response();
         }
         Err(e) => {
             return (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                json_error(&format!("{}" , e.to_string())),
+                json_error(&format!("{}", e)),
             )
                 .into_response();
         }
@@ -602,7 +602,7 @@ pub async fn get_role_data_permissions(
             .into_response(),
         Err(e) => (
             StatusCode::INTERNAL_SERVER_ERROR,
-            json_error(&format!("{}" , e.to_string())),
+            json_error(&format!("{}", e)),
         )
             .into_response(),
     }
@@ -619,14 +619,14 @@ pub async fn update_role_data_permissions(
         Ok(None) => {
             return (
                 StatusCode::NOT_FOUND,
-                json_error("角色不存在" ),
+                json_error("角色不存在"),
             )
                 .into_response();
         }
         Err(e) => {
             return (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                json_error(&format!("{}" , e.to_string())),
+                json_error(&format!("{}", e)),
             )
                 .into_response();
         }
@@ -639,12 +639,12 @@ pub async fn update_role_data_permissions(
     {
         Ok(()) => (
             StatusCode::OK,
-            json_ok_msg("数据权限已更新" ),
+            json_ok_msg("数据权限已更新"),
         )
             .into_response(),
         Err(e) => (
             StatusCode::INTERNAL_SERVER_ERROR,
-            json_error(&format!("{}" , e.to_string())),
+            json_error(&format!("{}", e)),
         )
             .into_response(),
     }
@@ -668,14 +668,14 @@ pub async fn get_role_field_permissions(
         Ok(None) => {
             return (
                 StatusCode::NOT_FOUND,
-                json_error("角色不存在" ),
+                json_error("角色不存在"),
             )
                 .into_response();
         }
         Err(e) => {
             return (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                json_error(&format!("{}" , e.to_string())),
+                json_error(&format!("{}", e)),
             )
                 .into_response();
         }
@@ -689,7 +689,7 @@ pub async fn get_role_field_permissions(
             .into_response(),
         Err(e) => (
             StatusCode::INTERNAL_SERVER_ERROR,
-            json_error(&format!("{}" , e.to_string())),
+            json_error(&format!("{}", e)),
         )
             .into_response(),
     }
@@ -706,14 +706,14 @@ pub async fn update_role_field_permissions(
         Ok(None) => {
             return (
                 StatusCode::NOT_FOUND,
-                json_error("角色不存在" ),
+                json_error("角色不存在"),
             )
                 .into_response();
         }
         Err(e) => {
             return (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                json_error(&format!("{}" , e.to_string())),
+                json_error(&format!("{}", e)),
             )
                 .into_response();
         }
@@ -726,12 +726,12 @@ pub async fn update_role_field_permissions(
     {
         Ok(()) => (
             StatusCode::OK,
-            json_ok_msg("字段权限已更新" ),
+            json_ok_msg("字段权限已更新"),
         )
             .into_response(),
         Err(e) => (
             StatusCode::INTERNAL_SERVER_ERROR,
-            json_error(&format!("{}" , e.to_string())),
+            json_error(&format!("{}", e)),
         )
             .into_response(),
     }
@@ -755,14 +755,14 @@ pub async fn get_role_inherit(
         Ok(None) => {
             return (
                 StatusCode::NOT_FOUND,
-                json_error("角色不存在" ),
+                json_error("角色不存在"),
             )
                 .into_response();
         }
         Err(e) => {
             return (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                json_error(&format!("{}" , e.to_string())),
+                json_error(&format!("{}", e)),
             )
                 .into_response();
         }
@@ -776,7 +776,7 @@ pub async fn get_role_inherit(
             .into_response(),
         Err(e) => (
             StatusCode::INTERNAL_SERVER_ERROR,
-            json_error(&format!("{}" , e.to_string())),
+            json_error(&format!("{}", e)),
         )
             .into_response(),
     }
@@ -793,14 +793,14 @@ pub async fn set_role_inherit(
         Ok(None) => {
             return (
                 StatusCode::NOT_FOUND,
-                json_error("角色不存在" ),
+                json_error("角色不存在"),
             )
                 .into_response();
         }
         Err(e) => {
             return (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                json_error(&format!("{}" , e.to_string())),
+                json_error(&format!("{}", e)),
             )
                 .into_response();
         }
@@ -813,12 +813,12 @@ pub async fn set_role_inherit(
     {
         Ok(()) => (
             StatusCode::OK,
-            json_ok_msg("继承关系已设置" ),
+            json_ok_msg("继承关系已设置"),
         )
             .into_response(),
         Err(e) => (
             StatusCode::INTERNAL_SERVER_ERROR,
-            json_error(&format!("{}" , e.to_string())),
+            json_error(&format!("{}", e)),
         )
             .into_response(),
     }
@@ -834,14 +834,14 @@ pub async fn remove_role_inherit(
         Ok(None) => {
             return (
                 StatusCode::NOT_FOUND,
-                json_error("角色不存在" ),
+                json_error("角色不存在"),
             )
                 .into_response();
         }
         Err(e) => {
             return (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                json_error(&format!("{}" , e.to_string())),
+                json_error(&format!("{}", e)),
             )
                 .into_response();
         }
@@ -850,17 +850,17 @@ pub async fn remove_role_inherit(
     match state.role_repository.remove_inherit(role.id).await {
         Ok(true) => (
             StatusCode::OK,
-            json_ok_msg("继承关系已移除" ),
+            json_ok_msg("继承关系已移除"),
         )
             .into_response(),
         Ok(false) => (
             StatusCode::OK,
-            json_ok_msg("无继承关系" ),
+            json_ok_msg("无继承关系"),
         )
             .into_response(),
         Err(e) => (
             StatusCode::INTERNAL_SERVER_ERROR,
-            json_error(&format!("{}" , e.to_string())),
+            json_error(&format!("{}", e)),
         )
             .into_response(),
     }
@@ -871,46 +871,46 @@ pub async fn remove_role_inherit(
 /// 创建角色管理路由
 pub fn create_role_router(state: HttpAppState) -> Router {
     Router::new()
-        .route("/" , axum::routing::get(list_roles))
-        .route("/" , axum::routing::post(create_role))
-        .route("/permissions" , axum::routing::get(list_permissions))
+        .route("/", axum::routing::get(list_roles))
+        .route("/", axum::routing::post(create_role))
+        .route("/permissions", axum::routing::get(list_permissions))
         .route(
-            "/copy-permissions" ,
+            "/copy-permissions",
             axum::routing::post(copy_role_permissions),
         )
-        .route("/{code}" , axum::routing::get(get_role))
-        .route("/{code}" , axum::routing::put(update_role))
-        .route("/{code}" , axum::routing::delete(delete_role))
+        .route("/{code}", axum::routing::get(get_role))
+        .route("/{code}", axum::routing::put(update_role))
+        .route("/{code}", axum::routing::delete(delete_role))
         .route(
-            "/{code}/permissions" ,
+            "/{code}/permissions",
             axum::routing::get(get_role_permissions),
         )
         .route(
-            "/{code}/permissions" ,
+            "/{code}/permissions",
             axum::routing::put(update_role_permissions),
         )
-        .route("/{code}/users" , axum::routing::get(get_role_users))
+        .route("/{code}/users", axum::routing::get(get_role_users))
         // 数据权限
         .route(
-            "/{code}/data-permissions" ,
+            "/{code}/data-permissions",
             axum::routing::get(get_role_data_permissions),
         )
         .route(
-            "/{code}/data-permissions" ,
+            "/{code}/data-permissions",
             axum::routing::put(update_role_data_permissions),
         )
         // 字段权限
         .route(
-            "/{code}/field-permissions" ,
+            "/{code}/field-permissions",
             axum::routing::get(get_role_field_permissions),
         )
         .route(
-            "/{code}/field-permissions" ,
+            "/{code}/field-permissions",
             axum::routing::put(update_role_field_permissions),
         )
         // 权限继承
-        .route("/{code}/inherit" , axum::routing::get(get_role_inherit))
-        .route("/{code}/inherit" , axum::routing::post(set_role_inherit))
-        .route("/{code}/inherit" , axum::routing::delete(remove_role_inherit))
+        .route("/{code}/inherit", axum::routing::get(get_role_inherit))
+        .route("/{code}/inherit", axum::routing::post(set_role_inherit))
+        .route("/{code}/inherit", axum::routing::delete(remove_role_inherit))
         .with_state(state)
 }

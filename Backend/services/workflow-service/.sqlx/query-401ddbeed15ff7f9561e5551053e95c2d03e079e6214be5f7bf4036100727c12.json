@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE task_records SET status = $1, completed_at = $2 WHERE instance_id = $3 AND status = 'pending'",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Timestamptz",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "401ddbeed15ff7f9561e5551053e95c2d03e079e6214be5f7bf4036100727c12"
+}

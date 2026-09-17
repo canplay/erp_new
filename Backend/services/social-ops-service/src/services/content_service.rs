@@ -62,7 +62,7 @@ impl ContentService {
         let source_hash = source_url.map(hash_url);
         let row = sqlx::query(r#"INSERT INTO socialops.content_items (title, body, content_type, source_url, source_hash, source_type, status)
              VALUES ($1, $2, $3, $4, $5, 'manual', 'draft')
-             RETURNING id, title AS "title!" , body AS "body!" , content_type, status"#).bind(title).bind(body).bind(content_type).bind(source_url).bind(source_hash.as_deref()).bind()
+             RETURNING id, title AS "title!" , body AS "body!" , content_type, status"#).bind(title).bind(body).bind(content_type).bind(source_url).bind(source_hash.as_deref())
         .fetch_one(&self.db).await?;
 
         Ok(serde_json::json!({

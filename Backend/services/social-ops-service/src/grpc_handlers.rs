@@ -310,7 +310,7 @@ impl CrawlService for GrpcCrawlService {
                SET platform = $1, source_name = $2, source_config = $3, crawl_interval = $4, is_active = $5
                WHERE id = $6
                RETURNING id, platform, source_name AS "source_name!" , source_config::text AS "source_config" , is_active, crawl_interval,
-                         to_char(last_crawled_at, 'YYYY-MM-DD HH24:MI:SS') AS "last_crawled" "#).bind(&r.platform).bind(&r.source_name).bind(config).bind(r.crawl_interval).bind(r.is_active).bind(id).bind()
+                         to_char(last_crawled_at, 'YYYY-MM-DD HH24:MI:SS') AS "last_crawled" "#).bind(&r.platform).bind(&r.source_name).bind(config).bind(r.crawl_interval).bind(r.is_active).bind(id)
         .fetch_optional(&self.state.db)
         .await
         .map_err(|e| Status::internal(format!("Database error: {e}" )))?
@@ -523,7 +523,7 @@ impl LlmProviderService for GrpcLlmProviderService {
         let row = sqlx::query(r#"UPDATE socialops.llm_providers
                SET provider_name = $1, api_endpoint = $2, api_key_enc = $3, model_name = $4, is_active = $5
                WHERE id = $6
-               RETURNING id, provider_name, api_endpoint, model_name, is_active"#).bind(&r.provider_name).bind(&r.api_endpoint).bind(&r.api_key).bind(&r.model_name).bind(r.is_active).bind(id).bind()
+               RETURNING id, provider_name, api_endpoint, model_name, is_active"#).bind(&r.provider_name).bind(&r.api_endpoint).bind(&r.api_key).bind(&r.model_name).bind(r.is_active).bind(id)
         .fetch_optional(&self.state.db)
         .await
         .map_err(|e| Status::internal(format!("Database error: {e}" )))?

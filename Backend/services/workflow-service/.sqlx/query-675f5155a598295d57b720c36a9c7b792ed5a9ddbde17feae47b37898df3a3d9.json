@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE workflow_instances SET status = $1, completed_at = $2 WHERE id = $3 AND status = 'running'",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Timestamptz",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "675f5155a598295d57b720c36a9c7b792ed5a9ddbde17feae47b37898df3a3d9"
+}

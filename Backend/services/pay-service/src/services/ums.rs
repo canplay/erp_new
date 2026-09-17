@@ -289,13 +289,12 @@ impl UmsService {
 
         // 检查订单是否存在
         let exists: Option<i32> = sqlx::query_scalar!(
-            "SELECT 1 FROM pay WHERE \"order\" = $1" ,
+            "SELECT 1 FROM pay WHERE \"order\" = $1",
             &params.no
         )
         .fetch_optional(&self.pool)
         .await
-        .map_err(AppError::Database)?
-        .flatten();
+        .map_err(AppError::Database)?;
 
         if exists.is_some() {
             // 更新现有订单

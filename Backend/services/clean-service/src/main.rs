@@ -8,7 +8,7 @@
 //! | HTTP | 8095 | 健康检查端点
 //!
 
-use clean_service::handlers::AppState;
+use clean_service::AppState;
 use clean_service::services::grpc_impl::CleanGrpcService;
 use common::health::health_routes;
 use common::service_bootstrap::{ServiceBootstrap, ServiceConfig};

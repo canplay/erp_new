@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO workflows (id, name, description, definition, status, version, created_by, created_at, updated_at)\n               VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Varchar",
+        "Text",
+        "Jsonb",
+        "Varchar",
+        "Int4",
+        "Varchar",
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "8d8c806380ed5afbee39e15953cdb4383470f6c72b08379f08f5d8b51d1c27fe"
+}

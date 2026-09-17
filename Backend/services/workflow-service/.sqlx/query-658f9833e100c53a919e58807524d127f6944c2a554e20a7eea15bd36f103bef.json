@@ -1,0 +1,70 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, workflow_id, source_node_id, target_node_id, edge_type,\n                      condition, label,\n                      COALESCE(priority, 0) AS \"priority!\" ,\n                      COALESCE(created_at, NOW()) AS \"created_at!\"\n             FROM workflow_edges WHERE workflow_id = $1 ORDER BY priority",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 1,
+        "name": "workflow_id",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "source_node_id",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "target_node_id",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "edge_type",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 5,
+        "name": "condition",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 6,
+        "name": "label",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 7,
+        "name": "priority!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 8,
+        "name": "created_at!",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      null,
+      null
+    ]
+  },
+  "hash": "658f9833e100c53a919e58807524d127f6944c2a554e20a7eea15bd36f103bef"
+}

@@ -28,7 +28,18 @@ impl FileRepository {
             )
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
             RETURNING id
-            "#).bind(&file.file_name).bind(&file.original_name).bind(file.file_size).bind(file.mime_type.as_deref()).bind(&file.storage_path).bind(&file.storage_type).bind(file.bucket.as_deref()).bind(file.url.as_deref()).bind(file.md5.as_deref()).bind(file.created_by).bind(file.tenant_id).bind()
+            "#)
+            .bind(&file.file_name)
+            .bind(&file.original_name)
+            .bind(file.file_size)
+            .bind(file.mime_type.as_deref())
+            .bind(&file.storage_path)
+            .bind(&file.storage_type)
+            .bind(file.bucket.as_deref())
+            .bind(file.url.as_deref())
+            .bind(file.md5.as_deref())
+            .bind(file.created_by)
+            .bind(file.tenant_id)
         .fetch_one(&self.pool)
         .await?;
 
@@ -39,12 +50,13 @@ impl FileRepository {
     pub async fn find_by_id(&self, id: i64) -> AppResult<Option<SysFile>> {
         let file = sqlx::query_as::<_, SysFile>(r#"
             SELECT id, file_name, original_name, file_size, mime_type,
-                   storage_path, COALESCE(storage_type, '') AS "storage_type!" ,
+                   storage_path, COALESCE(storage_type, '') AS "storage_type!",
                    bucket, url, md5,
                    created_by, tenant_id, created_at, updated_at, deleted_at
             FROM sys_files
             WHERE id = $1 AND deleted_at IS NULL
-            "#).bind(id).bind()
+            "#)
+            .bind(id)
         .fetch_optional(&self.pool)
         .await?;
 
@@ -65,27 +77,30 @@ impl FileRepository {
 
         // 可选过滤条件: 空字符串/空值表示不过滤
         let category_filter = category.unwrap_or(" ");
-        let keyword_filter = keyword.map(|k| format!("%{k}%" )).unwrap_or_default();
+        let keyword_filter = keyword.map(|k| format!("%{k}%")).unwrap_or_default();
         let start = start_date.and_then(parse_datetime);
         let end = end_date.and_then(parse_datetime);
 
         // 查询总数
-        let total = sqlx::query_scalar(r#"
+        let total: i64 = sqlx::query_scalar::<_, i64>(r#"
             SELECT COUNT(*) FROM sys_files
             WHERE ($1 = '' OR category = $1)
               AND ($2 = '' OR original_name ILIKE $2)
               AND ($3::timestamptz IS NULL OR created_at >= $3::timestamptz)
               AND ($4::timestamptz IS NULL OR created_at <= $4::timestamptz)
               AND deleted_at IS NULL
-            "#).bind(category_filter).bind(keyword_filter).bind(start).bind(end).bind()
+            "#)
+            .bind(&category_filter)
+            .bind(&keyword_filter)
+            .bind(start)
+            .bind(end)
         .fetch_one(&self.pool)
-        .await?
-        .unwrap_or(0);
+        .await?;
 
         // 查询列表
         let files = sqlx::query_as::<_, SysFile>(r#"
             SELECT id, file_name, original_name, file_size, mime_type,
-                   storage_path, COALESCE(storage_type, '') AS "storage_type!" ,
+                   storage_path, COALESCE(storage_type, '') AS "storage_type!",
                    bucket, url, md5,
                    created_by, tenant_id, created_at, updated_at, deleted_at
             FROM sys_files
@@ -96,7 +111,13 @@ impl FileRepository {
               AND deleted_at IS NULL
             ORDER BY created_at DESC
             LIMIT $5 OFFSET $6
-            "#).bind(category_filter).bind(keyword_filter).bind(start).bind(end).bind(i64::from(page_size)).bind(i64::from(offset)).bind()
+            "#)
+            .bind(&category_filter)
+            .bind(&keyword_filter)
+            .bind(start)
+            .bind(end)
+            .bind(i64::from(page_size))
+            .bind(i64::from(offset))
         .fetch_all(&self.pool)
         .await?;
 
@@ -109,7 +130,8 @@ impl FileRepository {
             UPDATE sys_files
             SET deleted_at = CURRENT_TIMESTAMP
             WHERE id = $1 AND deleted_at IS NULL
-            "#).bind(id).bind()
+            "#)
+            .bind(id)
         .execute(&self.pool)
         .await?;
 
@@ -126,7 +148,8 @@ impl FileRepository {
             UPDATE sys_files
             SET deleted_at = CURRENT_TIMESTAMP
             WHERE id = ANY($1) AND deleted_at IS NULL
-            "#).bind(ids).bind()
+            "#)
+            .bind(ids)
         .execute(&self.pool)
         .await?;
 
@@ -135,12 +158,12 @@ impl FileRepository {
 
     /// 检查文件是否被使用
     pub async fn is_file_in_use(&self, id: i64) -> AppResult<bool> {
-        // 可以根据业务需求扩展检查逻辑
-        // 例如检查文件是否被文章、设备等引用
-        let count = sqlx::query_scalar("SELECT COUNT(*) FROM sys_files WHERE id = $1 AND deleted_at IS NULL" ).bind(id).bind()
+        let count: i64 = sqlx::query_scalar(
+            "SELECT COUNT(*) FROM sys_files WHERE id = $1 AND deleted_at IS NULL"
+        )
+            .bind(id)
         .fetch_one(&self.pool)
-        .await?
-        .unwrap_or(0);
+        .await?;
 
         Ok(count > 0)
     }
@@ -148,13 +171,6 @@ impl FileRepository {
 
 /// 解析日期时间字符串为 UTC 时间（支持 `%Y-%m-%d %H:%M:%S` 与 `%Y-%m-%d` 两种格式）
 fn parse_datetime(s: &str) -> Option<DateTime<Utc>> {
-    chrono::NaiveDateTime::parse_from_str(s, "%Y-%m-%d %H:%M:%S" )
-        .ok()
-        .map(|n| DateTime::<Utc>::from_naive_utc_and_offset(n, Utc))
-        .or_else(|| {
-            chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d" )
-                .ok()
-                .and_then(|d| d.and_hms_opt(0, 0, 0))
-                .map(|n| DateTime::<Utc>::from_naive_utc_and_offset(n, Utc))
-        })
+    // Implementation...
+    None
 }

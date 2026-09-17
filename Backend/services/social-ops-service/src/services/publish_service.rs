@@ -20,7 +20,7 @@ impl PublishService {
         account_id: Uuid,
         version_id: Option<Uuid>,
     ) -> Result<Value> {
-        let content_exists = sqlx::query_scalar("SELECT COUNT(*) FROM socialops.content_items WHERE id = $1" ).bind(content_id).bind()
+        let content_exists = sqlx::query_scalar("SELECT COUNT(*) FROM socialops.content_items WHERE id = $1" ).bind(content_id)
         .fetch_one(&self.db)
         .await?
         .unwrap_or(0);
@@ -29,7 +29,7 @@ impl PublishService {
             anyhow::bail!("内容不存在: {content_id}" );
         }
 
-        let account_exists = sqlx::query_scalar("SELECT COUNT(*) FROM socialops.social_accounts WHERE id = $1 AND is_active = true" ).bind(account_id).bind()
+        let account_exists = sqlx::query_scalar("SELECT COUNT(*) FROM socialops.social_accounts WHERE id = $1 AND is_active = true" ).bind(account_id)
         .fetch_one(&self.db)
         .await?
         .unwrap_or(0);
@@ -39,7 +39,7 @@ impl PublishService {
         }
 
         if let Some(vid) = version_id {
-            let version_exists = sqlx::query_scalar("SELECT COUNT(*) FROM socialops.rewrite_versions WHERE id = $1" ).bind(vid).bind()
+            let version_exists = sqlx::query_scalar("SELECT COUNT(*) FROM socialops.rewrite_versions WHERE id = $1" ).bind(vid)
             .fetch_one(&self.db)
             .await?
             .unwrap_or(0);
@@ -51,7 +51,7 @@ impl PublishService {
 
         let row = sqlx::query(r#"INSERT INTO socialops.publish_tasks (content_id, target_account, status, publish_mode)
              VALUES ($1, $2, 'pending', 'manual')
-             RETURNING id, content_id, target_account AS "account_id" , status"#).bind(content_id).bind(account_id).bind()
+             RETURNING id, content_id, target_account AS "account_id" , status"#).bind(content_id).bind(account_id)
         .fetch_one(&self.db)
         .await?;
 
@@ -66,7 +66,7 @@ impl PublishService {
 
     pub async fn process_task(&self, task_id: Uuid) -> Result<Value> {
         let task = sqlx::query(r#"SELECT id, content_id, target_account, status
-             FROM socialops.publish_tasks WHERE id = $1"#).bind(task_id).bind()
+             FROM socialops.publish_tasks WHERE id = $1"#).bind(task_id)
         .fetch_optional(&self.db)
         .await?
         .ok_or_else(|| anyhow::anyhow!("发布任务不存在: {task_id}" ))?;
@@ -75,7 +75,7 @@ impl PublishService {
             anyhow::bail!("任务状态不是 pending，当前状态: {}" , task.status);
         }
 
-        sqlx::query("UPDATE socialops.publish_tasks SET status = 'running' WHERE id = $1" ).bind(task_id).bind()
+        sqlx::query("UPDATE socialops.publish_tasks SET status = 'running' WHERE id = $1" ).bind(task_id)
         .execute(&self.db)
         .await?;
 
@@ -87,11 +87,11 @@ impl PublishService {
                 "message": "模拟发布成功（占位实现）" ,
                 "platform": "placeholder" ,
                 "external_id": null,
-            })).bind()
+            }))
         .execute(&self.db)
         .await?;
 
-        sqlx::query("UPDATE socialops.publish_tasks SET status = 'completed', published_at = NOW() WHERE id = $1" ).bind(task_id).bind()
+        sqlx::query("UPDATE socialops.publish_tasks SET status = 'completed', published_at = NOW() WHERE id = $1" ).bind(task_id)
         .execute(&self.db)
         .await?;
 
@@ -115,11 +115,11 @@ impl PublishService {
              FROM socialops.publish_tasks t
              WHERE ($1::text IS NULL OR t.status = $1)
              ORDER BY t.created_at DESC
-             LIMIT $2 OFFSET $3"#).bind(status).bind(page_size).bind(offset).bind()
+             LIMIT $2 OFFSET $3"#).bind(status).bind(page_size).bind(offset)
         .fetch_all(&self.db)
         .await?;
 
-        let total: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM socialops.publish_tasks WHERE ($1::text IS NULL OR status = $1)" ).bind(status).bind()
+        let total: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM socialops.publish_tasks WHERE ($1::text IS NULL OR status = $1)" ).bind(status)
         .fetch_one(&self.db)
         .await
         .unwrap_or(Some(0))
@@ -147,7 +147,7 @@ impl PublishService {
                to_char(t.created_at, 'YYYY-MM-DD HH24:MI:SS') AS "created_at" ,
                to_char(t.published_at, 'YYYY-MM-DD HH24:MI:SS') AS "completed_at"
              FROM socialops.publish_tasks t
-             WHERE t.id = $1"#).bind(task_id).bind()
+             WHERE t.id = $1"#).bind(task_id)
         .fetch_optional(&self.db)
         .await?;
 
@@ -172,7 +172,7 @@ impl PublishService {
         let rows = sqlx::query(r#"SELECT id, response_body, to_char(created_at, 'YYYY-MM-DD HH24:MI:SS') AS "created_at"
              FROM socialops.publish_results
              WHERE task_id = $1
-             ORDER BY created_at"#).bind(task_id).bind()
+             ORDER BY created_at"#).bind(task_id)
         .fetch_all(&self.db)
         .await?;
 
@@ -194,7 +194,7 @@ impl PublishService {
         account_id: Uuid,
         cron_expr: &str,
     ) -> Result<Value> {
-        let content_exists = sqlx::query_scalar("SELECT COUNT(*) FROM socialops.content_items WHERE id = $1" ).bind(content_id).bind()
+        let content_exists = sqlx::query_scalar("SELECT COUNT(*) FROM socialops.content_items WHERE id = $1" ).bind(content_id)
         .fetch_one(&self.db)
         .await?
         .unwrap_or(0);
@@ -203,7 +203,7 @@ impl PublishService {
             anyhow::bail!("内容不存在: {content_id}" );
         }
 
-        let account_exists = sqlx::query_scalar("SELECT COUNT(*) FROM socialops.social_accounts WHERE id = $1 AND is_active = true" ).bind(account_id).bind()
+        let account_exists = sqlx::query_scalar("SELECT COUNT(*) FROM socialops.social_accounts WHERE id = $1 AND is_active = true" ).bind(account_id)
         .fetch_one(&self.db)
         .await?
         .unwrap_or(0);
@@ -217,7 +217,7 @@ impl PublishService {
              RETURNING id, content_id, target_account AS "account_id" , cron_expression AS "cron_expr" ,
                is_recurring, status,
                to_char(scheduled_at, 'YYYY-MM-DD HH24:MI:SS') AS "scheduled_at" ,
-               to_char(created_at, 'YYYY-MM-DD HH24:MI:SS') AS "created_at" "#).bind(content_id).bind(account_id).bind(cron_expr).bind()
+               to_char(created_at, 'YYYY-MM-DD HH24:MI:SS') AS "created_at" "#).bind(content_id).bind(account_id).bind(cron_expr)
         .fetch_one(&self.db)
         .await?;
 
@@ -242,7 +242,7 @@ impl PublishService {
                to_char(next_run_at, 'YYYY-MM-DD HH24:MI:SS') AS "next_run_at" ,
                to_char(created_at, 'YYYY-MM-DD HH24:MI:SS') AS "created_at"
              FROM socialops.publish_schedules
-             ORDER BY created_at DESC"#).bind()
+             ORDER BY created_at DESC"#)
         .fetch_all(&self.db)
         .await?;
 
@@ -275,7 +275,7 @@ impl PublishService {
         let r = sqlx::query(r#"UPDATE socialops.publish_schedules
              SET cron_expression = COALESCE($2, cron_expression),
                  is_recurring = COALESCE($3, is_recurring)
-             WHERE id = $1"#).bind(id).bind(cron_expr).bind(is_active).bind()
+             WHERE id = $1"#).bind(id).bind(cron_expr).bind(is_active)
         .execute(&self.db)
         .await?;
         Ok(r.rows_affected() > 0)
@@ -288,7 +288,7 @@ impl PublishService {
                to_char(s.next_run_at, 'YYYY-MM-DD HH24:MI:SS') AS "next_run_at" ,
                to_char(s.created_at, 'YYYY-MM-DD HH24:MI:SS') AS "created_at"
              FROM socialops.publish_schedules s
-             WHERE s.id = $1"#).bind(id).bind()
+             WHERE s.id = $1"#).bind(id)
         .fetch_optional(&self.db)
         .await?;
 

@@ -743,7 +743,7 @@ impl grpc_proto::audit::audit_service_server::AuditService for AuditGrpcService 
                           login_location, login_status, fail_reason, login_type, created_at, archived_at)
             SELECT id, user_id, username, ip_address, user_agent,
                    login_location, login_status, fail_reason, login_type, created_at, NOW()
-            FROM archived"#).bind(start_dt).bind(end_dt).bind()
+            FROM archived"#).bind(start_dt).bind(end_dt)
         .fetch_one(self.state.repository.pool())
         .await
         .map_err(|e| tonic::Status::internal(format!("Database error: {e}" )))?

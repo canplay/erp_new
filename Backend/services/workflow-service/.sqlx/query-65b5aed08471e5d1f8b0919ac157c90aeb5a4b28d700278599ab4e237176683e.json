@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, name, report_type,\n                      COALESCE(config, '{}'::jsonb) AS query_params\n            FROM reports WHERE id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 1,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "report_type",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "query_params",
+        "type_info": "Jsonb"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      null
+    ]
+  },
+  "hash": "65b5aed08471e5d1f8b0919ac157c90aeb5a4b28d700278599ab4e237176683e"
+}

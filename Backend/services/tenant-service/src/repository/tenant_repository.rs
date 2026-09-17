@@ -619,9 +619,9 @@ impl TenantRepository {
         )
         .fetch_optional(&self.pool)
         .await?
-        .flatten();
+        ;
 
-        Ok(size.unwrap_or(0))
+        Ok(size.flatten().unwrap_or(0))
     }
 
     /// 获取租户 API 调用统计
@@ -638,8 +638,8 @@ impl TenantRepository {
         )
         .fetch_optional(&self.pool)
         .await?
-        .flatten();
+        ;
 
-        Ok(count.unwrap_or(0))
+        Ok(count.flatten().unwrap_or(0))
     }
 }

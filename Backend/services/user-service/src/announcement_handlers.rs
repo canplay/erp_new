@@ -209,7 +209,7 @@ pub async fn get_active_announcements(State(state): State<HttpAppState>) -> impl
 
             (
                 StatusCode::OK,
-                json_success(result),
+                json_success(serde_json::json!(result)),
             )
                 .into_response()
         }
@@ -406,7 +406,7 @@ pub async fn list_configs(State(state): State<HttpAppState>) -> impl IntoRespons
 
             (
                 StatusCode::OK,
-                json_success(result),
+                json_success(serde_json::json!(result)),
             )
                 .into_response()
         }

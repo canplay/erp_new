@@ -75,7 +75,7 @@ impl TowService for TowGrpcService {
             "car_type" => {
                 let r = crate::repository::CarTypeRepository::new(self.pool.clone());
                 r.list().await.map_err(|e| Status::internal(format!("{e}" )))?
-                    .into_iter().map(|d| DictItem { id: d.id, name: d.type_name.clone(), value: d.type_name, sort_order: d.index as i32 }).collect()
+                    .into_iter().map(|d| DictItem { id: d.id, name: d.name.clone(), value: d.name, sort_order: d.sort_order.unwrap_or(0) }).collect()
             }
             "car_color" => {
                 let r = crate::repository::CarColorRepository::new(self.pool.clone());

@@ -21,7 +21,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let bootstrap = ServiceBootstrap::new(config);
 
     // 自定义初始化
-    let state = AppState::new();
+    let state = AppState::new().expect("Failed to create AppState");
     let _http_router = health_routes();
 
     let grpc_service = move |addr: SocketAddr| {

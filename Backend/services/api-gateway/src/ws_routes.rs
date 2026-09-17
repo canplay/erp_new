@@ -229,19 +229,19 @@ async fn receive_auth(
             return Ok(claims.sub);
         }
     }
-    // 兼容连接后首条 auth 消息
-    if let Some(Ok(Message::Text(text))) =
-        tokio::time::timeout(Duration::from_secs(10), receiver.next())
-            .await
-            .ok()
-            .flatten()
-        && let Ok(req) = serde_json::from_str::<WsRequest>(&text)
-            && req.action == "auth" {
-            let token = req.token.ok_or("Missing token" )?;
-            // 验证真实 JWT(签名+过期), 从 claims.sub 取用户 ID
-            let claims = jwt_service.verify_token(&token).map_err(|_| "Invalid token".to_string())?;
-            return Ok(claims.sub);
+    // Compatible with first auth message after connection
+    match tokio::time::timeout(Duration::from_secs(10), receiver.next()).await {
+        Ok(Some(Ok(Message::Text(text)))) => {
+            if let Ok(req) = serde_json::from_str::<WsRequest>(&text) {
+                if req.action == "auth" {
+                    let token = req.token.ok_or("Missing token") ?;
+                    let claims = jwt_service.verify_token(&token).map_err(|_| "Invalid token".to_string()) ?;
+                    return Ok(claims.sub);
+                }
+            }
         }
+        _ => {}
+    }
     Err("Auth failed".into())
 }
 

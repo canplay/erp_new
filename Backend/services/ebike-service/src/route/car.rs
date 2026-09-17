@@ -19,16 +19,13 @@ use crate::AppState;
 async fn check_quota(state: &AppState, provide: &str) -> Result<(), String> {
     // admin 不受配额限制
     // 单次查询：同时获取车辆数和配额
-    let row = sqlx::query!(
-        "SELECT COUNT(*) as cnt, COALESCE(o.vehicle_quota, 999999) as quota FROM car LEFT JOIN operators o ON car.provide = o.provide WHERE car.provide = $1 AND car.delete = false" ,
-        provide,
-    )
+    let row = sqlx::query_scalar::<_, i64>("SELECT COUNT(*) as cnt, COALESCE(o.vehicle_quota, 999999) as quota FROM car LEFT JOIN operators o ON car.provide = o.provide WHERE car.provide = $1 AND car.delete = false").bind(provide)
     .fetch_one(&*state.car_repo.pool())
     .await
     .map_err(|e| format!("运营商查询失败: {e}" ))?;
 
-    let count: i64 = row.cnt;
-    let quota: i32 = row.quota.unwrap_or(999999);
+    let count: i64 = row;
+    let quota: i32 = row as i32;
 
     if count >= i64::from(quota) {
         Err(format!(
@@ -174,7 +171,7 @@ pub async fn car(
                     let _ = state.car_repo.save_violation(
                         code, provide, lng, lat, &violation_msg
                     ).await;
-                    tracing::warn!("[违停检测] 车辆 {} ({}) 违停: {}" , code, provide, violation_msg);
+                    tracing::warn!("[违停检测] 车辆 {} ({}) 违停: {}", code, provide, violation_msg);
                 }
             }
 
@@ -196,7 +193,7 @@ pub async fn car(
                     let p = item["provide" ].as_str().unwrap_or("" );
                     if user_role != "admin" && user_role != p {
                         return common::unauthorized_response(
-                            &format!("provide mismatch in batch: 车辆 {} 不属于当前运营方 " , item["code" ].as_str().unwrap_or("?" ))
+                            &format!("provide mismatch in batch: 车辆 {} 不属于当前运营方 ", item["code" ].as_str().unwrap_or("?" ))
                         ).into_response();
                     }
                 }
@@ -222,7 +219,7 @@ pub async fn car(
                                 code, provide, lng, lat, &violation_msg
                             ).await;
                             tracing::warn!(
-                                "[违停检测] 车辆 {} ({}) 违停: {}" ,
+                                "[违停检测] 车辆 {} ({}) 违停: {}",
                                 code, provide, violation_msg
                             );
                         }

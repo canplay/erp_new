@@ -171,7 +171,7 @@ pub async fn get_department_tree(State(state): State<HttpAppState>) -> impl Into
 
             (
                 StatusCode::OK,
-                json_success(tree_response),
+                json_success(serde_json::json!(tree_response)),
             )
                 .into_response()
         }

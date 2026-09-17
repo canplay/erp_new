@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT COUNT(*) FROM workflow_instances WHERE started_by = $1 AND ($2::text IS NULL OR status = $2)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "count",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "bc2f3dd9fd9bc0bb2e93e8a4d1f2ca287c099de79303721b055f6b447e228775"
+}

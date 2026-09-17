@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE workflows\n               SET name = COALESCE(NULLIF($2, ''), name),\n                   description = COALESCE($3, description),\n                   definition = COALESCE($4, definition),\n                   updated_at = NOW()\n               WHERE id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Text",
+        "Jsonb"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "a03b8f9cb3709f3a67ade02015e68d82322f0a0200692619c72a15944c6c20d5"
+}

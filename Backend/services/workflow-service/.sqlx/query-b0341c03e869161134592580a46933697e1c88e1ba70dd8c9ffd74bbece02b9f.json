@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT COUNT(*) FROM task_records WHERE ($1::text IS NULL OR instance_id = $1) AND ($2::text IS NULL OR assignee = $2)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "count",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "b0341c03e869161134592580a46933697e1c88e1ba70dd8c9ffd74bbece02b9f"
+}

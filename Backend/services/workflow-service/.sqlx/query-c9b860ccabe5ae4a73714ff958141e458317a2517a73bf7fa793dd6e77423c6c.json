@@ -1,0 +1,18 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE workflows SET name = $2, description = $3, definition = $4, status = $5, updated_at = NOW() WHERE id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Varchar",
+        "Text",
+        "Jsonb",
+        "Varchar"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "c9b860ccabe5ae4a73714ff958141e458317a2517a73bf7fa793dd6e77423c6c"
+}

@@ -288,15 +288,14 @@ impl UmsService {
         let create_params_str = serde_json::to_string(create_params).unwrap_or_default();
 
         // 检查订单是否存在
-        let exists: Option<i32> = sqlx::query_scalar!(
-            "SELECT 1 FROM pay WHERE \"order\" = $1",
-            &params.no
-        )
-        .fetch_optional(&self.pool)
-        .await
-        .map_err(AppError::Database)?;
+        let exists: bool = sqlx::query("SELECT 1 FROM pay WHERE \"order\" = $1 LIMIT 1")
+            .bind(&params.no)
+            .fetch_optional(&self.pool)
+            .await
+            .map_err(AppError::Database)?
+            .is_some();
 
-        if exists.is_some() {
+        if exists {
             // 更新现有订单
             sqlx::query!(
                 "UPDATE pay SET order_pay = $1, status = 'generate', \"type\" = 'ums', amount = $2, remark = $3, create_service = 'pay', create_params = $4, create_date = $5, update_date = $5 WHERE \"order\" = $6" ,

@@ -76,10 +76,8 @@ impl AuditRepository {
             .bind(start_dt)
             .bind(end_dt)
         .fetch_one(&self.pool)
-        .await?
-        .unwrap_or(0);
+        .await?;
 
-        // 查询列表（LIMIT/OFFSET 使用条件参数之后的编号）
         let logs = sqlx::query_as::<_, SysLoginLog>(r#"
             SELECT id, user_id, username, ip_address, user_agent,
                    login_location, login_status, fail_reason, login_type, created_at
@@ -107,20 +105,17 @@ impl AuditRepository {
     pub async fn get_login_statistics(&self) -> AppResult<LoginStatistics> {
         let total_count: i64 = sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM sys_login_logs")
             .fetch_one(&self.pool)
-            .await?
-            .unwrap_or(0);
+            .await?;
 
         let success_count: i64 =
             sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM sys_login_logs WHERE login_status = 1")
                 .fetch_one(&self.pool)
-                .await?
-                .unwrap_or(0);
+                .await?;
 
         let fail_count: i64 =
             sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM sys_login_logs WHERE login_status = 2")
                 .fetch_one(&self.pool)
-                .await?
-                .unwrap_or(0);
+                .await?;
 
         let today_start = chrono::Utc::now()
             .date_naive()
@@ -131,20 +126,17 @@ impl AuditRepository {
         let today_count: i64 = sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM sys_login_logs WHERE created_at >= $1")
             .bind(today_start)
             .fetch_one(&self.pool)
-            .await?
-            .unwrap_or(0);
+            .await?;
 
         let today_success: i64 = sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM sys_login_logs WHERE login_status = 1 AND created_at >= $1")
             .bind(today_start)
             .fetch_one(&self.pool)
-            .await?
-            .unwrap_or(0);
+            .await?;
 
         let today_fail: i64 = sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM sys_login_logs WHERE login_status = 2 AND created_at >= $1")
             .bind(today_start)
             .fetch_one(&self.pool)
-            .await?
-            .unwrap_or(0);
+            .await?;
 
         Ok(LoginStatistics {
             total_count,
@@ -220,8 +212,7 @@ impl AuditRepository {
             .bind(start_dt)
             .bind(end_dt)
         .fetch_one(&self.pool)
-        .await?
-        .unwrap_or(0);
+        .await?;
 
         let logs = sqlx::query_as::<_, SysOperationLog>(r#"
             SELECT id, user_id, username, module, business_type, method,
@@ -320,8 +311,7 @@ impl AuditRepository {
             .bind(sc_high)
             .bind(errors_only)
         .fetch_one(&self.pool)
-        .await?
-        .unwrap_or(0);
+        .await?;
 
         let logs = sqlx::query_as::<_, ApiCallLog>(r#"SELECT id, request_id, method, path, query_params, headers,
                       request_size, status_code, response_time, response_size,
@@ -359,12 +349,10 @@ impl AuditRepository {
     pub async fn get_api_call_statistics(&self) -> AppResult<ApiCallStatistics> {
         let total_calls: i64 = sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM sys_api_call_logs")
             .fetch_one(&self.pool)
-            .await?
-            .unwrap_or(0);
+            .await?;
         let success_calls: i64 = sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM sys_api_call_logs WHERE status_code >= 200 AND status_code < 400")
             .fetch_one(&self.pool)
-            .await?
-            .unwrap_or(0);
+            .await?;
         let failed_calls = total_calls - success_calls;
         let error_rate = if total_calls > 0 {
             (failed_calls as f64 / total_calls as f64) * 100.0
@@ -479,8 +467,7 @@ impl AuditRepository {
     ) -> AppResult<Vec<ApiResponseTimeDistribution>> {
         let total: i64 = sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM sys_api_call_logs")
             .fetch_one(&self.pool)
-            .await?
-            .unwrap_or(0);
+            .await?;
         if total == 0 {
             return Ok(vec![]);
         }
@@ -499,8 +486,7 @@ impl AuditRepository {
             let count: i64 = sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM sys_api_call_logs WHERE response_time >= $1 AND response_time < $2")
                 .bind(min)
                 .bind(max)
-                .fetch_one(&self.pool).await?
-                .unwrap_or(0);
+                .fetch_one(&self.pool).await?;
             result.push(ApiResponseTimeDistribution {
                 bucket: label.to_string(),
                 min: *min,

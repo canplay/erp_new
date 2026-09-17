@@ -1,8 +1,10 @@
+//! Crawl service — web crawling for social media content
 use sqlx::PgPool;
 use uuid::Uuid;
 use serde_json::Value;
 use sha2::{Sha256, Digest};
 use std::sync::Arc;
+use sqlx::FromRow;
 
 use crate::adapters::browser_client::BrowserClient;
 use crate::adapters::CrawlerAdapter;
@@ -18,6 +20,33 @@ pub struct CrawlService {
     browser_client: Arc<BrowserClient>,
 }
 
+#[derive(FromRow)]
+struct CrawlSourceRow {
+    id: Uuid,
+    platform: String,
+    source_name: String,
+    source_config: String,
+    is_active: bool,
+    crawl_interval: i32,
+    last_crawled: String,
+}
+
+#[derive(FromRow)]
+struct CrawlSourceDetailRow {
+    platform: String,
+    source_config: Value,
+}
+
+#[derive(FromRow)]
+struct CrawlTaskRow {
+    id: Uuid,
+    status: String,
+    items_found: i32,
+    items_new: i32,
+    started_at: String,
+    completed_at: String,
+}
+
 impl CrawlService {
     #[must_use]
     pub const fn new(db: PgPool, browser_client: Arc<BrowserClient>) -> Self {
@@ -25,7 +54,7 @@ impl CrawlService {
     }
 
     pub async fn list_sources(&self) -> Result<Vec<Value>, sqlx::Error> {
-        let rows = sqlx::query(r#"SELECT id, platform, source_name, source_config::text AS "source_config" , is_active, crawl_interval,
+        let rows = sqlx::query_as::<_, CrawlSourceRow>(r#"SELECT id, platform, source_name, source_config::text AS "source_config" , is_active, crawl_interval,
                to_char(last_crawled_at, 'YYYY-MM-DD HH24:MI:SS') AS "last_crawled"
              FROM socialops.crawl_sources ORDER BY created_at DESC"#).fetch_all(&self.db).await?;
 
@@ -39,7 +68,15 @@ impl CrawlService {
     }
 
     pub async fn create_source(&self, platform: &str, name: &str, config: &Value, interval: i32) -> Result<Value, sqlx::Error> {
-        let row = sqlx::query(r#"INSERT INTO socialops.crawl_sources (platform, source_name, source_config, crawl_interval)
+        #[derive(FromRow)]
+        struct CreateSourceRow {
+            id: Uuid,
+            platform: String,
+            source_name: String,
+            crawl_interval: i32,
+        }
+
+        let row = sqlx::query_as::<_, CreateSourceRow>(r#"INSERT INTO socialops.crawl_sources (platform, source_name, source_config, crawl_interval)
              VALUES ($1, $2, $3, $4)
              RETURNING id, platform, source_name AS "source_name!" , crawl_interval"#).bind(platform).bind(name).bind(config).bind(interval)
         .fetch_one(&self.db).await?;
@@ -130,7 +167,7 @@ impl CrawlService {
     }
 
     pub async fn list_crawl_tasks(&self, source_id: Uuid) -> Result<Vec<Value>, sqlx::Error> {
-        let rows = sqlx::query(r#"SELECT id, status, COALESCE(items_found, 0) AS "items_found!" , COALESCE(items_new, 0) AS "items_new!" ,
+        let rows = sqlx::query_as::<_, CrawlTaskRow>(r#"SELECT id, status, COALESCE(items_found, 0) AS "items_found!" , COALESCE(items_new, 0) AS "items_new!" ,
                to_char(started_at, 'YYYY-MM-DD HH24:MI:SS') AS "started_at" ,
                to_char(completed_at, 'YYYY-MM-DD HH24:MI:SS') AS "completed_at"
              FROM socialops.crawl_tasks
@@ -155,7 +192,7 @@ impl CrawlService {
     }
 
     pub async fn trigger_crawl(&self, source_id: Uuid) -> Result<String, anyhow::Error> {
-        let row = sqlx::query(r#"SELECT platform, source_config FROM socialops.crawl_sources WHERE id = $1"#).bind(source_id)
+        let row = sqlx::query_as::<_, CrawlSourceDetailRow>(r#"SELECT platform, source_config FROM socialops.crawl_sources WHERE id = $1"#).bind(source_id)
         .fetch_optional(&self.db)
         .await?
         .ok_or_else(|| anyhow::anyhow!("source not found: {source_id}" ))?;

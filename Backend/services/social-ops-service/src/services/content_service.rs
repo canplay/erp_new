@@ -1,7 +1,9 @@
+//! Content service
 use sqlx::PgPool;
 use uuid::Uuid;
 use serde_json::Value;
 use sha2::{Sha256, Digest};
+use sqlx::FromRow;
 
 fn hash_url(url: &str) -> String {
     let mut hasher = Sha256::new();
@@ -15,13 +17,33 @@ pub struct ContentService {
     db: PgPool,
 }
 
+#[derive(FromRow)]
+struct ContentListItemRow {
+    id: Uuid,
+    source_type: String,
+    content_type: String,
+    title: Option<String>,
+    body: Option<String>,
+    status: String,
+    created_str: String,
+}
+
+#[derive(FromRow)]
+struct ContentItemRow {
+    id: Uuid,
+    title: String,
+    body: String,
+    content_type: String,
+    status: String,
+}
+
 impl ContentService {
     #[must_use]
     pub const fn new(db: PgPool) -> Self { Self { db } }
 
     pub async fn list(&self, status: Option<&str>, page: i64, page_size: i64) -> Result<(Vec<Value>, i64), sqlx::Error> {
         let offset = (page - 1) * page_size;
-        let rows = sqlx::query(r#"SELECT id, source_type, content_type, title, body, status,
+        let rows = sqlx::query_as::<_, ContentListItemRow>(r#"SELECT id, source_type, content_type, title, body, status,
                to_char(created_at, 'YYYY-MM-DD HH24:MI:SS') AS "created_str"
              FROM socialops.content_items
              WHERE ($1::text IS NULL OR status = $1)
@@ -45,7 +67,7 @@ impl ContentService {
     }
 
     pub async fn get(&self, id: Uuid) -> Result<Option<Value>, sqlx::Error> {
-        let row = sqlx::query(r#"SELECT id, source_type, content_type, title, body, status,
+        let row = sqlx::query_as::<_, ContentListItemRow>(r#"SELECT id, source_type, content_type, title, body, status,
                to_char(created_at, 'YYYY-MM-DD HH24:MI:SS') AS "created_str"
              FROM socialops.content_items WHERE id = $1"#).bind(id)
         .fetch_optional(&self.db).await?;
@@ -60,7 +82,7 @@ impl ContentService {
 
     pub async fn create(&self, title: &str, body: &str, content_type: &str, source_url: Option<&str>) -> Result<Value, sqlx::Error> {
         let source_hash = source_url.map(hash_url);
-        let row = sqlx::query(r#"INSERT INTO socialops.content_items (title, body, content_type, source_url, source_hash, source_type, status)
+        let row = sqlx::query_as::<_, ContentItemRow>(r#"INSERT INTO socialops.content_items (title, body, content_type, source_url, source_hash, source_type, status)
              VALUES ($1, $2, $3, $4, $5, 'manual', 'draft')
              RETURNING id, title AS "title!" , body AS "body!" , content_type, status"#).bind(title).bind(body).bind(content_type).bind(source_url).bind(source_hash.as_deref())
         .fetch_one(&self.db).await?;

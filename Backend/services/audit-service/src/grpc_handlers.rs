@@ -692,10 +692,10 @@ impl grpc_proto::audit::audit_service_server::AuditService for AuditGrpcService 
         by_action.insert(3, stats.success_count); // LOGIN success
         by_action.insert(99, stats.fail_count);   // LOGIN fail (OTHER)
         // Count API operations by resource type
-        let total_op_count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM sys_operation_logs" )
+        let total_op_count: i64 = sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM sys_operation_logs" )
             .fetch_one(self.state.repository.pool())
             .await
-            .map_err(|e| tonic::Status::internal(format!("Database error: {e}" )))?.unwrap_or(0);
+            .map_err(|e| tonic::Status::internal(format!("Database error: {e}" )))?;
         by_resource.insert("operation_log".to_string(), total_op_count);
         by_resource.insert("login_log".to_string(), stats.total_count);
 
@@ -720,19 +720,19 @@ impl grpc_proto::audit::audit_service_server::AuditService for AuditGrpcService 
         request: tonic::Request<grpc_proto::audit::ArchiveLogsRequest>,
     ) -> Result<tonic::Response<grpc_proto::audit::ArchiveLogsResponse>, tonic::Status> {
         let req = request.into_inner();
-        let start_dt = req.start_time.as_ref().and_then(|s| {
+        let start_dt: Option<chrono::DateTime<chrono::Utc>> = Some(req.start_time.as_str()).and_then(|s| {
             chrono::NaiveDateTime::parse_from_str(s, "%Y-%m-%d %H:%M:%S" ).ok().or_else(|| {
                 chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d" ).ok().and_then(|d| d.and_hms_opt(0, 0, 0))
             }).map(|n| chrono::DateTime::<chrono::Utc>::from_naive_utc_and_offset(n, chrono::Utc))
         });
-        let end_dt = req.end_time.as_ref().and_then(|s| {
+        let end_dt: Option<chrono::DateTime<chrono::Utc>> = Some(req.end_time.as_str()).and_then(|s| {
             chrono::NaiveDateTime::parse_from_str(s, "%Y-%m-%d %H:%M:%S" ).ok().or_else(|| {
                 chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d" ).ok().and_then(|d| d.and_hms_opt(0, 0, 0))
             }).map(|n| chrono::DateTime::<chrono::Utc>::from_naive_utc_and_offset(n, chrono::Utc))
         });
 
         // Insert old logs into archive table, then delete from main table
-        let count: i64 = sqlx::query_scalar(r#"WITH archived AS (
+        let count: i64 = sqlx::query_scalar::<_, i64>(r#"WITH archived AS (
                 DELETE FROM sys_login_logs
                 WHERE ($1::timestamptz IS NULL OR created_at >= $1)
                   AND ($2::timestamptz IS NULL OR created_at <= $2)
@@ -746,8 +746,7 @@ impl grpc_proto::audit::audit_service_server::AuditService for AuditGrpcService 
             FROM archived"#).bind(start_dt).bind(end_dt)
         .fetch_one(self.state.repository.pool())
         .await
-        .map_err(|e| tonic::Status::internal(format!("Database error: {e}" )))?
-        .unwrap_or(0);
+        .map_err(|e| tonic::Status::internal(format!("Database error: {e}" )))?;
 
         Ok(tonic::Response::new(grpc_proto::audit::ArchiveLogsResponse {
             archived_count: count,
@@ -760,12 +759,12 @@ impl grpc_proto::audit::audit_service_server::AuditService for AuditGrpcService 
         request: tonic::Request<grpc_proto::audit::ExportLogsRequest>,
     ) -> Result<tonic::Response<grpc_proto::audit::ExportLogsResponse>, tonic::Status> {
         let req = request.into_inner();
-        let start_dt = req.start_time.as_ref().and_then(|s| {
+        let start_dt: Option<chrono::DateTime<chrono::Utc>> = Some(req.start_time.as_str()).and_then(|s| {
             chrono::NaiveDateTime::parse_from_str(s, "%Y-%m-%d %H:%M:%S" ).ok().or_else(|| {
                 chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d" ).ok().and_then(|d| d.and_hms_opt(0, 0, 0))
             }).map(|n| chrono::DateTime::<chrono::Utc>::from_naive_utc_and_offset(n, chrono::Utc))
         });
-        let end_dt = req.end_time.as_ref().and_then(|s| {
+        let end_dt: Option<chrono::DateTime<chrono::Utc>> = Some(req.end_time.as_str()).and_then(|s| {
             chrono::NaiveDateTime::parse_from_str(s, "%Y-%m-%d %H:%M:%S" ).ok().or_else(|| {
                 chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d" ).ok().and_then(|d| d.and_hms_opt(0, 0, 0))
             }).map(|n| chrono::DateTime::<chrono::Utc>::from_naive_utc_and_offset(n, chrono::Utc))

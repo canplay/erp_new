@@ -3,6 +3,8 @@
 //! 每个服务结构体包装对应的 Service 层，实现 proto 中定义的 gRPC trait。
 
 use std::sync::Arc;
+use sqlx::Row;
+use sqlx::FromRow;
 use tonic::{Request, Response, Status};
 use uuid::Uuid;
 
@@ -306,11 +308,22 @@ impl CrawlService for GrpcCrawlService {
             serde_json::from_str(&r.source_config).unwrap_or(serde_json::Value::Null)
         };
         // Update crawl source in database
-        let row = sqlx::query(r#"UPDATE socialops.crawl_sources
-               SET platform = $1, source_name = $2, source_config = $3, crawl_interval = $4, is_active = $5
-               WHERE id = $6
+        #[derive(FromRow)]
+        struct UpdateSourceRow {
+            id: Uuid,
+            platform: String,
+            source_name: String,
+            source_config: String,
+            is_active: bool,
+            crawl_interval: i32,
+            last_crawled: Option<String>,
+        }
+
+        let row = sqlx::query_as::<_, UpdateSourceRow>(r#"UPDATE socialops.crawl_sources
+               SET source_name = $1, source_config = $2, crawl_interval = $3, is_active = $4
+               WHERE id = $5
                RETURNING id, platform, source_name AS "source_name!" , source_config::text AS "source_config" , is_active, crawl_interval,
-                         to_char(last_crawled_at, 'YYYY-MM-DD HH24:MI:SS') AS "last_crawled" "#).bind(&r.platform).bind(&r.source_name).bind(config).bind(r.crawl_interval).bind(r.is_active).bind(id)
+                         to_char(last_crawled_at, 'YYYY-MM-DD HH24:MI:SS') AS "last_crawled" "#).bind(&r.source_name).bind(config).bind(r.crawl_interval).bind(r.is_active).bind(id)
         .fetch_optional(&self.state.db)
         .await
         .map_err(|e| Status::internal(format!("Database error: {e}" )))?
@@ -520,7 +533,16 @@ impl LlmProviderService for GrpcLlmProviderService {
         let r = req.get_ref();
         let id = Uuid::parse_str(&r.id).map_err(|_| Status::invalid_argument("invalid id" ))?;
         // Update LLM provider in database
-        let row = sqlx::query(r#"UPDATE socialops.llm_providers
+        #[derive(FromRow)]
+        struct UpdateProviderRow {
+            id: Uuid,
+            provider_name: String,
+            api_endpoint: String,
+            model_name: String,
+            is_active: bool,
+        }
+
+        let row = sqlx::query_as::<_, UpdateProviderRow>(r#"UPDATE socialops.llm_providers
                SET provider_name = $1, api_endpoint = $2, api_key_enc = $3, model_name = $4, is_active = $5
                WHERE id = $6
                RETURNING id, provider_name, api_endpoint, model_name, is_active"#).bind(&r.provider_name).bind(&r.api_endpoint).bind(&r.api_key).bind(&r.model_name).bind(r.is_active).bind(id)

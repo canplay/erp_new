@@ -151,6 +151,17 @@ async fn ums_info(State(state): State<Arc<AppState>>, Path(order_id): Path<Strin
     }
 }
 
+async fn ums_notify(State(state): State<Arc<AppState>>, Json(body): Json<Value>) -> Json<Value> {
+    let mut client = match get_client(&state).await { Ok(c) => c, Err(r) => return r };
+    match client.ums_notify(
+        body["order"].as_str().unwrap_or("").to_string(),
+        body["time"].as_str().map(|s| s.to_string()),
+    ).await {
+        Ok(resp) => json_success(json!(resp)),
+        Err(e) => json_error(&format!("回调处理失败: {e}")),
+    }
+}
+
 pub fn routes() -> Router<Arc<AppState>> {
     Router::new()
         // 支付列表（POST）
@@ -169,4 +180,5 @@ pub fn routes() -> Router<Arc<AppState>> {
         .route("/api/v1/pay/ums/close" , post(ums_close))
         .route("/api/v1/pay/ums/refund" , post(ums_refund))
         .route("/api/v1/pay/ums/info/{order_id}" , get(ums_info))
+        .route("/api/v1/pay/ums/notify" , post(ums_notify))
 }

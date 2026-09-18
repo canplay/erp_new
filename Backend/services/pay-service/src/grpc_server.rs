@@ -270,6 +270,18 @@ impl PayService for GrpcPayService {
         let token = service.get_access_token().await.map_err(|e| Status::internal(e.to_string()))?;
         service.query_ums_info(&order, &token).await
             .map(|data| Response::new(JsonValueResponse { data_json: data.to_string(), message: "success".to_string() }))
-            .map_err(|e| Status::internal(format!("{e}" )))
+            .map_err(|e| Status::internal(format!("{e}")))
+    }
+
+    async fn ums_notify(&self, request: Request<grpc_proto::pay::UmsNotifyRequest>) -> Result<Response<BoolResponse>, Status> {
+        let req = request.into_inner();
+        let service = UmsService::new(create_ums_config(), self.state.pay_service.pool.clone());
+        let params = crate::services::ums::UmsNotifyParams {
+            order: req.order,
+            time: req.time,
+        };
+        service.notify(&params).await
+            .map(|success| Response::new(BoolResponse { success, message: "success".to_string() }))
+            .map_err(|e| Status::internal(format!("{e}")))
     }
 }

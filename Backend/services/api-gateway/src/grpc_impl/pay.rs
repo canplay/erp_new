@@ -138,5 +138,14 @@ impl PayGrpcClient {
         let request = grpc_proto::pay::UmsInfoRequest { order };
         Ok(self.inner.ums_info(request).await?.into_inner())
     }
+
+    pub async fn ums_notify(
+        &mut self,
+        order: String,
+        time: Option<String>,
+    ) -> Result<grpc_proto::pay::BoolResponse, tonic::Status> {
+        let request = grpc_proto::pay::UmsNotifyRequest { order, time };
+        Ok(self.inner.ums_notify(request).await?.into_inner())
+    }
 }
 

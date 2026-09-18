@@ -37,6 +37,8 @@ service PayService {
     rpc UmsRefund(UmsRefundParams) returns (JsonValueResponse);
     // UMS获取订单信息
     rpc UmsInfo(UmsInfoRequest) returns (JsonValueResponse);
+    // UMS 支付回调通知
+    rpc UmsNotify(UmsNotifyRequest) returns (BoolResponse);
 }
 
 // ========== 订阅管理服务 ==========
@@ -260,6 +262,11 @@ message UmsRefundParams {
 
 message UmsInfoRequest {
     string order = 1;
+}
+
+message UmsNotifyRequest {
+    string order = 1;
+    optional string time = 2;
 }
 
 message JsonValueResponse {

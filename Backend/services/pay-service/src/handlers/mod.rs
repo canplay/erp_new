@@ -1,7 +1,5 @@
 //! HTTP 请求处理器
 
-#![allow(dead_code)]
-
 mod pay_service;
 
 pub use pay_service::*;

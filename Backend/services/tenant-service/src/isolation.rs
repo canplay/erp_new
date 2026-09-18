@@ -293,6 +293,9 @@ impl TenantIsolationManager {
         }
     }
 
+    /// 允许构建动态查询的表白名单
+    const ALLOWED_TABLES: &[&str] = &["tenants", "tenant_users", "audit_logs", "plans", "subscriptions", "invoices", "usage_records", "tenant_settings"];
+
     /// 构建数据过滤查询
     ///
     /// # Arguments
@@ -303,22 +306,43 @@ impl TenantIsolationManager {
     /// 带租户过滤的完整查询
     ///
     /// # Security
-    /// 表名通过 `common::sanitize_identifier` 白名单校验，防止 SQL 注入。
+    /// 表名通过白名单校验 + `common::sanitize_identifier` 双重防护，防止 SQL 注入。
+    /// 使用显式列名替代 `SELECT *`，避免泄露敏感字段。
     pub async fn build_filtered_query(&self, table: &str, base_query: Option<&str>) -> AppResult<String> {
-        // FIX [SQL-INJ-007]: 校验表名格式
-        if let Err(e) = common::sanitize_identifier(table) {
-            return Err(AppError::InvalidParam(format!("Invalid table name: {e}" )));
+        // FIX [SQL-INJ-008]: 白名单校验表名（纵深防御第一层）
+        if !Self::ALLOWED_TABLES.contains(&table) {
+            return Err(AppError::InvalidParam(format!("Table not in whitelist: {table}")));
         }
+        // FIX [SQL-INJ-007]: 校验表名格式（纵深防御第二层）
+        if let Err(e) = common::sanitize_identifier(table) {
+            return Err(AppError::InvalidParam(format!("Invalid table name: {e}")));
+        }
+        let columns = Self::table_columns(table);
         let ctx = self.context.read().await;
         if let Some(context) = ctx.as_ref() {
             let tenant_filter = self.generate_filter(&context.tenant_id, table).await?;
             let query = match base_query {
-                Some(query) => format!("{query} AND {tenant_filter}" ),
-                None => format!("SELECT * FROM {table} WHERE {tenant_filter}" ),
+                Some(query) => format!("SELECT {columns} FROM {table} WHERE {query} AND {tenant_filter}"),
+                None => format!("SELECT {columns} FROM {table} WHERE {tenant_filter}"),
             };
             Ok(query)
         } else {
-            Ok(base_query.map_or_else(|| format!("SELECT * FROM {table}" ), std::string::ToString::to_string))
+            Ok(base_query.map_or_else(|| format!("SELECT {columns} FROM {table}"), |q| format!("SELECT {columns} FROM {table} WHERE {q}")))
+        }
+    }
+
+    /// 返回指定表的显式列名列表
+    fn table_columns(table: &str) -> &'static str {
+        match table {
+            "tenants" => "id, name, code, domain, description, max_users, max_storage, status, expires_at, created_at, updated_at",
+            "tenant_users" => "id, tenant_id, user_id, username, email, role, department, position, status, joined_at",
+            "audit_logs" => "id, tenant_id, user_id, action, resource_type, resource_id, details, created_at",
+            "plans" => "id, name, description, plan_type, status, price_monthly, price_yearly, currency, features, quotas, sort_order, is_public, created_at, updated_at",
+            "subscriptions" => "id, tenant_id, plan_id, status, current_period_start, current_period_end, trial_end, unit_price, created_at, updated_at",
+            "invoices" => "id, subscription_id, tenant_id, amount, currency, status, issued_at, due_at, paid_at, created_at",
+            "usage_records" => "id, tenant_id, resource_type, quantity, recorded_at, created_at",
+            "tenant_settings" => "id, tenant_id, key, value, created_at, updated_at",
+            _ => "id, tenant_id, created_at",
         }
     }
 
@@ -523,21 +547,22 @@ mod tests {
         manager.set_context(context).await;
 
         // 生成过滤条件
-        let filter = manager.generate_filter("tenant_001" , "users" ).await.unwrap();
-        assert_eq!(filter, "tenant_id = 'tenant_001'" );
+        let filter = manager.generate_filter("tenant_001", "tenants").await.unwrap();
+        assert_eq!(filter, "tenant_id = 'tenant_001'");
 
         // 构建过滤查询
         let query = manager
-            .build_filtered_query("users" , Some("status = 'active'" ))
+            .build_filtered_query("tenants", Some("status = 'active'"))
             .await
             .unwrap();
-        assert!(query.contains("tenant_id = 'tenant_001'" ));
-        assert!(query.contains("status = 'active'" ));
+        assert!(query.contains("tenant_id = 'tenant_001'"));
+        assert!(query.contains("status = 'active'"));
+        assert!(!query.contains("SELECT *"));
 
         // 清除上下文
         manager.clear_context().await;
-        let query = manager.build_filtered_query("users" , None).await.unwrap();
-        assert_eq!(query, "SELECT * FROM users" );
+        let query = manager.build_filtered_query("tenants", None).await.unwrap();
+        assert_eq!(query, "SELECT id, name, code, domain, description, max_users, max_storage, status, expires_at, created_at, updated_at FROM tenants");
     }
 
     #[tokio::test]

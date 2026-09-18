@@ -73,9 +73,10 @@ impl OrderRepository {
                  update_date, delete, alert, remark, gps_type, hash, payable, pay, refund, coupon, \
                  \"order\", pay_type, pay_time, pay_status, paytype, paytime) \
                  VALUES (gen_random_uuid()::TEXT, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, \
-                 $12, gen_random_uuid()::TEXT, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)"
+                 $12, gen_random_uuid()::TEXT, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22) \
+                 RETURNING hash"
             );
-            sqlx::query(&insert_sql)
+            let row = sqlx::query_as::<_, (String,)>(&insert_sql)
                 .bind(info.code.as_ref().unwrap_or(&String::new()))
                 .bind(info.status)
                 .bind(&info.provide)
@@ -98,12 +99,8 @@ impl OrderRepository {
                 .bind(info.pay_status)
                 .bind(info.paytype)
                 .bind(info.paytime.unwrap_or(Local::now().naive_local()))
-                .execute(&self.pool).await?;
-
-            // 查询生成的 hash
-            let query_sql = format!("SELECT hash FROM public.{table_name} ORDER BY create_date DESC LIMIT 1" );
-            let row = sqlx::query_as::<_, (String,)>(&query_sql)
-                .fetch_one(&self.pool).await?;
+                .fetch_one(&self.pool)
+                .await?;
             Ok(row.0)
         } else {
             let count_sql = format!(
@@ -153,9 +150,123 @@ impl OrderRepository {
     }
 
     pub async fn add_batch(&self, items: &[OrderInfo]) -> Result<bool, Error> {
-        for item in items {
-            self.add(item).await?;
+        let mut tx = self.pool.begin().await?;
+        for info in items {
+            let year = Local::now().year();
+            let month = Local::now().month();
+            let table_name = safe_table_name("order", year, month)
+                .map_err(|e| Error::Protocol(format!("Invalid table name: {e}").into()))?;
+
+            let create_sql = format!(
+                "CREATE TABLE IF NOT EXISTS public.{table_name} (
+                    id TEXT PRIMARY KEY,
+                    code TEXT,
+                    status BIGINT,
+                    provide TEXT,
+                    speed BIGINT,
+                    gps JSONB,
+                    time JSONB,
+                    create_date TIMESTAMP,
+                    update_date TIMESTAMP,
+                    delete BOOLEAN,
+                    alert TEXT,
+                    remark TEXT,
+                    gps_type BIGINT,
+                    hash TEXT,
+                    payable NUMERIC,
+                    pay NUMERIC,
+                    refund NUMERIC,
+                    coupon NUMERIC,
+                    \"order\" TEXT,
+                    pay_type BIGINT,
+                    pay_time TIMESTAMP,
+                    pay_status BIGINT,
+                    paytype TEXT,
+                    paytime TIMESTAMP
+                )"
+            );
+            let _ = sqlx::query(&create_sql).execute(&mut *tx).await;
+
+            if info.hash.is_empty() {
+                // Use RETURNING hash to eliminate ORDER BY LIMIT 1 anti-pattern
+                let insert_sql = format!(
+                    "INSERT INTO public.{table_name} (id, code, status, provide, speed, gps, time, create_date, \
+                     update_date, delete, alert, remark, gps_type, hash, payable, pay, refund, coupon, \
+                     \"order\", pay_type, pay_time, pay_status, paytype, paytime) \
+                     VALUES (gen_random_uuid()::TEXT, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, \
+                     $12, gen_random_uuid()::TEXT, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22) \
+                     RETURNING hash"
+                );
+                let row = sqlx::query_as::<_, (String,)>(&insert_sql)
+                    .bind(info.code.as_ref().unwrap_or(&String::new()))
+                    .bind(info.status)
+                    .bind(&info.provide)
+                    .bind(info.speed)
+                    .bind(info.gps.as_ref().unwrap_or(&json!({})))
+                    .bind(info.time.as_ref().unwrap_or(&json!({})))
+                    .bind(Local::now().naive_local())
+                    .bind(Local::now().naive_local())
+                    .bind(false)
+                    .bind(info.alert.as_ref().unwrap_or(&String::new()))
+                    .bind(info.remark.as_ref().unwrap_or(&String::new()))
+                    .bind(info.gps_type.unwrap_or(0))
+                    .bind(info.payable)
+                    .bind(info.pay)
+                    .bind(info.refund)
+                    .bind(info.coupon)
+                    .bind(info.order.as_ref().unwrap_or(&String::new()))
+                    .bind(info.pay_type)
+                    .bind(info.pay_time.unwrap_or(Local::now().naive_local()))
+                    .bind(info.pay_status)
+                    .bind(info.paytype)
+                    .bind(info.paytime.unwrap_or(Local::now().naive_local()))
+                    .fetch_one(&mut *tx)
+                    .await?;
+                let _ = row.0;
+            } else {
+                let count_sql = format!(
+                    "SELECT COUNT(*) FROM public.{table_name} WHERE hash = $1 AND delete = false"
+                );
+                let exists = sqlx::query_scalar::<_, i64>(&count_sql)
+                    .bind(&info.hash)
+                    .fetch_one(&mut *tx)
+                    .await?;
+
+                if exists == 0 {
+                    let update_sql = format!(
+                        "UPDATE public.{table_name} SET code = $1, status = $2, provide = $3, speed = $4, \
+                         gps = $5, time = $6, update_date = $7, delete = $8, alert = $9, remark = $10, \
+                         gps_type = $11, payable = $12, pay = $13, refund = $14, coupon = $15, \
+                         \"order\" = $16, pay_type = $17, pay_time = $18, pay_status = $19 \
+                         WHERE hash = $20"
+                    );
+                    sqlx::query(&update_sql)
+                        .bind(info.code.as_ref().unwrap_or(&String::new()))
+                        .bind(info.status)
+                        .bind(&info.provide)
+                        .bind(info.speed)
+                        .bind(info.gps.as_ref().unwrap_or(&json!({})))
+                        .bind(info.time.as_ref().unwrap_or(&json!({})))
+                        .bind(Local::now().naive_local())
+                        .bind(false)
+                        .bind(info.alert.as_ref().unwrap_or(&String::new()))
+                        .bind(info.remark.as_ref().unwrap_or(&String::new()))
+                        .bind(info.gps_type.unwrap_or(0))
+                        .bind(info.payable)
+                        .bind(info.pay)
+                        .bind(info.refund)
+                        .bind(info.coupon)
+                        .bind(info.order.as_ref().unwrap_or(&String::new()))
+                        .bind(info.pay_type)
+                        .bind(info.pay_time.unwrap_or(Local::now().naive_local()))
+                        .bind(info.pay_status)
+                        .bind(&info.hash)
+                        .execute(&mut *tx)
+                        .await?;
+                }
+            }
         }
+        tx.commit().await?;
         Ok(true)
     }
 
@@ -180,7 +291,10 @@ impl OrderRepository {
             .map_err(|e| Error::Protocol(format!("Invalid table name: {e}" ).into()))?;
 
         let query = format!(
-            "SELECT * FROM public.{table_name} \
+            "SELECT code, status, provide, speed, gps, type, time, create_date, update_date, \
+             delete, alert, remark, gps_type, hash, payable, pay, refund, coupon, \"order\", \
+             pay_type, pay_time, pay_status \
+             FROM public.{table_name} \
              WHERE delete = false \
              AND ($1 = '' OR code = $1) \
              AND ($2 = '' OR provide = $2) \

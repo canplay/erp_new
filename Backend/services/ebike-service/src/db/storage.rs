@@ -52,9 +52,80 @@ impl StorageRepository {
     }
 
     pub async fn add_batch(&self, items: &[StorageInfo]) -> Result<bool, Error> {
-        for item in items {
-            self.add(item).await?;
+        let mut tx = self.pool.begin().await?;
+        for info in items {
+            // Inline history insert
+            let year = Local::now().year();
+            let month = Local::now().month();
+            let history_table = safe_table_name("storage_history", year, month)
+                .map_err(|e| Error::Protocol(format!("Invalid table name: {e}").into()))?;
+
+            let create_sql = format!(
+                "CREATE TABLE IF NOT EXISTS public.{history_table} (
+                    id TEXT PRIMARY KEY,
+                    code TEXT,
+                    status BIGINT,
+                    provide TEXT,
+                    gps JSONB,
+                    create_date TIMESTAMP,
+                    update_date TIMESTAMP,
+                    delete BOOLEAN,
+                    alert TEXT,
+                    remark TEXT,
+                    sum NUMERIC,
+                    cur NUMERIC,
+                    points TEXT
+                )"
+            );
+            let _ = sqlx::query(&create_sql).execute(&mut *tx).await;
+
+            let insert_sql = format!(
+                "INSERT INTO public.{history_table} (id, code, status, provide, gps, create_date, update_date, \
+                 delete, alert, remark, sum, cur, points) \
+                 VALUES (gen_random_uuid()::TEXT, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)"
+            );
+            sqlx::query(&insert_sql)
+                .bind(&info.code)
+                .bind(info.status)
+                .bind(&info.provide)
+                .bind(info.gps.as_ref().unwrap_or(&json!({ "lng": 0, "lat": 0 })))
+                .bind(Local::now().naive_local())
+                .bind(Local::now().naive_local())
+                .bind(false)
+                .bind(info.alert.as_ref().unwrap_or(&String::new()))
+                .bind(info.remark.as_ref().unwrap_or(&String::new()))
+                .bind(info.sum)
+                .bind(info.cur)
+                .bind(info.points.as_ref().unwrap_or(&String::new()))
+                .execute(&mut *tx)
+                .await?;
+
+            let rows: Vec<String> = sqlx::query_scalar::<_, _>(
+                "SELECT code FROM public.storage WHERE code = $1",
+            )
+            .bind(&info.code)
+            .fetch_all(&mut *tx)
+            .await?;
+
+            if rows.is_empty() {
+                sqlx::query("INSERT INTO public.storage (code, status, provide, gps, create_date, update_date, \
+                     delete, alert, remark, sum, cur, points, gps_type) \
+                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)")
+                    .bind(&info.code).bind(info.status).bind(&info.provide).bind(info.gps.as_ref())
+                    .bind(Local::now().naive_local()).bind(Local::now().naive_local()).bind(false)
+                    .bind(info.alert.as_deref()).bind(info.remark.as_deref()).bind(info.sum).bind(info.cur)
+                    .bind(info.points.as_deref()).bind(info.gps_type)
+                    .execute(&mut *tx).await?;
+            } else {
+                sqlx::query("UPDATE public.storage SET provide = $1, gps = $2, update_date = $3, delete = $4, \
+                     alert = $5, remark = $6, sum = $7, cur = $8, gps_type = $9, status = $10 WHERE code = $11")
+                    .bind(&info.provide).bind(info.gps.as_ref()).bind(Local::now().naive_local()).bind(false)
+                    .bind(info.alert.as_deref()).bind(info.remark.as_deref()).bind(info.sum).bind(info.cur)
+                    .bind(info.gps_type).bind(info.status).bind(&info.code)
+                    .execute(&mut *tx).await?;
+            }
         }
+        tx.commit().await?;
         Ok(true)
     }
 

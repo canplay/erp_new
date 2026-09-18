@@ -80,9 +80,57 @@ impl CarRepository {
     }
 
     pub async fn add_batch(&self, items: &[CarInfo]) -> Result<bool, Error> {
+        let mut tx = self.pool.begin().await?;
         for item in items {
-            self.add(item).await?;
+            // Insert history
+            let year = Local::now().year();
+            let month = Local::now().month();
+            let table_name = safe_table_name("car_history", year, month)
+                .map_err(|e| Error::Protocol(format!("Invalid table name: {e}").into()))?;
+            let query = format!(
+                "INSERT INTO public.{table_name} (id, code, status, provide, speed, gps, type, time, create_date, \
+                 update_date, delete, alert, remark, gps_type) \
+                 VALUES (gen_random_uuid()::TEXT, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)"
+            );
+            sqlx::query(&query)
+                .bind(&item.code)
+                .bind(item.status)
+                .bind(&item.provide)
+                .bind(item.speed)
+                .bind(item.gps.as_ref().unwrap_or(&json!({ "lng": " ", "lat": " "})))
+                .bind(item.r#type)
+                .bind(item.time.as_ref().unwrap_or(&json!({ "lng": " ", "lat": " "})))
+                .bind(Local::now().naive_local())
+                .bind(Local::now().naive_local())
+                .bind(false)
+                .bind(item.alert.as_ref().unwrap_or(&String::new()))
+                .bind(item.remark.as_ref().unwrap_or(&String::new()))
+                .bind(item.gps_type)
+                .execute(&mut *tx)
+                .await?;
+
+            let rows: Vec<String> = sqlx::query_scalar::<_, _>(
+                "SELECT code FROM public.car WHERE code = $1",
+            )
+            .bind(&item.code)
+            .fetch_all(&mut *tx)
+            .await?;
+
+            if rows.is_empty() {
+                sqlx::query("INSERT INTO public.car (code, status, provide, speed, gps, time, create_date, update_date, delete, alert, remark, type, gps_type) \
+                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)")
+                    .bind(&item.code).bind(item.status).bind(&item.provide).bind(item.speed).bind(item.gps.as_ref()).bind(item.time.as_ref())
+                    .bind(Local::now().naive_local()).bind(Local::now().naive_local()).bind(false).bind(item.alert.as_deref()).bind(item.remark.as_deref()).bind(item.r#type).bind(item.gps_type)
+                    .execute(&mut *tx).await?;
+            } else {
+                sqlx::query("UPDATE public.car SET status = $1, provide = $2, speed = $3, gps = $4, time = $5, \
+                     update_date = $6, delete = $7, alert = $8, remark = $9, type = $10, gps_type = $11 WHERE code = $12")
+                    .bind(item.status).bind(&item.provide).bind(item.speed).bind(item.gps.as_ref()).bind(item.time.as_ref()).bind(Local::now().naive_local())
+                    .bind(false).bind(item.alert.as_deref()).bind(item.remark.as_deref()).bind(item.r#type).bind(item.gps_type).bind(&item.code)
+                    .execute(&mut *tx).await?;
+            }
         }
+        tx.commit().await?;
         Ok(true)
     }
 

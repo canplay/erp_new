@@ -6,9 +6,9 @@
 
 | 维度 | 数据 |
 |---|---|
-| 后端 | 22 微服务 / 10 共享 Crates / ~388 Rust 源文件 |
-| 前端 | 4 应用（admin 47 / tenant / ops / social）/ 10 共享包 / 199 Vue 组件 |
-| 数据库 | PostgreSQL 16+ / 115 张表 |
+| 后端 | 22 微服务 / 10 共享 Crates / ~429 Rust 源文件 |
+| 前端 | 4 应用（admin 47 / tenant / ops / social）/ 10 共享包 / 309 Vue+TS 组件 |
+| 数据库 | PostgreSQL 16+ / 119 张表 |
 | 部署 | Helm / docker-compose |
 
 **技术栈**：
@@ -177,7 +177,7 @@ GitHub Actions 自动执行：
 
 | 版本 | 日期 | 说明 |
 |---|---|---|
-| v0.7.0 | 2026-09-16 | 安全加固: 0硬编码密码, 0 panic!, 统一连接池, smoke test ×22, 清理死代码, 文档同步 |
+| v0.8.0 | 2026-09-19 | 全面优化: f64→Decimal, batch事务, SQL白名单, SELECT *, 租户隔离, pay回调, 类型安全, 日志统一, dead_code清零 |
 | v0.6.0 | 2026-09-16 | CI/CD, Prometheus metrics, docker-compose auto-init |
 | v0.5.0 | 2026-09-16 | SQL 合并, migrations 模块, any 清理 |
 | v0.4.0 | 2026-09-15 | 修复 panic!, 清理桩页面, 重构 Helm |

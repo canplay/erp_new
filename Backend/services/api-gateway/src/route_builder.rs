@@ -20,7 +20,7 @@ use crate::{
     AppState, AuthState, RateLimitState,
     enhanced_logging::request_id_middleware,
     grpc_error_middleware::grpc_error_handler_middleware,
-    middleware::{auth_middleware, cors_layer, logging_middleware, operation_log_middleware, rate_limit_middleware, security_headers_middleware},
+    middleware::{auth_middleware, cors_layer, logging_middleware, operation_log_middleware, rate_limit_middleware, security_headers_middleware, tenant_extraction_middleware},
 };
 use common::middleware::csrf_protection_middleware;
 
@@ -58,9 +58,14 @@ pub fn create_router(
     let router = router
         .layer(axum::middleware::from_fn(operation_log_middleware));
 
-    // 6. Auth middleware (always applied - JWT is required at startup)
+    // 6. Tenant extraction middleware - extracts tenant ID from JWT/header and sets context
+    // Must be before auth_middleware since it reads JWT claims injected by auth
+    let router = router
+        .layer(axum::middleware::from_fn(tenant_extraction_middleware));
+
+    // 7. Auth middleware (always applied - JWT is required at startup)
     let router = {
-        tracing::info!("应用 JWT 鉴权中间件" );
+        tracing::info!("应用 JWT 鉴权中间件");
         router
             .layer(axum::middleware::from_fn(auth_middleware))
             .layer(axum::extract::Extension(auth_state))

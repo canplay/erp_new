@@ -661,14 +661,11 @@ impl RewriteService for GrpcRewriteService {
 
 // ===== StatsService =====
 
-pub struct GrpcStatsService {
-    #[allow(dead_code)]
-    state: Arc<AppState>,
-}
+pub struct GrpcStatsService;
 
 impl GrpcStatsService {
     #[must_use]
-    pub const fn new(state: Arc<AppState>) -> Self { Self { state } }
+    pub const fn new(_state: Arc<AppState>) -> Self { Self }
 }
 
 #[tonic::async_trait]
@@ -705,14 +702,11 @@ impl StatsService for GrpcStatsService {
 
 // ===== InsightService =====
 
-pub struct GrpcInsightService {
-    #[allow(dead_code)]
-    state: Arc<AppState>,
-}
+pub struct GrpcInsightService;
 
 impl GrpcInsightService {
     #[must_use]
-    pub const fn new(state: Arc<AppState>) -> Self { Self { state } }
+    pub const fn new(_state: Arc<AppState>) -> Self { Self }
 }
 
 #[tonic::async_trait]

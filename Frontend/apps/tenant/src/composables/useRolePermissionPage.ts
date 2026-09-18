@@ -59,7 +59,7 @@ export function useRolePermissionPage() {
       const response = await listRoles();
       const data = (response.data as { roles?: string[]; predefined_roles?: string[] }) || { roles: [], predefined_roles: [] };
       roles.value = (data.roles || []).map((role_name: string) => ({ label: role_name, value: role_name }));
-    } catch (error) { console.error('加载角色列表失败', error); }
+    } catch (error) { if (import.meta.env.DEV) console.error('加载角色列表失败', error); }
   }
 
   async function loadRolePermissions(role_name: string) {
@@ -71,7 +71,7 @@ export function useRolePermissionPage() {
     : [];
       initPermissionGroups(rolePermissions.value);
     } catch (error) {
-      console.error('加载角色权限失败', error);
+      if (import.meta.env.DEV) console.error('加载角色权限失败', error);
       initPermissionGroups([]);
     }
   }

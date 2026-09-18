@@ -75,7 +75,7 @@ export function useRichTextEditor(
       updateUndoRedoState()
       handleInput()
     } catch (error) {
-      console.error('【富文本编辑器命令执行失败】', command, error)
+      if (import.meta.env.DEV) console.error('【富文本编辑器命令执行失败】', command, error)
     }
   }
 
@@ -142,7 +142,7 @@ export function useRichTextEditor(
       const base64 = await fileToBase64(file)
       execCommand('insertHTML', `<img src="${base64}" alt="${file.name}" style="max-width: 100%;" />`)
     } catch (error) {
-      console.error('【图片上传失败】', error)
+      if (import.meta.env.DEV) console.error('【图片上传失败】', error)
     }
 
     input.value = ''
@@ -274,7 +274,7 @@ export function useRichTextEditor(
             fileToBase64(file).then(base64 => {
               execCommand('insertHTML', `<img src="${base64}" alt="pasted image" />`)
             }).catch((error) => {
-              console.warn('【粘贴图片失败，已忽略】', error);
+              if (import.meta.env.DEV) console.warn('【粘贴图片失败，已忽略】', error);
             })
           }
           return

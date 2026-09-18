@@ -32,7 +32,7 @@ const exportData = exportToCSV;
       pendingDeleteUser.value = null;
       onSuccess();
     } catch (error) {
-      console.error('【删除失败】', error);
+      if (import.meta.env.DEV) { '【删除失败】', error; }
       $q.notify({ type: 'negative', message: $t('common.error') });
     }
   }
@@ -44,7 +44,7 @@ const exportData = exportToCSV;
       await batchUpdateUserStatus({ user_ids, status: 1 });
       $q.notify({ type: 'positive', message: $t('batchActions.enableSuccess', { count: user_ids.length }) });
     } catch (error) {
-      console.error('【批量启用失败】', error);
+      if (import.meta.env.DEV) { '【批量启用失败】', error; }
       $q.notify({ type: 'negative', message: $t('common.error') });
       throw error;
     }
@@ -57,7 +57,7 @@ const exportData = exportToCSV;
       await batchUpdateUserStatus({ user_ids, status: 0 });
       $q.notify({ type: 'positive', message: $t('batchActions.disableSuccess', { count: user_ids.length }) });
     } catch (error) {
-      console.error('【批量禁用失败】', error);
+      if (import.meta.env.DEV) { '【批量禁用失败】', error; }
       $q.notify({ type: 'negative', message: $t('common.error') });
       throw error;
     }
@@ -70,7 +70,7 @@ const exportData = exportToCSV;
       await batchDeleteUsers(user_ids);
       $q.notify({ type: 'positive', message: $t('batchActions.deleteSuccess', { count: user_ids.length }) });
     } catch (error) {
-      console.error('【批量删除失败】', error);
+      if (import.meta.env.DEV) { '【批量删除失败】', error; }
       $q.notify({ type: 'negative', message: $t('common.error') });
       throw error;
     }
@@ -82,7 +82,7 @@ const exportData = exportToCSV;
       void exportData(usersToExport, [], 'users.csv');
       $q.notify({ type: 'positive', message: $t('user.exportSuccess') });
     } catch (error) {
-      console.error('【导出失败】', error);
+      if (import.meta.env.DEV) { '【导出失败】', error; }
       $q.notify({ type: 'negative', message: $t('common.error') });
     }
   }
@@ -102,7 +102,7 @@ const exportData = exportToCSV;
       window.URL.revokeObjectURL(url);
       $q.notify({ type: 'positive', message: $t('user.templateDownloaded') });
     } catch (error) {
-      console.error('【下载模板失败】', error);
+      if (import.meta.env.DEV) { '【下载模板失败】', error; }
       $q.notify({ type: 'negative', message: $t('common.error') });
     }
   }

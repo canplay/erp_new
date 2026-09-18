@@ -5,8 +5,6 @@
 //! B11 迁移: 全部动态 sqlx::query_as 已转换为编译期校验的 sqlx::query_scalar! 宏,
 //! 可选过滤条件统一采用 `($N = '' OR col = $N)` 静态 SQL 模式(与 repository/order.rs 一致)。
 
-#![allow(dead_code)]
-
 use sqlx::PgPool;
 
 use common::AppError;

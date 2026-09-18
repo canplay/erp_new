@@ -102,7 +102,7 @@ export function useApiKey() {
         pagination.value.rowsNumber = response.data.total;
       }
     } catch (error) {
-      console.error('【加载 API 密钥失败】', error);
+      if (import.meta.env.DEV) console.error('【加载 API 密钥失败】', error);
       $q.notify({ type: 'negative', message: '加载 API 密钥失败' });
     } finally {
       loading.value = false;
@@ -184,7 +184,7 @@ export function useApiKey() {
       await loadApiKeys();
       $q.notify({ type: 'positive', message: $t('common.success') });
     } catch (error) {
-      console.error('【保存 API 密钥失败】', error);
+      if (import.meta.env.DEV) console.error('【保存 API 密钥失败】', error);
       $q.notify({ type: 'negative', message: '保存 API 密钥失败' });
     }
   }
@@ -199,7 +199,7 @@ export function useApiKey() {
       await loadApiKeys();
       $q.notify({ type: 'positive', message: $t('common.success') });
     } catch (error) {
-      console.error('【切换 API 密钥状态失败】', error);
+      if (import.meta.env.DEV) console.error('【切换 API 密钥状态失败】', error);
       $q.notify({ type: 'negative', message: '切换 API 密钥状态失败' });
     }
   }
@@ -221,7 +221,7 @@ export function useApiKey() {
       await loadApiKeys();
       $q.notify({ type: 'positive', message: $t('common.success') });
     } catch (error) {
-      console.error('【删除 API 密钥失败】', error);
+      if (import.meta.env.DEV) console.error('【删除 API 密钥失败】', error);
       $q.notify({ type: 'negative', message: '删除 API 密钥失败' });
     }
   }

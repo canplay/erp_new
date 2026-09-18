@@ -63,7 +63,7 @@ export function useRoleList() {
       const types = await dictionaryStore.fetchRoleTypes();
       if (types && types.length > 0) roleTypeOptions = types;
     } catch (error) {
-      console.error('【加载角色类型选项失败】', error);
+      if (import.meta.env.DEV) console.error('【加载角色类型选项失败】', error);
     }
   }
 
@@ -138,7 +138,7 @@ export function useRoleList() {
       showPermissionDialog.value = false;
       void loadRoles();
     } catch (error) {
-      console.error('【保存权限失败】', error);
+      if (import.meta.env.DEV) console.error('【保存权限失败】', error);
       $q.notify({ type: 'negative', message: $t('common.error') });
     } finally {
       savingPermissions.value = false;
@@ -178,7 +178,7 @@ export function useRoleList() {
       roles.value = allRoles.slice(start, start + pagination.rowsPerPage);
       pagination.rowsNumber = total || allRoles.length;
     } catch (error) {
-      console.error('【加载角色失败】', error);
+      if (import.meta.env.DEV) console.error('【加载角色失败】', error);
       $q.notify({ type: 'negative', message: $t('common.error') });
     } finally {
       loading.value = false;
@@ -204,7 +204,7 @@ export function useRoleList() {
       showDelete.value = false;
       void loadRoles();
     } catch (error) {
-      console.error('【删除角色失败】', error);
+      if (import.meta.env.DEV) console.error('【删除角色失败】', error);
       $q.notify({ type: 'negative', message: $t('common.error') });
     }
   }
@@ -225,7 +225,7 @@ export function useRoleList() {
       showCreateDialog.value = false;
       void loadRoles();
     } catch (error) {
-      console.error('【创建角色失败】', error);
+      if (import.meta.env.DEV) console.error('【创建角色失败】', error);
       $q.notify({ type: 'negative', message: $t('common.error') });
     } finally {
       creating.value = false;

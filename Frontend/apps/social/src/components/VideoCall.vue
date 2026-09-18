@@ -170,7 +170,7 @@ async function initCall() {
     callStartTime.value = Date.now();
     durationInterval = setInterval(updateDuration, 1000);
   } catch (err) {
-    console.error('WebRTC error:', err);
+    if (import.meta.env.DEV) console.error('WebRTC error:', err);
     hasLocalStream.value = false;
   }
 }

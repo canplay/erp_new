@@ -62,30 +62,30 @@ export const alovaInstance = createAlova<AlovaAxiosRequestConfig, AxiosResponse,
 
       // 网络错误（无响应）
       if (err?.code === 'ERR_NETWORK' || err?.message?.includes('Network Error')) {
-        console.error('[网络错误] 无法连接到服务器:', API_BASE_URL);
+        if (import.meta.env.DEV) console.error('[网络错误] 无法连接到服务器:', API_BASE_URL);
         throw new Error('网络连接失败，请检查网络');
       }
 
       // 超时
       if (err?.code === 'ECONNABORTED' || err?.message?.includes('timeout')) {
-        console.error('[请求超时]', API_BASE_URL);
+        if (import.meta.env.DEV) console.error('[请求超时]', API_BASE_URL);
         throw new Error('请求超时，请稍后重试');
       }
 
       if (status === 401) {
-        console.warn('[未授权] 登录已过期');
+        if (import.meta.env.DEV) console.warn('[未授权] 登录已过期');
         throw new Error('未登录或登录已过期');
       }
       if (status === 403) {
-        console.warn('[权限不足]');
+        if (import.meta.env.DEV) console.warn('[权限不足]');
         throw new Error('权限不足');
       }
       if (status && status >= 500) {
-        console.error('[服务器错误]', status);
+        if (import.meta.env.DEV) console.error('[服务器错误]', status);
         throw new Error('服务器内部错误，请稍后重试');
       }
 
-      console.error('[请求失败]', err?.message ?? '未知错误');
+      if (import.meta.env.DEV) console.error('[请求失败]', err?.message ?? '未知错误');
       throw new Error(err?.message ?? '请求失败');
     },
   },

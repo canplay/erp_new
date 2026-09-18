@@ -1,8 +1,6 @@
 // 建设银行(CCB)支付服务
 // China Construction Bank payment service
 
-#![allow(dead_code)]
-
 use common::AppResult;
 use serde::Deserialize;
 

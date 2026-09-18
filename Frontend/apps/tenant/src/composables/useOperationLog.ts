@@ -147,7 +147,7 @@ const exportData = exportToCSV;
       logs.value = result?.list || [];
       pagination.value.rowsNumber = result?.total || 0;
     } catch (error) {
-      console.error('【加载日志失败】', error);
+      if (import.meta.env.DEV) console.error('【加载日志失败】', error);
       $q.notify({ type: 'negative', message: $t('common.error') });
       throw error;
     } finally {
@@ -226,7 +226,7 @@ const exportData = exportToCSV;
 
       $q.notify({ type: 'positive', message: $t('common.success') });
     } catch (error) {
-      console.error('【导出失败】', error);
+      if (import.meta.env.DEV) console.error('【导出失败】', error);
       void exportData(logs.value, [], 'operation_logs.csv');
     }
   }

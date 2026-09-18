@@ -123,7 +123,7 @@ export function useUserList() {
       users.value = result?.list || result?.users || [];
       pagination.value.rowsNumber = result?.total || 0;
     } catch (error) {
-      console.error('【加载用户失败】', error);
+      if (import.meta.env.DEV) { console.error('【加载用户失败】', error); }
       $q.notify({ type: 'negative', message: $t('common.error') });
     } finally {
       loading.value = false;

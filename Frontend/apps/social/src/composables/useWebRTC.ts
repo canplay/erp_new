@@ -24,7 +24,7 @@ export function useWebRTC() {
       localStream.value = stream;
       return stream;
     } catch {
-      console.warn('无法获取媒体设备权限');
+      if (import.meta.env.DEV) console.warn('无法获取媒体设备权限');
       return null;
     }
   }

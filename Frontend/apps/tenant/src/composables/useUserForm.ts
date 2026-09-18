@@ -122,7 +122,7 @@ export function useUserForm() {
       showUserDialog.value = false;
       onSuccess();
     } catch (error) {
-      console.error('【保存用户失败】', error);
+      if (import.meta.env.DEV) { console.error('【保存用户失败】', error); }
       $q.notify({ type: 'negative', message: $t('common.error') });
     }
   }
@@ -216,7 +216,7 @@ export function useUserForm() {
       importStep.value = 3;
       onSuccess();
     } catch (error) {
-      console.error('【解析文件失败】', error);
+      if (import.meta.env.DEV) { console.error('【解析文件失败】', error); }
       $q.notify({ type: 'negative', message: $t('user.parseError') });
     }
   }
@@ -245,7 +245,7 @@ export function useUserForm() {
         successCount++;
       } catch (error) {
         failCount++;
-        console.error(`【导入用户 ${row.username} 失败】`, error);
+        if (import.meta.env.DEV) { console.error(`【导入用户 ${row.username} 失败】`, error); }
       }
     }
 

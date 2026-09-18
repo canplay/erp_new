@@ -332,7 +332,7 @@ export function useDictionaryTypeList() {
       selectedTypes.value = [];
       await loadTypes();
     } catch (error) {
-      console.error('批量启用失败', error);
+      if (import.meta.env.DEV) console.error('批量启用失败', error);
       $q.notify({ type: 'negative', message: $t('common.error') });
       throw error;
     }
@@ -346,7 +346,7 @@ export function useDictionaryTypeList() {
       selectedTypes.value = [];
       await loadTypes();
     } catch (error) {
-      console.error('批量禁用失败', error);
+      if (import.meta.env.DEV) console.error('批量禁用失败', error);
       $q.notify({ type: 'negative', message: $t('common.error') });
       throw error;
     }
@@ -360,7 +360,7 @@ export function useDictionaryTypeList() {
       selectedTypes.value = [];
       await loadTypes();
     } catch (error) {
-      console.error('批量删除失败', error);
+      if (import.meta.env.DEV) console.error('批量删除失败', error);
       $q.notify({ type: 'negative', message: $t('common.error') });
       throw error;
     }

@@ -3,8 +3,6 @@
 //! 定义支付请求、回调、订单等核心数据结构。
 //! 注意：预留部分结构用于未来功能扩展。
 
-#![allow(dead_code)]
-
 use serde::{Deserialize, Serialize};
 
 /// 支付订单查询参数

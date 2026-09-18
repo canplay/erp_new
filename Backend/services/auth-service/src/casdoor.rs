@@ -93,7 +93,6 @@ impl std::error::Error for CasdoorError {}
 
 /// Casdoor 客户端
 pub struct CasdoorClient {
-    #[allow(dead_code)]
     config: CasdoorConfig,
     http_client: reqwest::Client,
 }
@@ -301,9 +300,6 @@ impl CasdoorClient {
 pub struct CasdoorSessionManager {
     /// 存储活跃会话
     sessions: Arc<RwLock<std::collections::HashMap<String, CasdoorSession>>>,
-    /// 配置 (保留用于调试和扩展)
-    #[allow(dead_code)]
-    config: CasdoorConfig,
     /// 客户端
     client: CasdoorClient,
 }

@@ -1,5 +1,6 @@
 //! 计费服务仓储层
 
+use rust_decimal::Decimal;
 use sqlx::PgPool;
 use uuid::Uuid;
 
@@ -25,8 +26,8 @@ impl BillingRepository {
         name: &str,
         description: Option<&str>,
         plan_type: &str,
-        price_monthly: f64,
-        price_yearly: f64,
+        price_monthly: Decimal,
+        price_yearly: Decimal,
         currency: &str,
         features: &serde_json::Value,
         quotas: &serde_json::Value,
@@ -103,7 +104,7 @@ impl BillingRepository {
         current_period_start: chrono::DateTime<chrono::Utc>,
         current_period_end: chrono::DateTime<chrono::Utc>,
         trial_end: Option<chrono::DateTime<chrono::Utc>>,
-        unit_price: f64,
+        unit_price: Decimal,
     ) -> Result<Uuid, sqlx::Error> {
         let id = Uuid::new_v4();
         sqlx::query(
@@ -168,9 +169,9 @@ impl BillingRepository {
         invoice_number: &str,
         subscription_id: Option<Uuid>,
         tenant_id: Uuid,
-        subtotal: f64,
-        tax_amount: f64,
-        total: f64,
+        subtotal: Decimal,
+        tax_amount: Decimal,
+        total: Decimal,
         period_start: chrono::DateTime<chrono::Utc>,
         period_end: chrono::DateTime<chrono::Utc>,
         due_at: chrono::DateTime<chrono::Utc>,
@@ -224,7 +225,7 @@ impl BillingRepository {
     ) -> Result<(Vec<InvoiceRow>, i64), sqlx::Error> {
         let offset = (page - 1) * page_size;
 
-        let status_filter = status.map(|s| format!("AND status = '{}'" , s)).unwrap_or_default();
+        let status_filter = status.map(|s| format!("AND status = '{}'", s)).unwrap_or_default();
 
         let invoices = sqlx::query_as::<_, InvoiceRow>(
             r#"

@@ -6,6 +6,7 @@ use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},
 };
+use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use std::sync::Arc;
@@ -36,8 +37,8 @@ pub struct CreatePlanRequest {
     pub name: String,
     pub description: Option<String>,
     pub plan_type: String,
-    pub price_monthly: f64,
-    pub price_yearly: f64,
+    pub price_monthly: Decimal,
+    pub price_yearly: Decimal,
     pub currency: Option<String>,
     pub features: Vec<PlanFeatureRequest>,
     pub quotas: std::collections::HashMap<String, i64>,
@@ -75,7 +76,7 @@ pub async fn create_plan(
     .bind(plan_type.as_str())
     .bind(request.price_monthly)
     .bind(request.price_yearly)
-    .bind(request.currency.as_deref().unwrap_or("CNY" ))
+    .bind(request.currency.as_deref().unwrap_or("CNY"))
     .bind(serde_json::to_value(&request.features).unwrap_or_default())
     .bind(serde_json::to_value(&request.quotas).unwrap_or_default())
     .execute(&state.pool)
@@ -132,7 +133,9 @@ pub async fn create_subscription(
 ) -> AppResult<impl IntoResponse> {
     // 获取计划价格
     let plan: PlanRow = sqlx::query_as::<_, PlanRow>(
-        "SELECT * FROM plans WHERE id = $1" ,
+        "SELECT id, name, description, plan_type, status, price_monthly, price_yearly, \
+         currency, features, quotas, sort_order, is_public, created_at, updated_at \
+         FROM plans WHERE id = $1",
     )
     .bind(request.plan_id)
     .fetch_optional(&state.pool)
@@ -170,7 +173,7 @@ pub async fn create_subscription(
 pub struct CreateInvoiceRequest {
     pub subscription_id: Uuid,
     pub tenant_id: Uuid,
-    pub amount: f64,
+    pub amount: Decimal,
 }
 
 pub async fn create_invoice(
@@ -179,7 +182,10 @@ pub async fn create_invoice(
 ) -> AppResult<impl IntoResponse> {
     let now = chrono::Utc::now();
     let id = Uuid::new_v4();
-    let invoice_number = format!("INV-{}" , now.format("%Y%m%d%H%M%S" ));
+    let invoice_number = format!("INV-{}", now.format("%Y%m%d%H%M%S"));
+
+    let tax_amount = request.amount * Decimal::try_from(0.06).unwrap_or(Decimal::ZERO);
+    let total = request.amount + tax_amount;
 
     sqlx::query(
         r#"
@@ -192,8 +198,8 @@ pub async fn create_invoice(
     .bind(request.subscription_id)
     .bind(request.tenant_id)
     .bind(request.amount)
-    .bind(request.amount * 0.06) // 6% tax
-    .bind(request.amount * 1.06)
+    .bind(tax_amount)
+    .bind(total)
     .bind(now)
     .bind(now + chrono::Duration::days(30))
     .bind(now + chrono::Duration::days(7))
@@ -218,7 +224,7 @@ pub async fn record_usage(
     Json(request): Json<RecordUsageRequest>,
 ) -> AppResult<impl IntoResponse> {
     sqlx::query(
-        "INSERT INTO usage_records (tenant_id, metric, quantity) VALUES ($1, $2, $3)" ,
+        "INSERT INTO usage_records (tenant_id, metric, quantity) VALUES ($1, $2, $3)",
     )
     .bind(request.tenant_id)
     .bind(&request.metric)
@@ -227,7 +233,7 @@ pub async fn record_usage(
     .await
     .map_err(|e| AppError::DatabaseError(e.to_string()))?;
 
-    Ok(Json(ApiResponse::success("Usage recorded" )))
+    Ok(Json(ApiResponse::success("Usage recorded")))
 }
 
 // ============ 错误类型 ============

@@ -665,7 +665,7 @@ pub struct GrpcStatsService;
 
 impl GrpcStatsService {
     #[must_use]
-    pub const fn new(_state: Arc<AppState>) -> Self { Self }
+    pub fn new(_state: Arc<AppState>) -> Self { Self }
 }
 
 #[tonic::async_trait]
@@ -706,7 +706,7 @@ pub struct GrpcInsightService;
 
 impl GrpcInsightService {
     #[must_use]
-    pub const fn new(_state: Arc<AppState>) -> Self { Self }
+    pub fn new(_state: Arc<AppState>) -> Self { Self }
 }
 
 #[tonic::async_trait]

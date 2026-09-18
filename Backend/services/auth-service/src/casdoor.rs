@@ -321,7 +321,6 @@ impl CasdoorSessionManager {
     pub fn new(config: CasdoorConfig) -> Self {
         Self {
             sessions: Arc::new(RwLock::new(std::collections::HashMap::new())),
-            config: config.clone(),
             client: CasdoorClient::new(config),
         }
     }

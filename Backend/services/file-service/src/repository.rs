@@ -46,24 +46,25 @@ impl FileRepository {
         Ok(result)
     }
 
-    /// 根据ID查询文件
-    pub async fn find_by_id(&self, id: i64) -> AppResult<Option<SysFile>> {
+    /// 根据ID查询文件（带租户过滤）
+    pub async fn find_by_id(&self, id: i64, tenant_id: i64) -> AppResult<Option<SysFile>> {
         let file = sqlx::query_as::<_, SysFile>(r#"
             SELECT id, file_name, original_name, file_size, mime_type,
                    storage_path, COALESCE(storage_type, '') AS "storage_type!",
                    bucket, url, md5,
                    created_by, tenant_id, created_at, updated_at, deleted_at
             FROM sys_files
-            WHERE id = $1 AND deleted_at IS NULL
+            WHERE id = $1 AND tenant_id = $2 AND deleted_at IS NULL
             "#)
             .bind(id)
+            .bind(tenant_id)
         .fetch_optional(&self.pool)
         .await?;
 
         Ok(file)
     }
 
-    /// 分页查询文件列表
+    /// 分页查询文件列表（带租户过滤）
     pub async fn find_list(
         &self,
         page: u32,
@@ -72,6 +73,7 @@ impl FileRepository {
         keyword: Option<&str>,
         start_date: Option<&str>,
         end_date: Option<&str>,
+        tenant_id: i64,
     ) -> AppResult<(Vec<SysFile>, i64)> {
         let offset = (page.saturating_sub(1)) * page_size;
 
@@ -81,23 +83,27 @@ impl FileRepository {
         let start = start_date.and_then(parse_datetime);
         let end = end_date.and_then(parse_datetime);
 
-        // 查询总数
+        // 查询总数（带租户过滤）
         let total: i64 = sqlx::query_scalar::<_, i64>(r#"
             SELECT COUNT(*) FROM sys_files
             WHERE ($1 = '' OR category = $1)
               AND ($2 = '' OR original_name ILIKE $2)
               AND ($3::timestamptz IS NULL OR created_at >= $3::timestamptz)
               AND ($4::timestamptz IS NULL OR created_at <= $4::timestamptz)
+              AND tenant_id = $7
               AND deleted_at IS NULL
             "#)
             .bind(&category_filter)
             .bind(&keyword_filter)
             .bind(start)
             .bind(end)
+            .bind(i64::from(page_size))
+            .bind(i64::from(offset))
+            .bind(tenant_id)
         .fetch_one(&self.pool)
         .await?;
 
-        // 查询列表
+        // 查询列表（带租户过滤）
         let files = sqlx::query_as::<_, SysFile>(r#"
             SELECT id, file_name, original_name, file_size, mime_type,
                    storage_path, COALESCE(storage_type, '') AS "storage_type!",
@@ -108,6 +114,7 @@ impl FileRepository {
               AND ($2 = '' OR original_name ILIKE $2)
               AND ($3::timestamptz IS NULL OR created_at >= $3::timestamptz)
               AND ($4::timestamptz IS NULL OR created_at <= $4::timestamptz)
+              AND tenant_id = $7
               AND deleted_at IS NULL
             ORDER BY created_at DESC
             LIMIT $5 OFFSET $6
@@ -118,28 +125,30 @@ impl FileRepository {
             .bind(end)
             .bind(i64::from(page_size))
             .bind(i64::from(offset))
+            .bind(tenant_id)
         .fetch_all(&self.pool)
         .await?;
 
         Ok((files, total))
     }
 
-    /// 删除文件（软删除）
-    pub async fn delete(&self, id: i64) -> AppResult<bool> {
+    /// 删除文件（软删除，带租户过滤）
+    pub async fn delete(&self, id: i64, tenant_id: i64) -> AppResult<bool> {
         let result = sqlx::query(r#"
             UPDATE sys_files
             SET deleted_at = CURRENT_TIMESTAMP
-            WHERE id = $1 AND deleted_at IS NULL
+            WHERE id = $1 AND tenant_id = $2 AND deleted_at IS NULL
             "#)
             .bind(id)
+            .bind(tenant_id)
         .execute(&self.pool)
         .await?;
 
         Ok(result.rows_affected() > 0)
     }
 
-    /// 批量删除文件（软删除）
-    pub async fn batch_delete(&self, ids: &[i64]) -> AppResult<u64> {
+    /// 批量删除文件（软删除，带租户过滤）
+    pub async fn batch_delete(&self, ids: &[i64], tenant_id: i64) -> AppResult<u64> {
         if ids.is_empty() {
             return Ok(0);
         }
@@ -147,21 +156,23 @@ impl FileRepository {
         let result = sqlx::query(r#"
             UPDATE sys_files
             SET deleted_at = CURRENT_TIMESTAMP
-            WHERE id = ANY($1) AND deleted_at IS NULL
+            WHERE id = ANY($1) AND tenant_id = $2 AND deleted_at IS NULL
             "#)
             .bind(ids)
+            .bind(tenant_id)
         .execute(&self.pool)
         .await?;
 
         Ok(result.rows_affected())
     }
 
-    /// 检查文件是否被使用
-    pub async fn is_file_in_use(&self, id: i64) -> AppResult<bool> {
+    /// 检查文件是否被使用（带租户过滤）
+    pub async fn is_file_in_use(&self, id: i64, tenant_id: i64) -> AppResult<bool> {
         let count: i64 = sqlx::query_scalar(
-            "SELECT COUNT(*) FROM sys_files WHERE id = $1 AND deleted_at IS NULL"
+            "SELECT COUNT(*) FROM sys_files WHERE id = $1 AND tenant_id = $2 AND deleted_at IS NULL"
         )
             .bind(id)
+            .bind(tenant_id)
         .fetch_one(&self.pool)
         .await?;
 

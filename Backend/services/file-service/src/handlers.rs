@@ -3,7 +3,7 @@
 use axum::{
     Json, Router,
     extract::{Multipart, Path, Query, State},
-    http::{StatusCode, header},
+    http::{StatusCode, header, HeaderMap},
     response::IntoResponse,
 };
 use futures_util::StreamExt;
@@ -231,11 +231,21 @@ fn get_category() -> String {
     std::env::var("FILE_CATEGORY" ).unwrap_or_else(|_| "general".to_string())
 }
 
+/// 从请求头提取租户 ID（x-tenant-id）
+fn extract_tenant_id(headers: &HeaderMap) -> Option<i64> {
+    headers
+        .get("x-tenant-id")
+        .and_then(|v| v.to_str().ok())
+        .and_then(|s| s.parse::<i64>().ok())
+}
+
 /// 文件列表查询
 async fn list_files(
     State(state): State<AppState>,
     Query(query): Query<FileListQuery>,
+    headers: HeaderMap,
 ) -> AppResult<Json<FileListResponse>> {
+    let tenant_id = extract_tenant_id(&headers).unwrap_or(0);
     let (files, total) = state
         .repository
         .find_list(
@@ -245,6 +255,7 @@ async fn list_files(
             query.keyword.as_deref(),
             query.start_date.as_deref(),
             query.end_date.as_deref(),
+            tenant_id,
         )
         .await?;
 
@@ -260,10 +271,12 @@ async fn list_files(
 async fn get_file(
     State(state): State<AppState>,
     Path(id): Path<i64>,
+    headers: HeaderMap,
 ) -> AppResult<Json<FileDetailResponse>> {
+    let tenant_id = extract_tenant_id(&headers).unwrap_or(0);
     let file = state
         .repository
-        .find_by_id(id)
+        .find_by_id(id, tenant_id)
         .await?
         .ok_or(AppError::FileNotFound)?;
 
@@ -277,10 +290,12 @@ async fn get_file(
 async fn download_file(
     State(state): State<AppState>,
     Path(id): Path<i64>,
+    headers: HeaderMap,
 ) -> AppResult<impl IntoResponse> {
+    let tenant_id = extract_tenant_id(&headers).unwrap_or(0);
     let file = state
         .repository
-        .find_by_id(id)
+        .find_by_id(id, tenant_id)
         .await?
         .ok_or(AppError::FileNotFound)?;
 
@@ -312,10 +327,12 @@ async fn download_file(
 async fn delete_file(
     State(state): State<AppState>,
     Path(id): Path<i64>,
+    headers: HeaderMap,
 ) -> AppResult<impl IntoResponse> {
+    let tenant_id = extract_tenant_id(&headers).unwrap_or(0);
     let file = state
         .repository
-        .find_by_id(id)
+        .find_by_id(id, tenant_id)
         .await?
         .ok_or(AppError::FileNotFound)?;
 
@@ -323,7 +340,7 @@ async fn delete_file(
     state.storage.delete(&file.storage_path).await.map_err(|e| AppError::FileStorageError(e.to_string()))?;
 
     // 从数据库删除记录
-    state.repository.delete(id).await?;
+    state.repository.delete(id, tenant_id).await?;
 
     Ok(json_ok_msg("文件删除成功" ))
 }

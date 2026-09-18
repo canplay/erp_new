@@ -6,10 +6,23 @@ use std::net::SocketAddr;
 use chrono::{DateTime, Utc};
 use grpc_proto::file::file_service_server::FileServiceServer;
 use std::sync::Arc;
-use tonic::Status;
+use tonic::{Request, Status};
 
 use crate::models::SysFile;
 use crate::repository::FileRepository;
+
+/// 从 gRPC 请求中提取租户 ID
+/// 优先从 metadata 中获取 x-tenant-id
+pub fn extract_tenant_id<T>(request: &Request<T>) -> i64 {
+    if let Some(value) = request.metadata().get("x-tenant-id") {
+        if let Ok(s) = value.to_str() {
+            if let Ok(id) = s.parse::<i64>() {
+                return id;
+            }
+        }
+    }
+    0
+}
 
 /// File 应用状态
 #[derive(Clone)]
@@ -62,6 +75,7 @@ pub async fn list_files(
     page_size: i32,
     category: Option<String>,
     keyword: Option<String>,
+    tenant_id: i64,
 ) -> Result<(Vec<FileInfo>, i64), Status> {
     let page = if page <= 0 { 1 } else { page as u32 };
     let page_size = if page_size <= 0 { 20 } else { page_size as u32 };
@@ -75,6 +89,7 @@ pub async fn list_files(
             keyword.as_deref(),
             None,
             None,
+            tenant_id,
         )
         .await
         .map_err(|e| Status::internal(format!("Database error: {e}" )))?;
@@ -84,38 +99,38 @@ pub async fn list_files(
 }
 
 /// 获取文件详情
-pub async fn get_file(state: Arc<FileAppState>, id: i64) -> Result<Option<FileInfo>, Status> {
+pub async fn get_file(state: Arc<FileAppState>, id: i64, tenant_id: i64) -> Result<Option<FileInfo>, Status> {
     state
         .repository
-        .find_by_id(id)
+        .find_by_id(id, tenant_id)
         .await
         .map(|opt| opt.map(FileInfo::from))
         .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 /// 删除文件
-pub async fn delete_file(state: Arc<FileAppState>, id: i64) -> Result<bool, Status> {
+pub async fn delete_file(state: Arc<FileAppState>, id: i64, tenant_id: i64) -> Result<bool, Status> {
     state
         .repository
-        .delete(id)
+        .delete(id, tenant_id)
         .await
         .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 /// 批量删除文件
-pub async fn batch_delete_files(state: Arc<FileAppState>, ids: Vec<i64>) -> Result<u64, Status> {
+pub async fn batch_delete_files(state: Arc<FileAppState>, ids: Vec<i64>, tenant_id: i64) -> Result<u64, Status> {
     state
         .repository
-        .batch_delete(&ids)
+        .batch_delete(&ids, tenant_id)
         .await
         .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }
 
 /// 检查文件是否被使用
-pub async fn check_file_in_use(state: Arc<FileAppState>, id: i64) -> Result<bool, Status> {
+pub async fn check_file_in_use(state: Arc<FileAppState>, id: i64, tenant_id: i64) -> Result<bool, Status> {
     state
         .repository
-        .is_file_in_use(id)
+        .is_file_in_use(id, tenant_id)
         .await
         .map_err(|e| Status::internal(format!("Database error: {e}" )))
 }

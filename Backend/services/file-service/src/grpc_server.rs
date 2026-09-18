@@ -135,6 +135,7 @@ impl FileService for FileGrpcService {
         &self,
         request: Request<ListFilesRequest>,
     ) -> Result<Response<ListFilesResponse>, Status> {
+        let tenant_id = crate::grpc_handlers::extract_tenant_id(&request);
         let req = request.into_inner();
         let page = if req.page > 0 { req.page } else { 1 };
         let page_size = if req.page_size > 0 { req.page_size } else { 20 };
@@ -150,6 +151,7 @@ impl FileService for FileGrpcService {
             page_size,
             None,
             keyword,
+            tenant_id,
         )
         .await?;
 
@@ -166,13 +168,14 @@ impl FileService for FileGrpcService {
         &self,
         request: Request<GetFileRequest>,
     ) -> Result<Response<GetFileResponse>, Status> {
+        let tenant_id = crate::grpc_handlers::extract_tenant_id(&request);
         let req = request.into_inner();
         let id: i64 = req
             .id
             .parse()
-            .map_err(|_| Status::invalid_argument("invalid file id" ))?;
+            .map_err(|_| Status::invalid_argument("invalid file id"))?;
 
-        let result = crate::grpc_handlers::get_file(self.state().clone(), id).await?;
+        let result = crate::grpc_handlers::get_file(self.state().clone(), id, tenant_id).await?;
 
         Ok(Response::new(GetFileResponse {
             file: result.map(file_info_to_proto),
@@ -183,6 +186,7 @@ impl FileService for FileGrpcService {
         &self,
         request: Request<DeleteFileRequest>,
     ) -> Result<Response<DeleteFileResponse>, Status> {
+        let tenant_id = crate::grpc_handlers::extract_tenant_id(&request);
         let req = request.into_inner();
         let mut count = 0;
 
@@ -191,8 +195,8 @@ impl FileService for FileGrpcService {
             let id: i64 = req
                 .id
                 .parse()
-                .map_err(|_| Status::invalid_argument("invalid file id" ))?;
-            if crate::grpc_handlers::delete_file(self.state().clone(), id).await? {
+                .map_err(|_| Status::invalid_argument("invalid file id"))?;
+            if crate::grpc_handlers::delete_file(self.state().clone(), id, tenant_id).await? {
                 count += 1;
             }
         }
@@ -205,7 +209,7 @@ impl FileService for FileGrpcService {
                 .filter_map(|s| s.parse::<i64>().ok())
                 .collect();
             if !ids.is_empty() {
-                count += crate::grpc_handlers::batch_delete_files(self.state().clone(), ids).await?
+                count += crate::grpc_handlers::batch_delete_files(self.state().clone(), ids, tenant_id).await?
                     as i32;
             }
         }

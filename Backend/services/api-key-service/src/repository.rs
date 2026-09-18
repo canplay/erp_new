@@ -60,6 +60,7 @@ pub trait ApiKeyRepository: Send + Sync {
     fn list_by_user(
         &self,
         user_id: i64,
+        tenant_id: i64,
         page: i64,
         page_size: i64,
     ) -> impl std::future::Future<Output = Result<(Vec<ApiKey>, i64), sqlx::Error>> + Send;
@@ -207,12 +208,13 @@ impl ApiKeyRepository for PostgresApiKeyRepository {
     async fn list_by_user(
         &self,
         user_id: i64,
+        tenant_id: i64,
         page: i64,
         page_size: i64,
     ) -> Result<(Vec<ApiKey>, i64), sqlx::Error> {
         let offset = (page - 1) * page_size;
 
-        let count: i64 = sqlx::query_scalar!("SELECT COUNT(*) FROM api_keys WHERE user_id = $1" , user_id)
+        let count: i64 = sqlx::query_scalar!("SELECT COUNT(*) FROM api_keys WHERE user_id = $1 AND tenant_id = $2", user_id, tenant_id)
             .fetch_one(&self.pool)
             .await?
             .unwrap_or(0);
@@ -226,9 +228,10 @@ impl ApiKeyRepository for PostgresApiKeyRepository {
                 tenant_id, user_id,
                 COALESCE(status, '') AS "status!" ,
                 created_at, updated_at, expires_at, last_used_at
-            FROM api_keys WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3
+            FROM api_keys WHERE user_id = $1 AND tenant_id = $2 ORDER BY created_at DESC LIMIT $3 OFFSET $4
 "#,
             user_id as i64,
+            tenant_id as i64,
             page_size as i64,
             offset as i64,
         )

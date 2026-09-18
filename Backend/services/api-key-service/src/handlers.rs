@@ -83,10 +83,11 @@ pub async fn list_keys(
     let user_id = extract_user_id(&headers);
     let page = query.page.unwrap_or(1);
     let page_size = query.page_size.unwrap_or(20);
+    let tenant_id: i64 = query.tenant_id.and_then(|s| s.parse().ok()).unwrap_or(0);
 
     match state
         .repository
-        .list_by_user(user_id, page, page_size)
+        .list_by_user(user_id, tenant_id, page, page_size)
         .await
     {
         Ok((keys, total)) => {
@@ -288,9 +289,11 @@ pub async fn enable_key(
 pub async fn get_stats(
     State(state): State<AppState>,
     headers: Extension<axum::http::HeaderMap>,
+    Query(query): Query<KeyQuery>,
 ) -> impl IntoResponse {
     let user_id = extract_user_id(&headers);
-    match state.repository.list_by_user(user_id, 1, 1).await {
+    let tenant_id: i64 = query.tenant_id.and_then(|s| s.parse().ok()).unwrap_or(0);
+    match state.repository.list_by_user(user_id, tenant_id, 1, 1).await {
         Ok((_, total)) => json_api_key_stats(total),
         Err(e) => {
             error!("获取统计信息失败: {}" , e);

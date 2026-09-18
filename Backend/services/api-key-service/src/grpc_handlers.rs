@@ -314,18 +314,19 @@ pub async fn list_api_keys(
     _status: Option<i32>,
     keyword: Option<String>,
     user_id: Option<String>,
-    _tenant_id: Option<String>,
+    tenant_id: Option<String>,
 ) -> Result<PaginatedApiKeysInfo, Status> {
     tracing::info!("获取 Key 列表: page={page}, keyword={keyword:?}" );
 
     // 解析用户 ID
     let user_id = user_id.and_then(|s| s.parse().ok());
+    let tenant_id: i64 = tenant_id.and_then(|s| s.parse().ok()).unwrap_or(0);
     let page = i64::from(page.max(1));
     let page_size = i64::from(page_size.clamp(1, 100));
 
     // 从数据库查询
     if let Some(uid) = user_id {
-        match state.repository.list_by_user(uid, page, page_size).await {
+        match state.repository.list_by_user(uid, tenant_id, page, page_size).await {
             Ok((keys, total)) => {
                 let key_infos: Vec<ApiKeyInfo> = keys.into_iter().map(ApiKeyInfo::from).collect();
                 return Ok(PaginatedApiKeysInfo {
@@ -453,7 +454,7 @@ pub async fn batch_delete_api_keys(
 pub async fn get_key_statistics(
     state: Arc<ApiKeyAppState>,
     user_id: Option<String>,
-    _tenant_id: Option<String>,
+    tenant_id: Option<String>,
 ) -> Result<KeyStatsInfo, Status> {
     tracing::info!("获取密钥统计: user_id={user_id:?}" );
 
@@ -462,9 +463,10 @@ pub async fn get_key_statistics(
         Some(id) => id,
         None => return Ok(KeyStatsInfo::default()),
     };
+    let tenant_id: i64 = tenant_id.and_then(|s| s.parse().ok()).unwrap_or(0);
 
     // 从数据库获取列表来统计
-    match state.repository.list_by_user(user_id, 1, 1000).await {
+    match state.repository.list_by_user(user_id, tenant_id, 1, 1000).await {
         Ok((keys, total)) => {
             let now = Utc::now();
             let mut active = 0i64;

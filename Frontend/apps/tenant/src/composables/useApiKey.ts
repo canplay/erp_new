@@ -6,6 +6,7 @@
 import { ref, computed, reactive, onMounted } from 'vue';
 import { useQuasar } from 'quasar';
 import { useI18n } from 'vue-i18n';
+import { unwrapData } from '@/utils/unwrap';
 import {
   listApiKeys,
   createApiKey,
@@ -163,7 +164,7 @@ export function useApiKey() {
         if (form.expires_at) request.expires_at = form.expires_at;
 
         const response = await createApiKey(request as unknown as CreateApiKeyRequest);
-        const response_data = (response as unknown as { data: { data: { key_id: string; key_secret: string } } }).data.data;
+        const response_data = unwrapData<{ data: { key_id: string; key_secret: string } }>(response)?.data;
         newCreatedKey.value = `${response_data.key_id}:${response_data.key_secret}`;
         showDialog.value = false;
         showKeyDialog.value = true;

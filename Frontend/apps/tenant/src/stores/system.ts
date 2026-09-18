@@ -7,6 +7,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { logger } from '@/utils/logger';
+import { unwrapData } from '@/utils/unwrap';
 import {
   listDictionaryTypes,
   listDictionaryItems,
@@ -66,7 +67,7 @@ export const useDictionaryStore = defineStore('dictionary', () => {
         page: pagination.value.page,
         page_size: pagination.value.page_size,
       });
-      const data = (response as unknown as { data?: { list?: DictionaryType[]; total?: number } }).data;
+      const data = unwrapData<{ list?: DictionaryType[]; total?: number }>(response);
       if (data) {
         dictionaryTypes.value = data.list || [];
         pagination.value.total = data.total || 0;
@@ -87,7 +88,7 @@ export const useDictionaryStore = defineStore('dictionary', () => {
     isLoading.value = true;
     try {
       const response = await listDictionaryItems({ type_id });
-      const data = (response as unknown as { data?: { list?: DictionaryItem[]; total?: number } }).data;
+      const data = unwrapData<{ list?: DictionaryItem[]; total?: number }>(response);
       if (data) {
         dictionaryItems.value = data.list || [];
         pagination.value.total = data.total || 0;
@@ -112,7 +113,7 @@ export const useDictionaryStore = defineStore('dictionary', () => {
 
     try {
       const response = await getDictionaryItemsByType(typeCode);
-      const items = (response as unknown as { data?: DictionaryItem[] }).data || [];
+      const items = unwrapData<DictionaryItem[]>(response) || [];
       cachedDictionaries.value[typeCode] = items;
       return items;
     } catch (error) {
@@ -132,7 +133,7 @@ export const useDictionaryStore = defineStore('dictionary', () => {
   }) {
     try {
       const response = await createDictionaryType(data);
-      const newType = (response as unknown as { data?: DictionaryType }).data;
+      const newType = unwrapData<DictionaryType>(response);
       if (newType) {
         dictionaryTypes.value.push(newType);
       }
@@ -203,7 +204,7 @@ export const useDictionaryStore = defineStore('dictionary', () => {
   }) {
     try {
       const response = await createDictionaryItem(data);
-      const newItem = (response as unknown as { data?: DictionaryItem }).data;
+      const newItem = unwrapData<DictionaryItem>(response);
       if (newItem) {
         dictionaryItems.value.push(newItem);
       }
@@ -603,7 +604,7 @@ export const useTenantStore = defineStore('tenant', () => {
     loading.value = true;
     try {
       const response = await listTenantUsers(params);
-      const data = (response as unknown as { data?: { list?: TenantUser[] } }).data;
+      const data = unwrapData<{ list?: TenantUser[] }>(response);
       users.value = data?.list || [];
     } catch (error) {
       logger.error('【加载租户用户失败】', error);
@@ -847,15 +848,15 @@ export const useTenantStore = defineStore('tenant', () => {
   async function loadPlans() {
     try {
       const response = await getTenantPlans();
-      const data = (response as unknown as { data?: Plan[] }).data;
+      const data = unwrapData<Plan[]>(response);
       if (data) {
         plans.value = data.map(p => ({
           id: p.id,
           name: p.name,
           price: p.price,
           interval: p.interval,
-          maxUsers: (p as unknown as { maxUsers?: number }).maxUsers ?? 0,
-          maxStorage: (p as unknown as { maxStorage?: number }).maxStorage ?? 0,
+          maxUsers: unwrapData<{ maxUsers?: number }>(p)?.maxUsers ?? 0,
+          maxStorage: unwrapData<{ maxStorage?: number }>(p)?.maxStorage ?? 0,
         }));
       }
     } catch (error) {
@@ -992,7 +993,7 @@ export const useOperationLogStore = defineStore('operationLog', () => {
       if (filters.value.end_date) params.end_date = filters.value.end_date;
       const response = await listOperationLogs(params);
 
-      const data = (response as unknown as { data?: { list?: OperationLog[]; total?: number } }).data;
+      const data = unwrapData<{ list?: OperationLog[]; total?: number }>(response);
       if (data) {
         operationLogs.value = data.list || [];
         pagination.value.total = data.total || 0;
@@ -1031,7 +1032,7 @@ export const useOperationLogStore = defineStore('operationLog', () => {
       if (filters.value.end_date) params.end_date = filters.value.end_date;
       const response = await listAuditLogs(params);
 
-      const data = (response as unknown as { data?: { list?: AuditLog[]; total?: number } }).data;
+      const data = unwrapData<{ list?: AuditLog[]; total?: number }>(response);
       if (data) {
         auditLogs.value = data.list || [];
         pagination.value.total = data.total || 0;
@@ -1051,7 +1052,7 @@ export const useOperationLogStore = defineStore('operationLog', () => {
   async function fetchOperationLogDetail(id: number) {
     try {
       const response = await getOperationLog(id);
-      return (response as unknown as { data?: OperationLog }).data;
+      return unwrapData<OperationLog>(response);
     } catch (error) {
       logger.error('【获取操作日志详情失败】', error);
       throw error;

@@ -7,6 +7,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { logger } from '@/utils/logger';
+import { unwrapData } from '@/utils/unwrap';
 import {
   getAllDevices,
   getDeviceStatistics,
@@ -80,7 +81,7 @@ export const useDeviceStore = defineStore('device', () => {
         page_size: pagination.value.page_size,
         ...params,
       });
-      const data = (response as unknown as { data?: { list?: LoginDevice[]; total?: number } }).data;
+      const data = unwrapData<{ list?: LoginDevice[]; total?: number }>(response);
       if (data) {
         devices.value = data.list || [];
         pagination.value.total = data.total || 0;
@@ -100,7 +101,7 @@ export const useDeviceStore = defineStore('device', () => {
     isLoading.value = true;
     try {
       const response = await getMyDevices(params);
-      const data = (response as unknown as { data?: { list?: LoginDevice[] } }).data;
+      const data = unwrapData<{ list?: LoginDevice[] }>(response);
       if (data) {
         myDevices.value = data.list || [];
       }
@@ -118,7 +119,7 @@ export const useDeviceStore = defineStore('device', () => {
   async function fetchStatistics() {
     try {
       const response = await getDeviceStatistics();
-      const data = (response as unknown as { data?: typeof statistics.value }).data;
+      const data = unwrapData<typeof statistics.value>(response);
       if (data) {
         statistics.value = data;
       }
@@ -138,7 +139,7 @@ export const useDeviceStore = defineStore('device', () => {
         page_size: pagination.value.page_size,
         ...params,
       });
-      const data = (response as unknown as { data?: { list?: LoginDevice[]; total?: number } }).data;
+      const data = unwrapData<{ list?: LoginDevice[]; total?: number }>(response);
       if (data) {
         abnormalLogins.value = data.list || [];
         pagination.value.total = data.total || 0;

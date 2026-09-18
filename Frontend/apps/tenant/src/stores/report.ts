@@ -5,6 +5,7 @@
 
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
+import { unwrapData } from '@/utils/unwrap';
 import {
   listReports,
   createReport,
@@ -29,10 +30,10 @@ export const useReportStore = defineStore('report', () => {
     loading.value = true;
     try {
       const response = await listReports(params);
-      const resp = response as unknown as { data?: { list: Report[]; total: number } };
-      if (resp?.data) {
-        reports.value = resp.data.list;
-        total.value = resp.data.total;
+      const resp = unwrapData<{ list: Report[]; total: number }>(response);
+      if (resp) {
+        reports.value = resp.list;
+        total.value = resp.total;
       }
     } finally {
       loading.value = false;
@@ -60,11 +61,11 @@ export const useReportStore = defineStore('report', () => {
 
   async function getReportDetail(id: string) {
     const res = await getReport(id);
-    const resp = res as unknown as { data?: Report };
-    if (resp?.data) {
-      currentReport.value = resp.data;
+    const resp = unwrapData<Report>(res);
+    if (resp) {
+      currentReport.value = resp;
     }
-    return resp?.data;
+    return resp;
   }
 
   async function genReport(id: string) {

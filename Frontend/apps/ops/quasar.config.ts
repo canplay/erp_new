@@ -58,7 +58,7 @@ export default defineConfig((ctx) => {
       // minify: false,
       // distDir
 
-      extendViteConf(viteConf: Record<string, any>) {
+      extendViteConf(viteConf: Record<string, unknown>) {
         if (!ctx.dev) {
           viteConf.build ??= {};
           const buildConf = viteConf.build;

@@ -320,13 +320,19 @@ export const useCtpStore = defineStore('ctp', () => {
     return (r.data as Record<string, unknown>) ?? r;
   }
 
+  interface DeviceApiResponse {
+    devices?: LoginDevice[];
+    list?: LoginDevice[];
+    total?: number;
+  }
+
   async function fetchDevices(params?: DeviceQueryParams) {
     loading.value = true;
     try {
       const res = await ctpApi.listDevices(params);
-      const data = getData(res);
-      devices.value = (data.devices as any) ?? (data.list as any) ?? [];
-      total.value = (data.total as any) ?? devices.value.length;
+      const data = getData(res) as DeviceApiResponse;
+      devices.value = data.devices ?? data.list ?? [];
+      total.value = data.total ?? devices.value.length;
       page.value = params?.page ?? 1;
       page_size.value = params?.page_size ?? 20;
     } finally {

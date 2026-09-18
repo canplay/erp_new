@@ -74,7 +74,7 @@ async function getCsrfToken(): string | null {
 // ==================== 响应转换 ====================
 
 function transformResponse<T>(response: unknown): HttpResponse<T> {
-  const defaultResponse: HttpResponse<T> = { code: 200, message: 'success', success: true, data: null as any };
+  const defaultResponse: HttpResponse<T> = { code: 200, message: 'success', success: true, data: null as T | null };
   if (!response || typeof response !== 'object') {
     return defaultResponse;
   }

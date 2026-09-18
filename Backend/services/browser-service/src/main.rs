@@ -30,16 +30,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .and_then(|v| v.parse::<usize>().ok())
         .unwrap_or(DEFAULT_POOL_SIZE);
 
-    log::info!("[BrowserService] initializing browser pool (size={})" , pool_size);
+    tracing::info!("[BrowserService] initializing browser pool (size={})" , pool_size);
 
     let pool = match BrowserPool::new(pool_size).await {
         Ok(p) => {
-            log::info!("[BrowserService] browser pool ready with {} browsers" , p.size());
+            tracing::info!("[BrowserService] browser pool ready with {} browsers" , p.size());
             Arc::new(p)
         }
         Err(_) => {
-            log::warn!("[BrowserService] browser pool init failed (Edge may not be installed)" );
-            log::warn!("[BrowserService] starting without browser — browser operations will fail" );
+            tracing::warn!("[BrowserService] browser pool init failed (Edge may not be installed)" );
+            tracing::warn!("[BrowserService] starting without browser — browser operations will fail" );
             let empty_pool = BrowserPool::new(0).await.map_err(|e| {
                 std::io::Error::new(
                     std::io::ErrorKind::Other,

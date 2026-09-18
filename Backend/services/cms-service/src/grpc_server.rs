@@ -149,7 +149,7 @@ impl CmsService for CmsGrpcServer {
                 }))
             }
             Err(e) => {
-                log::error!("列出文章失败: {e}" );
+                tracing::error!("列出文章失败: {e}" );
                 Err(Status::internal("列出文章失败" ))
             }
         }
@@ -167,7 +167,7 @@ impl CmsService for CmsGrpcServer {
             })),
             Ok(None) => Err(Status::not_found("文章不存在" )),
             Err(e) => {
-                log::error!("获取文章失败: {e}" );
+                tracing::error!("获取文章失败: {e}" );
                 Err(Status::internal("获取文章失败" ))
             }
         }
@@ -200,7 +200,7 @@ impl CmsService for CmsGrpcServer {
                 title: req.title,
             })),
             Err(e) => {
-                log::error!("创建文章失败: {e}" );
+                tracing::error!("创建文章失败: {e}" );
                 Err(Status::internal("创建文章失败" ))
             }
         }
@@ -236,7 +236,7 @@ impl CmsService for CmsGrpcServer {
             })),
             Ok(false) => Err(Status::not_found("文章不存在" )),
             Err(e) => {
-                log::error!("更新文章失败: {e}" );
+                tracing::error!("更新文章失败: {e}" );
                 Err(Status::internal("更新文章失败" ))
             }
         }
@@ -252,7 +252,7 @@ impl CmsService for CmsGrpcServer {
             Ok(true) => Ok(Response::new(DeleteArticleResponse { success: true })),
             Ok(false) => Err(Status::not_found("文章不存在" )),
             Err(e) => {
-                log::error!("删除文章失败: {e}" );
+                tracing::error!("删除文章失败: {e}" );
                 Err(Status::internal("删除文章失败" ))
             }
         }
@@ -279,7 +279,7 @@ impl CmsService for CmsGrpcServer {
             let categories = tree
                 .await
                 .map_err(|e| {
-                    log::error!("获取分类树失败: {e}" );
+                    tracing::error!("获取分类树失败: {e}" );
                     Status::internal("获取分类树失败" )
                 })?
                 .into_iter()
@@ -317,7 +317,7 @@ impl CmsService for CmsGrpcServer {
                     Ok(Response::new(ListCategoriesResponse { categories }))
                 }
                 Err(e) => {
-                    log::error!("列出分类失败: {e}" );
+                    tracing::error!("列出分类失败: {e}" );
                     Err(Status::internal("列出分类失败" ))
                 }
             }
@@ -336,7 +336,7 @@ impl CmsService for CmsGrpcServer {
             })),
             Ok(None) => Err(Status::not_found("分类不存在" )),
             Err(e) => {
-                log::error!("获取分类失败: {e}" );
+                tracing::error!("获取分类失败: {e}" );
                 Err(Status::internal("获取分类失败" ))
             }
         }
@@ -371,7 +371,7 @@ impl CmsService for CmsGrpcServer {
                 Err(Status::already_exists("分类slug已存在" ))
             }
             Err(e) => {
-                log::error!("创建分类失败: {e}" );
+                tracing::error!("创建分类失败: {e}" );
                 Err(Status::internal("创建分类失败" ))
             }
         }
@@ -407,7 +407,7 @@ impl CmsService for CmsGrpcServer {
             })),
             Ok(false) => Err(Status::not_found("分类不存在" )),
             Err(e) => {
-                log::error!("更新分类失败: {e}" );
+                tracing::error!("更新分类失败: {e}" );
                 Err(Status::internal("更新分类失败" ))
             }
         }
@@ -435,7 +435,7 @@ impl CmsService for CmsGrpcServer {
                     "分类下存在子分类或关联文章，请使用 force 参数" ,
                 )),
                 Err(e) => {
-                    log::error!("删除分类失败: {e}" );
+                    tracing::error!("删除分类失败: {e}" );
                     Err(Status::internal("删除分类失败" ))
                 }
             }

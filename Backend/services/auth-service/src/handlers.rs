@@ -70,7 +70,7 @@ impl AuthService for AuthServiceImpl {
             Some(user) => {
                 // 审计修复 (B4): 校验账号状态, 禁用(0)/锁定账号不允许登录
                 if user.status != 1 {
-                    log::warn!("登录被拒绝: 账号状态异常 username={}" , user.username);
+                    tracing::warn!("登录被拒绝: 账号状态异常 username={}" , user.username);
                     return Err(tonic::Status::unauthenticated("账号已被禁用" ));
                 }
 

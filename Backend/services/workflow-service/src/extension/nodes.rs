@@ -1,183 +1,12 @@
-//! 工作流节点扩展模块
-//!
-//! 实现工作流节点扩展、自定义节点类型、节点连接管理
-
-use chrono::{DateTime, Utc};
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
-/// 节点类型
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Default)]
-pub enum NodeType {
-    /// 开始节点
-    Start,
-    /// 结束节点
-    End,
-    /// 任务节点
-    #[default]
-    Task,
-    /// 条件节点
-    Condition,
-    /// 并行分支
-    Parallel,
-    /// 串行分支
-    Serial,
-    /// 循环节点
-    Loop,
-    /// 子流程节点
-    SubProcess,
-    /// 人工审批节点
-    Approval,
-    /// 自动脚本节点
-    Script,
-    /// 通知节点
-    Notification,
-    /// 自定义节点
-    Custom,
-}
+use crate::extension::config::generate_id;
+use crate::extension::manager::NodeExtension;
+use crate::extension::types::*;
 
-/// 节点状态
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
-pub enum NodeState {
-    /// 草稿
-    #[default]
-    Draft,
-    /// 已激活
-    Active,
-    /// 运行中
-    Running,
-    /// 已完成
-    Completed,
-    /// 已暂停
-    Paused,
-    /// 已失败
-    Failed,
-    /// 已取消
-    Cancelled,
-}
-
-/// 工作流节点定义
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct WorkflowNode {
-    pub node_id: String,
-    pub workflow_id: String,
-    pub name: String,
-    pub node_type: NodeType,
-    pub state: NodeState,
-    /// 节点配置（JSON）
-    pub config: HashMap<String, String>,
-    /// 输入参数
-    pub inputs: Vec<Port>,
-    /// 输出参数
-    pub outputs: Vec<Port>,
-    /// 执行超时（秒）
-    pub timeout_seconds: Option<u64>,
-    /// 重试次数
-    pub retry_count: u32,
-    /// 重试间隔（秒）
-    pub retry_interval: u32,
-    /// 自定义属性
-    pub properties: HashMap<String, String>,
-    /// 位置信息
-    pub position_x: f64,
-    pub position_y: f64,
-    pub created_at: DateTime<Utc>,
-    pub updated_at: DateTime<Utc>,
-}
-
-/// 节点端口（输入/输出）
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Port {
-    pub port_id: String,
-    pub name: String,
-    pub data_type: String,
-    pub required: bool,
-    pub default_value: Option<String>,
-}
-
-/// 节点连接
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct NodeConnection {
-    pub connection_id: String,
-    pub source_node_id: String,
-    pub source_port_id: String,
-    pub target_node_id: String,
-    pub target_port_id: String,
-    /// 条件表达式（用于条件分支）
-    pub condition: Option<String>,
-    pub priority: u32,
-}
-
-/// 节点执行上下文
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct NodeExecutionContext {
-    pub execution_id: String,
-    pub workflow_id: String,
-    pub node_id: String,
-    pub inputs: HashMap<String, String>,
-    pub outputs: HashMap<String, String>,
-    pub variables: HashMap<String, String>,
-    pub started_at: Option<DateTime<Utc>>,
-    pub completed_at: Option<DateTime<Utc>>,
-    pub error: Option<String>,
-}
-
-/// 节点扩展配置
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct NodeExtensionConfig {
-    pub node_type: NodeType,
-    pub display_name: String,
-    pub description: String,
-    pub icon: String,
-    /// 输入端口定义
-    pub input_ports: Vec<PortDefinition>,
-    /// 输出端口定义
-    pub output_ports: Vec<PortDefinition>,
-    /// 配置参数定义
-    pub config_params: Vec<ConfigParam>,
-    /// 验证规则
-    pub validation_rules: Vec<ValidationRule>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PortDefinition {
-    pub name: String,
-    pub data_type: String,
-    pub required: bool,
-    pub description: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ConfigParam {
-    pub name: String,
-    pub param_type: String,
-    pub required: bool,
-    pub default_value: Option<String>,
-    pub options: Option<Vec<String>>,
-    pub description: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ValidationRule {
-    pub rule_type: String,
-    pub expression: String,
-    pub error_message: String,
-}
-
-/// 节点执行器接口
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct NodeExecutor {
-    pub executor_id: String,
-    pub node_type: NodeType,
-    pub name: String,
-    pub handler: String,
-    pub config: HashMap<String, String>,
-    pub enabled: bool,
-}
-
-/// 工作流节点管理器
+/// 节点管理器 (async version with in-memory state)
 pub struct NodeManager {
     /// 节点定义缓存
     nodes: Arc<RwLock<HashMap<String, WorkflowNode>>>,
@@ -211,12 +40,6 @@ impl NodeManager {
     }
 
     /// 注册节点扩展配置
-    ///
-    /// # Arguments
-    /// * `config` - 节点扩展配置
-    ///
-    /// # Returns
-    /// 是否成功
     pub async fn register_extension(&self, config: NodeExtensionConfig) -> bool {
         let mut extensions = self.extensions.write().await;
         extensions.insert(config.node_type, config);
@@ -224,24 +47,12 @@ impl NodeManager {
     }
 
     /// 获取节点扩展配置
-    ///
-    /// # Arguments
-    /// * `node_type` - 节点类型
-    ///
-    /// # Returns
-    /// 扩展配置（如果存在）
     pub async fn get_extension(&self, node_type: NodeType) -> Option<NodeExtensionConfig> {
         let extensions = self.extensions.read().await;
         extensions.get(&node_type).cloned()
     }
 
     /// 注册节点执行器
-    ///
-    /// # Arguments
-    /// * `executor` - 节点执行器
-    ///
-    /// # Returns
-    /// 是否成功
     pub async fn register_executor(&self, executor: NodeExecutor) -> bool {
         let mut executors = self.executors.write().await;
         executors.insert(executor.node_type, executor);
@@ -249,27 +60,12 @@ impl NodeManager {
     }
 
     /// 获取节点执行器
-    ///
-    /// # Arguments
-    /// * `node_type` - 节点类型
-    ///
-    /// # Returns
-    /// 执行器（如果存在）
     pub async fn get_executor(&self, node_type: NodeType) -> Option<NodeExecutor> {
         let executors = self.executors.read().await;
         executors.get(&node_type).cloned()
     }
 
     /// 创建工作流节点
-    ///
-    /// # Arguments
-    /// * `workflow_id` - 工作流 ID
-    /// * `name` - 节点名称
-    /// * `node_type` - 节点类型
-    /// * `config` - 节点配置
-    ///
-    /// # Returns
-    /// 创建的节点
     pub async fn create_node(
         &self,
         workflow_id: &str,
@@ -281,9 +77,8 @@ impl NodeManager {
     ) -> WorkflowNode {
         let mut nodes = self.nodes.write().await;
 
-        let node_id = format!("{}_{}" , workflow_id, generate_id());
+        let node_id = format!("{}_{}", workflow_id, generate_id());
 
-        // 获取默认配置
         let extension = self.extensions.read().await.get(&node_type).cloned();
 
         let (inputs, outputs) = if let Some(ext) = extension {
@@ -291,7 +86,7 @@ impl NodeManager {
                 ext.input_ports
                     .iter()
                     .map(|p| Port {
-                        port_id: format!("{}_in_{}" , node_id, p.name),
+                        port_id: format!("{}_in_{}", node_id, p.name),
                         name: p.name.clone(),
                         data_type: p.data_type.clone(),
                         required: p.required,
@@ -301,7 +96,7 @@ impl NodeManager {
                 ext.output_ports
                     .iter()
                     .map(|p| Port {
-                        port_id: format!("{}_out_{}" , node_id, p.name),
+                        port_id: format!("{}_out_{}", node_id, p.name),
                         name: p.name.clone(),
                         data_type: p.data_type.clone(),
                         required: p.required,
@@ -328,8 +123,8 @@ impl NodeManager {
             properties: HashMap::new(),
             position_x,
             position_y,
-            created_at: Utc::now(),
-            updated_at: Utc::now(),
+            created_at: chrono::Utc::now(),
+            updated_at: chrono::Utc::now(),
         };
 
         nodes.insert(node_id, node.clone());
@@ -337,25 +132,12 @@ impl NodeManager {
     }
 
     /// 获取节点
-    ///
-    /// # Arguments
-    /// * `node_id` - 节点 ID
-    ///
-    /// # Returns
-    /// 节点信息（如果存在）
     pub async fn get_node(&self, node_id: &str) -> Option<WorkflowNode> {
         let nodes = self.nodes.read().await;
         nodes.get(node_id).cloned()
     }
 
     /// 更新节点
-    ///
-    /// # Arguments
-    /// * `node_id` - 节点 ID
-    /// * `updates` - 更新内容
-    ///
-    /// # Returns
-    /// 是否成功
     pub async fn update_node(
         &self,
         node_id: &str,
@@ -375,31 +157,19 @@ impl NodeManager {
             if let Some(s) = state {
                 node.state = s;
             }
-            node.updated_at = Utc::now();
+            node.updated_at = chrono::Utc::now();
             return true;
         }
         false
     }
 
     /// 删除节点
-    ///
-    /// # Arguments
-    /// * `node_id` - 节点 ID
-    ///
-    /// # Returns
-    /// 是否成功
     pub async fn delete_node(&self, node_id: &str) -> bool {
         let mut nodes = self.nodes.write().await;
         nodes.remove(node_id).is_some()
     }
 
     /// 获取工作流的所有节点
-    ///
-    /// # Arguments
-    /// * `workflow_id` - 工作流 ID
-    ///
-    /// # Returns
-    /// 节点列表
     pub async fn get_workflow_nodes(&self, workflow_id: &str) -> Vec<WorkflowNode> {
         let nodes = self.nodes.read().await;
         nodes
@@ -410,16 +180,6 @@ impl NodeManager {
     }
 
     /// 创建节点连接
-    ///
-    /// # Arguments
-    /// * `source_node_id` - 源节点 ID
-    /// * `source_port_id` - 源端口 ID
-    /// * `target_node_id` - 目标节点 ID
-    /// * `target_port_id` - 目标端口 ID
-    /// * `condition` - 条件（可选）
-    ///
-    /// # Returns
-    /// 创建的连接
     pub async fn create_connection(
         &self,
         source_node_id: &str,
@@ -430,7 +190,6 @@ impl NodeManager {
     ) -> Option<NodeConnection> {
         let nodes = self.nodes.read().await;
 
-        // 验证节点存在
         if !nodes.contains_key(source_node_id) || !nodes.contains_key(target_node_id) {
             return None;
         }
@@ -455,24 +214,12 @@ impl NodeManager {
     }
 
     /// 获取节点的输出连接
-    ///
-    /// # Arguments
-    /// * `node_id` - 节点 ID
-    ///
-    /// # Returns
-    /// 连接列表
     pub async fn get_outgoing_connections(&self, node_id: &str) -> Vec<NodeConnection> {
         let connections = self.connections.read().await;
         connections.get(node_id).cloned().unwrap_or_default()
     }
 
     /// 获取节点的后继节点
-    ///
-    /// # Arguments
-    /// * `node_id` - 节点 ID
-    ///
-    /// # Returns
-    /// 后继节点 ID 列表
     pub async fn get_successor_nodes(&self, node_id: &str) -> Vec<String> {
         let connections = self.connections.read().await;
         connections
@@ -482,12 +229,6 @@ impl NodeManager {
     }
 
     /// 获取节点的先驱节点
-    ///
-    /// # Arguments
-    /// * `node_id` - 节点 ID
-    ///
-    /// # Returns
-    /// 先驱节点 ID 列表
     pub async fn get_predecessor_nodes(&self, node_id: &str) -> Vec<String> {
         let connections = self.connections.read().await;
         let mut predecessors = Vec::new();
@@ -504,33 +245,24 @@ impl NodeManager {
     }
 
     /// 验证节点配置
-    ///
-    /// # Arguments
-    /// * `node_id` - 节点 ID
-    ///
-    /// # Returns
-    /// 验证结果
     pub async fn validate_node(&self, node_id: &str) -> Vec<ValidationError> {
         let nodes = self.nodes.read().await;
         let mut errors = Vec::new();
 
         if let Some(node) = nodes.get(node_id) {
-            // 检查节点扩展配置
             let extensions = self.extensions.read().await;
             if let Some(ext) = extensions.get(&node.node_type) {
-                // 验证必需参数
                 for param in &ext.config_params {
                     if param.required && !node.config.contains_key(&param.name) {
                         errors.push(ValidationError {
                             field: param.name.clone(),
-                            message: format!("缺少必需参数: {}" , param.name),
+                            message: format!("缺少必需参数: {}", param.name),
                         });
                     }
                 }
 
-                // 验证规则检查
                 for rule in &ext.validation_rules {
-                    if let Some(value) = node.config.get(&format!("{}_expr" , rule.rule_type))
+                    if let Some(value) = node.config.get(&format!("{}_expr", rule.rule_type))
                         && *value != rule.expression {
                             errors.push(ValidationError {
                                 field: rule.rule_type.clone(),
@@ -550,15 +282,6 @@ impl NodeManager {
     }
 
     /// 记录节点执行
-    ///
-    /// # Arguments
-    /// * `execution_id` - 执行 ID
-    /// * `workflow_id` - 工作流 ID
-    /// * `node_id` - 节点 ID
-    /// * `inputs` - 输入参数
-    ///
-    /// # Returns
-    /// 执行上下文
     pub async fn start_execution(
         &self,
         execution_id: &str,
@@ -578,7 +301,7 @@ impl NodeManager {
             inputs,
             outputs: HashMap::new(),
             variables: HashMap::new(),
-            started_at: Some(Utc::now()),
+            started_at: Some(chrono::Utc::now()),
             completed_at: None,
             error: None,
         };
@@ -590,13 +313,6 @@ impl NodeManager {
     }
 
     /// 完成节点执行
-    ///
-    /// # Arguments
-    /// * `execution_id` - 执行 ID
-    /// * `outputs` - 输出参数
-    ///
-    /// # Returns
-    /// 是否成功
     pub async fn complete_execution(
         &self,
         execution_id: &str,
@@ -606,19 +322,13 @@ impl NodeManager {
 
         if let Some(context) = executions.get_mut(execution_id) {
             context.outputs = outputs;
-            context.completed_at = Some(Utc::now());
+            context.completed_at = Some(chrono::Utc::now());
             return true;
         }
         false
     }
 
     /// 获取节点执行记录
-    ///
-    /// # Arguments
-    /// * `node_id` - 节点 ID
-    ///
-    /// # Returns
-    /// 执行记录列表
     pub async fn get_node_executions(&self, node_id: &str) -> Vec<NodeExecutionContext> {
         let executions = self.executions.read().await;
         executions
@@ -635,7 +345,7 @@ impl NodeManager {
 
         let total = nodes.len();
         let by_type: HashMap<String, usize> = nodes.values().fold(HashMap::new(), |mut acc, n| {
-            *acc.entry(format!("{:?}" , n.node_type)).or_insert(0) += 1;
+            *acc.entry(format!("{:?}", n.node_type)).or_insert(0) += 1;
             acc
         });
 
@@ -666,34 +376,6 @@ impl Default for NodeManager {
     fn default() -> Self {
         Self::new()
     }
-}
-
-/// 验证错误
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ValidationError {
-    pub field: String,
-    pub message: String,
-}
-
-/// 节点统计信息
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct NodeStats {
-    pub total_nodes: usize,
-    pub nodes_by_type: HashMap<String, usize>,
-    pub total_executions: usize,
-    pub running_executions: usize,
-    pub completed_executions: usize,
-    pub failed_executions: usize,
-}
-
-/// 生成唯一 ID
-fn generate_id() -> String {
-    use std::time::{SystemTime, UNIX_EPOCH};
-    let timestamp = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap_or_else(|_| { tracing::error!("system time is before UNIX epoch" ); std::time::Duration::from_secs(0) })
-        .as_nanos();
-    format!("{timestamp:016x}" )
 }
 
 #[cfg(test)]
@@ -737,7 +419,7 @@ mod tests {
 
         let ext = manager.get_extension(NodeType::Custom).await;
         assert!(ext.is_some());
-        assert_eq!(ext.expect("test assertion" ).display_name, "自定义节点" );
+        assert_eq!(ext.expect("test assertion").display_name, "自定义节点");
     }
 
     #[tokio::test]
@@ -746,8 +428,8 @@ mod tests {
 
         let node = manager
             .create_node(
-                "workflow_001" ,
-                "测试节点" ,
+                "workflow_001",
+                "测试节点",
                 NodeType::Task,
                 HashMap::new(),
                 100.0,
@@ -755,12 +437,11 @@ mod tests {
             )
             .await;
 
-        assert_eq!(node.workflow_id, "workflow_001" );
-        assert_eq!(node.name, "测试节点" );
+        assert_eq!(node.workflow_id, "workflow_001");
+        assert_eq!(node.name, "测试节点");
         assert_eq!(node.node_type, NodeType::Task);
         assert_eq!(node.state, NodeState::Draft);
 
-        // 验证节点存在
         let fetched = manager.get_node(&node.node_id).await;
         assert!(fetched.is_some());
     }
@@ -771,8 +452,8 @@ mod tests {
 
         let node = manager
             .create_node(
-                "workflow_001" ,
-                "节点1" ,
+                "workflow_001",
+                "节点1",
                 NodeType::Task,
                 HashMap::new(),
                 0.0,
@@ -795,8 +476,8 @@ mod tests {
         assert!(updated);
 
         let fetched = manager.get_node(&node.node_id).await;
-        let fetched_node = fetched.as_ref().expect("test assertion" );
-        assert_eq!(fetched_node.name, "更新后节点" );
+        let fetched_node = fetched.as_ref().expect("test assertion");
+        assert_eq!(fetched_node.name, "更新后节点");
         assert_eq!(fetched_node.state, NodeState::Active);
     }
 
@@ -804,34 +485,30 @@ mod tests {
     async fn test_connections() {
         let manager = NodeManager::default_manager();
 
-        // 创建两个节点
         let node1 = manager
-            .create_node("wf1" , "开始" , NodeType::Start, HashMap::new(), 0.0, 0.0)
+            .create_node("wf1", "开始", NodeType::Start, HashMap::new(), 0.0, 0.0)
             .await;
         let node2 = manager
-            .create_node("wf1" , "任务" , NodeType::Task, HashMap::new(), 100.0, 0.0)
+            .create_node("wf1", "任务", NodeType::Task, HashMap::new(), 100.0, 0.0)
             .await;
         let node3 = manager
-            .create_node("wf1" , "结束" , NodeType::End, HashMap::new(), 200.0, 0.0)
+            .create_node("wf1", "结束", NodeType::End, HashMap::new(), 200.0, 0.0)
             .await;
 
-        // 创建连接
         let conn1 = manager
-            .create_connection(&node1.node_id, "out1" , &node2.node_id, "in1" , None)
+            .create_connection(&node1.node_id, "out1", &node2.node_id, "in1", None)
             .await;
         let conn2 = manager
-            .create_connection(&node2.node_id, "out1" , &node3.node_id, "in1" , None)
+            .create_connection(&node2.node_id, "out1", &node3.node_id, "in1", None)
             .await;
 
         assert!(conn1.is_some());
         assert!(conn2.is_some());
 
-        // 验证后继节点
         let successors = manager.get_successor_nodes(&node1.node_id).await;
         assert_eq!(successors.len(), 1);
         assert_eq!(successors[0], node2.node_id);
 
-        // 验证先驱节点
         let predecessors = manager.get_predecessor_nodes(&node3.node_id).await;
         assert_eq!(predecessors.len(), 1);
         assert_eq!(predecessors[0], node2.node_id);
@@ -842,47 +519,43 @@ mod tests {
         let manager = NodeManager::default_manager();
 
         let node = manager
-            .create_node("wf1" , "任务" , NodeType::Task, HashMap::new(), 0.0, 0.0)
+            .create_node("wf1", "任务", NodeType::Task, HashMap::new(), 0.0, 0.0)
             .await;
 
-        // 开始执行
         let mut inputs = HashMap::new();
         inputs.insert("param1".to_string(), "value1".to_string());
 
         let context = manager
-            .start_execution("exec_001" , "wf1" , &node.node_id, inputs)
+            .start_execution("exec_001", "wf1", &node.node_id, inputs)
             .await;
         assert!(context.is_some());
 
-        // 完成执行
         let mut outputs = HashMap::new();
         outputs.insert("result".to_string(), "success".to_string());
 
-        let completed = manager.complete_execution("exec_001" , outputs).await;
+        let completed = manager.complete_execution("exec_001", outputs).await;
         assert!(completed);
 
-        // 获取执行记录
         let executions = manager.get_node_executions(&node.node_id).await;
         assert_eq!(executions.len(), 1);
-        assert_eq!(executions[0].execution_id, "exec_001" );
+        assert_eq!(executions[0].execution_id, "exec_001");
     }
 
     #[tokio::test]
     async fn test_stats() {
         let manager = NodeManager::default_manager();
 
-        // 创建多个节点
         manager
-            .create_node("wf1" , "开始" , NodeType::Start, HashMap::new(), 0.0, 0.0)
+            .create_node("wf1", "开始", NodeType::Start, HashMap::new(), 0.0, 0.0)
             .await;
         manager
-            .create_node("wf1" , "任务1" , NodeType::Task, HashMap::new(), 100.0, 0.0)
+            .create_node("wf1", "任务1", NodeType::Task, HashMap::new(), 100.0, 0.0)
             .await;
         manager
-            .create_node("wf1" , "任务2" , NodeType::Task, HashMap::new(), 200.0, 0.0)
+            .create_node("wf1", "任务2", NodeType::Task, HashMap::new(), 200.0, 0.0)
             .await;
         manager
-            .create_node("wf1" , "结束" , NodeType::End, HashMap::new(), 300.0, 0.0)
+            .create_node("wf1", "结束", NodeType::End, HashMap::new(), 300.0, 0.0)
             .await;
 
         let stats = manager.get_stats().await;

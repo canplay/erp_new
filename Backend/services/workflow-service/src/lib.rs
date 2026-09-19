@@ -5,14 +5,14 @@
 pub mod engine; // 工作流执行引擎
 pub mod events; // Workflow event emission module
 pub mod extension;
-pub mod grpc_handlers; // gRPC 服务处理器
+pub mod grpc; // gRPC 服务模块
 pub mod grpc_server; // gRPC 服务实现
-pub mod http_handlers;
+pub mod http; // HTTP 服务模块
 pub mod models; // 导出数据模型
-pub mod repository; // 仓储层（数据库 CRUD） // 节点扩展模块
+pub mod repository; // 仓储层（数据库 CRUD）
 
-// 导出状态类型
-pub use http_handlers::{AppState, WorkflowState};
+// 导出 HTTP 状态类型
+pub use http::{AppState, WorkflowState};
 
 // 导出模型类型
 pub use models::{
@@ -35,7 +35,8 @@ pub use repository::{
     WorkflowNode, ScheduledTask as ScheduledTaskModel, TaskRecord as TaskRecordModel,
 };
 
-pub use grpc_handlers::{WorkflowAppState, WorkflowGrpcService, WorkflowInfo};
+// 导出 gRPC 类型
+pub use grpc::{WorkflowAppState, WorkflowGrpcService, WorkflowInfo};
 
 // 导出引擎类型
 pub use common::AppError;
@@ -49,7 +50,7 @@ pub use events::{
     WorkflowEventType, WorkflowFailedData,
 };
 
-// 导出节点扩展类型（避免与 models 中的同名类型冲突）
+// 导出节点扩展类型
 pub use extension::{
     ConfigParam, NodeConnection, NodeExecutionContext, NodeExecutor, NodeExtensionConfig,
     NodeManager, NodeState, NodeStats, Port, PortDefinition, ValidationError, ValidationRule,

@@ -16,7 +16,7 @@ use crate::helpers::{json_success, json_ok, json_error, json_error_fmt, json_suc
 
 /// 公告查询参数
 #[derive(Debug, Deserialize)]
-pub struct AnnouncementQueryParams {
+pub(crate) struct AnnouncementQueryParams {
     pub page: Option<i32>,
     pub page_size: Option<i32>,
     pub is_active: Option<bool>,
@@ -24,7 +24,7 @@ pub struct AnnouncementQueryParams {
 
 /// 创建公告请求
 #[derive(Debug, Deserialize)]
-pub struct CreateAnnouncementRequest {
+pub(crate) struct CreateAnnouncementRequest {
     pub title: String,
     pub content: String,
     pub announcement_type: Option<String>,
@@ -37,7 +37,7 @@ pub struct CreateAnnouncementRequest {
 
 /// 更新公告请求
 #[derive(Debug, Deserialize)]
-pub struct UpdateAnnouncementRequest {
+pub(crate) struct UpdateAnnouncementRequest {
     pub title: Option<String>,
     pub content: Option<String>,
     pub announcement_type: Option<String>,
@@ -50,13 +50,13 @@ pub struct UpdateAnnouncementRequest {
 
 /// 更新配置请求
 #[derive(Debug, Deserialize)]
-pub struct UpdateConfigRequest {
+pub(crate) struct UpdateConfigRequest {
     pub value: String,
 }
 
 /// 登录日志查询参数
 #[derive(Debug, Deserialize)]
-pub struct LoginLogQueryParams {
+pub(crate) struct LoginLogQueryParams {
     pub page: Option<i32>,
     pub page_size: Option<i32>,
     pub user_id: Option<i64>,
@@ -65,7 +65,7 @@ pub struct LoginLogQueryParams {
 
 /// 公告响应
 #[derive(Debug, Serialize)]
-pub struct AnnouncementResponse {
+pub(crate) struct AnnouncementResponse {
     pub id: i64,
     pub title: String,
     pub content: String,
@@ -83,7 +83,7 @@ pub struct AnnouncementResponse {
 
 /// 公告列表响应
 #[derive(Debug, Serialize)]
-pub struct AnnouncementListResponse {
+pub(crate) struct AnnouncementListResponse {
     pub list: Vec<AnnouncementResponse>,
     pub total: i64,
     pub page: i32,
@@ -92,7 +92,7 @@ pub struct AnnouncementListResponse {
 
 /// 系统配置响应
 #[derive(Debug, Serialize)]
-pub struct ConfigResponse {
+pub(crate) struct ConfigResponse {
     pub id: i64,
     pub category: String,
     pub config_key: String,
@@ -104,7 +104,7 @@ pub struct ConfigResponse {
 
 /// 登录日志响应
 #[derive(Debug, Serialize)]
-pub struct LoginLogResponse {
+pub(crate) struct LoginLogResponse {
     pub id: i64,
     pub user_id: Option<i64>,
     pub username: Option<String>,
@@ -118,7 +118,7 @@ pub struct LoginLogResponse {
 
 /// 登录日志列表响应
 #[derive(Debug, Serialize)]
-pub struct LoginLogListResponse {
+pub(crate) struct LoginLogListResponse {
     pub list: Vec<LoginLogResponse>,
     pub total: i64,
     pub page: i32,
@@ -135,7 +135,7 @@ fn parse_datetime(s: &str) -> Option<DateTime<Utc>> {
 // ============ 处理器实现 ============
 
 /// 获取公告列表
-pub async fn list_announcements(
+pub(crate) async fn list_announcements(
     State(state): State<HttpAppState>,
     Query(params): Query<AnnouncementQueryParams>,
 ) -> impl IntoResponse {
@@ -190,7 +190,7 @@ pub async fn list_announcements(
 }
 
 /// 获取活跃公告（公开接口）
-pub async fn get_active_announcements(State(state): State<HttpAppState>) -> impl IntoResponse {
+pub(crate) async fn get_active_announcements(State(state): State<HttpAppState>) -> impl IntoResponse {
     match state.announcement_repository.get_active().await {
         Ok(announcements) => {
             let result: Vec<_> = announcements
@@ -225,7 +225,7 @@ pub async fn get_active_announcements(State(state): State<HttpAppState>) -> impl
 }
 
 /// 获取公告详情
-pub async fn get_announcement(
+pub(crate) async fn get_announcement(
     State(state): State<HttpAppState>,
     Path(id): Path<i64>,
 ) -> impl IntoResponse {
@@ -265,7 +265,7 @@ pub async fn get_announcement(
 }
 
 /// 创建公告
-pub async fn create_announcement(
+pub(crate) async fn create_announcement(
     State(state): State<HttpAppState>,
     Json(req): Json<CreateAnnouncementRequest>,
 ) -> impl IntoResponse {
@@ -314,7 +314,7 @@ pub async fn create_announcement(
 }
 
 /// 更新公告
-pub async fn update_announcement(
+pub(crate) async fn update_announcement(
     State(state): State<HttpAppState>,
     Path(id): Path<i64>,
     Json(req): Json<UpdateAnnouncementRequest>,
@@ -359,7 +359,7 @@ pub async fn update_announcement(
 }
 
 /// 删除公告
-pub async fn delete_announcement(
+pub(crate) async fn delete_announcement(
     State(state): State<HttpAppState>,
     Path(id): Path<i64>,
 ) -> impl IntoResponse {
@@ -388,7 +388,7 @@ pub async fn delete_announcement(
 // ============ 系统配置 ============
 
 /// 获取所有配置
-pub async fn list_configs(State(state): State<HttpAppState>) -> impl IntoResponse {
+pub(crate) async fn list_configs(State(state): State<HttpAppState>) -> impl IntoResponse {
     match state.announcement_repository.get_all_configs().await {
         Ok(configs) => {
             let result: Vec<_> = configs
@@ -422,7 +422,7 @@ pub async fn list_configs(State(state): State<HttpAppState>) -> impl IntoRespons
 }
 
 /// 获取单个配置
-pub async fn get_config(
+pub(crate) async fn get_config(
     State(state): State<HttpAppState>,
     Path(key): Path<String>,
 ) -> impl IntoResponse {
@@ -456,7 +456,7 @@ pub async fn get_config(
 }
 
 /// 更新配置
-pub async fn update_config(
+pub(crate) async fn update_config(
     State(state): State<HttpAppState>,
     Path(key): Path<String>,
     Json(req): Json<UpdateConfigRequest>,
@@ -488,7 +488,7 @@ pub async fn update_config(
 }
 
 /// 重置配置
-pub async fn reset_config(
+pub(crate) async fn reset_config(
     State(state): State<HttpAppState>,
     Path(key): Path<String>,
 ) -> impl IntoResponse {
@@ -517,7 +517,7 @@ pub async fn reset_config(
 // ============ 登录日志 ============
 
 /// 获取登录日志列表
-pub async fn list_login_logs(
+pub(crate) async fn list_login_logs(
     State(state): State<HttpAppState>,
     Query(params): Query<LoginLogQueryParams>,
 ) -> impl IntoResponse {
@@ -572,7 +572,7 @@ pub async fn list_login_logs(
 // ============ 路由构建 ============
 
 /// 创建公告管理路由
-pub fn create_announcement_router(state: HttpAppState) -> Router {
+pub(crate) fn create_announcement_router(state: HttpAppState) -> Router {
     Router::new()
         // 公告路由
         .route("/announcements" , axum::routing::get(list_announcements))

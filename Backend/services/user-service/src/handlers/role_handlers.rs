@@ -2,7 +2,7 @@ use grpc_proto::user::*;
 use tonic::{Request, Response, Status};
 use super::UserServiceImpl;
 
-pub async fn list_roles(s: &UserServiceImpl, request: Request<ListRolesRequest>) -> Result<Response<ListRolesResponse>, Status> {
+pub(crate) async fn list_roles(s: &UserServiceImpl, request: Request<ListRolesRequest>) -> Result<Response<ListRolesResponse>, Status> {
     let req = request.into_inner();
     let page = req.page.max(1);
     let page_size = req.page_size.clamp(1, 100);
@@ -23,7 +23,7 @@ pub async fn list_roles(s: &UserServiceImpl, request: Request<ListRolesRequest>)
     Ok(Response::new(ListRolesResponse { roles, total: result.total }))
 }
 
-pub async fn get_role(s: &UserServiceImpl, request: Request<GetRoleRequest>) -> Result<Response<GetRoleResponse>, Status> {
+pub(crate) async fn get_role(s: &UserServiceImpl, request: Request<GetRoleRequest>) -> Result<Response<GetRoleResponse>, Status> {
     let req = request.into_inner();
     let role = s.state.role_repository.find_by_code(&req.name).await
         .map_err(|e| Status::internal(e.to_string()))?;
@@ -43,7 +43,7 @@ pub async fn get_role(s: &UserServiceImpl, request: Request<GetRoleRequest>) -> 
     }
 }
 
-pub async fn create_role(s: &UserServiceImpl, request: Request<CreateRoleRequest>) -> Result<Response<CreateRoleResponse>, Status> {
+pub(crate) async fn create_role(s: &UserServiceImpl, request: Request<CreateRoleRequest>) -> Result<Response<CreateRoleResponse>, Status> {
     let req = request.into_inner();
     if req.name.is_empty() { return Err(Status::invalid_argument("角色名称不能为空")); }
 
@@ -68,7 +68,7 @@ pub async fn create_role(s: &UserServiceImpl, request: Request<CreateRoleRequest
     }))
 }
 
-pub async fn update_role(s: &UserServiceImpl, request: Request<UpdateRoleRequest>) -> Result<Response<UpdateRoleResponse>, Status> {
+pub(crate) async fn update_role(s: &UserServiceImpl, request: Request<UpdateRoleRequest>) -> Result<Response<UpdateRoleResponse>, Status> {
     let req = request.into_inner();
     let existing = s.state.role_repository.find_by_code(&req.name).await
         .map_err(|e| Status::internal(e.to_string()))?;
@@ -86,7 +86,7 @@ pub async fn update_role(s: &UserServiceImpl, request: Request<UpdateRoleRequest
     }
 }
 
-pub async fn delete_role(s: &UserServiceImpl, request: Request<DeleteRoleRequest>) -> Result<Response<DeleteRoleResponse>, Status> {
+pub(crate) async fn delete_role(s: &UserServiceImpl, request: Request<DeleteRoleRequest>) -> Result<Response<DeleteRoleResponse>, Status> {
     let req = request.into_inner();
     let result = s.state.role_repository.delete(&req.name).await
         .map_err(|e| match e {
@@ -99,7 +99,7 @@ pub async fn delete_role(s: &UserServiceImpl, request: Request<DeleteRoleRequest
     Ok(Response::new(DeleteRoleResponse { success: result }))
 }
 
-pub async fn get_role_permissions(s: &UserServiceImpl, request: Request<GetRolePermissionsRequest>) -> Result<Response<GetRolePermissionsResponse>, Status> {
+pub(crate) async fn get_role_permissions(s: &UserServiceImpl, request: Request<GetRolePermissionsRequest>) -> Result<Response<GetRolePermissionsResponse>, Status> {
     let req = request.into_inner();
     let role = s.state.role_repository.find_by_code(&req.name).await
         .map_err(|e| Status::internal(e.to_string()))?
@@ -112,7 +112,7 @@ pub async fn get_role_permissions(s: &UserServiceImpl, request: Request<GetRoleP
     Ok(Response::new(GetRolePermissionsResponse { permissions: perm_codes }))
 }
 
-pub async fn set_role_permissions(s: &UserServiceImpl, request: Request<SetRolePermissionsRequest>) -> Result<Response<SetRolePermissionsResponse>, Status> {
+pub(crate) async fn set_role_permissions(s: &UserServiceImpl, request: Request<SetRolePermissionsRequest>) -> Result<Response<SetRolePermissionsResponse>, Status> {
     let req = request.into_inner();
     let role = s.state.role_repository.find_by_code(&req.name).await
         .map_err(|e| Status::internal(e.to_string()))?
@@ -127,7 +127,7 @@ pub async fn set_role_permissions(s: &UserServiceImpl, request: Request<SetRoleP
     Ok(Response::new(SetRolePermissionsResponse { success: true }))
 }
 
-pub async fn get_role_users(s: &UserServiceImpl, request: Request<GetRoleUsersRequest>) -> Result<Response<GetRoleUsersResponse>, Status> {
+pub(crate) async fn get_role_users(s: &UserServiceImpl, request: Request<GetRoleUsersRequest>) -> Result<Response<GetRoleUsersResponse>, Status> {
     let req = request.into_inner();
     let page = req.page.max(1);
     let page_size = req.page_size.clamp(1, 100);

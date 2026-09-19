@@ -8,20 +8,20 @@ mod role_repository;
 mod user_repository;
 
 // 导出所有 Repository 和类型
-pub use announcement_repository::{
+pub(crate) use announcement_repository::{
     Announcement, AnnouncementListItem, AnnouncementRepository, AnnouncementRepositoryError,
     CreateDictionaryItemParams, DictionaryItem, DictionaryType, LoginLog, PaginatedAnnouncements,
     PaginatedDictionaryItems, PaginatedDictionaryTypes, PaginatedLoginLogs, SystemConfig,
     UpdateDictionaryItemParams,
 };
-pub use department_repository::{
+pub(crate) use department_repository::{
     Department, DepartmentListItem, DepartmentRepository, DepartmentRepositoryError,
     DepartmentTreeNode, PaginatedDepartments,
 };
-pub use role_repository::{
+pub(crate) use role_repository::{
     PaginatedRoles, Permission, Role, RoleListItem, RoleRepository, RoleRepositoryError,
     RoleTemplate,
 };
-pub use user_repository::{
+pub(crate) use user_repository::{
     PaginatedUsers, UserDetail, UserListItem, UserRepository, UserRepositoryError,
 };

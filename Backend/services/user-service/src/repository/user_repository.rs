@@ -8,7 +8,7 @@ use thiserror::Error;
 
 /// 用户仓储错误类型
 #[derive(Error, Debug)]
-pub enum UserRepositoryError {
+pub(crate) enum UserRepositoryError {
     #[error("数据库错误: {0}" )]
     Database(#[from] sqlx::Error),
 
@@ -21,7 +21,7 @@ pub enum UserRepositoryError {
 
 /// 用户详细信息
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UserDetail {
+pub(crate) struct UserDetail {
     pub id: i64,
     pub username: String,
     pub nickname: Option<String>,
@@ -38,7 +38,7 @@ pub struct UserDetail {
 
 /// 用户列表项（不含敏感信息）
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UserListItem {
+pub(crate) struct UserListItem {
     pub id: i64,
     pub username: String,
     pub nickname: Option<String>,
@@ -54,14 +54,14 @@ pub struct UserListItem {
 }
 
 /// 分页结果
-pub struct PaginatedUsers {
+pub(crate) struct PaginatedUsers {
     pub users: Vec<UserListItem>,
     pub total: i64,
 }
 
 /// 批量操作结果
 #[derive(Debug)]
-pub struct BatchOperationResult {
+pub(crate) struct BatchOperationResult {
     pub success_count: usize,
     pub fail_count: usize,
     pub errors: Vec<BatchError>,
@@ -69,14 +69,14 @@ pub struct BatchOperationResult {
 
 /// 批量操作错误
 #[derive(Debug)]
-pub struct BatchError {
+pub(crate) struct BatchError {
     pub id: i64,
     pub message: String,
 }
 
 /// 导入导出操作结果
 #[derive(Debug, Default)]
-pub struct ImportExportResult {
+pub(crate) struct ImportExportResult {
     pub total: usize,
     pub success_count: usize,
     pub fail_count: usize,
@@ -97,7 +97,7 @@ impl From<UserRepositoryError> for common::AppError {
 
 /// 用户仓储
 #[derive(Clone)]
-pub struct UserRepository {
+pub(crate) struct UserRepository {
     pool: PgPool,
 }
 
@@ -109,7 +109,7 @@ impl UserRepository {
     }
 
     /// 创建用户（使用 INSERT ... ON CONFLICT 避免重复查询）
-    pub async fn create(
+    pub(crate) async fn create(
         &self,
         username: &str,
         password_hash: &str,
@@ -139,7 +139,7 @@ impl UserRepository {
     }
 
     /// 根据用户名查找用户
-    pub async fn find_by_username(
+    pub(crate) async fn find_by_username(
         &self,
         username: &str,
     ) -> Result<Option<UserDetail>, UserRepositoryError> {
@@ -160,7 +160,7 @@ impl UserRepository {
     }
 
     /// 根据用户ID查找用户
-    pub async fn find_by_id(
+    pub(crate) async fn find_by_id(
         &self,
         user_id: i64,
     ) -> Result<Option<UserDetail>, UserRepositoryError> {
@@ -181,7 +181,7 @@ impl UserRepository {
     }
 
     /// 批量根据用户ID查找用户（N+1 修复：使用 WHERE id = ANY($1)）
-    pub async fn find_all_by_ids(
+    pub(crate) async fn find_all_by_ids(
         &self,
         user_ids: &[i64],
     ) -> Result<Vec<UserDetail>, UserRepositoryError> {
@@ -221,7 +221,7 @@ impl UserRepository {
     }
 
     /// 更新用户信息
-    pub async fn update(
+    pub(crate) async fn update(
         &self,
         user_id: i64,
         nickname: Option<String>,
@@ -256,7 +256,7 @@ impl UserRepository {
     }
 
     /// 删除用户
-    pub async fn delete(&self, user_id: i64) -> Result<bool, UserRepositoryError> {
+    pub(crate) async fn delete(&self, user_id: i64) -> Result<bool, UserRepositoryError> {
         let result = sqlx::query!(
             "DELETE FROM users WHERE id = $1" ,
             user_id,
@@ -269,7 +269,7 @@ impl UserRepository {
 
     /// 分页查询用户列表
         /// 分页查询用户列表
-    pub async fn list(
+    pub(crate) async fn list(
         &self,
         page: i32,
         page_size: i32,
@@ -306,7 +306,7 @@ impl UserRepository {
     }
 
     /// 更新用户状态
-    pub async fn update_status(
+    pub(crate) async fn update_status(
         &self,
         user_id: i64,
         status: i32,
@@ -324,7 +324,7 @@ impl UserRepository {
     }
 
     /// 更新用户角色
-    pub async fn update_role(&self, user_id: i64, role: &str) -> Result<bool, UserRepositoryError> {
+    pub(crate) async fn update_role(&self, user_id: i64, role: &str) -> Result<bool, UserRepositoryError> {
         let result = sqlx::query!(
             r"UPDATE users SET role = $1, updated_at = NOW() WHERE id = $2" ,
             role,
@@ -337,7 +337,7 @@ impl UserRepository {
     }
 
     /// 更新用户密码
-    pub async fn update_password(
+    pub(crate) async fn update_password(
         &self,
         user_id: i64,
         password_hash: &str,
@@ -355,7 +355,7 @@ impl UserRepository {
     }
 
     /// 批量更新状态（使用事务提高性能）
-    pub async fn batch_update_status(
+    pub(crate) async fn batch_update_status(
         &self,
         user_ids: &[i64],
         status: i32,
@@ -413,7 +413,7 @@ impl UserRepository {
     }
 
     /// 批量更新角色（使用事务提高性能）
-    pub async fn batch_update_role(
+    pub(crate) async fn batch_update_role(
         &self,
         user_ids: &[i64],
         role: &str,
@@ -471,7 +471,7 @@ impl UserRepository {
     }
 
     /// 批量删除用户（使用事务提高性能）
-    pub async fn batch_delete(
+    pub(crate) async fn batch_delete(
         &self,
         user_ids: &[i64],
     ) -> Result<BatchOperationResult, UserRepositoryError> {
@@ -527,7 +527,7 @@ impl UserRepository {
     }
 
     /// 从 CSV 批量创建用户（stub，待实现）
-    pub async fn batch_create_from_csv(
+    pub(crate) async fn batch_create_from_csv(
         &self,
         _data_base64: &str,
         _format: &str,
@@ -542,7 +542,7 @@ impl UserRepository {
     }
 
     /// 导出用户为 CSV（stub，待实现）
-    pub async fn export_to_csv(
+    pub(crate) async fn export_to_csv(
         &self,
         _keyword: &str,
         _status: i32,

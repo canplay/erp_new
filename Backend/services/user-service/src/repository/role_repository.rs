@@ -8,7 +8,7 @@ use thiserror::Error;
 
 /// 角色仓储错误类型
 #[derive(Error, Debug)]
-pub enum RoleRepositoryError {
+pub(crate) enum RoleRepositoryError {
     #[error("数据库错误: {0}" )]
     Database(#[from] sqlx::Error),
 
@@ -27,7 +27,7 @@ pub enum RoleRepositoryError {
 
 /// 角色信息
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Role {
+pub(crate) struct Role {
     pub id: i64,
     pub name: String,
     pub code: String,
@@ -44,7 +44,7 @@ pub struct Role {
 
 /// 角色列表项
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct RoleListItem {
+pub(crate) struct RoleListItem {
     pub id: i64,
     pub name: String,
     pub code: String,
@@ -59,7 +59,7 @@ pub struct RoleListItem {
 
 /// 权限信息
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Permission {
+pub(crate) struct Permission {
     pub id: i64,
     pub name: String,
     pub code: String,
@@ -74,7 +74,7 @@ pub struct Permission {
 
 /// 角色模板
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct RoleTemplate {
+pub(crate) struct RoleTemplate {
     pub id: i64,
     pub name: String,
     pub description: Option<String>,
@@ -85,14 +85,14 @@ pub struct RoleTemplate {
 }
 
 /// 分页结果
-pub struct PaginatedRoles {
+pub(crate) struct PaginatedRoles {
     pub roles: Vec<RoleListItem>,
     pub total: i64,
 }
 
 /// 角色仓储
 #[derive(Clone)]
-pub struct RoleRepository {
+pub(crate) struct RoleRepository {
     pool: PgPool,
 }
 
@@ -104,7 +104,7 @@ impl RoleRepository {
     }
 
     /// 创建角色
-    pub async fn create(
+    pub(crate) async fn create(
         &self,
         name: &str,
         code: &str,
@@ -168,7 +168,7 @@ impl RoleRepository {
     }
 
     /// 根据代码查找角色
-    pub async fn find_by_code(&self, code: &str) -> Result<Option<Role>, RoleRepositoryError> {
+    pub(crate) async fn find_by_code(&self, code: &str) -> Result<Option<Role>, RoleRepositoryError> {
         let row = sqlx::query_as!(
             Role,
             r#"SELECT id, name, code, description,
@@ -190,7 +190,7 @@ impl RoleRepository {
     }
 
     /// 根据ID查找角色
-    pub async fn find_by_id(&self, role_id: i64) -> Result<Option<Role>, RoleRepositoryError> {
+    pub(crate) async fn find_by_id(&self, role_id: i64) -> Result<Option<Role>, RoleRepositoryError> {
         let row = sqlx::query_as!(
             Role,
             r#"SELECT id, name, code, description,
@@ -212,7 +212,7 @@ impl RoleRepository {
     }
 
     /// 更新角色
-    pub async fn update(
+    pub(crate) async fn update(
         &self,
         code: &str,
         name: Option<String>,
@@ -249,7 +249,7 @@ impl RoleRepository {
     }
 
     /// 删除角色
-    pub async fn delete(&self, code: &str) -> Result<bool, RoleRepositoryError> {
+    pub(crate) async fn delete(&self, code: &str) -> Result<bool, RoleRepositoryError> {
         // 检查是否有子角色
         let role = self.find_by_code(code).await?;
         if let Some(role) = role {
@@ -293,7 +293,7 @@ impl RoleRepository {
     }
 
     /// 分页查询角色列表
-    pub async fn list(
+    pub(crate) async fn list(
         &self,
         page: i32,
         page_size: i32,
@@ -354,7 +354,7 @@ impl RoleRepository {
     }
 
     /// 获取角色的权限列表
-    pub async fn get_permissions(
+    pub(crate) async fn get_permissions(
         &self,
         role_id: i64,
     ) -> Result<Vec<Permission>, RoleRepositoryError> {
@@ -397,7 +397,7 @@ impl RoleRepository {
     }
 
     /// 根据权限 code 列表查询对应的 ID（用于 set_role_permissions）
-    pub async fn resolve_permission_ids(
+    pub(crate) async fn resolve_permission_ids(
         &self,
         codes: &[String],
     ) -> Result<Vec<i64>, RoleRepositoryError> {
@@ -416,7 +416,7 @@ impl RoleRepository {
     }
 
     /// 设置角色权限（N+1 修复：使用 UNNEST 批量 INSERT）
-    pub async fn set_permissions(
+    pub(crate) async fn set_permissions(
         &self,
         role_id: i64,
         permission_ids: &[i64],
@@ -446,7 +446,7 @@ impl RoleRepository {
     }
 
     /// 获取角色下的用户列表
-    pub async fn get_users(
+    pub(crate) async fn get_users(
         &self,
         role_id: i64,
         page: i32,
@@ -474,7 +474,7 @@ impl RoleRepository {
     }
 
     /// 获取所有权限（树形）
-    pub async fn list_permissions(&self) -> Result<Vec<Permission>, RoleRepositoryError> {
+    pub(crate) async fn list_permissions(&self) -> Result<Vec<Permission>, RoleRepositoryError> {
         let rows = sqlx::query_as!(
             Permission,
             r#"SELECT id, name, code,
@@ -511,7 +511,7 @@ impl RoleRepository {
     }
 
     /// 复制角色权限（N+1 修复：使用 INSERT ... SELECT 替代嵌套循环）
-    pub async fn copy_permissions(
+    pub(crate) async fn copy_permissions(
         &self,
         source_role_id: i64,
         target_role_ids: &[i64],
@@ -544,7 +544,7 @@ impl RoleRepository {
 
     /// 角色模板 CRUD
     /// 创建角色模板
-    pub async fn create_template(
+    pub(crate) async fn create_template(
         &self,
         name: &str,
         description: Option<String>,
@@ -567,7 +567,7 @@ impl RoleRepository {
     }
 
     /// 获取角色模板列表
-    pub async fn list_templates(&self) -> Result<Vec<RoleTemplate>, RoleRepositoryError> {
+    pub(crate) async fn list_templates(&self) -> Result<Vec<RoleTemplate>, RoleRepositoryError> {
         let rows = sqlx::query!(
             r#"SELECT id, name, description,
                       COALESCE(permissions, '[]'::jsonb) AS permissions,
@@ -602,7 +602,7 @@ impl RoleRepository {
     }
 
     /// 更新角色模板
-    pub async fn update_template(
+    pub(crate) async fn update_template(
         &self,
         id: i64,
         name: Option<String>,
@@ -628,7 +628,7 @@ impl RoleRepository {
     }
 
     /// 删除角色模板
-    pub async fn delete_template(&self, id: i64) -> Result<bool, RoleRepositoryError> {
+    pub(crate) async fn delete_template(&self, id: i64) -> Result<bool, RoleRepositoryError> {
         let result = sqlx::query!(
             "DELETE FROM role_templates WHERE id = $1 AND is_system = FALSE" ,
             id,
@@ -642,7 +642,7 @@ impl RoleRepository {
     // ============ 数据权限 ============
 
     /// 获取角色的数据权限配置
-    pub async fn get_data_permissions(
+    pub(crate) async fn get_data_permissions(
         &self,
         role_id: i64,
     ) -> Result<Vec<serde_json::Value>, RoleRepositoryError> {
@@ -675,7 +675,7 @@ impl RoleRepository {
     }
 
     /// 设置角色的数据权限配置（N+1 修复：批量 INSERT + 事务）
-    pub async fn set_data_permissions(
+    pub(crate) async fn set_data_permissions(
         &self,
         role_id: i64,
         permissions: &[serde_json::Value],
@@ -735,7 +735,7 @@ impl RoleRepository {
     // ============ 字段权限 ============
 
     /// 获取角色的字段权限配置
-    pub async fn get_field_permissions(
+    pub(crate) async fn get_field_permissions(
         &self,
         role_id: i64,
     ) -> Result<Vec<serde_json::Value>, RoleRepositoryError> {
@@ -767,7 +767,7 @@ impl RoleRepository {
     }
 
     /// 设置角色的字段权限配置（N+1 修复：批量 INSERT + 事务）
-    pub async fn set_field_permissions(
+    pub(crate) async fn set_field_permissions(
         &self,
         role_id: i64,
         permissions: &[serde_json::Value],
@@ -821,7 +821,7 @@ impl RoleRepository {
     // ============ 继承权限 ============
 
     /// 获取角色的继承链
-    pub async fn get_inherit_chain(
+    pub(crate) async fn get_inherit_chain(
         &self,
         role_id: i64,
     ) -> Result<Vec<serde_json::Value>, RoleRepositoryError> {
@@ -860,7 +860,7 @@ impl RoleRepository {
     }
 
     /// 设置角色的继承关系（N+1 修复：WHERE code = ANY($1)）
-    pub async fn set_inherit(
+    pub(crate) async fn set_inherit(
         &self,
         role_id: i64,
         inherit_from: &[String],
@@ -905,7 +905,7 @@ impl RoleRepository {
     }
 
     /// 移除角色的继承关系
-    pub async fn remove_inherit(&self, role_id: i64) -> Result<bool, RoleRepositoryError> {
+    pub(crate) async fn remove_inherit(&self, role_id: i64) -> Result<bool, RoleRepositoryError> {
         let result =
             sqlx::query!(
                 "DELETE FROM permission_inheritances WHERE child_role_id = $1::text" ,
@@ -918,7 +918,7 @@ impl RoleRepository {
     }
 
     /// 应用角色模板到角色（N+1 修复：复用 resolve_permission_ids 批量查询）
-    pub async fn apply_template(
+    pub(crate) async fn apply_template(
         &self,
         template_id: i64,
         role_code: &str,

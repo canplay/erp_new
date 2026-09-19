@@ -36,7 +36,7 @@ fn hash_password(password: &str) -> Result<String, String> {
 
 /// HTTP 应用状态
 #[derive(Clone)]
-pub struct HttpAppState {
+pub(crate) struct HttpAppState {
     pub inner: crate::handlers::AppState,
 }
 
@@ -52,7 +52,7 @@ impl std::ops::Deref for HttpAppState {
 
 /// 用户查询参数
 #[derive(Debug, Deserialize)]
-pub struct UserQueryParams {
+pub(crate) struct UserQueryParams {
     pub page: Option<i32>,
     pub page_size: Option<i32>,
     pub keyword: Option<String>,
@@ -60,7 +60,7 @@ pub struct UserQueryParams {
 
 /// 创建用户请求
 #[derive(Debug, Deserialize)]
-pub struct CreateUserRequest {
+pub(crate) struct CreateUserRequest {
     pub username: String,
     pub password: Option<String>,
     pub email: Option<String>,
@@ -71,7 +71,7 @@ pub struct CreateUserRequest {
 
 /// 更新用户请求
 #[derive(Debug, Deserialize)]
-pub struct UpdateUserRequest {
+pub(crate) struct UpdateUserRequest {
     pub email: Option<String>,
     pub nickname: Option<String>,
     pub phone: Option<String>,
@@ -84,20 +84,20 @@ pub struct UpdateUserRequest {
 
 /// 更新状态请求
 #[derive(Debug, Deserialize)]
-pub struct UpdateStatusRequest {
+pub(crate) struct UpdateStatusRequest {
     pub status: i32,
     pub lock_hours: Option<i32>,
 }
 
 /// 更新角色请求
 #[derive(Debug, Deserialize)]
-pub struct UpdateRoleRequest {
+pub(crate) struct UpdateRoleRequest {
     pub role: String,
 }
 
 /// 用户响应
 #[derive(Debug, Serialize)]
-pub struct UserResponse {
+pub(crate) struct UserResponse {
     pub id: i64,
     pub username: String,
     pub nickname: Option<String>,
@@ -188,7 +188,7 @@ fn validate_status(status: i32) -> Result<(), &'static str> {
 // ============ 处理器实现 ============
 
 /// 获取用户列表
-pub async fn list_users(
+pub(crate) async fn list_users(
     State(state): State<HttpAppState>,
     Query(params): Query<UserQueryParams>,
 ) -> impl IntoResponse {
@@ -224,7 +224,7 @@ pub async fn list_users(
 }
 
 /// 获取单个用户
-pub async fn get_user(
+pub(crate) async fn get_user(
     State(state): State<HttpAppState>,
     Path(user_id): Path<i64>,
 ) -> impl IntoResponse {
@@ -251,7 +251,7 @@ pub async fn get_user(
 }
 
 /// 创建用户
-pub async fn create_user(
+pub(crate) async fn create_user(
     State(state): State<HttpAppState>,
     Json(req): Json<CreateUserRequest>,
 ) -> impl IntoResponse {
@@ -315,7 +315,7 @@ pub async fn create_user(
 }
 
 /// 更新用户
-pub async fn update_user(
+pub(crate) async fn update_user(
     State(state): State<HttpAppState>,
     Path(user_id): Path<i64>,
     Json(req): Json<UpdateUserRequest>,
@@ -353,7 +353,7 @@ pub async fn update_user(
 }
 
 /// 删除用户
-pub async fn delete_user(
+pub(crate) async fn delete_user(
     State(state): State<HttpAppState>,
     Path(user_id): Path<i64>,
 ) -> impl IntoResponse {
@@ -380,7 +380,7 @@ pub async fn delete_user(
 }
 
 /// 更新用户状态
-pub async fn update_user_status(
+pub(crate) async fn update_user_status(
     State(state): State<HttpAppState>,
     Path(user_id): Path<i64>,
     Json(req): Json<UpdateStatusRequest>,
@@ -422,7 +422,7 @@ pub async fn update_user_status(
 }
 
 /// 更新用户角色
-pub async fn update_user_role(
+pub(crate) async fn update_user_role(
     State(state): State<HttpAppState>,
     Path(user_id): Path<i64>,
     Json(req): Json<UpdateRoleRequest>,
@@ -463,19 +463,19 @@ pub async fn update_user_role(
 
 /// 批量更新角色请求
 #[derive(Debug, Deserialize)]
-pub struct BatchUpdateRoleRequest {
+pub(crate) struct BatchUpdateRoleRequest {
     pub user_ids: Vec<i64>,
     pub role: String,
 }
 
 /// 重置密码请求
 #[derive(Debug, Deserialize)]
-pub struct ResetPasswordRequest {
+pub(crate) struct ResetPasswordRequest {
     pub new_password: Option<String>,
 }
 
 /// 重置用户密码
-pub async fn reset_user_password(
+pub(crate) async fn reset_user_password(
     State(state): State<HttpAppState>,
     Path(user_id): Path<i64>,
     Json(req): Json<ResetPasswordRequest>,
@@ -523,7 +523,7 @@ pub async fn reset_user_password(
 }
 
 /// 获取导入模板（返回 CSV 模板结构）
-pub async fn get_import_template() -> impl IntoResponse {
+pub(crate) async fn get_import_template() -> impl IntoResponse {
     let template = "username,password,email,nickname,phone,role\nuser1,,user1@example.com,用户1,13800000001,user\nuser2,,user2@example.com,用户2,13800000002,user\n";
 
     (
@@ -538,7 +538,7 @@ pub async fn get_import_template() -> impl IntoResponse {
 }
 
 /// 下载导入模板（返回 CSV 格式）
-pub async fn download_import_template() -> impl IntoResponse {
+pub(crate) async fn download_import_template() -> impl IntoResponse {
     let csv_content = "username,password,email,nickname,phone,role\nuser1,,user1@example.com,用户1,13800000001,user\nuser2,,user2@example.com,用户2,13800000002,user\n";
 
     axum::response::Response::builder()
@@ -560,7 +560,7 @@ pub async fn download_import_template() -> impl IntoResponse {
 }
 
 /// 导入用户（解析上传的 CSV 文件）
-pub async fn import_users(
+pub(crate) async fn import_users(
     State(state): State<HttpAppState>,
     req: axum::extract::Request,
 ) -> impl IntoResponse {
@@ -694,7 +694,7 @@ pub async fn import_users(
 }
 
 /// 导出用户（生成 CSV 文件）
-pub async fn export_users(
+pub(crate) async fn export_users(
     State(state): State<HttpAppState>,
     Query(_params): Query<UserQueryParams>,
 ) -> impl IntoResponse {
@@ -753,19 +753,19 @@ pub async fn export_users(
 
 /// 批量更新状态请求
 #[derive(Debug, Deserialize)]
-pub struct BatchUpdateStatusRequest {
+pub(crate) struct BatchUpdateStatusRequest {
     pub user_ids: Vec<i64>,
     pub status: i32,
 }
 
 /// 批量删除请求
 #[derive(Debug, Deserialize)]
-pub struct BatchDeleteRequest {
+pub(crate) struct BatchDeleteRequest {
     pub user_ids: Vec<i64>,
 }
 
 /// 批量更新用户角色（使用事务优化）
-pub async fn batch_update_user_role(
+pub(crate) async fn batch_update_user_role(
     State(state): State<HttpAppState>,
     Json(req): Json<BatchUpdateRoleRequest>,
 ) -> impl IntoResponse {
@@ -804,7 +804,7 @@ pub async fn batch_update_user_role(
 }
 
 /// 批量更新用户状态（使用事务优化）
-pub async fn batch_update_user_status(
+pub(crate) async fn batch_update_user_status(
     State(state): State<HttpAppState>,
     Json(req): Json<BatchUpdateStatusRequest>,
 ) -> impl IntoResponse {
@@ -843,7 +843,7 @@ pub async fn batch_update_user_status(
 }
 
 /// 批量删除用户（使用事务优化）
-pub async fn batch_delete_users(
+pub(crate) async fn batch_delete_users(
     State(state): State<HttpAppState>,
     Json(req): Json<BatchDeleteRequest>,
 ) -> impl IntoResponse {
@@ -873,7 +873,7 @@ pub async fn batch_delete_users(
 }
 
 /// 健康检查
-pub async fn health() -> impl IntoResponse {
+pub(crate) async fn health() -> impl IntoResponse {
     (
         StatusCode::OK,
         json_health("user-service"),
@@ -884,7 +884,7 @@ pub async fn health() -> impl IntoResponse {
 // ============ 路由构建 ============
 
 /// 创建 HTTP 路由器
-pub fn create_http_router(state: HttpAppState) -> Router {
+pub(crate) fn create_http_router(state: HttpAppState) -> Router {
     Router::new()
         // 用户 CRUD
         .route("/", axum::routing::get(list_users))

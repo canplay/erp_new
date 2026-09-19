@@ -16,7 +16,7 @@ use crate::helpers::{json_success, json_ok, json_error, json_error_fmt, json_suc
 
 /// 角色查询参数
 #[derive(Debug, Deserialize)]
-pub struct RoleQueryParams {
+pub(crate) struct RoleQueryParams {
     pub page: Option<i32>,
     pub page_size: Option<i32>,
     pub keyword: Option<String>,
@@ -24,7 +24,7 @@ pub struct RoleQueryParams {
 
 /// 创建角色请求
 #[derive(Debug, Deserialize)]
-pub struct CreateRoleRequest {
+pub(crate) struct CreateRoleRequest {
     pub name: String,
     pub code: String,
     pub description: Option<String>,
@@ -34,7 +34,7 @@ pub struct CreateRoleRequest {
 
 /// 更新角色请求
 #[derive(Debug, Deserialize)]
-pub struct UpdateRoleRequest {
+pub(crate) struct UpdateRoleRequest {
     pub name: Option<String>,
     pub description: Option<String>,
     pub status: Option<i32>,
@@ -42,20 +42,20 @@ pub struct UpdateRoleRequest {
 
 /// 更新角色权限请求
 #[derive(Debug, Deserialize)]
-pub struct UpdateRolePermissionsRequest {
+pub(crate) struct UpdateRolePermissionsRequest {
     pub permissions: Vec<i64>,
 }
 
 /// 复制角色权限请求
 #[derive(Debug, Deserialize)]
-pub struct CopyPermissionsRequest {
+pub(crate) struct CopyPermissionsRequest {
     pub source_role: String,
     pub target_roles: Vec<String>,
 }
 
 /// 角色响应
 #[derive(Debug, Serialize)]
-pub struct RoleResponse {
+pub(crate) struct RoleResponse {
     pub id: i64,
     pub name: String,
     pub code: String,
@@ -72,7 +72,7 @@ pub struct RoleResponse {
 
 /// 角色列表响应
 #[derive(Debug, Serialize)]
-pub struct RoleListResponse {
+pub(crate) struct RoleListResponse {
     pub list: Vec<RoleResponse>,
     pub total: i64,
     pub page: i32,
@@ -81,7 +81,7 @@ pub struct RoleListResponse {
 
 /// 权限响应
 #[derive(Debug, Serialize)]
-pub struct PermissionResponse {
+pub(crate) struct PermissionResponse {
     pub id: i64,
     pub name: String,
     pub code: String,
@@ -95,7 +95,7 @@ pub struct PermissionResponse {
 // ============ 处理器实现 ============
 
 /// 获取角色列表
-pub async fn list_roles(
+pub(crate) async fn list_roles(
     State(state): State<HttpAppState>,
     Query(params): Query<RoleQueryParams>,
 ) -> impl IntoResponse {
@@ -150,7 +150,7 @@ pub async fn list_roles(
 }
 
 /// 获取角色详情
-pub async fn get_role(
+pub(crate) async fn get_role(
     State(state): State<HttpAppState>,
     Path(code): Path<String>,
 ) -> impl IntoResponse {
@@ -189,7 +189,7 @@ pub async fn get_role(
 }
 
 /// 创建角色
-pub async fn create_role(
+pub(crate) async fn create_role(
     State(state): State<HttpAppState>,
     Json(req): Json<CreateRoleRequest>,
 ) -> impl IntoResponse {
@@ -237,7 +237,7 @@ pub async fn create_role(
 }
 
 /// 更新角色
-pub async fn update_role(
+pub(crate) async fn update_role(
     State(state): State<HttpAppState>,
     Path(code): Path<String>,
     Json(req): Json<UpdateRoleRequest>,
@@ -273,7 +273,7 @@ pub async fn update_role(
 }
 
 /// 删除角色
-pub async fn delete_role(
+pub(crate) async fn delete_role(
     State(state): State<HttpAppState>,
     Path(code): Path<String>,
 ) -> impl IntoResponse {
@@ -310,7 +310,7 @@ pub async fn delete_role(
 }
 
 /// 获取角色权限
-pub async fn get_role_permissions(
+pub(crate) async fn get_role_permissions(
     State(state): State<HttpAppState>,
     Path(code): Path<String>,
 ) -> impl IntoResponse {
@@ -363,7 +363,7 @@ pub async fn get_role_permissions(
 }
 
 /// 更新角色权限
-pub async fn update_role_permissions(
+pub(crate) async fn update_role_permissions(
     State(state): State<HttpAppState>,
     Path(code): Path<String>,
     Json(req): Json<UpdateRolePermissionsRequest>,
@@ -407,7 +407,7 @@ pub async fn update_role_permissions(
 }
 
 /// 获取角色下的用户
-pub async fn get_role_users(
+pub(crate) async fn get_role_users(
     State(state): State<HttpAppState>,
     Path(code): Path<String>,
     Query(params): Query<RoleQueryParams>,
@@ -459,7 +459,7 @@ pub async fn get_role_users(
 }
 
 /// 复制角色权限
-pub async fn copy_role_permissions(
+pub(crate) async fn copy_role_permissions(
     State(state): State<HttpAppState>,
     Json(req): Json<CopyPermissionsRequest>,
 ) -> impl IntoResponse {
@@ -529,7 +529,7 @@ pub async fn copy_role_permissions(
 }
 
 /// 获取所有权限列表
-pub async fn list_permissions(State(state): State<HttpAppState>) -> impl IntoResponse {
+pub(crate) async fn list_permissions(State(state): State<HttpAppState>) -> impl IntoResponse {
     match state.role_repository.list_permissions().await {
         Ok(perms) => {
             let perm_list: Vec<PermissionResponse> = perms
@@ -567,12 +567,12 @@ pub async fn list_permissions(State(state): State<HttpAppState>) -> impl IntoRes
 
 /// 数据权限请求
 #[derive(Debug, Deserialize)]
-pub struct DataPermissionsRequest {
+pub(crate) struct DataPermissionsRequest {
     pub data_permissions: Vec<serde_json::Value>,
 }
 
 /// 获取角色数据权限
-pub async fn get_role_data_permissions(
+pub(crate) async fn get_role_data_permissions(
     State(state): State<HttpAppState>,
     Path(code): Path<String>,
 ) -> impl IntoResponse {
@@ -609,7 +609,7 @@ pub async fn get_role_data_permissions(
 }
 
 /// 更新角色数据权限
-pub async fn update_role_data_permissions(
+pub(crate) async fn update_role_data_permissions(
     State(state): State<HttpAppState>,
     Path(code): Path<String>,
     Json(req): Json<DataPermissionsRequest>,
@@ -654,12 +654,12 @@ pub async fn update_role_data_permissions(
 
 /// 字段权限请求
 #[derive(Debug, Deserialize)]
-pub struct FieldPermissionsRequest {
+pub(crate) struct FieldPermissionsRequest {
     pub field_permissions: Vec<serde_json::Value>,
 }
 
 /// 获取角色字段权限
-pub async fn get_role_field_permissions(
+pub(crate) async fn get_role_field_permissions(
     State(state): State<HttpAppState>,
     Path(code): Path<String>,
 ) -> impl IntoResponse {
@@ -696,7 +696,7 @@ pub async fn get_role_field_permissions(
 }
 
 /// 更新角色字段权限
-pub async fn update_role_field_permissions(
+pub(crate) async fn update_role_field_permissions(
     State(state): State<HttpAppState>,
     Path(code): Path<String>,
     Json(req): Json<FieldPermissionsRequest>,
@@ -741,12 +741,12 @@ pub async fn update_role_field_permissions(
 
 /// 继承请求
 #[derive(Debug, Deserialize)]
-pub struct InheritRequest {
+pub(crate) struct InheritRequest {
     pub inherit_from: Vec<String>,
 }
 
 /// 获取角色继承链
-pub async fn get_role_inherit(
+pub(crate) async fn get_role_inherit(
     State(state): State<HttpAppState>,
     Path(code): Path<String>,
 ) -> impl IntoResponse {
@@ -783,7 +783,7 @@ pub async fn get_role_inherit(
 }
 
 /// 设置角色继承
-pub async fn set_role_inherit(
+pub(crate) async fn set_role_inherit(
     State(state): State<HttpAppState>,
     Path(code): Path<String>,
     Json(req): Json<InheritRequest>,
@@ -825,7 +825,7 @@ pub async fn set_role_inherit(
 }
 
 /// 移除角色继承
-pub async fn remove_role_inherit(
+pub(crate) async fn remove_role_inherit(
     State(state): State<HttpAppState>,
     Path(code): Path<String>,
 ) -> impl IntoResponse {
@@ -869,7 +869,7 @@ pub async fn remove_role_inherit(
 // ============ 路由构建 ============
 
 /// 创建角色管理路由
-pub fn create_role_router(state: HttpAppState) -> Router {
+pub(crate) fn create_role_router(state: HttpAppState) -> Router {
     Router::new()
         .route("/", axum::routing::get(list_roles))
         .route("/", axum::routing::post(create_role))

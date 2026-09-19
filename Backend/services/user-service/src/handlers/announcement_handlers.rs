@@ -2,7 +2,7 @@ use grpc_proto::user::*;
 use tonic::{Request, Response, Status};
 use super::UserServiceImpl;
 
-pub async fn list_announcements(s: &UserServiceImpl, request: Request<ListAnnouncementsRequest>) -> Result<Response<ListAnnouncementsResponse>, Status> {
+pub(crate) async fn list_announcements(s: &UserServiceImpl, request: Request<ListAnnouncementsRequest>) -> Result<Response<ListAnnouncementsResponse>, Status> {
     let req = request.into_inner();
     let is_active = if req.is_active == 0 { None } else { Some(req.is_active == 1) };
     let result = s.state.announcement_repository.list(req.page.max(1), req.page_size.clamp(1, 100), is_active)
@@ -20,7 +20,7 @@ pub async fn list_announcements(s: &UserServiceImpl, request: Request<ListAnnoun
     Ok(Response::new(ListAnnouncementsResponse { announcements, total: result.total }))
 }
 
-pub async fn get_announcement(s: &UserServiceImpl, request: Request<GetAnnouncementRequest>) -> Result<Response<GetAnnouncementResponse>, Status> {
+pub(crate) async fn get_announcement(s: &UserServiceImpl, request: Request<GetAnnouncementRequest>) -> Result<Response<GetAnnouncementResponse>, Status> {
     let req = request.into_inner();
     let a = s.state.announcement_repository.find_by_id(req.id).await
         .map_err(|e| Status::internal(e.to_string()))?;
@@ -39,7 +39,7 @@ pub async fn get_announcement(s: &UserServiceImpl, request: Request<GetAnnouncem
     }
 }
 
-pub async fn create_announcement(s: &UserServiceImpl, request: Request<CreateAnnouncementRequest>) -> Result<Response<CreateAnnouncementResponse>, Status> {
+pub(crate) async fn create_announcement(s: &UserServiceImpl, request: Request<CreateAnnouncementRequest>) -> Result<Response<CreateAnnouncementResponse>, Status> {
     let req = request.into_inner();
     let created_by: Option<i64> = req.created_by.parse().ok();
     let id = s.state.announcement_repository.create(
@@ -57,7 +57,7 @@ pub async fn create_announcement(s: &UserServiceImpl, request: Request<CreateAnn
     }))
 }
 
-pub async fn update_announcement(s: &UserServiceImpl, request: Request<UpdateAnnouncementRequest>) -> Result<Response<UpdateAnnouncementResponse>, Status> {
+pub(crate) async fn update_announcement(s: &UserServiceImpl, request: Request<UpdateAnnouncementRequest>) -> Result<Response<UpdateAnnouncementResponse>, Status> {
     let req = request.into_inner();
     let exists = s.state.announcement_repository.find_by_id(req.id).await
         .map_err(|e| Status::internal(e.to_string()))?;
@@ -76,7 +76,7 @@ pub async fn update_announcement(s: &UserServiceImpl, request: Request<UpdateAnn
     Ok(Response::new(UpdateAnnouncementResponse { success: true }))
 }
 
-pub async fn delete_announcement(s: &UserServiceImpl, request: Request<DeleteAnnouncementRequest>) -> Result<Response<DeleteAnnouncementResponse>, Status> {
+pub(crate) async fn delete_announcement(s: &UserServiceImpl, request: Request<DeleteAnnouncementRequest>) -> Result<Response<DeleteAnnouncementResponse>, Status> {
     let req = request.into_inner();
     let success = s.state.announcement_repository.delete(req.id).await
         .map_err(|e| Status::internal(e.to_string()))?;
@@ -84,7 +84,7 @@ pub async fn delete_announcement(s: &UserServiceImpl, request: Request<DeleteAnn
     Ok(Response::new(DeleteAnnouncementResponse { success: true }))
 }
 
-pub async fn list_system_configs(s: &UserServiceImpl, request: Request<ListSystemConfigsRequest>) -> Result<Response<ListSystemConfigsResponse>, Status> {
+pub(crate) async fn list_system_configs(s: &UserServiceImpl, request: Request<ListSystemConfigsRequest>) -> Result<Response<ListSystemConfigsResponse>, Status> {
     let req = request.into_inner();
     let category = if req.category.is_empty() { None } else { Some(req.category.as_str()) };
     let configs = s.state.announcement_repository.list_system_configs(category).await
@@ -100,7 +100,7 @@ pub async fn list_system_configs(s: &UserServiceImpl, request: Request<ListSyste
     Ok(Response::new(ListSystemConfigsResponse { configs: config_infos }))
 }
 
-pub async fn update_system_config(s: &UserServiceImpl, request: Request<UpdateSystemConfigRequest>) -> Result<Response<UpdateSystemConfigResponse>, Status> {
+pub(crate) async fn update_system_config(s: &UserServiceImpl, request: Request<UpdateSystemConfigRequest>) -> Result<Response<UpdateSystemConfigResponse>, Status> {
     let req = request.into_inner();
     let success = s.state.announcement_repository.update_config(&req.key, &req.value).await
         .map_err(|e| Status::internal(e.to_string()))?;
@@ -108,7 +108,7 @@ pub async fn update_system_config(s: &UserServiceImpl, request: Request<UpdateSy
     Ok(Response::new(UpdateSystemConfigResponse { success: true }))
 }
 
-pub async fn batch_update_system_configs(s: &UserServiceImpl, request: Request<BatchUpdateSystemConfigsRequest>) -> Result<Response<BatchUpdateSystemConfigsResponse>, Status> {
+pub(crate) async fn batch_update_system_configs(s: &UserServiceImpl, request: Request<BatchUpdateSystemConfigsRequest>) -> Result<Response<BatchUpdateSystemConfigsResponse>, Status> {
     let req = request.into_inner();
     let pairs: Vec<(String, String)> = req.configs.into_iter().map(|c| (c.key, c.value)).collect();
     s.state.announcement_repository.batch_update_system_configs(&pairs).await
@@ -116,87 +116,87 @@ pub async fn batch_update_system_configs(s: &UserServiceImpl, request: Request<B
     Ok(Response::new(BatchUpdateSystemConfigsResponse { success: true }))
 }
 
-pub async fn get_role_permission_config(s: &UserServiceImpl, _request: Request<GetRolePermissionConfigRequest>) -> Result<Response<GetRolePermissionConfigResponse>, Status> {
+pub(crate) async fn get_role_permission_config(s: &UserServiceImpl, _request: Request<GetRolePermissionConfigRequest>) -> Result<Response<GetRolePermissionConfigResponse>, Status> {
     Ok(Response::new(GetRolePermissionConfigResponse { data_permissions: vec![], field_permissions: vec![] }))
 }
 
-pub async fn update_role_permission_config(s: &UserServiceImpl, _request: Request<UpdateRolePermissionConfigRequest>) -> Result<Response<UpdateRolePermissionConfigResponse>, Status> {
+pub(crate) async fn update_role_permission_config(s: &UserServiceImpl, _request: Request<UpdateRolePermissionConfigRequest>) -> Result<Response<UpdateRolePermissionConfigResponse>, Status> {
     Ok(Response::new(UpdateRolePermissionConfigResponse { success: true }))
 }
 
-pub async fn get_role_data_permissions(s: &UserServiceImpl, _request: Request<GetRoleDataPermissionsRequest>) -> Result<Response<GetRoleDataPermissionsResponse>, Status> {
+pub(crate) async fn get_role_data_permissions(s: &UserServiceImpl, _request: Request<GetRoleDataPermissionsRequest>) -> Result<Response<GetRoleDataPermissionsResponse>, Status> {
     Ok(Response::new(GetRoleDataPermissionsResponse { data_permissions: vec![] }))
 }
 
-pub async fn set_role_data_permissions(s: &UserServiceImpl, _request: Request<SetRoleDataPermissionsRequest>) -> Result<Response<SetRoleDataPermissionsResponse>, Status> {
+pub(crate) async fn set_role_data_permissions(s: &UserServiceImpl, _request: Request<SetRoleDataPermissionsRequest>) -> Result<Response<SetRoleDataPermissionsResponse>, Status> {
     Ok(Response::new(SetRoleDataPermissionsResponse { success: true }))
 }
 
-pub async fn get_role_field_permissions(s: &UserServiceImpl, _request: Request<GetRoleFieldPermissionsRequest>) -> Result<Response<GetRoleFieldPermissionsResponse>, Status> {
+pub(crate) async fn get_role_field_permissions(s: &UserServiceImpl, _request: Request<GetRoleFieldPermissionsRequest>) -> Result<Response<GetRoleFieldPermissionsResponse>, Status> {
     Ok(Response::new(GetRoleFieldPermissionsResponse { field_permissions: vec![] }))
 }
 
-pub async fn set_role_field_permissions(s: &UserServiceImpl, _request: Request<SetRoleFieldPermissionsRequest>) -> Result<Response<SetRoleFieldPermissionsResponse>, Status> {
+pub(crate) async fn set_role_field_permissions(s: &UserServiceImpl, _request: Request<SetRoleFieldPermissionsRequest>) -> Result<Response<SetRoleFieldPermissionsResponse>, Status> {
     Ok(Response::new(SetRoleFieldPermissionsResponse { success: true }))
 }
 
-pub async fn get_role_inherit_chain(s: &UserServiceImpl, _request: Request<GetRoleInheritChainRequest>) -> Result<Response<GetRoleInheritChainResponse>, Status> {
+pub(crate) async fn get_role_inherit_chain(s: &UserServiceImpl, _request: Request<GetRoleInheritChainRequest>) -> Result<Response<GetRoleInheritChainResponse>, Status> {
     Ok(Response::new(GetRoleInheritChainResponse { info: None }))
 }
 
-pub async fn set_role_inherit(s: &UserServiceImpl, _request: Request<SetRoleInheritRequest>) -> Result<Response<SetRoleInheritResponse>, Status> {
+pub(crate) async fn set_role_inherit(s: &UserServiceImpl, _request: Request<SetRoleInheritRequest>) -> Result<Response<SetRoleInheritResponse>, Status> {
     Ok(Response::new(SetRoleInheritResponse { success: true }))
 }
 
-pub async fn remove_role_inherit(s: &UserServiceImpl, _request: Request<RemoveRoleInheritRequest>) -> Result<Response<RemoveRoleInheritResponse>, Status> {
+pub(crate) async fn remove_role_inherit(s: &UserServiceImpl, _request: Request<RemoveRoleInheritRequest>) -> Result<Response<RemoveRoleInheritResponse>, Status> {
     Ok(Response::new(RemoveRoleInheritResponse { success: true }))
 }
 
-pub async fn get_accessible_departments(s: &UserServiceImpl, _request: Request<GetAccessibleDepartmentsRequest>) -> Result<Response<GetAccessibleDepartmentsResponse>, Status> {
+pub(crate) async fn get_accessible_departments(s: &UserServiceImpl, _request: Request<GetAccessibleDepartmentsRequest>) -> Result<Response<GetAccessibleDepartmentsResponse>, Status> {
     Ok(Response::new(GetAccessibleDepartmentsResponse { departments: vec![], total: 0 }))
 }
 
-pub async fn get_accessible_tenants(s: &UserServiceImpl, _request: Request<GetAccessibleTenantsRequest>) -> Result<Response<GetAccessibleTenantsResponse>, Status> {
+pub(crate) async fn get_accessible_tenants(s: &UserServiceImpl, _request: Request<GetAccessibleTenantsRequest>) -> Result<Response<GetAccessibleTenantsResponse>, Status> {
     Ok(Response::new(GetAccessibleTenantsResponse { tenants: vec![], total: 0 }))
 }
 
-pub async fn list_permission_definitions(s: &UserServiceImpl, _request: Request<ListPermissionDefinitionsRequest>) -> Result<Response<ListPermissionDefinitionsResponse>, Status> {
+pub(crate) async fn list_permission_definitions(s: &UserServiceImpl, _request: Request<ListPermissionDefinitionsRequest>) -> Result<Response<ListPermissionDefinitionsResponse>, Status> {
     Ok(Response::new(ListPermissionDefinitionsResponse { permissions: vec![], total: 0 }))
 }
 
-pub async fn create_permission_definition(s: &UserServiceImpl, _request: Request<CreatePermissionDefinitionRequest>) -> Result<Response<CreatePermissionDefinitionResponse>, Status> {
+pub(crate) async fn create_permission_definition(s: &UserServiceImpl, _request: Request<CreatePermissionDefinitionRequest>) -> Result<Response<CreatePermissionDefinitionResponse>, Status> {
     Ok(Response::new(CreatePermissionDefinitionResponse { permission: None }))
 }
 
-pub async fn update_permission_definition(s: &UserServiceImpl, _request: Request<UpdatePermissionDefinitionRequest>) -> Result<Response<UpdatePermissionDefinitionResponse>, Status> {
+pub(crate) async fn update_permission_definition(s: &UserServiceImpl, _request: Request<UpdatePermissionDefinitionRequest>) -> Result<Response<UpdatePermissionDefinitionResponse>, Status> {
     Ok(Response::new(UpdatePermissionDefinitionResponse { success: true }))
 }
 
-pub async fn delete_permission_definition(s: &UserServiceImpl, _request: Request<DeletePermissionDefinitionRequest>) -> Result<Response<DeletePermissionDefinitionResponse>, Status> {
+pub(crate) async fn delete_permission_definition(s: &UserServiceImpl, _request: Request<DeletePermissionDefinitionRequest>) -> Result<Response<DeletePermissionDefinitionResponse>, Status> {
     Ok(Response::new(DeletePermissionDefinitionResponse { success: true }))
 }
 
-pub async fn batch_create_permission_definitions(s: &UserServiceImpl, _request: Request<BatchCreatePermissionDefinitionsRequest>) -> Result<Response<BatchCreatePermissionDefinitionsResponse>, Status> {
+pub(crate) async fn batch_create_permission_definitions(s: &UserServiceImpl, _request: Request<BatchCreatePermissionDefinitionsRequest>) -> Result<Response<BatchCreatePermissionDefinitionsResponse>, Status> {
     Ok(Response::new(BatchCreatePermissionDefinitionsResponse { count: 0 }))
 }
 
-pub async fn batch_assign_permissions(s: &UserServiceImpl, _request: Request<BatchAssignPermissionsRequest>) -> Result<Response<BatchAssignPermissionsResponse>, Status> {
+pub(crate) async fn batch_assign_permissions(s: &UserServiceImpl, _request: Request<BatchAssignPermissionsRequest>) -> Result<Response<BatchAssignPermissionsResponse>, Status> {
     Ok(Response::new(BatchAssignPermissionsResponse { success: true, affected: 0 }))
 }
 
-pub async fn copy_role_permissions(s: &UserServiceImpl, _request: Request<CopyRolePermissionsRequest>) -> Result<Response<CopyRolePermissionsResponse>, Status> {
+pub(crate) async fn copy_role_permissions(s: &UserServiceImpl, _request: Request<CopyRolePermissionsRequest>) -> Result<Response<CopyRolePermissionsResponse>, Status> {
     Ok(Response::new(CopyRolePermissionsResponse { success: true }))
 }
 
-pub async fn validate_data_permission(s: &UserServiceImpl, _request: Request<ValidateDataPermissionRequest>) -> Result<Response<ValidateDataPermissionResponse>, Status> {
+pub(crate) async fn validate_data_permission(s: &UserServiceImpl, _request: Request<ValidateDataPermissionRequest>) -> Result<Response<ValidateDataPermissionResponse>, Status> {
     Ok(Response::new(ValidateDataPermissionResponse { allowed: true }))
 }
 
-pub async fn check_sensitive_permission(s: &UserServiceImpl, _request: Request<CheckSensitivePermissionRequest>) -> Result<Response<CheckSensitivePermissionResponse>, Status> {
+pub(crate) async fn check_sensitive_permission(s: &UserServiceImpl, _request: Request<CheckSensitivePermissionRequest>) -> Result<Response<CheckSensitivePermissionResponse>, Status> {
     Ok(Response::new(CheckSensitivePermissionResponse { sensitive: false }))
 }
 
-pub async fn list_dictionary_types(s: &UserServiceImpl, request: Request<ListDictionaryTypesRequest>) -> Result<Response<ListDictionaryTypesResponse>, Status> {
+pub(crate) async fn list_dictionary_types(s: &UserServiceImpl, request: Request<ListDictionaryTypesRequest>) -> Result<Response<ListDictionaryTypesResponse>, Status> {
     let req = request.into_inner();
     let page = req.page.max(1);
     let page_size = req.page_size.clamp(1, 100);
@@ -216,7 +216,7 @@ pub async fn list_dictionary_types(s: &UserServiceImpl, request: Request<ListDic
     Ok(Response::new(ListDictionaryTypesResponse { types, total: result.total }))
 }
 
-pub async fn create_dictionary_type(s: &UserServiceImpl, request: Request<CreateDictionaryTypeRequest>) -> Result<Response<CreateDictionaryTypeResponse>, Status> {
+pub(crate) async fn create_dictionary_type(s: &UserServiceImpl, request: Request<CreateDictionaryTypeRequest>) -> Result<Response<CreateDictionaryTypeResponse>, Status> {
     let req = request.into_inner();
     if req.code.is_empty() || req.name.is_empty() { return Err(Status::invalid_argument("字典类型编码和名称不能为空")); }
 
@@ -236,7 +236,7 @@ pub async fn create_dictionary_type(s: &UserServiceImpl, request: Request<Create
     }))
 }
 
-pub async fn update_dictionary_type(s: &UserServiceImpl, request: Request<UpdateDictionaryTypeRequest>) -> Result<Response<UpdateDictionaryTypeResponse>, Status> {
+pub(crate) async fn update_dictionary_type(s: &UserServiceImpl, request: Request<UpdateDictionaryTypeRequest>) -> Result<Response<UpdateDictionaryTypeResponse>, Status> {
     let req = request.into_inner();
     let existing = s.state.announcement_repository.find_dictionary_type_by_id(req.id).await
         .map_err(|e| Status::internal(e.to_string()))?;
@@ -253,7 +253,7 @@ pub async fn update_dictionary_type(s: &UserServiceImpl, request: Request<Update
     Ok(Response::new(UpdateDictionaryTypeResponse { success: true }))
 }
 
-pub async fn delete_dictionary_type(s: &UserServiceImpl, request: Request<DeleteDictionaryTypeRequest>) -> Result<Response<DeleteDictionaryTypeResponse>, Status> {
+pub(crate) async fn delete_dictionary_type(s: &UserServiceImpl, request: Request<DeleteDictionaryTypeRequest>) -> Result<Response<DeleteDictionaryTypeResponse>, Status> {
     let req = request.into_inner();
     let success = s.state.announcement_repository.delete_dictionary_type(req.id).await
         .map_err(|e| Status::internal(e.to_string()))?;
@@ -261,7 +261,7 @@ pub async fn delete_dictionary_type(s: &UserServiceImpl, request: Request<Delete
     Ok(Response::new(DeleteDictionaryTypeResponse { success: true }))
 }
 
-pub async fn list_dictionary_items(s: &UserServiceImpl, request: Request<ListDictionaryItemsRequest>) -> Result<Response<ListDictionaryItemsResponse>, Status> {
+pub(crate) async fn list_dictionary_items(s: &UserServiceImpl, request: Request<ListDictionaryItemsRequest>) -> Result<Response<ListDictionaryItemsResponse>, Status> {
     let req = request.into_inner();
     let type_id = if req.type_id == 0 { None } else { Some(req.type_id) };
     let type_code = if req.type_code.is_empty() { None } else { Some(req.type_code.as_str()) };
@@ -281,7 +281,7 @@ pub async fn list_dictionary_items(s: &UserServiceImpl, request: Request<ListDic
     Ok(Response::new(ListDictionaryItemsResponse { items, total: result.total }))
 }
 
-pub async fn create_dictionary_item(s: &UserServiceImpl, request: Request<CreateDictionaryItemRequest>) -> Result<Response<CreateDictionaryItemResponse>, Status> {
+pub(crate) async fn create_dictionary_item(s: &UserServiceImpl, request: Request<CreateDictionaryItemRequest>) -> Result<Response<CreateDictionaryItemResponse>, Status> {
     let req = request.into_inner();
     let sort = Some(req.sort);
     let status = Some(req.status);
@@ -306,7 +306,7 @@ pub async fn create_dictionary_item(s: &UserServiceImpl, request: Request<Create
     }))
 }
 
-pub async fn update_dictionary_item(s: &UserServiceImpl, request: Request<UpdateDictionaryItemRequest>) -> Result<Response<UpdateDictionaryItemResponse>, Status> {
+pub(crate) async fn update_dictionary_item(s: &UserServiceImpl, request: Request<UpdateDictionaryItemRequest>) -> Result<Response<UpdateDictionaryItemResponse>, Status> {
     let req = request.into_inner();
     let exists = s.state.announcement_repository.find_dictionary_item_by_id(req.id).await
         .map_err(|e| Status::internal(e.to_string()))?;
@@ -334,7 +334,7 @@ pub async fn update_dictionary_item(s: &UserServiceImpl, request: Request<Update
     Ok(Response::new(UpdateDictionaryItemResponse { success: true }))
 }
 
-pub async fn delete_dictionary_item(s: &UserServiceImpl, request: Request<DeleteDictionaryItemRequest>) -> Result<Response<DeleteDictionaryItemResponse>, Status> {
+pub(crate) async fn delete_dictionary_item(s: &UserServiceImpl, request: Request<DeleteDictionaryItemRequest>) -> Result<Response<DeleteDictionaryItemResponse>, Status> {
     let req = request.into_inner();
     let success = s.state.announcement_repository.delete_dictionary_item(req.id).await
         .map_err(|e| Status::internal(e.to_string()))?;
@@ -342,7 +342,7 @@ pub async fn delete_dictionary_item(s: &UserServiceImpl, request: Request<Delete
     Ok(Response::new(DeleteDictionaryItemResponse { success: true }))
 }
 
-pub async fn get_dictionary_type(s: &UserServiceImpl, request: Request<GetDictionaryTypeRequest>) -> Result<Response<GetDictionaryTypeResponse>, Status> {
+pub(crate) async fn get_dictionary_type(s: &UserServiceImpl, request: Request<GetDictionaryTypeRequest>) -> Result<Response<GetDictionaryTypeResponse>, Status> {
     let req = request.into_inner();
     let found = s.state.announcement_repository.find_dictionary_type_by_id(req.id).await
         .map_err(|e| Status::internal(e.to_string()))?;
@@ -359,7 +359,7 @@ pub async fn get_dictionary_type(s: &UserServiceImpl, request: Request<GetDictio
     }
 }
 
-pub async fn get_dictionary_item(s: &UserServiceImpl, request: Request<GetDictionaryItemRequest>) -> Result<Response<GetDictionaryItemResponse>, Status> {
+pub(crate) async fn get_dictionary_item(s: &UserServiceImpl, request: Request<GetDictionaryItemRequest>) -> Result<Response<GetDictionaryItemResponse>, Status> {
     let req = request.into_inner();
     let found = s.state.announcement_repository.find_dictionary_item_by_id(req.id).await
         .map_err(|e| Status::internal(e.to_string()))?;

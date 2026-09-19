@@ -7,7 +7,7 @@ use thiserror::Error;
 
 /// 公告仓储错误类型
 #[derive(Error, Debug)]
-pub enum AnnouncementRepositoryError {
+pub(crate) enum AnnouncementRepositoryError {
     #[error("数据库错误: {0}" )]
     Database(#[from] sqlx::Error),
 
@@ -17,7 +17,7 @@ pub enum AnnouncementRepositoryError {
 
 /// 公告信息
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Announcement {
+pub(crate) struct Announcement {
     pub id: i64,
     pub title: String,
     pub content: String,
@@ -35,7 +35,7 @@ pub struct Announcement {
 
 /// 公告列表项
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AnnouncementListItem {
+pub(crate) struct AnnouncementListItem {
     pub id: i64,
     pub title: String,
     pub announcement_type: String,
@@ -50,7 +50,7 @@ pub struct AnnouncementListItem {
 
 /// 系统配置信息
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SystemConfig {
+pub(crate) struct SystemConfig {
     pub id: i64,
     pub category: String,
     pub config_key: String,
@@ -66,7 +66,7 @@ pub struct SystemConfig {
 
 /// 登录日志
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct LoginLog {
+pub(crate) struct LoginLog {
     pub id: i64,
     pub user_id: Option<i64>,
     pub username: Option<String>,
@@ -78,19 +78,19 @@ pub struct LoginLog {
 }
 
 /// 分页结果
-pub struct PaginatedAnnouncements {
+pub(crate) struct PaginatedAnnouncements {
     pub announcements: Vec<AnnouncementListItem>,
     pub total: i64,
 }
 
-pub struct PaginatedLoginLogs {
+pub(crate) struct PaginatedLoginLogs {
     pub logs: Vec<LoginLog>,
     pub total: i64,
 }
 
 /// 数据字典类型
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct DictionaryType {
+pub(crate) struct DictionaryType {
     pub id: i64,
     pub code: String,
     pub name: String,
@@ -103,7 +103,7 @@ pub struct DictionaryType {
 
 /// 数据字典项
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct DictionaryItem {
+pub(crate) struct DictionaryItem {
     pub id: i64,
     pub type_id: i64,
     pub label: String,
@@ -117,19 +117,19 @@ pub struct DictionaryItem {
 }
 
 /// 字典类型分页
-pub struct PaginatedDictionaryTypes {
+pub(crate) struct PaginatedDictionaryTypes {
     pub types: Vec<DictionaryType>,
     pub total: i64,
 }
 
 /// 字典项分页
-pub struct PaginatedDictionaryItems {
+pub(crate) struct PaginatedDictionaryItems {
     pub items: Vec<DictionaryItem>,
     pub total: i64,
 }
 
 /// 创建字典项参数
-pub struct CreateDictionaryItemParams<'a> {
+pub(crate) struct CreateDictionaryItemParams<'a> {
     pub type_id: i64,
     pub label: &'a str,
     pub value: &'a str,
@@ -140,7 +140,7 @@ pub struct CreateDictionaryItemParams<'a> {
 }
 
 /// 更新字典项参数
-pub struct UpdateDictionaryItemParams<'a> {
+pub(crate) struct UpdateDictionaryItemParams<'a> {
     pub id: i64,
     pub label: &'a str,
     pub value: &'a str,
@@ -152,7 +152,7 @@ pub struct UpdateDictionaryItemParams<'a> {
 
 /// 公告和配置仓储
 #[derive(Clone)]
-pub struct AnnouncementRepository {
+pub(crate) struct AnnouncementRepository {
     pool: PgPool,
 }
 
@@ -167,7 +167,7 @@ impl AnnouncementRepository {
 
     /// 创建公告
     #[allow(clippy::too_many_arguments)]
-    pub async fn create(
+    pub(crate) async fn create(
         &self,
         title: &str,
         content: &str,
@@ -201,7 +201,7 @@ impl AnnouncementRepository {
     }
 
     /// 获取公告详情
-    pub async fn find_by_id(
+    pub(crate) async fn find_by_id(
         &self,
         id: i64,
     ) -> Result<Option<Announcement>, AnnouncementRepositoryError> {
@@ -243,7 +243,7 @@ impl AnnouncementRepository {
 
     /// 更新公告
     #[allow(clippy::too_many_arguments)]
-    pub async fn update(
+    pub(crate) async fn update(
         &self,
         id: i64,
         title: Option<String>,
@@ -284,7 +284,7 @@ impl AnnouncementRepository {
     }
 
     /// 删除公告
-    pub async fn delete(&self, id: i64) -> Result<bool, AnnouncementRepositoryError> {
+    pub(crate) async fn delete(&self, id: i64) -> Result<bool, AnnouncementRepositoryError> {
         let result = sqlx::query!(
             "DELETE FROM announcements WHERE id = $1" ,
             id,
@@ -296,7 +296,7 @@ impl AnnouncementRepository {
     }
 
     /// 分页查询公告列表
-    pub async fn list(
+    pub(crate) async fn list(
         &self,
         page: i32,
         page_size: i32,
@@ -359,7 +359,7 @@ impl AnnouncementRepository {
     }
 
     /// 获取活跃公告（公开接口）
-    pub async fn get_active(
+    pub(crate) async fn get_active(
         &self,
     ) -> Result<Vec<AnnouncementListItem>, AnnouncementRepositoryError> {
         let rows = sqlx::query_as!(
@@ -405,7 +405,7 @@ impl AnnouncementRepository {
     // ==================== 系统配置管理 ====================
 
     /// 获取所有配置（按分类）
-    pub async fn get_all_configs(&self) -> Result<Vec<SystemConfig>, AnnouncementRepositoryError> {
+    pub(crate) async fn get_all_configs(&self) -> Result<Vec<SystemConfig>, AnnouncementRepositoryError> {
         let rows = sqlx::query_as!(
             SystemConfig,
             r#"SELECT id, category, config_key, config_value,
@@ -444,7 +444,7 @@ impl AnnouncementRepository {
     }
 
     /// 获取单个配置
-    pub async fn get_config(
+    pub(crate) async fn get_config(
         &self,
         key: &str,
     ) -> Result<Option<SystemConfig>, AnnouncementRepositoryError> {
@@ -481,7 +481,7 @@ impl AnnouncementRepository {
     }
 
     /// 更新配置
-    pub async fn update_config(
+    pub(crate) async fn update_config(
         &self,
         key: &str,
         value: &str,
@@ -498,7 +498,7 @@ impl AnnouncementRepository {
     }
 
     /// 重置配置到默认值（从初始数据重新获取）
-    pub async fn reset_config(&self, key: &str) -> Result<bool, AnnouncementRepositoryError> {
+    pub(crate) async fn reset_config(&self, key: &str) -> Result<bool, AnnouncementRepositoryError> {
         // 这里假设有默认值存储，简化处理：设置为 NULL
         let result = sqlx::query!(
             "UPDATE system_configs SET config_value = NULL, updated_at = NOW() WHERE config_key = $1" ,
@@ -513,7 +513,7 @@ impl AnnouncementRepository {
     // ==================== 登录日志管理 ====================
 
     /// 记录登录日志
-    pub async fn create_login_log(
+    pub(crate) async fn create_login_log(
         &self,
         user_id: Option<i64>,
         username: Option<&str>,
@@ -541,7 +541,7 @@ impl AnnouncementRepository {
     }
 
     /// 分页查询登录日志
-    pub async fn list_login_logs(
+    pub(crate) async fn list_login_logs(
         &self,
         page: i32,
         page_size: i32,
@@ -601,7 +601,7 @@ impl AnnouncementRepository {
     // ==================== 数据字典类型管理 ====================
 
     /// 分页查询字典类型
-    pub async fn list_dictionary_types(
+    pub(crate) async fn list_dictionary_types(
         &self,
         page: i32,
         page_size: i32,
@@ -660,7 +660,7 @@ impl AnnouncementRepository {
     }
 
     /// 根据 ID 获取字典类型
-    pub async fn find_dictionary_type_by_id(
+    pub(crate) async fn find_dictionary_type_by_id(
         &self,
         id: i64,
     ) -> Result<Option<DictionaryType>, AnnouncementRepositoryError> {
@@ -690,7 +690,7 @@ impl AnnouncementRepository {
     }
 
     /// 创建字典类型
-    pub async fn create_dictionary_type(
+    pub(crate) async fn create_dictionary_type(
         &self,
         code: &str,
         name: &str,
@@ -713,7 +713,7 @@ impl AnnouncementRepository {
     }
 
     /// 更新字典类型
-    pub async fn update_dictionary_type(
+    pub(crate) async fn update_dictionary_type(
         &self,
         id: i64,
         name: Option<String>,
@@ -742,7 +742,7 @@ impl AnnouncementRepository {
     }
 
     /// 删除字典类型
-    pub async fn delete_dictionary_type(&self, id: i64) -> Result<bool, AnnouncementRepositoryError> {
+    pub(crate) async fn delete_dictionary_type(&self, id: i64) -> Result<bool, AnnouncementRepositoryError> {
         // 先删除该类型下的所有字典项
         sqlx::query!("DELETE FROM dictionary_items WHERE type_id = $1" , id)
             .execute(&self.pool)
@@ -758,7 +758,7 @@ impl AnnouncementRepository {
     // ==================== 数据字典项管理 ====================
 
     /// 分页查询字典项
-    pub async fn list_dictionary_items(
+    pub(crate) async fn list_dictionary_items(
         &self,
         type_id: Option<i64>,
         type_code: Option<&str>,
@@ -827,7 +827,7 @@ impl AnnouncementRepository {
     }
 
     /// 根据 ID 获取字典项
-    pub async fn find_dictionary_item_by_id(
+    pub(crate) async fn find_dictionary_item_by_id(
         &self,
         id: i64,
     ) -> Result<Option<DictionaryItem>, AnnouncementRepositoryError> {
@@ -862,7 +862,7 @@ impl AnnouncementRepository {
 
     /// 创建字典项
     #[allow(clippy::too_many_arguments)]
-    pub async fn create_dictionary_item(
+    pub(crate) async fn create_dictionary_item(
         &self,
         params: CreateDictionaryItemParams<'_>,
     ) -> Result<i64, AnnouncementRepositoryError> {
@@ -886,7 +886,7 @@ impl AnnouncementRepository {
 
     /// 更新字典项
     #[allow(clippy::too_many_arguments)]
-    pub async fn update_dictionary_item(
+    pub(crate) async fn update_dictionary_item(
         &self,
         params: UpdateDictionaryItemParams<'_>,
     ) -> Result<bool, AnnouncementRepositoryError> {
@@ -915,7 +915,7 @@ impl AnnouncementRepository {
     }
 
     /// 删除字典项
-    pub async fn delete_dictionary_item(
+    pub(crate) async fn delete_dictionary_item(
         &self,
         id: i64,
     ) -> Result<bool, AnnouncementRepositoryError> {
@@ -929,7 +929,7 @@ impl AnnouncementRepository {
     // ==================== 系统配置增强 ====================
 
     /// 获取系统配置列表（全量，支持分类过滤）
-    pub async fn list_system_configs(
+    pub(crate) async fn list_system_configs(
         &self,
         category: Option<&str>,
     ) -> Result<Vec<SystemConfig>, AnnouncementRepositoryError> {
@@ -973,7 +973,7 @@ impl AnnouncementRepository {
     }
 
     /// 批量更新系统配置（N+1 修复：使用 UPDATE ... FROM UNNEST）
-    pub async fn batch_update_system_configs(
+    pub(crate) async fn batch_update_system_configs(
         &self,
         configs: &[(String, String)],
     ) -> Result<bool, AnnouncementRepositoryError> {

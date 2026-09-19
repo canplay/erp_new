@@ -2,7 +2,7 @@ use grpc_proto::user::*;
 use tonic::{Request, Response, Status};
 use super::UserServiceImpl;
 
-pub async fn list_departments(s: &UserServiceImpl, request: Request<ListDepartmentsRequest>) -> Result<Response<ListDepartmentsResponse>, Status> {
+pub(crate) async fn list_departments(s: &UserServiceImpl, request: Request<ListDepartmentsRequest>) -> Result<Response<ListDepartmentsResponse>, Status> {
     let req = request.into_inner();
     let page = req.page.max(1);
     let page_size = req.page_size.clamp(1, 100);
@@ -23,7 +23,7 @@ pub async fn list_departments(s: &UserServiceImpl, request: Request<ListDepartme
     Ok(Response::new(ListDepartmentsResponse { departments, total: result.total }))
 }
 
-pub async fn get_department(s: &UserServiceImpl, request: Request<GetDepartmentRequest>) -> Result<Response<GetDepartmentResponse>, Status> {
+pub(crate) async fn get_department(s: &UserServiceImpl, request: Request<GetDepartmentRequest>) -> Result<Response<GetDepartmentResponse>, Status> {
     let req = request.into_inner();
     let dept = s.state.department_repository.find_by_id(req.id).await
         .map_err(|e| Status::internal(e.to_string()))?;
@@ -43,7 +43,7 @@ pub async fn get_department(s: &UserServiceImpl, request: Request<GetDepartmentR
     }
 }
 
-pub async fn create_department(s: &UserServiceImpl, request: Request<CreateDepartmentRequest>) -> Result<Response<CreateDepartmentResponse>, Status> {
+pub(crate) async fn create_department(s: &UserServiceImpl, request: Request<CreateDepartmentRequest>) -> Result<Response<CreateDepartmentResponse>, Status> {
     let req = request.into_inner();
     if req.name.is_empty() { return Err(Status::invalid_argument("部门名称不能为空")); }
 
@@ -70,7 +70,7 @@ pub async fn create_department(s: &UserServiceImpl, request: Request<CreateDepar
     }))
 }
 
-pub async fn update_department(s: &UserServiceImpl, request: Request<UpdateDepartmentRequest>) -> Result<Response<UpdateDepartmentResponse>, Status> {
+pub(crate) async fn update_department(s: &UserServiceImpl, request: Request<UpdateDepartmentRequest>) -> Result<Response<UpdateDepartmentResponse>, Status> {
     let req = request.into_inner();
     let exists = s.state.department_repository.find_by_id(req.id).await
         .map_err(|e| Status::internal(e.to_string()))?;
@@ -91,7 +91,7 @@ pub async fn update_department(s: &UserServiceImpl, request: Request<UpdateDepar
     Ok(Response::new(UpdateDepartmentResponse { success: true }))
 }
 
-pub async fn delete_department(s: &UserServiceImpl, request: Request<DeleteDepartmentRequest>) -> Result<Response<DeleteDepartmentResponse>, Status> {
+pub(crate) async fn delete_department(s: &UserServiceImpl, request: Request<DeleteDepartmentRequest>) -> Result<Response<DeleteDepartmentResponse>, Status> {
     let req = request.into_inner();
     let result = s.state.department_repository.delete(req.id).await
         .map_err(|e| match e {
@@ -103,7 +103,7 @@ pub async fn delete_department(s: &UserServiceImpl, request: Request<DeleteDepar
     Ok(Response::new(DeleteDepartmentResponse { success: result }))
 }
 
-pub async fn get_department_tree(s: &UserServiceImpl, _request: Request<GetDepartmentTreeRequest>) -> Result<Response<GetDepartmentTreeResponse>, Status> {
+pub(crate) async fn get_department_tree(s: &UserServiceImpl, _request: Request<GetDepartmentTreeRequest>) -> Result<Response<GetDepartmentTreeResponse>, Status> {
     let tree_nodes = s.state.department_repository.get_tree().await
         .map_err(|e| Status::internal(e.to_string()))?;
 
@@ -127,7 +127,7 @@ pub async fn get_department_tree(s: &UserServiceImpl, _request: Request<GetDepar
     Ok(Response::new(GetDepartmentTreeResponse { tree }))
 }
 
-pub async fn get_department_users(s: &UserServiceImpl, request: Request<GetDepartmentUsersRequest>) -> Result<Response<GetDepartmentUsersResponse>, Status> {
+pub(crate) async fn get_department_users(s: &UserServiceImpl, request: Request<GetDepartmentUsersRequest>) -> Result<Response<GetDepartmentUsersResponse>, Status> {
     let req = request.into_inner();
     let page = req.page.max(1);
     let page_size = req.page_size.clamp(1, 100);

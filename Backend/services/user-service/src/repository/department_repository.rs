@@ -7,7 +7,7 @@ use thiserror::Error;
 
 /// 部门仓储错误类型
 #[derive(Error, Debug)]
-pub enum DepartmentRepositoryError {
+pub(crate) enum DepartmentRepositoryError {
     #[error("数据库错误: {0}" )]
     Database(#[from] sqlx::Error),
 
@@ -32,7 +32,7 @@ pub enum DepartmentRepositoryError {
 
 /// 部门信息
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Department {
+pub(crate) struct Department {
     pub id: i64,
     pub name: String,
     pub code: Option<String>,
@@ -49,7 +49,7 @@ pub struct Department {
 
 /// 部门列表项
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct DepartmentListItem {
+pub(crate) struct DepartmentListItem {
     pub id: i64,
     pub name: String,
     pub code: Option<String>,
@@ -65,7 +65,7 @@ pub struct DepartmentListItem {
 
 /// 部门树节点
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct DepartmentTreeNode {
+pub(crate) struct DepartmentTreeNode {
     pub id: i64,
     pub name: String,
     pub code: Option<String>,
@@ -79,14 +79,14 @@ pub struct DepartmentTreeNode {
 }
 
 /// 分页结果
-pub struct PaginatedDepartments {
+pub(crate) struct PaginatedDepartments {
     pub departments: Vec<DepartmentListItem>,
     pub total: i64,
 }
 
 /// 部门仓储
 #[derive(Clone)]
-pub struct DepartmentRepository {
+pub(crate) struct DepartmentRepository {
     pool: PgPool,
 }
 
@@ -98,7 +98,7 @@ impl DepartmentRepository {
     }
 
     /// 创建部门
-    pub async fn create(
+    pub(crate) async fn create(
         &self,
         name: &str,
         code: Option<&str>,
@@ -160,7 +160,7 @@ impl DepartmentRepository {
     }
 
     /// 根据ID查找部门
-    pub async fn find_by_id(
+    pub(crate) async fn find_by_id(
         &self,
         dept_id: i64,
     ) -> Result<Option<Department>, DepartmentRepositoryError> {
@@ -199,7 +199,7 @@ impl DepartmentRepository {
     }
 
     /// 根据代码查找部门
-    pub async fn find_by_code(
+    pub(crate) async fn find_by_code(
         &self,
         code: &str,
     ) -> Result<Option<Department>, DepartmentRepositoryError> {
@@ -239,7 +239,7 @@ impl DepartmentRepository {
 
     /// 更新部门
     #[allow(clippy::too_many_arguments)]
-    pub async fn update(
+    pub(crate) async fn update(
         &self,
         dept_id: i64,
         name: Option<String>,
@@ -360,7 +360,7 @@ impl DepartmentRepository {
     }
 
     /// 删除部门
-    pub async fn delete(&self, dept_id: i64) -> Result<bool, DepartmentRepositoryError> {
+    pub(crate) async fn delete(&self, dept_id: i64) -> Result<bool, DepartmentRepositoryError> {
         let child_count =
             sqlx::query!("SELECT COUNT(*) as count FROM departments WHERE parent_id = $1" , dept_id)
                 .fetch_one(&self.pool)
@@ -391,7 +391,7 @@ impl DepartmentRepository {
     }
 
     /// 分页查询部门列表
-    pub async fn list(
+    pub(crate) async fn list(
         &self,
         page: i32,
         page_size: i32,
@@ -455,7 +455,7 @@ impl DepartmentRepository {
     }
 
     /// 获取部门树
-    pub async fn get_tree(&self) -> Result<Vec<DepartmentTreeNode>, DepartmentRepositoryError> {
+    pub(crate) async fn get_tree(&self) -> Result<Vec<DepartmentTreeNode>, DepartmentRepositoryError> {
         let rows = sqlx::query!(
             r##"SELECT d.id, d.name, d.code, d.parent_id,
                       COALESCE(d.level, 0) AS "level!" ,
@@ -543,7 +543,7 @@ impl DepartmentRepository {
     }
 
     /// 获取部门下的用户列表
-    pub async fn get_users(
+    pub(crate) async fn get_users(
         &self,
         dept_id: i64,
         page: i32,
@@ -572,7 +572,7 @@ impl DepartmentRepository {
     }
 
     /// 移动部门
-    pub async fn move_department(
+    pub(crate) async fn move_department(
         &self,
         dept_id: i64,
         new_parent_id: Option<i64>,

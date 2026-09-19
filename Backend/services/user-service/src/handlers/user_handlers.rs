@@ -2,7 +2,7 @@ use grpc_proto::user::*;
 use tonic::{Request, Response, Status};
 use super::UserServiceImpl;
 
-pub async fn get_user(s: &UserServiceImpl, request: Request<GetUserRequest>) -> Result<Response<GetUserResponse>, Status> {
+pub(crate) async fn get_user(s: &UserServiceImpl, request: Request<GetUserRequest>) -> Result<Response<GetUserResponse>, Status> {
     let req = request.into_inner();
     let user = s.state.user_repository.find_by_id(req.user_id).await
         .map_err(|e| Status::internal(e.to_string()))?;
@@ -23,7 +23,7 @@ pub async fn get_user(s: &UserServiceImpl, request: Request<GetUserRequest>) -> 
     }
 }
 
-pub async fn create_user(s: &UserServiceImpl, request: Request<CreateUserRequest>) -> Result<Response<CreateUserResponse>, Status> {
+pub(crate) async fn create_user(s: &UserServiceImpl, request: Request<CreateUserRequest>) -> Result<Response<CreateUserResponse>, Status> {
     let req = request.into_inner();
     if req.username.is_empty() { return Err(Status::invalid_argument("用户名不能为空")); }
     if req.username.len() > 50 { return Err(Status::invalid_argument("用户名长度不能超过50个字符")); }
@@ -44,7 +44,7 @@ pub async fn create_user(s: &UserServiceImpl, request: Request<CreateUserRequest
     }))
 }
 
-pub async fn update_user(s: &UserServiceImpl, request: Request<UpdateUserRequest>) -> Result<Response<UpdateUserResponse>, Status> {
+pub(crate) async fn update_user(s: &UserServiceImpl, request: Request<UpdateUserRequest>) -> Result<Response<UpdateUserResponse>, Status> {
     let req = request.into_inner();
     let user = s.state.user_repository.update(
         req.user_id,
@@ -63,14 +63,14 @@ pub async fn update_user(s: &UserServiceImpl, request: Request<UpdateUserRequest
     }
 }
 
-pub async fn delete_user(s: &UserServiceImpl, request: Request<DeleteUserRequest>) -> Result<Response<DeleteUserResponse>, Status> {
+pub(crate) async fn delete_user(s: &UserServiceImpl, request: Request<DeleteUserRequest>) -> Result<Response<DeleteUserResponse>, Status> {
     let req = request.into_inner();
     let success = s.state.user_repository.delete(req.user_id).await
         .map_err(|e| Status::internal(e.to_string()))?;
     Ok(Response::new(DeleteUserResponse { success }))
 }
 
-pub async fn list_users(s: &UserServiceImpl, request: Request<ListUsersRequest>) -> Result<Response<ListUsersResponse>, Status> {
+pub(crate) async fn list_users(s: &UserServiceImpl, request: Request<ListUsersRequest>) -> Result<Response<ListUsersResponse>, Status> {
     let req = request.into_inner();
     let page = req.page.max(1);
     let page_size = req.page_size.clamp(1, 100);
@@ -93,7 +93,7 @@ pub async fn list_users(s: &UserServiceImpl, request: Request<ListUsersRequest>)
     Ok(Response::new(ListUsersResponse { users, total: result.total }))
 }
 
-pub async fn update_user_status(s: &UserServiceImpl, request: Request<UpdateUserStatusRequest>) -> Result<Response<UpdateUserStatusResponse>, Status> {
+pub(crate) async fn update_user_status(s: &UserServiceImpl, request: Request<UpdateUserStatusRequest>) -> Result<Response<UpdateUserStatusResponse>, Status> {
     let req = request.into_inner();
     let found = s.state.user_repository.update_status(req.user_id, req.status).await
         .map_err(|e| Status::internal(e.to_string()))?;
@@ -101,7 +101,7 @@ pub async fn update_user_status(s: &UserServiceImpl, request: Request<UpdateUser
     Ok(Response::new(UpdateUserStatusResponse { success: true }))
 }
 
-pub async fn update_user_role(s: &UserServiceImpl, request: Request<UpdateUserRoleRequest>) -> Result<Response<UpdateUserRoleResponse>, Status> {
+pub(crate) async fn update_user_role(s: &UserServiceImpl, request: Request<UpdateUserRoleRequest>) -> Result<Response<UpdateUserRoleResponse>, Status> {
     let req = request.into_inner();
     if req.role.is_empty() { return Err(Status::invalid_argument("角色不能为空")); }
     let found = s.state.user_repository.update_role(req.user_id, &req.role).await
@@ -110,7 +110,7 @@ pub async fn update_user_role(s: &UserServiceImpl, request: Request<UpdateUserRo
     Ok(Response::new(UpdateUserRoleResponse { success: true }))
 }
 
-pub async fn reset_password(s: &UserServiceImpl, request: Request<ResetPasswordRequest>) -> Result<Response<ResetPasswordResponse>, Status> {
+pub(crate) async fn reset_password(s: &UserServiceImpl, request: Request<ResetPasswordRequest>) -> Result<Response<ResetPasswordResponse>, Status> {
     let req = request.into_inner();
     if req.new_password.is_empty() { return Err(Status::invalid_argument("new_password is required")); }
     if req.new_password.len() < 8 { return Err(Status::invalid_argument("new_password must be at least 8 characters")); }
@@ -128,7 +128,7 @@ pub async fn reset_password(s: &UserServiceImpl, request: Request<ResetPasswordR
     Ok(Response::new(ResetPasswordResponse { success: true }))
 }
 
-pub async fn batch_update_user_role(s: &UserServiceImpl, request: Request<BatchUpdateUserRoleRequest>) -> Result<Response<BatchUpdateUserRoleResponse>, Status> {
+pub(crate) async fn batch_update_user_role(s: &UserServiceImpl, request: Request<BatchUpdateUserRoleRequest>) -> Result<Response<BatchUpdateUserRoleResponse>, Status> {
     let req = request.into_inner();
     if req.user_ids.is_empty() { return Ok(Response::new(BatchUpdateUserRoleResponse { success: true, affected: 0 })); }
     let result = s.state.user_repository.batch_update_role(&req.user_ids, &req.role).await
@@ -138,7 +138,7 @@ pub async fn batch_update_user_role(s: &UserServiceImpl, request: Request<BatchU
     }))
 }
 
-pub async fn batch_update_user_status(s: &UserServiceImpl, request: Request<BatchUpdateUserStatusRequest>) -> Result<Response<BatchUpdateUserStatusResponse>, Status> {
+pub(crate) async fn batch_update_user_status(s: &UserServiceImpl, request: Request<BatchUpdateUserStatusRequest>) -> Result<Response<BatchUpdateUserStatusResponse>, Status> {
     let req = request.into_inner();
     if req.user_ids.is_empty() { return Ok(Response::new(BatchUpdateUserStatusResponse { success: true, affected: 0 })); }
     let result = s.state.user_repository.batch_update_status(&req.user_ids, req.status).await
@@ -148,7 +148,7 @@ pub async fn batch_update_user_status(s: &UserServiceImpl, request: Request<Batc
     }))
 }
 
-pub async fn batch_delete_users(s: &UserServiceImpl, request: Request<BatchDeleteUsersRequest>) -> Result<Response<BatchDeleteUsersResponse>, Status> {
+pub(crate) async fn batch_delete_users(s: &UserServiceImpl, request: Request<BatchDeleteUsersRequest>) -> Result<Response<BatchDeleteUsersResponse>, Status> {
     let req = request.into_inner();
     if req.user_ids.is_empty() { return Ok(Response::new(BatchDeleteUsersResponse { success: true, deleted: 0 })); }
     let result = s.state.user_repository.batch_delete(&req.user_ids).await
@@ -158,7 +158,7 @@ pub async fn batch_delete_users(s: &UserServiceImpl, request: Request<BatchDelet
     }))
 }
 
-pub async fn import_users(s: &UserServiceImpl, request: Request<ImportUsersRequest>) -> Result<Response<ImportUsersResponse>, Status> {
+pub(crate) async fn import_users(s: &UserServiceImpl, request: Request<ImportUsersRequest>) -> Result<Response<ImportUsersResponse>, Status> {
     let req = request.into_inner();
     let result = s.state.user_repository.batch_create_from_csv(
         &req.data_base64, &req.format, &req.update_mode,
@@ -169,7 +169,7 @@ pub async fn import_users(s: &UserServiceImpl, request: Request<ImportUsersReque
     }))
 }
 
-pub async fn export_users(s: &UserServiceImpl, request: Request<ExportUsersRequest>) -> Result<Response<ExportUsersResponse>, Status> {
+pub(crate) async fn export_users(s: &UserServiceImpl, request: Request<ExportUsersRequest>) -> Result<Response<ExportUsersResponse>, Status> {
     let req = request.into_inner();
     let data = s.state.user_repository.export_to_csv(
         &req.keyword, req.status, &req.role, &req.format,

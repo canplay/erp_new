@@ -17,7 +17,7 @@ use common::AppError;
 
 /// 部门查询参数
 #[derive(Debug, Deserialize)]
-pub struct DepartmentQueryParams {
+pub(crate) struct DepartmentQueryParams {
     pub page: Option<i32>,
     pub page_size: Option<i32>,
     pub keyword: Option<String>,
@@ -25,7 +25,7 @@ pub struct DepartmentQueryParams {
 
 /// 创建部门请求
 #[derive(Debug, Deserialize)]
-pub struct CreateDepartmentRequest {
+pub(crate) struct CreateDepartmentRequest {
     pub name: String,
     pub code: Option<String>,
     pub parent_id: Option<i64>,
@@ -36,7 +36,7 @@ pub struct CreateDepartmentRequest {
 
 /// 更新部门请求
 #[derive(Debug, Deserialize)]
-pub struct UpdateDepartmentRequest {
+pub(crate) struct UpdateDepartmentRequest {
     pub name: Option<String>,
     pub code: Option<String>,
     pub parent_id: Option<i64>,
@@ -48,13 +48,13 @@ pub struct UpdateDepartmentRequest {
 
 /// 移动部门请求
 #[derive(Debug, Deserialize)]
-pub struct MoveDepartmentRequest {
+pub(crate) struct MoveDepartmentRequest {
     pub new_parent_id: Option<i64>,
 }
 
 /// 部门响应
 #[derive(Debug, Serialize)]
-pub struct DepartmentResponse {
+pub(crate) struct DepartmentResponse {
     pub id: i64,
     pub name: String,
     pub code: Option<String>,
@@ -70,7 +70,7 @@ pub struct DepartmentResponse {
 
 /// 部门列表响应
 #[derive(Debug, Serialize)]
-pub struct DepartmentListResponse {
+pub(crate) struct DepartmentListResponse {
     pub list: Vec<DepartmentResponse>,
     pub total: i64,
     pub page: i32,
@@ -79,7 +79,7 @@ pub struct DepartmentListResponse {
 
 /// 部门树节点响应
 #[derive(Debug, Serialize)]
-pub struct DepartmentTreeResponse {
+pub(crate) struct DepartmentTreeResponse {
     pub id: i64,
     pub name: String,
     pub code: Option<String>,
@@ -94,7 +94,7 @@ pub struct DepartmentTreeResponse {
 // ============ 处理器实现 ============
 
 /// 获取部门列表
-pub async fn list_departments(
+pub(crate) async fn list_departments(
     State(state): State<HttpAppState>,
     Query(params): Query<DepartmentQueryParams>,
 ) -> impl IntoResponse {
@@ -148,7 +148,7 @@ pub async fn list_departments(
 }
 
 /// 获取部门树
-pub async fn get_department_tree(State(state): State<HttpAppState>) -> impl IntoResponse {
+pub(crate) async fn get_department_tree(State(state): State<HttpAppState>) -> impl IntoResponse {
     match state.department_repository.get_tree().await {
         Ok(tree) => {
             // 递归转换树节点
@@ -187,7 +187,7 @@ pub async fn get_department_tree(State(state): State<HttpAppState>) -> impl Into
 }
 
 /// 获取部门详情
-pub async fn get_department(
+pub(crate) async fn get_department(
     State(state): State<HttpAppState>,
     Path(id): Path<i64>,
 ) -> impl IntoResponse {
@@ -227,7 +227,7 @@ pub async fn get_department(
 }
 
 /// 创建部门
-pub async fn create_department(
+pub(crate) async fn create_department(
     State(state): State<HttpAppState>,
     Json(req): Json<CreateDepartmentRequest>,
 ) -> impl IntoResponse {
@@ -281,7 +281,7 @@ pub async fn create_department(
 }
 
 /// 更新部门
-pub async fn update_department(
+pub(crate) async fn update_department(
     State(state): State<HttpAppState>,
     Path(id): Path<i64>,
     Json(req): Json<UpdateDepartmentRequest>,
@@ -336,7 +336,7 @@ pub async fn update_department(
 }
 
 /// 删除部门
-pub async fn delete_department(
+pub(crate) async fn delete_department(
     State(state): State<HttpAppState>,
     Path(id): Path<i64>,
 ) -> impl IntoResponse {
@@ -373,7 +373,7 @@ pub async fn delete_department(
 }
 
 /// 移动部门
-pub async fn move_department(
+pub(crate) async fn move_department(
     State(state): State<HttpAppState>,
     Path(id): Path<i64>,
     Json(req): Json<MoveDepartmentRequest>,
@@ -415,7 +415,7 @@ pub async fn move_department(
 }
 
 /// 获取部门下的用户
-pub async fn get_department_users(
+pub(crate) async fn get_department_users(
     State(state): State<HttpAppState>,
     Path(id): Path<i64>,
     Query(params): Query<DepartmentQueryParams>,
@@ -452,7 +452,7 @@ pub async fn get_department_users(
 // ============ 路由构建 ============
 
 /// 创建部门管理路由
-pub fn create_department_router(state: HttpAppState) -> Router {
+pub(crate) fn create_department_router(state: HttpAppState) -> Router {
     Router::new()
         .route("/" , axum::routing::get(list_departments))
         .route("/" , axum::routing::post(create_department))

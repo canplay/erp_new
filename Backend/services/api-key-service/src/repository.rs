@@ -70,6 +70,8 @@ pub trait ApiKeyRepository: Send + Sync {
     ) -> impl std::future::Future<Output = Result<(), sqlx::Error>> + Send;
     fn delete(&self, id: &str)
     -> impl std::future::Future<Output = Result<(), sqlx::Error>> + Send;
+    fn batch_delete(&self, ids: &[String])
+    -> impl std::future::Future<Output = Result<u64, sqlx::Error>> + Send;
     fn update_last_used(
         &self,
         id: &str,
@@ -289,6 +291,17 @@ impl ApiKeyRepository for PostgresApiKeyRepository {
             .execute(&self.pool)
             .await?;
         Ok(())
+    }
+
+    // N+1 FIX: batch_delete uses a single DELETE with ANY instead of per-row loops
+    async fn batch_delete(&self, ids: &[String]) -> Result<u64, sqlx::Error> {
+        if ids.is_empty() {
+            return Ok(0);
+        }
+        let result = sqlx::query!("DELETE FROM api_keys WHERE id = ANY($1)" , ids)
+            .execute(&self.pool)
+            .await?;
+        Ok(result.rows_affected())
     }
 
     async fn update_last_used(&self, id: &str) -> Result<(), sqlx::Error> {

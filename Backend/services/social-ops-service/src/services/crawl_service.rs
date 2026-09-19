@@ -78,7 +78,7 @@ impl CrawlService {
 
         let row = sqlx::query_as::<_, CreateSourceRow>(r#"INSERT INTO socialops.crawl_sources (platform, source_name, source_config, crawl_interval)
              VALUES ($1, $2, $3, $4)
-             RETURNING id, platform, source_name AS "source_name!" , crawl_interval"#).bind(platform).bind(name).bind(config).bind(interval)
+             RETURNING id, platform, source_name AS "source_name!""#).bind(platform).bind(name).bind(config).bind(interval)
         .fetch_one(&self.db).await?;
 
         Ok(serde_json::json!({
@@ -106,17 +106,45 @@ impl CrawlService {
         let crawler = BiliCrawler;
         let results = crawler.crawl(keyword, &self.browser_client).await?;
 
+        // N+1 FIX: Batch dedup check + batch INSERT
         let mut new_count = 0i32;
-        for item in &results {
-            let hash = Sha256::digest(item.text.as_bytes());
-            let source_hash = format!("bilibili:{}" , &hex::encode(hash)[..32]);
-            let exists = sqlx::query_scalar("SELECT COUNT(*) FROM socialops.content_items WHERE source_hash = $1" ).bind(&source_hash).fetch_one(&self.db).await.unwrap_or(Some(0)).unwrap_or(0);
-            if exists == 0 {
-                let title = item.text.chars().take(100).collect::<String>();
-                sqlx::query(r#"INSERT INTO socialops.content_items (source_type, content_type, title, body, source_url, source_hash, author_name, status)
-                     VALUES ('crawled', 'video', $1, $2, $3, $4, $5, 'draft')"#).bind(&title).bind(&item.text).bind(&item.url).bind(&source_hash).bind(&item.source)
+        if !results.is_empty() {
+            // Compute hashes for all items
+            let source_hashes: Vec<String> = results.iter().map(|item| {
+                let hash = Sha256::digest(item.text.as_bytes());
+                format!("bilibili:{}", &hex::encode(hash)[..32])
+            }).collect();
+
+            // Batch check which hashes already exist
+            let existing_hashes: Vec<String> = sqlx::query_scalar(
+                "SELECT source_hash FROM socialops.content_items WHERE source_hash = ANY($1)"
+            ).bind(&source_hashes).fetch_all(&self.db).await.unwrap_or_default();
+
+            // Filter out existing items
+            let new_items: Vec<(&String, &str, &str, &str, &str)> = results.iter()
+                .zip(source_hashes.iter())
+                .filter(|(_, hash)| !existing_hashes.contains(hash))
+                .map(|(item, hash)| {
+                    let title = item.text.chars().take(100).collect::<String>();
+                    (hash, title.as_str(), item.text.as_str(), item.url.as_str(), item.source.as_str())
+                })
+                .collect();
+
+            if !new_items.is_empty() {
+                // Batch INSERT using UNNEST
+                let hashes: Vec<&str> = new_items.iter().map(|(h, _, _, _, _)| *h).collect();
+                let titles: Vec<&str> = new_items.iter().map(|(_, t, _, _, _)| *t).collect();
+                let bodies: Vec<&str> = new_items.iter().map(|(_, _, b, _, _)| *b).collect();
+                let urls: Vec<&str> = new_items.iter().map(|(_, _, _, u, _)| *u).collect();
+                let sources: Vec<&str> = new_items.iter().map(|(_, _, _, _, s)| *s).collect();
+
+                sqlx::query(r#"
+                    INSERT INTO socialops.content_items (source_type, content_type, title, body, source_url, source_hash, author_name, status)
+                    SELECT 'crawled', 'video', unnest($1::text[]), unnest($2::text[]), unnest($3::text[]), unnest($4::text[]), unnest($5::text[]), 'draft'
+                "#)
+                .bind(&titles).bind(&bodies).bind(&urls).bind(&hashes).bind(&sources)
                 .execute(&self.db).await?;
-                new_count += 1;
+                new_count = new_items.len() as i32;
             }
         }
 
@@ -138,23 +166,45 @@ impl CrawlService {
 
         let results = adapter.crawl(keyword, &self.browser_client).await?;
 
+        // N+1 FIX: Batch dedup check + batch INSERT
         let mut new_count = 0i32;
-        for item in &results {
-            let hash = Sha256::digest(item.text.as_bytes());
-            let source_hash = format!("{}:{}" , platform, hex::encode(hash));
+        if !results.is_empty() {
+            // Compute hashes for all items
+            let source_hashes: Vec<String> = results.iter().map(|item| {
+                let hash = Sha256::digest(item.text.as_bytes());
+                format!("{}:{}", platform, hex::encode(hash))
+            }).collect();
 
-            let exists = sqlx::query_scalar("SELECT COUNT(*) FROM socialops.content_items WHERE source_hash = $1" ).bind(&source_hash)
-            .fetch_one(&self.db).await
-            .unwrap_or(Some(0))
-            .unwrap_or(0);
+            // Batch check which hashes already exist
+            let existing_hashes: Vec<String> = sqlx::query_scalar(
+                "SELECT source_hash FROM socialops.content_items WHERE source_hash = ANY($1)"
+            ).bind(&source_hashes).fetch_all(&self.db).await.unwrap_or_default();
 
-            if exists == 0 {
-                let title = item.text.chars().take(100).collect::<String>();
-                sqlx::query(r#"INSERT INTO socialops.content_items
-                       (source_type, content_type, title, body, source_url, source_hash, author_name, status)
-                       VALUES ('crawled', 'post', $1, $2, $3, $4, $5, 'draft')"#).bind(&title).bind(&item.text).bind(&item.url).bind(&source_hash).bind(&item.source)
+            // Filter out existing items
+            let new_items: Vec<(&String, &str, &str, &str, &str)> = results.iter()
+                .zip(source_hashes.iter())
+                .filter(|(_, hash)| !existing_hashes.contains(hash))
+                .map(|(item, hash)| {
+                    let title = item.text.chars().take(100).collect::<String>();
+                    (hash, title.as_str(), item.text.as_str(), item.url.as_str(), item.source.as_str())
+                })
+                .collect();
+
+            if !new_items.is_empty() {
+                // Batch INSERT using UNNEST
+                let hashes: Vec<&str> = new_items.iter().map(|(h, _, _, _, _)| *h).collect();
+                let titles: Vec<&str> = new_items.iter().map(|(_, t, _, _, _)| *t).collect();
+                let bodies: Vec<&str> = new_items.iter().map(|(_, _, b, _, _)| *b).collect();
+                let urls: Vec<&str> = new_items.iter().map(|(_, _, _, u, _)| *u).collect();
+                let sources: Vec<&str> = new_items.iter().map(|(_, _, _, _, s)| *s).collect();
+
+                sqlx::query(r#"
+                    INSERT INTO socialops.content_items (source_type, content_type, title, body, source_url, source_hash, author_name, status)
+                    SELECT 'crawled', 'post', unnest($1::text[]), unnest($2::text[]), unnest($3::text[]), unnest($4::text[]), unnest($5::text[]), 'draft'
+                "#)
+                .bind(&titles).bind(&bodies).bind(&urls).bind(&hashes).bind(&sources)
                 .execute(&self.db).await?;
-                new_count += 1;
+                new_count = new_items.len() as i32;
             }
         }
 

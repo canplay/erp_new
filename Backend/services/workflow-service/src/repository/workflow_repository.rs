@@ -427,20 +427,31 @@ impl WorkflowRepository for PostgresWorkflowRepository {
             .execute(&mut *tx)
             .await?;
 
-        for node in nodes {
+        // N+1 FIX: Batch INSERT using UNNEST instead of per-row loop
+        if !nodes.is_empty() {
+            let ids: Vec<&str> = nodes.iter().map(|n| n.id.as_str()).collect();
+            let names: Vec<&str> = nodes.iter().map(|n| n.name.as_str()).collect();
+            let node_types: Vec<&str> = nodes.iter().map(|n| n.node_type.as_str()).collect();
+            let pos_x: Vec<f64> = nodes.iter().map(|n| n.position_x).collect();
+            let pos_y: Vec<f64> = nodes.iter().map(|n| n.position_y).collect();
+            let configs: Vec<&serde_json::Value> = nodes.iter().map(|n| &n.config).collect();
+            let timeouts: Vec<i32> = nodes.iter().map(|n| n.timeout).collect();
+            let auto_completes: Vec<bool> = nodes.iter().map(|n| n.auto_complete).collect();
+            let createds: Vec<chrono::DateTime<chrono::Utc>> = nodes.iter().map(|n| n.created_at).collect();
+
             sqlx::query!(
                 r#"INSERT INTO workflow_nodes (id, workflow_id, name, node_type, position_x, position_y, config, timeout, auto_complete, created_at)
-                  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)"#,
-                node.id,
+                  SELECT unnest($1::text[]), $2, unnest($3::text[]), unnest($4::text[]), unnest($5::float8[]), unnest($6::float8[]), unnest($7::jsonb[]), unnest($8::int4[]), unnest($9::bool[]), unnest($10::timestamptz[])"#,
+                &ids,
                 workflow_id,
-                node.name,
-                node.node_type,
-                node.position_x,
-                node.position_y,
-                &node.config,
-                node.timeout,
-                node.auto_complete,
-                node.created_at,
+                &names,
+                &node_types,
+                &pos_x,
+                &pos_y,
+                &configs,
+                &timeouts,
+                &auto_completes,
+                &createds,
             )
             .execute(&mut *tx)
             .await?;
@@ -461,19 +472,29 @@ impl WorkflowRepository for PostgresWorkflowRepository {
             .execute(&mut *tx)
             .await?;
 
-        for edge in edges {
+        // N+1 FIX: Batch INSERT using UNNEST instead of per-row loop
+        if !edges.is_empty() {
+            let ids: Vec<&str> = edges.iter().map(|e| e.id.as_str()).collect();
+            let source_ids: Vec<&str> = edges.iter().map(|e| e.source_node_id.as_str()).collect();
+            let target_ids: Vec<&str> = edges.iter().map(|e| e.target_node_id.as_str()).collect();
+            let edge_types: Vec<&str> = edges.iter().map(|e| e.edge_type.as_str()).collect();
+            let conditions: Vec<Option<&str>> = edges.iter().map(|e| e.condition.as_deref()).collect();
+            let labels: Vec<Option<&str>> = edges.iter().map(|e| e.label.as_deref()).collect();
+            let priorities: Vec<i32> = edges.iter().map(|e| e.priority).collect();
+            let createds: Vec<chrono::DateTime<chrono::Utc>> = edges.iter().map(|e| e.created_at).collect();
+
             sqlx::query!(
                 r#"INSERT INTO workflow_edges (id, workflow_id, source_node_id, target_node_id, edge_type, condition, label, priority, created_at)
-                  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)"#,
-                edge.id,
+                  SELECT unnest($1::text[]), $2, unnest($3::text[]), unnest($4::text[]), unnest($5::text[]), unnest($6::text[]), unnest($7::text[]), unnest($8::int4[]), unnest($9::timestamptz[])"#,
+                &ids,
                 workflow_id,
-                edge.source_node_id,
-                edge.target_node_id,
-                edge.edge_type,
-                edge.condition.as_deref(),
-                edge.label.as_deref(),
-                edge.priority,
-                edge.created_at,
+                &source_ids,
+                &target_ids,
+                &edge_types,
+                &conditions,
+                &labels,
+                &priorities,
+                &createds,
             )
             .execute(&mut *tx)
             .await?;

@@ -437,17 +437,16 @@ pub async fn batch_delete_api_keys(
 ) -> Result<i64, Status> {
     tracing::info!("批量删除 API Keys: count={}" , ids.len());
 
-    let mut deleted = 0i64;
+    // N+1 FIX: Use single batch DELETE instead of per-row loop
+    let count = state.repository.batch_delete(&ids).await
+        .map_err(|e| Status::internal(format!("批量删除 API Key 失败: {e}")))?;
+
+    // Clear cache for each key (batched operation, but cache is in-memory so it's fast)
     for id in &ids {
-        if let Err(e) = state.repository.delete(id).await {
-            tracing::error!("删除 API Key {id} 失败: {e}" );
-            continue;
-        }
         state.remove_from_cache(id).await;
-        deleted += 1;
     }
 
-    Ok(deleted)
+    Ok(count as i64)
 }
 
 /// 获取密钥统计

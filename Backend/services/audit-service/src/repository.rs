@@ -115,49 +115,37 @@ impl AuditRepository {
     }
 
     /// 获取登录统计
+    /// N+1 FIX: 使用单次 GROUP BY 查询替代多个 COUNT 查询
     pub async fn get_login_statistics(&self) -> AppResult<LoginStatistics> {
-        let total_count: i64 = sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM sys_login_logs")
-            .fetch_one(&self.pool)
-            .await?;
-
-        let success_count: i64 =
-            sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM sys_login_logs WHERE login_status = 1")
-                .fetch_one(&self.pool)
-                .await?;
-
-        let fail_count: i64 =
-            sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM sys_login_logs WHERE login_status = 2")
-                .fetch_one(&self.pool)
-                .await?;
-
         let today_start = chrono::Utc::now()
             .date_naive()
             .and_hms_opt(0, 0, 0)
             .map(|n| DateTime::<Utc>::from_naive_utc_and_offset(n, Utc))
             .ok_or_else(|| AppError::InvalidParam("无效的 HMS 时间".to_string()))?;
 
-        let today_count: i64 = sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM sys_login_logs WHERE created_at >= $1")
-            .bind(today_start)
-            .fetch_one(&self.pool)
-            .await?;
-
-        let today_success: i64 = sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM sys_login_logs WHERE login_status = 1 AND created_at >= $1")
-            .bind(today_start)
-            .fetch_one(&self.pool)
-            .await?;
-
-        let today_fail: i64 = sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM sys_login_logs WHERE login_status = 2 AND created_at >= $1")
-            .bind(today_start)
-            .fetch_one(&self.pool)
-            .await?;
+        let row = sqlx::query!(
+            r#"
+            SELECT
+                COUNT(*) AS total_count,
+                COUNT(*) FILTER (WHERE login_status = 1) AS success_count,
+                COUNT(*) FILTER (WHERE login_status = 2) AS fail_count,
+                COUNT(*) FILTER (WHERE created_at >= $1) AS today_count,
+                COUNT(*) FILTER (WHERE login_status = 1 AND created_at >= $1) AS today_success,
+                COUNT(*) FILTER (WHERE login_status = 2 AND created_at >= $1) AS today_fail
+            FROM sys_login_logs
+            "#,
+            today_start,
+        )
+        .fetch_one(&self.pool)
+        .await?;
 
         Ok(LoginStatistics {
-            total_count,
-            success_count,
-            fail_count,
-            today_count,
-            today_success,
-            today_fail,
+            total_count: row.total_count.unwrap_or(0),
+            success_count: row.success_count.unwrap_or(0),
+            fail_count: row.fail_count.unwrap_or(0),
+            today_count: row.today_count.unwrap_or(0),
+            today_success: row.today_success.unwrap_or(0),
+            today_fail: row.today_fail.unwrap_or(0),
         })
     }
 
@@ -467,41 +455,67 @@ impl AuditRepository {
     }
 
     /// 获取响应时间分布
+    /// N+1 FIX: 使用单次 GROUP BY 替代循环 COUNT
     pub async fn get_api_response_distribution(
         &self,
     ) -> AppResult<Vec<ApiResponseTimeDistribution>> {
-        let total: i64 = sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM sys_api_call_logs")
-            .fetch_one(&self.pool)
-            .await?;
+        let rows = sqlx::query!(
+            r#"
+            SELECT
+                CASE
+                    WHEN response_time < 100 THEN '< 100ms'
+                    WHEN response_time >= 100 AND response_time < 300 THEN '100-300ms'
+                    WHEN response_time >= 300 AND response_time < 500 THEN '300-500ms'
+                    WHEN response_time >= 500 AND response_time < 1000 THEN '500ms-1s'
+                    WHEN response_time >= 1000 AND response_time < 2000 THEN '1-2s'
+                    WHEN response_time >= 2000 THEN '> 2s'
+                END AS bucket,
+                COUNT(*) AS count
+            FROM sys_api_call_logs
+            GROUP BY bucket
+            ORDER BY
+                CASE bucket
+                    WHEN '< 100ms' THEN 1
+                    WHEN '100-300ms' THEN 2
+                    WHEN '300-500ms' THEN 3
+                    WHEN '500ms-1s' THEN 4
+                    WHEN '1-2s' THEN 5
+                    WHEN '> 2s' THEN 6
+                END
+            "#,
+        )
+        .fetch_all(&self.pool)
+        .await?;
+
+        let total: i64 = rows.iter().map(|r| r.count.unwrap_or(0)).sum();
         if total == 0 {
             return Ok(vec![]);
         }
 
-        let buckets = vec![
-            ("< 100ms", 0, 100),
-            ("100-300ms", 100, 300),
-            ("300-500ms", 300, 500),
-            ("500ms-1s", 500, 1000),
-            ("1-2s", 1000, 2000),
-            ("> 2s", 2000, i32::MAX),
-        ];
+        let bucket_ranges: std::collections::HashMap<&str, (i32, i32)> = [
+            ("< 100ms", (0, 100)),
+            ("100-300ms", (100, 300)),
+            ("300-500ms", (300, 500)),
+            ("500ms-1s", (500, 1000)),
+            ("1-2s", (1000, 2000)),
+            ("> 2s", (2000, -1)),
+        ].iter().cloned().collect();
 
-        let mut result = Vec::new();
-        for (label, min, max) in &buckets {
-            let count: i64 = sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM sys_api_call_logs WHERE response_time >= $1 AND response_time < $2")
-                .bind(min)
-                .bind(max)
-                .fetch_one(&self.pool).await?;
-            result.push(ApiResponseTimeDistribution {
-                bucket: label.to_string(),
-                min: *min,
-                max: if *max == i32::MAX { -1 } else { *max },
-                count,
-                percentage: (count as f64 / total as f64) * 100.0,
-            });
-        }
-
-        Ok(result)
+        Ok(rows
+            .into_iter()
+            .filter_map(|r| {
+                let bucket = r.bucket.as_deref()?;
+                let count = r.count.unwrap_or(0);
+                let (min, max) = bucket_ranges.get(bucket)?;
+                Some(ApiResponseTimeDistribution {
+                    bucket: bucket.to_string(),
+                    min: *min,
+                    max: *max,
+                    count,
+                    percentage: (count as f64 / total as f64) * 100.0,
+                })
+            })
+            .collect())
     }
 
     /// 插入 API 调用日志

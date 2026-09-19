@@ -116,71 +116,84 @@ impl CategoryRepository {
         Ok(CategoryListResult { categories, total })
     }
 
-    /// 获取分类树（内部递归）
-    async fn get_tree_recursive(
+    /// 获取分类树（N+1 FIX: 使用 CTE 递归查询替代逐层递归查询）
+    pub async fn get_tree(
         &self,
         parent_id: Option<i64>,
     ) -> Result<Vec<CategoryTreeNode>, CategoryRepositoryError> {
-        let categories = if let Some(pid) = parent_id {
-            sqlx::query_as!(
-                CmsCategory,
-                r#"
+        // 使用 PostgreSQL CTE 递归查询一次性获取所有分类
+        let rows = sqlx::query_as!(
+            CmsCategory,
+            r#"
+            WITH RECURSIVE category_tree AS (
+                -- 基础查询：获取根分类或指定父分类的直接子分类
                 SELECT id, parent_id, name, slug, description, icon, sort_order,
                        seo_title, seo_keywords, seo_description,
                        status::int4 AS "status!" , (allow_attachment <> 0) AS "allow_attachment!" ,
                        COALESCE(created_at, NOW()) AS "created_at!" ,
-                       COALESCE(updated_at, NOW()) AS "updated_at!"
+                       COALESCE(updated_at, NOW()) AS "updated_at!" ,
+                       1 AS depth
                 FROM cms_category
-                WHERE parent_id = $1 AND status = 1
-                ORDER BY sort_order ASC, id ASC
-                "#,
-                pid,
-            )
-            .fetch_all(&self.pool)
-            .await?
-        } else {
-            sqlx::query_as!(
-                CmsCategory,
-                r#"
-                SELECT id, parent_id, name, slug, description, icon, sort_order,
-                       seo_title, seo_keywords, seo_description,
-                       status::int4 AS "status!" , (allow_attachment <> 0) AS "allow_attachment!" ,
-                       COALESCE(created_at, NOW()) AS "created_at!" ,
-                       COALESCE(updated_at, NOW()) AS "updated_at!"
-                FROM cms_category
-                WHERE parent_id IS NULL AND status = 1
-                ORDER BY sort_order ASC, id ASC
-                "#,
-            )
-            .fetch_all(&self.pool)
-            .await?
-        };
+                WHERE status = 1
+                  AND CASE
+                    WHEN $1::bigint IS NULL THEN parent_id IS NULL
+                    ELSE parent_id = $1
+                  END
 
-        let mut tree = Vec::new();
-        for category in categories {
-            let children = Box::pin(self.get_tree_recursive(Some(category.id))).await?;
-            tree.push(CategoryTreeNode {
-                id: category.id,
-                parent_id: category.parent_id,
-                name: category.name,
-                slug: category.slug,
-                icon: category.icon,
-                sort_order: category.sort_order,
-                status: category.status,
-                children,
-            });
+                UNION ALL
+
+                -- 递归查询：获取子分类
+                SELECT c.id, c.parent_id, c.name, c.slug, c.description, c.icon, c.sort_order,
+                       c.seo_title, c.seo_keywords, c.seo_description,
+                       c.status::int4 AS "status!" , (c.allow_attachment <> 0) AS "allow_attachment!" ,
+                       COALESCE(c.created_at, NOW()) AS "created_at!" ,
+                       COALESCE(c.updated_at, NOW()) AS "updated_at!" ,
+                       ct.depth + 1
+                FROM cms_category c
+                JOIN category_tree ct ON c.parent_id = ct.id
+                WHERE c.status = 1
+            )
+            SELECT id, parent_id, name, slug, description, icon, sort_order,
+                   seo_title, seo_keywords, seo_description, status, allow_attachment,
+                   created_at, updated_at
+            FROM category_tree
+            ORDER BY depth, sort_order ASC, id ASC
+            "#,
+            parent_id,
+        )
+        .fetch_all(&self.pool)
+        .await?;
+
+        // 在内存中构建树结构
+        let mut node_map: std::collections::HashMap<i64, CategoryTreeNode> = rows
+            .iter()
+            .map(|c| (c.id, CategoryTreeNode {
+                id: c.id,
+                parent_id: c.parent_id,
+                name: c.name.clone(),
+                slug: c.slug.clone(),
+                icon: c.icon.clone(),
+                sort_order: c.sort_order,
+                status: c.status,
+                children: Vec::new(),
+            }))
+            .collect();
+
+        let mut root_nodes = Vec::new();
+        for row in &rows {
+            if let Some(node) = node_map.get(&row.id) {
+                let node_clone = node.clone();
+                if let Some(pid) = row.parent_id {
+                    if let Some(parent) = node_map.get_mut(&pid) {
+                        parent.children.push(node_clone);
+                    }
+                } else {
+                    root_nodes.push(node_clone);
+                }
+            }
         }
 
-        Ok(tree)
-    }
-
-    /// 获取分类树
-    pub fn get_tree(
-        &self,
-        parent_id: Option<i64>,
-    ) -> impl std::future::Future<Output = Result<Vec<CategoryTreeNode>, CategoryRepositoryError>> + '_
-    {
-        self.get_tree_recursive(parent_id)
+        Ok(root_nodes)
     }
 
     /// 根据 ID 获取分类

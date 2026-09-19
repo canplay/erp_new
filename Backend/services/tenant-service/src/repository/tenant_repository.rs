@@ -221,6 +221,7 @@ impl TenantRepository {
     }
 
     /// 分页查询租户列表
+    /// N+1 FIX: Use LEFT JOIN with GROUP BY to get user counts in a single query
     pub async fn list(
         &self,
         page: i32,
@@ -229,17 +230,20 @@ impl TenantRepository {
     ) -> Result<PaginatedTenants, TenantRepositoryError> {
         let offset = (page - 1) * page_size;
 
-        // 按关键字过滤 / 全量查询, 分别物化为 TenantListItem
         let (items, total) = if let Some(kw) = keyword {
             let keyword_pattern = format!("%{kw}%" );
+
             let rows = sqlx::query!(
                 r#"
                 SELECT t.id, t.name, t.code,
                        COALESCE(t.status, 0) AS "status!" ,
                        COALESCE(t.max_users, 0)::bigint AS "max_users!" ,
-                       COALESCE(t.created_at, NOW()) AS "created_at!"
+                       COALESCE(t.created_at, NOW()) AS "created_at!" ,
+                       COALESCE(COUNT(tu.user_id), 0)::bigint AS "current_users!"
                 FROM tenants t
+                LEFT JOIN tenant_users tu ON t.id = tu.tenant_id
                 WHERE t.name ILIKE $1 OR t.code ILIKE $1
+                GROUP BY t.id, t.name, t.code, t.status, t.max_users, t.created_at
                 ORDER BY t.created_at DESC
                 LIMIT $2 OFFSET $3
                 "#,
@@ -258,28 +262,15 @@ impl TenantRepository {
             .await?
             .unwrap_or(0);
 
-            // 为每个租户补充当前用户数（单独查询, 单次失败不中断整个列表）
-            let mut items = Vec::new();
-            for r in rows {
-                let user_count = sqlx::query_scalar!(
-                    "SELECT COUNT(*) FROM tenant_users WHERE tenant_id = $1" ,
-                    r.id,
-                )
-                .fetch_one(&self.pool)
-                .await
-                .unwrap_or(Some(0))
-                .unwrap_or(0);
-
-                items.push(TenantListItem {
-                    id: r.id,
-                    name: r.name,
-                    code: r.code,
-                    status: r.status,
-                    max_users: r.max_users,
-                    current_users: user_count,
-                    created_at: r.created_at,
-                });
-            }
+            let items = rows.into_iter().map(|r| TenantListItem {
+                id: r.id,
+                name: r.name,
+                code: r.code,
+                status: r.status,
+                max_users: r.max_users,
+                current_users: r.current_users,
+                created_at: r.created_at,
+            }).collect();
 
             (items, total)
         } else {
@@ -288,8 +279,11 @@ impl TenantRepository {
                 SELECT t.id, t.name, t.code,
                        COALESCE(t.status, 0) AS "status!" ,
                        COALESCE(t.max_users, 0)::bigint AS "max_users!" ,
-                       COALESCE(t.created_at, NOW()) AS "created_at!"
+                       COALESCE(t.created_at, NOW()) AS "created_at!" ,
+                       COALESCE(COUNT(tu.user_id), 0)::bigint AS "current_users!"
                 FROM tenants t
+                LEFT JOIN tenant_users tu ON t.id = tu.tenant_id
+                GROUP BY t.id, t.name, t.code, t.status, t.max_users, t.created_at
                 ORDER BY t.created_at DESC
                 LIMIT $1 OFFSET $2
                 "#,
@@ -304,28 +298,15 @@ impl TenantRepository {
                 .await?
                 .unwrap_or(0);
 
-            // 为每个租户补充当前用户数（单独查询, 单次失败不中断整个列表）
-            let mut items = Vec::new();
-            for r in rows {
-                let user_count = sqlx::query_scalar!(
-                    "SELECT COUNT(*) FROM tenant_users WHERE tenant_id = $1" ,
-                    r.id,
-                )
-                .fetch_one(&self.pool)
-                .await
-                .unwrap_or(Some(0))
-                .unwrap_or(0);
-
-                items.push(TenantListItem {
-                    id: r.id,
-                    name: r.name,
-                    code: r.code,
-                    status: r.status,
-                    max_users: r.max_users,
-                    current_users: user_count,
-                    created_at: r.created_at,
-                });
-            }
+            let items = rows.into_iter().map(|r| TenantListItem {
+                id: r.id,
+                name: r.name,
+                code: r.code,
+                status: r.status,
+                max_users: r.max_users,
+                current_users: r.current_users,
+                created_at: r.created_at,
+            }).collect();
 
             (items, total)
         };

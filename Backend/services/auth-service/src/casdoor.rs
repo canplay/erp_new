@@ -91,6 +91,17 @@ impl std::fmt::Display for CasdoorError {
 
 impl std::error::Error for CasdoorError {}
 
+impl From<CasdoorError> for common::AppError {
+    fn from(err: CasdoorError) -> Self {
+        match err {
+            CasdoorError::NetworkError(msg) => Self::ServiceUnavailable(msg),
+            CasdoorError::AuthenticationFailed(msg) => Self::Unauthorized(msg),
+            CasdoorError::UserNotFound => Self::UserNotFound,
+            CasdoorError::ApiError(msg) => Self::ServiceUnavailable(msg),
+        }
+    }
+}
+
 /// Casdoor 客户端
 pub struct CasdoorClient {
     config: CasdoorConfig,

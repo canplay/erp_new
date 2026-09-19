@@ -314,6 +314,46 @@ pub enum AppError {
     /// 功能未实现（桩 handler 占位）
     #[error("功能未实现: {0}" )]
     NotImplemented(String),
+
+    // ============ CMS 服务 (53xxx) ============
+    #[error("文章不存在" )]
+    ArticleNotFound,
+
+    #[error("文章代码已存在" )]
+    ArticleAlreadyExists,
+
+    #[error("分类不存在" )]
+    CategoryNotFound,
+
+    #[error("分类代码已存在" )]
+    CategoryAlreadyExists,
+
+    #[error("存在子分类或关联文章，无法删除" )]
+    CategoryHasChildren,
+
+    // ============ 反馈服务 (54xxx) ============
+    #[error("反馈不存在" )]
+    FeedbackNotFound,
+
+    // ============ 消息服务 (55xxx) ============
+    #[error("SMTP 连接失败: {0}" )]
+    EmailConnection(String),
+
+    #[error("SMTP 认证失败: {0}" )]
+    EmailAuthentication(String),
+
+    #[error("邮件发送失败: {0}" )]
+    EmailSend(String),
+
+    #[error("邮件模板渲染失败: {0}" )]
+    EmailTemplate(String),
+
+    // ============ 租户流程 (56xxx) ============
+    #[error("租户入驻流程失败: {0}" )]
+    TenantOnboarding(String),
+
+    #[error("租户注销流程失败: {0}" )]
+    TenantOffboarding(String),
 }
 
 impl IntoResponse for AppError {
@@ -508,6 +548,26 @@ impl IntoResponse for AppError {
                 30012,
                 format!("功能未实现: {msg}" ),
             ),
+
+            // CMS 服务
+            Self::ArticleNotFound => (StatusCode::NOT_FOUND, 53001, self.to_string()),
+            Self::ArticleAlreadyExists => (StatusCode::CONFLICT, 53002, self.to_string()),
+            Self::CategoryNotFound => (StatusCode::NOT_FOUND, 53003, self.to_string()),
+            Self::CategoryAlreadyExists => (StatusCode::CONFLICT, 53004, self.to_string()),
+            Self::CategoryHasChildren => (StatusCode::BAD_REQUEST, 53005, self.to_string()),
+
+            // 反馈服务
+            Self::FeedbackNotFound => (StatusCode::NOT_FOUND, 54001, self.to_string()),
+
+            // 消息服务
+            Self::EmailConnection(_) => (StatusCode::BAD_GATEWAY, 55001, self.to_string()),
+            Self::EmailAuthentication(_) => (StatusCode::UNAUTHORIZED, 55002, self.to_string()),
+            Self::EmailSend(_) => (StatusCode::INTERNAL_SERVER_ERROR, 55003, self.to_string()),
+            Self::EmailTemplate(_) => (StatusCode::INTERNAL_SERVER_ERROR, 55004, self.to_string()),
+
+            // 租户流程
+            Self::TenantOnboarding(_) => (StatusCode::INTERNAL_SERVER_ERROR, 56001, self.to_string()),
+            Self::TenantOffboarding(_) => (StatusCode::INTERNAL_SERVER_ERROR, 56002, self.to_string()),
         };
 
         let body = Json(json!({

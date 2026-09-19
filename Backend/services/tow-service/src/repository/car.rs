@@ -21,6 +21,16 @@ pub enum CarRepositoryError {
     AlreadyExists,
 }
 
+impl From<CarRepositoryError> for common::AppError {
+    fn from(err: CarRepositoryError) -> Self {
+        match err {
+            CarRepositoryError::NotFound => Self::NotFound("车辆记录不存在".to_string()),
+            CarRepositoryError::AlreadyExists => Self::BadRequest("车辆记录已存在".to_string()),
+            CarRepositoryError::DbError(e) => Self::Database(e),
+        }
+    }
+}
+
 /// 分页结果
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PaginatedCars {

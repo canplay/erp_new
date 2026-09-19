@@ -14,6 +14,16 @@ pub enum ArticleRepositoryError {
     Database(#[from] sqlx::Error),
 }
 
+impl From<ArticleRepositoryError> for common::AppError {
+    fn from(err: ArticleRepositoryError) -> Self {
+        match err {
+            ArticleRepositoryError::NotFound => Self::ArticleNotFound,
+            ArticleRepositoryError::AlreadyExists => Self::ArticleAlreadyExists,
+            ArticleRepositoryError::Database(e) => Self::Database(e),
+        }
+    }
+}
+
 /// 文章 Repository
 #[derive(Clone)]
 pub struct ArticleRepository {

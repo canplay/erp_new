@@ -18,6 +18,16 @@ pub enum TenantRepositoryError {
     Database(#[from] sqlx::Error),
 }
 
+impl From<TenantRepositoryError> for common::AppError {
+    fn from(err: TenantRepositoryError) -> Self {
+        match err {
+            TenantRepositoryError::NotFound => Self::TenantNotFound,
+            TenantRepositoryError::AlreadyExists => Self::TenantAlreadyExists,
+            TenantRepositoryError::Database(e) => Self::Database(e),
+        }
+    }
+}
+
 /// 租户查询参数
 #[derive(Debug, Default)]
 pub struct TenantQueryParams {

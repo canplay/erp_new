@@ -37,6 +37,19 @@ pub enum OffboardingError {
     Rollback(String),
 }
 
+impl From<OffboardingError> for common::AppError {
+    fn from(err: OffboardingError) -> Self {
+        match err {
+            OffboardingError::DataExport(msg) => Self::TenantOffboarding(msg),
+            OffboardingError::UserAnonymization(msg) => Self::TenantOffboarding(msg),
+            OffboardingError::SchemaDrop(msg) => Self::TenantOffboarding(msg),
+            OffboardingError::Notification(msg) => Self::TenantOffboarding(msg),
+            OffboardingError::TenantNotFound(_) => Self::TenantNotFound,
+            OffboardingError::Rollback(msg) => Self::TenantOffboarding(msg),
+        }
+    }
+}
+
 /// Result type for offboarding operations
 pub type OffboardingResult<T> = Result<T, OffboardingError>;
 

@@ -17,6 +17,15 @@ pub enum FeedbackRepositoryError {
     NotFound,
 }
 
+impl From<FeedbackRepositoryError> for common::AppError {
+    fn from(err: FeedbackRepositoryError) -> Self {
+        match err {
+            FeedbackRepositoryError::NotFound => Self::FeedbackNotFound,
+            FeedbackRepositoryError::Database(e) => Self::Database(e),
+        }
+    }
+}
+
 /// 反馈类型
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase" )]

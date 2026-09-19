@@ -16,6 +16,17 @@ pub enum CategoryRepositoryError {
     Database(#[from] sqlx::Error),
 }
 
+impl From<CategoryRepositoryError> for common::AppError {
+    fn from(err: CategoryRepositoryError) -> Self {
+        match err {
+            CategoryRepositoryError::NotFound => Self::CategoryNotFound,
+            CategoryRepositoryError::AlreadyExists => Self::CategoryAlreadyExists,
+            CategoryRepositoryError::HasChildren => Self::CategoryHasChildren,
+            CategoryRepositoryError::Database(e) => Self::Database(e),
+        }
+    }
+}
+
 /// 分类 Repository
 #[derive(Clone)]
 pub struct CategoryRepository {

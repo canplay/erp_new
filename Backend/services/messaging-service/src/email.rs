@@ -25,6 +25,18 @@ pub enum EmailError {
     Configuration(String),
 }
 
+impl From<EmailError> for common::AppError {
+    fn from(err: EmailError) -> Self {
+        match err {
+            EmailError::Connection(msg) => Self::EmailConnection(msg),
+            EmailError::Authentication(msg) => Self::EmailAuthentication(msg),
+            EmailError::Send(msg) => Self::EmailSend(msg),
+            EmailError::Template(msg) => Self::EmailTemplate(msg),
+            EmailError::Configuration(msg) => Self::Config(msg),
+        }
+    }
+}
+
 /// Result type for email operations
 pub type EmailResult<T> = Result<T, EmailError>;
 

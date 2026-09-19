@@ -52,6 +52,19 @@ pub enum StorageError {
     IoError(#[from] std::io::Error),
 }
 
+impl From<StorageError> for common::AppError {
+    fn from(err: StorageError) -> Self {
+        match err {
+            StorageError::UploadFailed(msg) => Self::FileUploadFailed(msg),
+            StorageError::DownloadFailed(msg) => Self::FileStorageError(msg),
+            StorageError::DeleteFailed(msg) => Self::FileDeleteFailed(msg),
+            StorageError::NotFound(msg) => Self::FileNotFound,
+            StorageError::ConfigError(msg) => Self::Config(msg),
+            StorageError::IoError(e) => Self::Internal(e.to_string()),
+        }
+    }
+}
+
 /// 生成唯一文件名
 #[must_use]
 pub fn generate_file_name(original_name: &str, ext: Option<&str>) -> String {

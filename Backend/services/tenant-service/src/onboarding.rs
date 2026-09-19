@@ -33,6 +33,18 @@ pub enum OnboardingError {
     Rollback(String),
 }
 
+impl From<OnboardingError> for common::AppError {
+    fn from(err: OnboardingError) -> Self {
+        match err {
+            OnboardingError::TenantCreation(msg) => Self::TenantOnboarding(msg),
+            OnboardingError::SchemaProvisioning(msg) => Self::TenantOnboarding(msg),
+            OnboardingError::AdminUserCreation(msg) => Self::TenantOnboarding(msg),
+            OnboardingError::Notification(msg) => Self::TenantOnboarding(msg),
+            OnboardingError::Rollback(msg) => Self::TenantOnboarding(msg),
+        }
+    }
+}
+
 /// Result type for onboarding operations
 pub type OnboardingResult<T> = Result<T, OnboardingError>;
 

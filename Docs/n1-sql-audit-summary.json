@@ -1,0 +1,73 @@
+{
+  "summary": "审查完成: 67 个 SQL 语句中发现 10 个 N+1 反模式",
+  "files_modified": [
+    "D:/Workspace/erp_new/Backend/services/user-service/src/repository/announcement_repository.rs",
+    "D:/Workspace/erp_new/Backend/services/user-service/src/repository/role_repository.rs",
+    "D:/Workspace/erp_new/Backend/services/user-service/src/handlers.rs"
+  ],
+  "n1_count": 10,
+  "report_path": "D:/Workspace/erp_new/Docs/n1-sql-audit-report.md",
+  "check_passed": false,
+  "findings_detail": [
+    {
+      "file": "announcement_repository.rs",
+      "lines": "982-990",
+      "type": "select_loop",
+      "severity": "HIGH"
+    },
+    {
+      "file": "role_repository.rs",
+      "lines": "433-441",
+      "type": "select_loop",
+      "severity": "HIGH"
+    },
+    {
+      "file": "role_repository.rs",
+      "lines": "534-553",
+      "type": "select_loop",
+      "severity": "HIGH"
+    },
+    {
+      "file": "role_repository.rs",
+      "lines": "544-552",
+      "type": "select_loop",
+      "severity": "HIGH"
+    },
+    {
+      "file": "role_repository.rs",
+      "lines": "706-740",
+      "type": "select_loop",
+      "severity": "HIGH"
+    },
+    {
+      "file": "role_repository.rs",
+      "lines": "794-821",
+      "type": "select_loop",
+      "severity": "HIGH"
+    },
+    {
+      "file": "role_repository.rs",
+      "lines": "882-896",
+      "type": "repo_call_in_loop",
+      "severity": "HIGH"
+    },
+    {
+      "file": "role_repository.rs",
+      "lines": "938-949",
+      "type": "select_loop",
+      "severity": "HIGH"
+    },
+    {
+      "file": "handlers.rs",
+      "lines": "658-675",
+      "type": "repo_call_in_loop",
+      "severity": "HIGH"
+    },
+    {
+      "file": "handlers.rs",
+      "lines": "917-934",
+      "type": "repo_call_in_loop",
+      "severity": "HIGH"
+    }
+  ]
+}

@@ -23,6 +23,16 @@ pub enum PreferenceError {
     NotFound(i64),
 }
 
+impl From<PreferenceError> for common::AppError {
+    fn from(err: PreferenceError) -> Self {
+        match err {
+            PreferenceError::Invalid(msg) => Self::BadRequest(msg),
+            PreferenceError::NotFound(_) => Self::NotFound("Notification preference not found".to_string()),
+            PreferenceError::Database(e) => Self::Database(e),
+        }
+    }
+}
+
 /// Result type for preference operations
 pub type PreferenceResult<T> = Result<T, PreferenceError>;
 

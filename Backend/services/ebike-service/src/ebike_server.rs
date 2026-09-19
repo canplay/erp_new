@@ -296,17 +296,17 @@ impl EbikeServiceTrait for EbikeGrpcService {
     ) -> Result<Response<OrderListResponse>, Status> {
         let req = request.into_inner();
         let orders = self.state.order_repo.query(
-            &req.code,
-            &req.provide,
-            req.status,
-            &req.time_start,
-            &req.time_end,
-            &req.order,
-            req.paystatus,
-            req.paytype,
-            &req.paytime,
-            0,
-            0,
+            OrderQueryParams {
+                code: &req.code,
+                provide: &req.provide,
+                status: req.status,
+                order: &req.order,
+                paystatus: req.paystatus,
+                paytype: req.paytype,
+                paytime: &req.paytime,
+                limit: 0,
+                offset: 0,
+            }
         ).await.map_err(|e| Status::internal(format!("{e}" )))?;
         let proto: Vec<OrderInfo> = orders.iter().map(order_to_proto).collect();
         Ok(Response::new(OrderListResponse { orders: proto }))

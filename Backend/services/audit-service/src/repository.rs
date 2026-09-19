@@ -6,6 +6,19 @@ use crate::models::{CreateLoginLog, SysLoginLog, LoginStatistics, CreateOperatio
 use chrono::{DateTime, Utc};
 use sqlx::PgPool;
 
+/// 查询操作日志参数
+#[derive(Debug, Clone)]
+pub struct FindOperationLogsParams<'a> {
+    pub page: u32,
+    pub page_size: u32,
+    pub username: Option<&'a str>,
+    pub module: Option<&'a str>,
+    pub business_type: Option<&'a str>,
+    pub status: Option<i16>,
+    pub start_date: Option<&'a str>,
+    pub end_date: Option<&'a str>,
+}
+
 /// 审计仓储
 #[derive(Clone)]
 pub struct AuditRepository {
@@ -182,21 +195,13 @@ impl AuditRepository {
     }
 
     /// 查询操作日志列表
-    #[allow(clippy::too_many_arguments)]
     pub async fn find_operation_logs(
         &self,
-        page: u32,
-        page_size: u32,
-        username: Option<&str>,
-        module: Option<&str>,
-        business_type: Option<&str>,
-        status: Option<i16>,
-        start_date: Option<&str>,
-        end_date: Option<&str>,
+        params: FindOperationLogsParams<'_>,
     ) -> AppResult<(Vec<SysOperationLog>, i64)> {
-        let offset = (page.saturating_sub(1)) * page_size;
-        let start_dt = start_date.and_then(parse_datetime);
-        let end_dt = end_date.and_then(parse_datetime);
+        let offset = (params.page.saturating_sub(1)) * params.page_size;
+        let start_dt = params.start_date.and_then(parse_datetime);
+        let end_dt = params.end_date.and_then(parse_datetime);
 
         let total: i64 = sqlx::query_scalar::<_, i64>(r#"SELECT COUNT(*) FROM sys_operation_logs
                WHERE ($1 = '' OR username ILIKE '%' || $1 || '%')
@@ -205,10 +210,10 @@ impl AuditRepository {
                  AND ($4::smallint IS NULL OR status = $4)
                  AND ($5::timestamptz IS NULL OR created_at >= $5)
                  AND ($6::timestamptz IS NULL OR created_at <= $6)"#)
-            .bind(username.unwrap_or(" "))
-            .bind(module.unwrap_or(""))
-            .bind(business_type.unwrap_or(""))
-            .bind(status)
+            .bind(params.username.unwrap_or(" "))
+            .bind(params.module.unwrap_or(""))
+            .bind(params.business_type.unwrap_or(""))
+            .bind(params.status)
             .bind(start_dt)
             .bind(end_dt)
         .fetch_one(&self.pool)
@@ -228,13 +233,13 @@ impl AuditRepository {
             ORDER BY created_at DESC
             LIMIT $7 OFFSET $8
             "#)
-            .bind(username.unwrap_or(" "))
-            .bind(module.unwrap_or(""))
-            .bind(business_type.unwrap_or(""))
-            .bind(status)
+            .bind(params.username.unwrap_or(" "))
+            .bind(params.module.unwrap_or(""))
+            .bind(params.business_type.unwrap_or(""))
+            .bind(params.status)
             .bind(start_dt)
             .bind(end_dt)
-            .bind(i64::from(page_size))
+            .bind(i64::from(params.page_size))
             .bind(i64::from(offset))
         .fetch_all(&self.pool)
         .await?;

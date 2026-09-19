@@ -150,6 +150,34 @@ pub(crate) struct UpdateDictionaryItemParams<'a> {
     pub remark: Option<&'a str>,
 }
 
+/// 创建公告参数
+#[derive(Debug, Clone)]
+pub(crate) struct CreateAnnouncementParams<'a> {
+    pub title: &'a str,
+    pub content: &'a str,
+    pub announcement_type: &'a str,
+    pub priority: i32,
+    pub is_pinned: bool,
+    pub is_active: bool,
+    pub start_time: Option<chrono::DateTime<chrono::Utc>>,
+    pub end_time: Option<chrono::DateTime<chrono::Utc>>,
+    pub created_by: Option<i64>,
+}
+
+/// 更新公告参数
+#[derive(Debug, Clone)]
+pub(crate) struct UpdateAnnouncementParams {
+    pub id: i64,
+    pub title: Option<String>,
+    pub content: Option<String>,
+    pub announcement_type: Option<String>,
+    pub priority: Option<i32>,
+    pub is_pinned: Option<bool>,
+    pub is_active: Option<bool>,
+    pub start_time: Option<chrono::DateTime<chrono::Utc>>,
+    pub end_time: Option<chrono::DateTime<chrono::Utc>>,
+}
+
 /// 公告和配置仓储
 #[derive(Clone)]
 pub(crate) struct AnnouncementRepository {
@@ -166,33 +194,24 @@ impl AnnouncementRepository {
     // ==================== 公告管理 ====================
 
     /// 创建公告
-    #[allow(clippy::too_many_arguments)]
     pub(crate) async fn create(
         &self,
-        title: &str,
-        content: &str,
-        announcement_type: &str,
-        priority: i32,
-        is_pinned: bool,
-        is_active: bool,
-        start_time: Option<DateTime<Utc>>,
-        end_time: Option<DateTime<Utc>>,
-        created_by: Option<i64>,
+        params: CreateAnnouncementParams<'_>,
     ) -> Result<i64, AnnouncementRepositoryError> {
         let row = sqlx::query!(
             r"INSERT INTO announcements
                (title, content, announcement_type, priority, is_pinned, is_active, start_time, end_time, created_by)
                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
                RETURNING id" ,
-            title,
-            content,
-            announcement_type,
-            priority,
-            is_pinned,
-            is_active,
-            start_time,
-            end_time,
-            created_by,
+            params.title,
+            params.content,
+            params.announcement_type,
+            params.priority,
+            params.is_pinned,
+            params.is_active,
+            params.start_time,
+            params.end_time,
+            params.created_by,
         )
         .fetch_one(&self.pool)
         .await?;
@@ -242,18 +261,9 @@ impl AnnouncementRepository {
     }
 
     /// 更新公告
-    #[allow(clippy::too_many_arguments)]
     pub(crate) async fn update(
         &self,
-        id: i64,
-        title: Option<String>,
-        content: Option<String>,
-        announcement_type: Option<String>,
-        priority: Option<i32>,
-        is_pinned: Option<bool>,
-        is_active: Option<bool>,
-        start_time: Option<DateTime<Utc>>,
-        end_time: Option<DateTime<Utc>>,
+        params: UpdateAnnouncementParams,
     ) -> Result<bool, AnnouncementRepositoryError> {
         let result = sqlx::query!(
             r"UPDATE announcements
@@ -267,15 +277,15 @@ impl AnnouncementRepository {
                    end_time = COALESCE($8, end_time),
                    updated_at = NOW()
                WHERE id = $9" ,
-            title.as_deref(),
-            content.as_deref(),
-            announcement_type.as_deref(),
-            priority,
-            is_pinned,
-            is_active,
-            start_time,
-            end_time,
-            id,
+            params.title.as_deref(),
+            params.content.as_deref(),
+            params.announcement_type.as_deref(),
+            params.priority,
+            params.is_pinned,
+            params.is_active,
+            params.start_time,
+            params.end_time,
+            params.id,
         )
         .execute(&self.pool)
         .await?;
@@ -861,7 +871,6 @@ impl AnnouncementRepository {
     }
 
     /// 创建字典项
-    #[allow(clippy::too_many_arguments)]
     pub(crate) async fn create_dictionary_item(
         &self,
         params: CreateDictionaryItemParams<'_>,
@@ -885,7 +894,6 @@ impl AnnouncementRepository {
     }
 
     /// 更新字典项
-    #[allow(clippy::too_many_arguments)]
     pub(crate) async fn update_dictionary_item(
         &self,
         params: UpdateDictionaryItemParams<'_>,

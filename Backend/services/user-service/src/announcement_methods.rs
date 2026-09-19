@@ -50,8 +50,17 @@
         let req = request.into_inner();
         let created_by: Option<i64> = req.created_by.parse().ok();
         let id = self.state.announcement_repository.create(
-            &req.title, &req.content, &req.r#type, req.priority, req.is_pinned, req.is_active,
-            None, None, created_by,
+            CreateAnnouncementParams {
+                title: &req.title,
+                content: &req.content,
+                announcement_type: &req.r#type,
+                priority: req.priority,
+                is_pinned: req.is_pinned,
+                is_active: req.is_active,
+                start_time: None,
+                end_time: None,
+                created_by,
+            }
         ).await.map_err(|e| Status::internal(e.to_string()))?;
 
         Ok(Response::new(CreateAnnouncementResponse {
@@ -79,8 +88,17 @@
         let priority_val = if req.priority == 0 { None } else { Some(req.priority) };
 
         self.state.announcement_repository.update(
-            req.id, title, content, ann_type, priority_val,
-            Some(req.is_pinned), Some(req.is_active), None, None,
+            UpdateAnnouncementParams {
+                id: req.id,
+                title,
+                content,
+                ann_type,
+                priority_val,
+                is_pinned: Some(req.is_pinned),
+                is_active: Some(req.is_active),
+                start_time: None,
+                end_time: None,
+            }
         ).await.map_err(|e| Status::internal(e.to_string()))?;
 
         Ok(Response::new(UpdateAnnouncementResponse { success: true }))

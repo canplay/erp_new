@@ -636,7 +636,6 @@ async fn update_key_status(
 // ============== 使用记录接口 ==============
 
 /// 获取使用记录列表
-#[allow(clippy::too_many_arguments)]
 pub async fn list_usage_logs(
     state: Arc<ApiKeyAppState>,
     key_id: Option<String>,

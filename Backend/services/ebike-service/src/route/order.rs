@@ -47,7 +47,17 @@ pub async fn order(
 
             match state
                 .order_repo
-                .query(code, provide, status, time_start, time_end, order, paystatus, paytype, paytime, limit, offset)
+                .query(OrderQueryParams {
+                    code,
+                    provide,
+                    status,
+                    order,
+                    paystatus,
+                    paytype,
+                    paytime,
+                    limit,
+                    offset,
+                })
                 .await
             {
                 Ok(orders) => common::ok_response(orders).into_response(),

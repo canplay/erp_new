@@ -9,7 +9,7 @@ use axum::{
 use common::AppError;
 use common::AppResult;
 use crate::models::{LoginLogQuery, LoginLogResponse, LoginStatistics, OperationLogQuery, OperationLogResponse, OperationLogDetailResponse, BatchDeleteRequest, ApiCallLogQuery, ApiCallLogResponse, ApiCallStatistics, ApiEndpointStatistics, ApiTrendPoint, ApiResponseTimeDistribution};
-use crate::repository::AuditRepository;
+use crate::repository::{AuditRepository, FindOperationLogsParams};
 use crate::helpers::{json_ok_msg, json_health};
 
 /// 应用状态
@@ -98,14 +98,16 @@ async fn get_operation_logs(
     let (logs, total) = state
         .repository
         .find_operation_logs(
-            query.page,
-            query.page_size,
-            query.username.as_deref(),
-            query.module.as_deref(),
-            query.business_type.as_deref(),
-            query.status,
-            query.start_date.as_deref(),
-            query.end_date.as_deref(),
+            FindOperationLogsParams {
+                page: query.page,
+                page_size: query.page_size,
+                username: query.username.as_deref(),
+                module: query.module.as_deref(),
+                business_type: query.business_type.as_deref(),
+                status: query.status,
+                start_date: query.start_date.as_deref(),
+                end_date: query.end_date.as_deref(),
+            }
         )
         .await?;
 

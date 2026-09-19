@@ -8,7 +8,7 @@ use std::sync::Arc;
 use tonic::Status;
 
 use crate::models::{LoginStatistics, SysLoginLog, SysOperationLog};
-use crate::repository::AuditRepository;
+use crate::repository::{AuditRepository, FindOperationLogsParams};
 
 /// Audit 应用状态
 #[derive(Clone)]
@@ -236,14 +236,16 @@ pub async fn list_operation_logs(
     let result = state
         .repository
         .find_operation_logs(
-            params.page,
-            params.page_size,
-            params.username.as_deref(),
-            params.module.as_deref(),
-            params.business_type.as_deref(),
-            status_i16,
-            params.start_date.as_deref(),
-            params.end_date.as_deref(),
+            FindOperationLogsParams {
+                page: params.page,
+                page_size: params.page_size,
+                username: params.username.as_deref(),
+                module: params.module.as_deref(),
+                business_type: params.business_type.as_deref(),
+                status: status_i16,
+                start_date: params.start_date.as_deref(),
+                end_date: params.end_date.as_deref(),
+            }
         )
         .await
         .map_err(|e| Status::internal(format!("Database error: {e}" )))?;

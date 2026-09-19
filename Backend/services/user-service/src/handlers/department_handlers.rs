@@ -78,14 +78,16 @@ pub(crate) async fn update_department(s: &UserServiceImpl, request: Request<Upda
     if exists.is_none() { return Err(Status::not_found("部门不存在")); }
 
     s.state.department_repository.update(
-        req.id,
-        Some(req.name).filter(|x| !x.is_empty()),
-        None,
-        Some(req.parent_id).filter(|&id| id != 0),
-        None,
-        Some(req.description).filter(|x| !x.is_empty()),
-        Some(req.sort_order).filter(|&x| x != 0),
-        Some(req.status),
+        UpdateDepartmentParams {
+            dept_id: req.id,
+            name: Some(req.name).filter(|x| !x.is_empty()),
+            code: None,
+            parent_id: Some(req.parent_id).filter(|&id| id != 0),
+            leader_id: None,
+            description: Some(req.description).filter(|x| !x.is_empty()),
+            sort_order: Some(req.sort_order).filter(|&x| x != 0),
+            status: Some(req.status),
+        }
     ).await.map_err(|e| Status::internal(e.to_string()))?;
 
     Ok(Response::new(UpdateDepartmentResponse { success: true }))

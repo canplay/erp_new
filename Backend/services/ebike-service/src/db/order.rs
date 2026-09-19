@@ -10,6 +10,20 @@ use sqlx::Error;
 use crate::db::{safe_table_name, GenericRepository};
 use crate::model::OrderInfo;
 
+/// 订单查询参数
+#[derive(Debug, Clone)]
+pub struct OrderQueryParams<'a> {
+    pub code: &'a str,
+    pub provide: &'a str,
+    pub status: i64,
+    pub order: &'a str,
+    pub paystatus: i64,
+    pub paytype: i64,
+    pub paytime: &'a str,
+    pub limit: i64,
+    pub offset: i64,
+}
+
 pub struct OrderRepository {
     pool: PgPool,
 }
@@ -270,20 +284,9 @@ impl OrderRepository {
         Ok(true)
     }
 
-    #[allow(clippy::too_many_arguments)]
     pub async fn query(
         &self,
-        code: &str,
-        provide: &str,
-        status: i64,
-        _time_start: &str,
-        _time_end: &str,
-        order: &str,
-        paystatus: i64,
-        paytype: i64,
-        paytime: &str,
-        limit: i64,
-        offset: i64,
+        params: OrderQueryParams<'_>,
     ) -> Result<Vec<OrderInfo>, Error> {
         let year = Local::now().year();
         let month = Local::now().month();
@@ -306,15 +309,15 @@ impl OrderRepository {
              LIMIT $8 OFFSET $9"
         );
         let rows = sqlx::query_as::<_, OrderInfo>(&query)
-            .bind(code)
-            .bind(provide)
-            .bind(status)
-            .bind(order)
-            .bind(paystatus)
-            .bind(paytype)
-            .bind(paytime)
-            .bind(limit)
-            .bind(offset)
+            .bind(params.code)
+            .bind(params.provide)
+            .bind(params.status)
+            .bind(params.order)
+            .bind(params.paystatus)
+            .bind(params.paytype)
+            .bind(params.paytime)
+            .bind(params.limit)
+            .bind(params.offset)
             .fetch_all(&self.pool)
             .await?;
 

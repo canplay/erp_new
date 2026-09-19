@@ -30,6 +30,19 @@ pub(crate) enum DepartmentRepositoryError {
     MaxLevelExceeded,
 }
 
+/// 更新部门参数
+#[derive(Debug, Clone)]
+pub(crate) struct UpdateDepartmentParams {
+    pub dept_id: i64,
+    pub name: Option<String>,
+    pub code: Option<String>,
+    pub parent_id: Option<i64>,
+    pub leader_id: Option<i64>,
+    pub description: Option<String>,
+    pub sort_order: Option<i32>,
+    pub status: Option<i32>,
+}
+
 /// 部门信息
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct Department {
@@ -238,29 +251,21 @@ impl DepartmentRepository {
     }
 
     /// 更新部门
-    #[allow(clippy::too_many_arguments)]
     pub(crate) async fn update(
         &self,
-        dept_id: i64,
-        name: Option<String>,
-        code: Option<String>,
-        parent_id: Option<i64>,
-        leader_id: Option<i64>,
-        description: Option<String>,
-        sort_order: Option<i32>,
-        status: Option<i32>,
+        params: UpdateDepartmentParams,
     ) -> Result<Option<Department>, DepartmentRepositoryError> {
-        if let Some(new_parent_id) = parent_id {
-            if new_parent_id == dept_id {
+        if let Some(new_parent_id) = params.parent_id {
+            if new_parent_id == params.dept_id {
                 return Err(DepartmentRepositoryError::CircularReference);
             }
 
-            if self.is_descendant(new_parent_id, dept_id).await? {
+            if self.is_descendant(new_parent_id, params.dept_id).await? {
                 return Err(DepartmentRepositoryError::CircularReference);
             }
         }
 
-        let level = if let Some(pid) = parent_id {
+        let level = if let Some(pid) = params.parent_id {
             let row = sqlx::query!(
                 "SELECT level FROM departments WHERE id = $1" ,
                 pid
@@ -300,15 +305,15 @@ impl DepartmentRepository {
                           COALESCE(created_at, NOW()) AS "created_at!" ,
                           COALESCE(updated_at, NOW()) AS "updated_at!"
 "##,
-            name.as_deref(),
-            code.as_deref(),
-            parent_id,
+            params.name.as_deref(),
+            params.code.as_deref(),
+            params.parent_id,
             level,
-            leader_id,
-            description.as_deref(),
-            sort_order,
-            status,
-            dept_id,
+            params.leader_id,
+            params.description.as_deref(),
+            params.sort_order,
+            params.status,
+            params.dept_id,
         )
         .fetch_optional(&self.pool)
         .await?;

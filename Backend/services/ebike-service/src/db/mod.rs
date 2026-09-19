@@ -13,6 +13,6 @@ pub use car::CarRepository;
 pub use common::GenericRepository;
 pub use common::safe_table_name;
 pub use options::OptionsRepository;
-pub use order::OrderRepository;
+pub use order::{OrderRepository, OrderQueryParams};
 pub use storage::StorageRepository;
 pub use user::UserRepository;

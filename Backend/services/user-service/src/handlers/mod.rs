@@ -35,7 +35,6 @@ impl AppState {
 
 /// `UserService` 实现
 #[derive(Clone)]
-#[allow(clippy::too_many_arguments)]
 pub struct UserServiceImpl {
     pub(crate) state: Arc<AppState>,
 }

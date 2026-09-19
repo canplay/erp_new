@@ -29,44 +29,15 @@ pub mod shutdown; // 优雅关闭信号
 pub mod utils; // SQL 标识符清理工具（防 SQL 注入）
 pub mod validation; // 参数校验和密码工具 // 服务运行器（gRPC + HTTP 双服务）
 
-// Re-export repository types
-pub use repository::{
-    BaseRepository, CrudRepository, PageQuery, PageResult, RepositoryError, RepositoryResult,
-};
+// Re-export SQL 标识符清理工具（tenant 隔离层经顶层路径使用）
+pub use utils::sanitize_identifier;
 
-// Re-export SQL sanitization utilities
-pub use utils::{sanitize_identifier, sanitize_schema_name, sanitize_uuid};
-
-// Re-export 导出常用工具函数（定义在 shutdown.rs 中）
-pub use shutdown::{
-    shutdown_signal, shutdown_signal_default, shutdown_signal_with_timeout, shutdown_with_name,
-};
-
-// Re-export commonly used types
-pub use auth::{
-    HEADER_USER_ID, HEADER_USER_NAME, HEADER_USER_ROLE, HEADER_USER_TOKEN, UserContext,
-};
-pub use errors::{AppError, AppResult, error_response};
+// Re-export 核心错误与响应类型（全后端最高频引用）
+pub use errors::{AppError, AppResult};
 pub use response::ApiResponse;
 
-// Re-export config types
-pub use config::{
-    AppConfig, DatabaseConfig, JwtConfig, PoolConfig, RedisConfig, ServiceConfig,
-    ServiceDatabaseConfig, create_db_pool, create_service_db_pool, parse_port_from_env,
-};
-
-// Re-export HTTP 响应辅助函数
+// Re-export HTTP 响应辅助函数（服务经 `common::ok_response` 等顶层路径使用）
 pub use http::{
-    bad_request_response, batch_result_response, conflict_response, created_response,
-    created_with_id_response, csv_download_response, forbidden_response, internal_error_response,
-    list_response, no_content_response, not_found_response, ok_response, paginated_response,
-    rate_limit_response, success_with_data_and_message, success_with_message_response,
-    unauthorized_response, validate_pagination_params, cors_layer,
-};
-
-// Re-export 验证和密码工具
-pub use validation::{
-    generate_random_password, hash_password, validate_email, validate_id, validate_pagination,
-    validate_password, validate_phone, validate_role, validate_status, validate_string_length,
-    validate_username, verify_password,
+    bad_request_response, internal_error_response, not_found_response, ok_response,
+    success_with_message_response, unauthorized_response,
 };

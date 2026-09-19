@@ -1,6 +1,7 @@
 use grpc_proto::user::*;
 use tonic::{Request, Response, Status};
 use super::UserServiceImpl;
+use crate::repository::{CreateAnnouncementParams, UpdateAnnouncementParams};
 
 pub(crate) async fn list_announcements(s: &UserServiceImpl, request: Request<ListAnnouncementsRequest>) -> Result<Response<ListAnnouncementsResponse>, Status> {
     let req = request.into_inner();
@@ -74,16 +75,16 @@ pub(crate) async fn update_announcement(s: &UserServiceImpl, request: Request<Up
 
     let title = if req.title.is_empty() { None } else { Some(req.title) };
     let content = if req.content.is_empty() { None } else { Some(req.content) };
-    let ann_type = if req.r#type.is_empty() { None } else { Some(req.r#type) };
-    let priority_val = if req.priority == 0 { None } else { Some(req.priority) };
+    let announcement_type = if req.r#type.is_empty() { None } else { Some(req.r#type) };
+    let priority = if req.priority == 0 { None } else { Some(req.priority) };
 
     s.state.announcement_repository.update(
         UpdateAnnouncementParams {
             id: req.id,
             title,
             content,
-            ann_type,
-            priority_val,
+            announcement_type,
+            priority,
             is_pinned: Some(req.is_pinned),
             is_active: Some(req.is_active),
             start_time: None,

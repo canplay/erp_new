@@ -12,6 +12,7 @@ use grpc_proto::ebike::{
 
 use crate::AppState;
 use crate::model::{CarInfo as ModelCarInfo, OrderInfo as ModelOrderInfo, StorageInfo as ModelStorageInfo};
+use crate::db::OrderQueryParams;
 
 /// gRPC EbikeService 实现
 #[derive(Clone)]

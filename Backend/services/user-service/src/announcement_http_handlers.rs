@@ -11,6 +11,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::http_handlers::HttpAppState;
 use crate::helpers::{json_success, json_ok, json_error, json_error_fmt, json_success_msg, json_ok_msg, json_error_msg, json_error_msg_fmt};
+use crate::repository::{CreateAnnouncementParams, UpdateAnnouncementParams};
 
 // ============ 请求/响应结构 ============
 
@@ -282,17 +283,17 @@ pub(crate) async fn create_announcement(
 
     match state
         .announcement_repository
-        .create(
-            &req.title,
-            &req.content,
-            req.announcement_type.as_deref().unwrap_or("normal" ),
-            req.priority.unwrap_or(0),
-            req.is_pinned.unwrap_or(false),
-            req.is_active.unwrap_or(true),
+        .create(CreateAnnouncementParams {
+            title: &req.title,
+            content: &req.content,
+            announcement_type: req.announcement_type.as_deref().unwrap_or("normal"),
+            priority: req.priority.unwrap_or(0),
+            is_pinned: req.is_pinned.unwrap_or(false),
+            is_active: req.is_active.unwrap_or(true),
             start_time,
             end_time,
-            None, // created_by 从 JWT token 获取，暂不处理
-        )
+            created_by: None, // created_by 从 JWT token 获取，暂不处理
+        })
         .await
     {
         Ok(id) => {
@@ -324,17 +325,17 @@ pub(crate) async fn update_announcement(
 
     match state
         .announcement_repository
-        .update(
+        .update(UpdateAnnouncementParams {
             id,
-            req.title,
-            req.content,
-            req.announcement_type,
-            req.priority,
-            req.is_pinned,
-            req.is_active,
+            title: req.title,
+            content: req.content,
+            announcement_type: req.announcement_type,
+            priority: req.priority,
+            is_pinned: req.is_pinned,
+            is_active: req.is_active,
             start_time,
             end_time,
-        )
+        })
         .await
     {
         Ok(true) => (

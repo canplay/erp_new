@@ -461,17 +461,18 @@ impl AuditRepository {
     ) -> AppResult<Vec<ApiResponseTimeDistribution>> {
         let rows = sqlx::query!(
             r#"
-            SELECT
-                CASE
-                    WHEN response_time < 100 THEN '< 100ms'
-                    WHEN response_time >= 100 AND response_time < 300 THEN '100-300ms'
-                    WHEN response_time >= 300 AND response_time < 500 THEN '300-500ms'
-                    WHEN response_time >= 500 AND response_time < 1000 THEN '500ms-1s'
-                    WHEN response_time >= 1000 AND response_time < 2000 THEN '1-2s'
-                    WHEN response_time >= 2000 THEN '> 2s'
-                END AS bucket,
-                COUNT(*) AS count
-            FROM sys_api_call_logs
+            SELECT bucket, COUNT(*) AS count FROM (
+                SELECT
+                    CASE
+                        WHEN response_time < 100 THEN '< 100ms'
+                        WHEN response_time >= 100 AND response_time < 300 THEN '100-300ms'
+                        WHEN response_time >= 300 AND response_time < 500 THEN '300-500ms'
+                        WHEN response_time >= 500 AND response_time < 1000 THEN '500ms-1s'
+                        WHEN response_time >= 1000 AND response_time < 2000 THEN '1-2s'
+                        WHEN response_time >= 2000 THEN '> 2s'
+                    END AS bucket
+                FROM sys_api_call_logs
+            ) t
             GROUP BY bucket
             ORDER BY
                 CASE bucket

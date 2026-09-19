@@ -231,12 +231,11 @@ impl MessageRepository for PostgresMessageRepository {
 
         // N+1 FIX: Batch INSERT for user-message associations using UNNEST
         if !user_ids.is_empty() {
-            let user_id_refs: Vec<&i64> = user_ids.iter().collect();
             sqlx::query!(
                 r#"INSERT INTO sys_message_user (message_id, user_id, is_read, is_deleted, is_archived, created_at)
                   SELECT $1, unnest($2::bigint[]), 0, 0, 0, NOW()"#,
                 message_id,
-                &user_id_refs,
+                user_ids as &[i64],
             )
             .execute(&mut *tx)
             .await?;

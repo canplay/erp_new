@@ -9,7 +9,7 @@ use axum::{
 use serde::{Deserialize, Serialize};
 
 use crate::http_handlers::HttpAppState;
-use crate::repository::DepartmentRepositoryError;
+use crate::repository::{DepartmentRepositoryError, UpdateDepartmentParams};
 use crate::helpers::{json_success, json_ok, json_error, json_error_fmt, json_success_msg, json_ok_msg, json_error_msg, json_error_msg_fmt};
 use common::AppError;
 
@@ -288,16 +288,16 @@ pub(crate) async fn update_department(
 ) -> impl IntoResponse {
     match state
         .department_repository
-        .update(
-            id,
-            req.name,
-            req.code,
-            req.parent_id,
-            req.leader_id,
-            req.description,
-            req.sort_order,
-            req.status,
-        )
+        .update(UpdateDepartmentParams {
+            dept_id: id,
+            name: req.name,
+            code: req.code,
+            parent_id: req.parent_id,
+            leader_id: req.leader_id,
+            description: req.description,
+            sort_order: req.sort_order,
+            status: req.status,
+        })
         .await
     {
         Ok(Some(dept)) => (

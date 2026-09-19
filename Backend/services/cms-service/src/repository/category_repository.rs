@@ -122,16 +122,16 @@ impl CategoryRepository {
         parent_id: Option<i64>,
     ) -> Result<Vec<CategoryTreeNode>, CategoryRepositoryError> {
         // 使用 PostgreSQL CTE 递归查询一次性获取所有分类
-        let rows = sqlx::query_as!(
-            CmsCategory,
+        // 注: sqlx 编译期宏无法推断 CTE 递归查询列的 nullability，改用运行时 query_as + FromRow
+        let rows: Vec<CmsCategory> = sqlx::query_as(
             r#"
             WITH RECURSIVE category_tree AS (
                 -- 基础查询：获取根分类或指定父分类的直接子分类
                 SELECT id, parent_id, name, slug, description, icon, sort_order,
                        seo_title, seo_keywords, seo_description,
-                       status::int4 AS "status!" , (allow_attachment <> 0) AS "allow_attachment!" ,
-                       COALESCE(created_at, NOW()) AS "created_at!" ,
-                       COALESCE(updated_at, NOW()) AS "updated_at!" ,
+                       status::int4 AS status, (allow_attachment <> 0) AS allow_attachment,
+                       COALESCE(created_at, NOW()) AS created_at,
+                       COALESCE(updated_at, NOW()) AS updated_at,
                        1 AS depth
                 FROM cms_category
                 WHERE status = 1
@@ -145,22 +145,23 @@ impl CategoryRepository {
                 -- 递归查询：获取子分类
                 SELECT c.id, c.parent_id, c.name, c.slug, c.description, c.icon, c.sort_order,
                        c.seo_title, c.seo_keywords, c.seo_description,
-                       c.status::int4 AS "status!" , (c.allow_attachment <> 0) AS "allow_attachment!" ,
-                       COALESCE(c.created_at, NOW()) AS "created_at!" ,
-                       COALESCE(c.updated_at, NOW()) AS "updated_at!" ,
+                       c.status::int4 AS status, (c.allow_attachment <> 0) AS allow_attachment,
+                       COALESCE(c.created_at, NOW()) AS created_at,
+                       COALESCE(c.updated_at, NOW()) AS updated_at,
                        ct.depth + 1
                 FROM cms_category c
                 JOIN category_tree ct ON c.parent_id = ct.id
                 WHERE c.status = 1
             )
             SELECT id, parent_id, name, slug, description, icon, sort_order,
-                   seo_title, seo_keywords, seo_description, status, allow_attachment,
+                   seo_title, seo_keywords, seo_description,
+                   status::int4 AS status, allow_attachment,
                    created_at, updated_at
             FROM category_tree
             ORDER BY depth, sort_order ASC, id ASC
             "#,
-            parent_id,
         )
+        .bind(parent_id)
         .fetch_all(&self.pool)
         .await?;
 

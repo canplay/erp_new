@@ -429,13 +429,13 @@ impl WorkflowRepository for PostgresWorkflowRepository {
 
         // N+1 FIX: Batch INSERT using UNNEST instead of per-row loop
         if !nodes.is_empty() {
-            let ids: Vec<&str> = nodes.iter().map(|n| n.id.as_str()).collect();
-            let names: Vec<&str> = nodes.iter().map(|n| n.name.as_str()).collect();
-            let node_types: Vec<&str> = nodes.iter().map(|n| n.node_type.as_str()).collect();
-            let pos_x: Vec<f64> = nodes.iter().map(|n| n.position_x).collect();
-            let pos_y: Vec<f64> = nodes.iter().map(|n| n.position_y).collect();
-            let configs: Vec<&serde_json::Value> = nodes.iter().map(|n| &n.config).collect();
-            let timeouts: Vec<i32> = nodes.iter().map(|n| n.timeout).collect();
+            let ids: Vec<String> = nodes.iter().map(|n| n.id.clone()).collect();
+            let names: Vec<String> = nodes.iter().map(|n| n.name.clone()).collect();
+            let node_types: Vec<String> = nodes.iter().map(|n| n.node_type.clone()).collect();
+            let pos_x: Vec<f64> = nodes.iter().map(|n| n.position_x as f64).collect();
+            let pos_y: Vec<f64> = nodes.iter().map(|n| n.position_y as f64).collect();
+            let configs: Vec<serde_json::Value> = nodes.iter().map(|n| n.config.clone()).collect();
+            let timeouts: Vec<i32> = nodes.iter().map(|n| n.timeout.unwrap_or(0)).collect();
             let auto_completes: Vec<bool> = nodes.iter().map(|n| n.auto_complete).collect();
             let createds: Vec<chrono::DateTime<chrono::Utc>> = nodes.iter().map(|n| n.created_at).collect();
 
@@ -474,12 +474,12 @@ impl WorkflowRepository for PostgresWorkflowRepository {
 
         // N+1 FIX: Batch INSERT using UNNEST instead of per-row loop
         if !edges.is_empty() {
-            let ids: Vec<&str> = edges.iter().map(|e| e.id.as_str()).collect();
-            let source_ids: Vec<&str> = edges.iter().map(|e| e.source_node_id.as_str()).collect();
-            let target_ids: Vec<&str> = edges.iter().map(|e| e.target_node_id.as_str()).collect();
-            let edge_types: Vec<&str> = edges.iter().map(|e| e.edge_type.as_str()).collect();
-            let conditions: Vec<Option<&str>> = edges.iter().map(|e| e.condition.as_deref()).collect();
-            let labels: Vec<Option<&str>> = edges.iter().map(|e| e.label.as_deref()).collect();
+            let ids: Vec<String> = edges.iter().map(|e| e.id.clone()).collect();
+            let source_ids: Vec<String> = edges.iter().map(|e| e.source_node_id.clone()).collect();
+            let target_ids: Vec<String> = edges.iter().map(|e| e.target_node_id.clone()).collect();
+            let edge_types: Vec<String> = edges.iter().map(|e| e.edge_type.clone()).collect();
+            let conditions: Vec<Option<String>> = edges.iter().map(|e| e.condition.clone()).collect();
+            let labels: Vec<Option<String>> = edges.iter().map(|e| e.label.clone()).collect();
             let priorities: Vec<i32> = edges.iter().map(|e| e.priority).collect();
             let createds: Vec<chrono::DateTime<chrono::Utc>> = edges.iter().map(|e| e.created_at).collect();
 
@@ -491,8 +491,8 @@ impl WorkflowRepository for PostgresWorkflowRepository {
                 &source_ids,
                 &target_ids,
                 &edge_types,
-                &conditions,
-                &labels,
+                &conditions as &[Option<String>],
+                &labels as &[Option<String>],
                 &priorities,
                 &createds,
             )

@@ -1,6 +1,7 @@
 use grpc_proto::user::*;
 use tonic::{Request, Response, Status};
 use super::UserServiceImpl;
+use crate::repository::UpdateDepartmentParams;
 
 pub(crate) async fn list_departments(s: &UserServiceImpl, request: Request<ListDepartmentsRequest>) -> Result<Response<ListDepartmentsResponse>, Status> {
     let req = request.into_inner();

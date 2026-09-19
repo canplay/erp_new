@@ -121,19 +121,19 @@ impl CrawlService {
             ).bind(&source_hashes).fetch_all(&self.db).await.unwrap_or_default();
 
             // Filter out existing items
-            let new_items: Vec<(&String, &str, &str, &str, &str)> = results.iter()
+            let new_items: Vec<(&String, String, &str, &str, &str)> = results.iter()
                 .zip(source_hashes.iter())
                 .filter(|(_, hash)| !existing_hashes.contains(hash))
                 .map(|(item, hash)| {
                     let title = item.text.chars().take(100).collect::<String>();
-                    (hash, title.as_str(), item.text.as_str(), item.url.as_str(), item.source.as_str())
+                    (hash, title, item.text.as_str(), item.url.as_str(), item.source.as_str())
                 })
                 .collect();
 
             if !new_items.is_empty() {
                 // Batch INSERT using UNNEST
-                let hashes: Vec<&str> = new_items.iter().map(|(h, _, _, _, _)| *h).collect();
-                let titles: Vec<&str> = new_items.iter().map(|(_, t, _, _, _)| *t).collect();
+                let hashes: Vec<&str> = new_items.iter().map(|(h, _, _, _, _)| h.as_str()).collect();
+                let titles: Vec<&str> = new_items.iter().map(|(_, t, _, _, _)| t.as_str()).collect();
                 let bodies: Vec<&str> = new_items.iter().map(|(_, _, b, _, _)| *b).collect();
                 let urls: Vec<&str> = new_items.iter().map(|(_, _, _, u, _)| *u).collect();
                 let sources: Vec<&str> = new_items.iter().map(|(_, _, _, _, s)| *s).collect();
@@ -181,19 +181,19 @@ impl CrawlService {
             ).bind(&source_hashes).fetch_all(&self.db).await.unwrap_or_default();
 
             // Filter out existing items
-            let new_items: Vec<(&String, &str, &str, &str, &str)> = results.iter()
+            let new_items: Vec<(&String, String, &str, &str, &str)> = results.iter()
                 .zip(source_hashes.iter())
                 .filter(|(_, hash)| !existing_hashes.contains(hash))
                 .map(|(item, hash)| {
                     let title = item.text.chars().take(100).collect::<String>();
-                    (hash, title.as_str(), item.text.as_str(), item.url.as_str(), item.source.as_str())
+                    (hash, title, item.text.as_str(), item.url.as_str(), item.source.as_str())
                 })
                 .collect();
 
             if !new_items.is_empty() {
                 // Batch INSERT using UNNEST
-                let hashes: Vec<&str> = new_items.iter().map(|(h, _, _, _, _)| *h).collect();
-                let titles: Vec<&str> = new_items.iter().map(|(_, t, _, _, _)| *t).collect();
+                let hashes: Vec<&str> = new_items.iter().map(|(h, _, _, _, _)| h.as_str()).collect();
+                let titles: Vec<&str> = new_items.iter().map(|(_, t, _, _, _)| t.as_str()).collect();
                 let bodies: Vec<&str> = new_items.iter().map(|(_, _, b, _, _)| *b).collect();
                 let urls: Vec<&str> = new_items.iter().map(|(_, _, _, u, _)| *u).collect();
                 let sources: Vec<&str> = new_items.iter().map(|(_, _, _, _, s)| *s).collect();

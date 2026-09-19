@@ -115,12 +115,13 @@ impl AppState {
             timeout_secs: 30,
             max_idle_connections_per_host: 10,
         };
-        let http_client_manager = HttpClientManager::new(http_client_config);
+        let http_client_manager = HttpClientManager::new(http_client_config)
+            .map_err(|e| format!("Failed to build HTTP client: {e}"))?;
         let http_client = http_client_manager.client();
 
-        // Fail-fast: JWT_SECRET must be configured.
-        let jwt_secret = std::env::var("JWT_SECRET" )
-            .expect("JWT_SECRET environment variable must be set" );
+        // JWT_SECRET must be configured — return error instead of panicking.
+        let jwt_secret = std::env::var("JWT_SECRET")
+            .map_err(|_| "JWT_SECRET environment variable must be set")?;
         let jwt_service = auth_core::JwtService::new(
             &jwt_secret,
             "myai" ,

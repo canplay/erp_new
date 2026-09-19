@@ -10,6 +10,7 @@ path = "src/lib.rs"
 
 [dependencies]
 tracing = "0.1"
+tracing-subscriber.workspace = true
 common = { workspace = true }
 tokio = { workspace = true }
 axum = { workspace = true }

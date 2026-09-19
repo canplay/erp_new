@@ -38,10 +38,9 @@ pub struct HttpClientManager {
 impl HttpClientManager {
     /// 创建一个新的 HTTP 客户端管理器
     ///
-    /// # Panics
-    /// 如果 `reqwest::Client::builder().build()` 失败则 panic。
-    #[must_use]
-    pub fn new(config: HttpClientConfig) -> Self {
+    /// # Errors
+    /// 如果 `reqwest::Client::builder().build()` 失败（无效的 TLS/HTTP2 配置）则返回错误。
+    pub fn new(config: HttpClientConfig) -> Result<Self, Box<dyn std::error::Error>> {
         let builder = Client::builder()
             .timeout(std::time::Duration::from_secs(config.timeout_secs))
             .pool_max_idle_per_host(config.max_idle_connections_per_host as usize)
@@ -51,12 +50,12 @@ impl HttpClientManager {
 
         let client = builder
             .build()
-            .expect("Failed to build HTTP client (invalid TLS/HTTP2 config)" );
+            .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)?;
 
-        Self {
+        Ok(Self {
             client: Arc::new(client),
             config,
-        }
+        })
     }
 
     /// 获取 HTTP 客户端（`Arc<Client>`，clone 是 O(1)）

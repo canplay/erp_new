@@ -6,6 +6,7 @@ description = "用户反馈管理服务"
 
 [dependencies]
 tracing = "0.1"
+tracing-subscriber.workspace = true
 # Web框架
 axum.workspace = true
 tokio.workspace = true

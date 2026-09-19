@@ -10,10 +10,19 @@
 use api_gateway::{AppState, AuthState, RateLimitState, create_router};
 use common::service_bootstrap::{ServiceBootstrap, ServiceConfig};
 use std::sync::Arc;
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+
+fn init_tracing() {
+    tracing_subscriber::registry()
+        .with(tracing_subscriber::EnvFilter::from_default_env())
+        .with(tracing_subscriber::fmt::layer().with_target(false))
+        .init();
+}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // 使用 ServiceBootstrap 统一启动器（不含 gRPC 端口）
+        init_tracing();
+// 使用 ServiceBootstrap 统一启动器（不含 gRPC 端口）
     let config = ServiceConfig {
         service_name: "api-gateway" ,
         http_port: 8090,
@@ -45,10 +54,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let rate_limit_state = RateLimitState::new(max_requests, window_secs, burst);
 
     // ========== 初始化数据库连接池 ==========
-    let db_url = std::env::var("DATABASE_URL" )
+    let db_url = std::env::var("DATABASE_URL")
         .unwrap_or_else(|_| "postgresql://localhost/myai".to_string());
     let pool = sqlx::PgPool::connect_lazy(&db_url)
-        .expect("Failed to connect to database" );
+        .map_err(|e| {
+            tracing::error!("Failed to connect to database: {e}");
+            e
+        })?;
 
     // ========== 初始化 gRPC 客户端、服务发现和应用状态 ==========
     let state = Arc::new(AppState::new(pool).await?);
@@ -57,8 +69,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     AppState::start_reconnection_task(&state);
 
     // ========== JWT 鉴权配置（必选，生产禁止跳过鉴权） ==========
-    let jwt_secret = std::env::var("JWT_SECRET" )
-        .expect("JWT_SECRET 环境变量必须配置(生产环境禁止无鉴权启动)" );
+    let jwt_secret = std::env::var("JWT_SECRET")
+        .map_err(|_| {
+            let msg = "JWT_SECRET 环境变量必须配置(生产环境禁止无鉴权启动)";
+            tracing::error!(msg);
+            msg
+        })?;
     let jwt_issuer = std::env::var("JWT_ISSUER" ).unwrap_or_else(|_| "myai".to_string());
     let jwt_audience = std::env::var("JWT_AUDIENCE" ).unwrap_or_else(|_| "myai-users".to_string());
     let auth_state = AuthState::new(jwt_secret, jwt_issuer, jwt_audience);

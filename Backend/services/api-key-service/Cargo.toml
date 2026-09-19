@@ -8,6 +8,7 @@ description = "API Key 服务 - 提供 API Key 的生成和管理"
 # Web框架
 axum.workspace = true
 tracing.workspace = true
+tracing-subscriber.workspace = true
 tokio.workspace = true
 futures-util = "0.3"
 

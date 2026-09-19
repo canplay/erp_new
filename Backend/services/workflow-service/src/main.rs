@@ -11,10 +11,19 @@
 use common::health::health_routes;
 use common::service_bootstrap::{ServiceBootstrap, ServiceConfig};
 use workflow_service::grpc_server::WorkflowGrpcServer;
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+
+fn init_tracing() {
+    tracing_subscriber::registry()
+        .with(tracing_subscriber::EnvFilter::from_default_env())
+        .with(tracing_subscriber::fmt::layer().with_target(false))
+        .init();
+}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // 使用 ServiceBootstrap 统一启动器
+        init_tracing();
+// 使用 ServiceBootstrap 统一启动器
     let config = ServiceConfig::from_env("workflow-service" , 8088, 9088);
 
     let bootstrap = ServiceBootstrap::new(config);

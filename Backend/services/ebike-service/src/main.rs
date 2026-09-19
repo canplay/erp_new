@@ -12,10 +12,19 @@ use std::sync::Arc;
 use common::health::health_routes;
 use common::service_bootstrap::{ServiceBootstrap, ServiceConfig};
 use ebike_service::{{create_state, grpc_server}};
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+
+fn init_tracing() {
+    tracing_subscriber::registry()
+        .with(tracing_subscriber::EnvFilter::from_default_env())
+        .with(tracing_subscriber::fmt::layer().with_target(false))
+        .init();
+}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // 使用 ServiceBootstrap 统一启动器
+        init_tracing();
+// 使用 ServiceBootstrap 统一启动器
     let config = ServiceConfig::from_env("ebike-service" , 8098, 9100);
 
     let bootstrap = ServiceBootstrap::new(config);

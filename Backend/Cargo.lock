@@ -89,6 +89,7 @@ dependencies = [
  "tower",
  "tower-http",
  "tracing",
+ "tracing-subscriber",
  "utoipa",
  "utoipa-swagger-ui",
 ]
@@ -116,6 +117,7 @@ dependencies = [
  "tokio-test",
  "tonic",
  "tracing",
+ "tracing-subscriber",
  "uuid",
 ]
 
@@ -221,6 +223,7 @@ dependencies = [
  "tokio-test",
  "tonic",
  "tracing",
+ "tracing-subscriber",
  "uuid",
 ]
 
@@ -261,6 +264,7 @@ dependencies = [
  "tokio",
  "tonic",
  "tracing",
+ "tracing-subscriber",
  "urlencoding",
  "uuid",
 ]
@@ -466,6 +470,7 @@ dependencies = [
  "tokio-test",
  "tonic",
  "tracing",
+ "tracing-subscriber",
  "uuid",
 ]
 
@@ -568,6 +573,7 @@ dependencies = [
  "tower",
  "tower-http",
  "tracing",
+ "tracing-subscriber",
  "urlencoding",
  "uuid",
 ]
@@ -719,6 +725,7 @@ dependencies = [
  "tokio",
  "tonic",
  "tracing",
+ "tracing-subscriber",
  "uuid",
 ]
 
@@ -759,6 +766,7 @@ dependencies = [
  "tonic",
  "tonic-build",
  "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]
@@ -1174,6 +1182,7 @@ dependencies = [
  "tokio",
  "tonic",
  "tracing",
+ "tracing-subscriber",
  "uuid",
 ]
 
@@ -1514,6 +1523,7 @@ dependencies = [
  "tonic",
  "tonic-health",
  "tracing",
+ "tracing-subscriber",
  "uuid",
 ]
 
@@ -1726,6 +1736,7 @@ dependencies = [
  "tokio",
  "tonic",
  "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]
@@ -1782,6 +1793,7 @@ dependencies = [
  "tokio-test",
  "tonic",
  "tracing",
+ "tracing-subscriber",
  "urlencoding",
  "uuid",
 ]
@@ -2203,6 +2215,7 @@ dependencies = [
  "tokio",
  "tonic",
  "tracing",
+ "tracing-subscriber",
  "urlencoding",
 ]
 
@@ -2855,6 +2868,7 @@ dependencies = [
  "tokio",
  "tonic",
  "tracing",
+ "tracing-subscriber",
  "uuid",
 ]
 
@@ -2968,6 +2982,7 @@ dependencies = [
  "tonic",
  "tonic-build",
  "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]
@@ -3366,6 +3381,7 @@ dependencies = [
  "tonic",
  "tonic-health",
  "tracing",
+ "tracing-subscriber",
  "uuid",
 ]
 
@@ -4863,6 +4879,7 @@ dependencies = [
  "tokio-cron-scheduler",
  "tonic",
  "tracing",
+ "tracing-subscriber",
  "urlencoding",
  "uuid",
 ]
@@ -5328,6 +5345,7 @@ dependencies = [
  "tokio",
  "tonic",
  "tracing",
+ "tracing-subscriber",
  "uuid",
 ]
 
@@ -5722,6 +5740,7 @@ dependencies = [
  "tokio",
  "tonic",
  "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]
@@ -6053,6 +6072,7 @@ dependencies = [
  "tokio",
  "tonic",
  "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]
@@ -6823,6 +6843,7 @@ dependencies = [
  "tonic",
  "tonic-build",
  "tracing",
+ "tracing-subscriber",
  "uuid",
 ]
 
@@ -6853,6 +6874,7 @@ dependencies = [
  "tokio",
  "tonic",
  "tracing",
+ "tracing-subscriber",
  "uuid",
 ]
 

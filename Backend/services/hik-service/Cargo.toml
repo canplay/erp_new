@@ -13,6 +13,7 @@ redis = ["dep:redis"]
 
 [dependencies]
 tracing = "0.1"
+tracing-subscriber.workspace = true
 # 公共依赖
 common = { workspace = true }
 grpc-proto = { workspace = true }

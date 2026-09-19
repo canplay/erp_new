@@ -88,7 +88,7 @@ function loadAMapScript(): Promise<void> {
       return;
     }
 
-    if ((window as unknown as Record<string, unknown>).AMap) {
+    if ((window as Record<string, unknown>).AMap) {
       AMapLoaded = true;
       scriptLoaded = true;
       resolve();
@@ -115,7 +115,7 @@ function loadAMapScript(): Promise<void> {
 function initMap() {
   if (!mapContainer.value) return;
 
-  const AMap = (window as unknown as Record<string, unknown>).AMap as {
+  const AMap = (window as Record<string, unknown>).AMap as {
     Map: new (el: HTMLDivElement, opts: Record<string, unknown>) => MapInstance;
   };
 

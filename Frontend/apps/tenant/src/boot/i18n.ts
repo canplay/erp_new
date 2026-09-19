@@ -14,7 +14,7 @@ function mergeMessages(shared: Record<string, Record<string, string>>, app: Reco
   return result;
 }
 
-const sharedMessages = sharedMessagesRaw as unknown as Record<string, Record<string, string>>;
+const sharedMessages = sharedMessagesRaw satisfies Record<string, Record<string, string>>;
 
 export type MessageLanguages = keyof typeof sharedMessages;
 

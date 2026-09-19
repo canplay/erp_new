@@ -119,7 +119,7 @@ export function useChatActions(roomId: string) {
     try {
       const ms = MatrixService.getInstance();
       const results = await ms.searchMessages(roomId, q);
-      searchResults.value = results as unknown as SearchResultItem[];
+      searchResults.value = results as SearchResultItem[];
     } catch (e: unknown) {
       $q.notify({ type: 'negative', message: '搜索失败: ' + (e instanceof Error ? e.message : '未知错误') });
     } finally {

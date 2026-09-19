@@ -53,7 +53,7 @@
               :current-step="currentStep"
               :max-file-size="options.maxFileSize"
               :accept-formats="options.accept"
-              :mapping-rows="mappingRows as unknown as Record<string, unknown>[]"
+              :mapping-rows="mappingRows as Record<string, unknown>[]"
               :mapping-columns="mappingRows.map((r: MappingRow) => r.excelColumn)"
               :target-fields="targetFields || []"
               :data-type-options="dataTypeOptions"
@@ -181,7 +181,7 @@ const result = ref<{ successCount: number; failCount: number } | null>(null);
 
 const dataTypeOptions = ['string', 'number', 'date', 'boolean'];
 
-const mappingRows = computed(() => fieldMappings.value as unknown as MappingRow[]);
+const mappingRows = computed(() => fieldMappings.value as MappingRow[]);
 
 const canProceed = computed(() => {
   switch (currentStep.value) {

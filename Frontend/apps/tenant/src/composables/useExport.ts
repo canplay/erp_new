@@ -264,7 +264,7 @@ async function _exportToExcel<T extends Record<string, unknown>>(
 
       const rowValues = headers.map((key) => formatCellValue(row[key], dateFormat));
       const dataRow = worksheet.getRow(dataStartRow + index);
-      dataRow.values = rowValues as unknown as typeof dataRow.values;
+      dataRow.values = rowValues as typeof dataRow.values;
       dataRow.eachCell((cell) => {
         cell.border = {
           top: { style: 'thin' },
@@ -293,7 +293,7 @@ async function _exportToExcel<T extends Record<string, unknown>>(
     const fullFilename = `${filename}_${timestamp}.xlsx`;
 
     downloadFile(
-      buffer as unknown as Blob,
+      buffer as Blob,
       fullFilename,
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     );

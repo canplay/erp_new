@@ -289,7 +289,7 @@ async function doBatchDelete() {
 async function loadTasks() {
   await load(() =>
     dailyApi.tasks().then((res) => {
-      const data = (res as unknown as PagedResult<InspectionTask>) || { items: [], total: 0 };
+    const data = (res as PagedResult<InspectionTask>) || { items: [], total: 0 };
       rows.value = data.items || [];
       total.value = data.total || 0;
       statusData.value = aggregate(rows.value, 'status', statusLabel);

@@ -62,8 +62,8 @@ const showDetails = ref(false);
 onErrorCaptured((err: Error) => {
   logger.error('【ErrorBoundary】捕获到错误:', err);
   // 诊断 (2026-08-10): 暴露到 window 便于 CDP 抓取
-  (window as unknown as Record<string, unknown>).__lastBoundaryError = err.message || String(err);
-  (window as unknown as Record<string, unknown>).__lastBoundaryStack = err.stack || '';
+  (window as Record<string, unknown>).__lastBoundaryError = err.message || String(err);
+  (window as Record<string, unknown>).__lastBoundaryStack = err.stack || '';
   hasError.value = true;
   error_message.value = err.message || String(err);
   return false;

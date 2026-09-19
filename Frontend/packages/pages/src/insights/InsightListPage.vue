@@ -66,7 +66,7 @@ const reportContent = ref('');
 async function generate() {
   genLoading.value = true;
   try {
-    const result = await insightApi.generate({ insight_type: 'weekly', period_start: '', period_end: '' }) as unknown as Record<string, unknown>;
+    const result = await insightApi.generate({ insight_type: 'weekly', period_start: '', period_end: '' }) as Record<string, unknown>;
     reportContent.value = (result?.analysis_body as string) || '报告生成完成，请查看历史报告列表。';
     showResult.value = true;
     void load();
@@ -76,7 +76,7 @@ async function generate() {
 
 async function load() {
   loading.value = true;
-  try { const data = await insightApi.list('') as unknown as Array<Record<string, unknown>>; reports.value = Array.isArray(data) ? data : []; } catch { void 0; }
+  try { const data = await insightApi.list('') as Array<Record<string, unknown>>; reports.value = Array.isArray(data) ? data : []; } catch { void 0; }
   loading.value = false;
 }
 onMounted(() => void load());

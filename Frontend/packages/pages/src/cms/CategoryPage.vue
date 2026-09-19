@@ -274,7 +274,7 @@ async function handleSubmit(): Promise<void> {
         allowAttachment: formData.allowAttachment,
       };
       if (formData.parent_id !== undefined) params.parent_id = formData.parent_id;
-      await updateCategory(currentEditId.value, params as unknown as CategoryUpdateParams);
+      await updateCategory(currentEditId.value, params as CategoryUpdateParams);
       logger.info('【CMS分类】更新成功', { id: currentEditId.value });
     } else {
       // 创建分类 API
@@ -287,7 +287,7 @@ async function handleSubmit(): Promise<void> {
         allowAttachment: formData.allowAttachment,
       };
       if (formData.parent_id !== undefined) params.parent_id = formData.parent_id;
-      await createCategory(params as unknown as CategoryCreateParams);
+      await createCategory(params as CategoryCreateParams);
       logger.info('【CMS分类】创建成功', { name: formData.name });
     }
     $q.notify({ type: 'positive', message: t('common.success') });

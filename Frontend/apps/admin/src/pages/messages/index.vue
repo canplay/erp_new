@@ -121,7 +121,7 @@ const page = ref(1);
 const hasMore = ref(false);
 
 async function listNotifications() {
-  const a = getAlova() as unknown as { Get<T = unknown>(u: string, config?: unknown): Promise<T> };
+      const a = getAlova() as { Get<T = unknown>(u: string, config?: unknown): Promise<T> };
   const params: Record<string, unknown> = { page: page.value, pageSize: PAGE_SIZE };
   if (filter.value === 'unread') params.unreadOnly = true;
   const res = await a.Get<AdminNotification[]>('/api/v1/notifications', { params });

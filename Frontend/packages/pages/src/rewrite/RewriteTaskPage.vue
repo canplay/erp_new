@@ -36,5 +36,5 @@ const form = ref({ content_id: '', llm_provider_id: '', target_count: 2 });
 function filterContent(val: string, update: (fn: () => void) => void) { update(() => { contents.value = allContents.value.filter((c) => String(c.title).includes(val)); }); }
 async function save() { await rewriteApi.createTask(form.value); showForm.value = false; void load(); }
 async function load() { loading.value = true; try { tasks.value = await rewriteApi.listTasks(); } catch { void 0; } loading.value = false; }
-onMounted(async () => { void load(); try { allContents.value = (await contentApi.list()) as unknown as Array<Record<string, unknown>>; contents.value = [...allContents.value]; providers.value = await llmApi.list(); } catch { void 0; } });
+onMounted(async () => { void load(); try { allContents.value = (await contentApi.list()) as Array<Record<string, unknown>>; contents.value = [...allContents.value]; providers.value = await llmApi.list(); } catch { void 0; } });
 </script>

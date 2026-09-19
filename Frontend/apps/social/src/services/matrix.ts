@@ -152,7 +152,7 @@ export class MatrixService {
     try {
       const res = await this.client.register(username, password, null, {
         initial_device_display_name: config.appName,
-      } as unknown as Parameters<MatrixClient['register']>[3])
+      } as Parameters<MatrixClient['register']>[3])
       await this.setSession(res.user_id, res.access_token!, res.device_id!, res.refresh_token)
       if (options?.displayName) {
         await this.client.setDisplayName(options.displayName).catch(() => {})
@@ -528,7 +528,7 @@ export class MatrixService {
         term: query,
         filter: { rooms: [roomId], limit },
       })
-      return (res as unknown as { results: Record<string, unknown>[] }).results ?? []
+      return (res as { results: Record<string, unknown>[] }).results ?? [];
     } catch (error) {
       this.handleError(error)
     }
@@ -613,7 +613,7 @@ export class MatrixService {
       if (!user) return null
       return {
         presence: user.presence,
-        statusMsg: (user as unknown as { statusMsg?: string }).statusMsg,
+        statusMsg: (user as { statusMsg?: string }).statusMsg,
         lastActive: user.lastActiveAgo,
       }
     } catch {

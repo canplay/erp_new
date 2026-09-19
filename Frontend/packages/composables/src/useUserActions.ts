@@ -91,7 +91,7 @@ const exportData = exportToCSV;
     try {
       const { getUserImportTemplate } = await import('@/api/user');
       const response = await getUserImportTemplate();
-      const blob = new Blob([response as unknown as BlobPart], { type: 'text/csv' });
+      const blob = new Blob([response as BlobPart], { type: 'text/csv' });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;

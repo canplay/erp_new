@@ -47,5 +47,5 @@ async function doPublish() {
   }
   loading.value = false;
 }
-onMounted(async () => { try { allContents.value = (await contentApi.list()) as unknown as Array<Record<string, unknown>>; contents.value = [...allContents.value]; accounts.value = await accountApi.list(); } catch { void 0; } });
+onMounted(async () => { try { allContents.value = (await contentApi.list()) as Array<Record<string, unknown>>; contents.value = [...allContents.value]; accounts.value = await accountApi.list(); } catch { void 0; } });
 </script>

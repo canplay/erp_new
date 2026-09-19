@@ -216,11 +216,13 @@ export const alovaInstance = createAlova<AlovaAxiosRequestConfig, AxiosResponse,
               }
               const config = method.config as { headers: Record<string, string> };
               config.headers.Authorization = `Bearer ${newToken}`;
-              (alovaInstance as unknown as { Send(method: Method): Promise<unknown> }).Send(method)
+              // Use type assertion with the AlovaInstance type's Send method
+              const alovaSend = (method: Method) => alovaInstance.Send(method);
+              alovaSend(method)
                 .then((retryResponse: unknown) => resolve(retryResponse as void))
                 .catch((retryError: unknown) => reject(retryError instanceof Error ? retryError : new Error(String(retryError))));
             });
-          }) as unknown as void);
+          }) as void);
         }
 
         isRefreshing = true;
@@ -230,7 +232,7 @@ export const alovaInstance = createAlova<AlovaAxiosRequestConfig, AxiosResponse,
             onTokenRefreshed(authStore.token);
             const config = method.config as { headers: Record<string, string> };
             config.headers.Authorization = `Bearer ${authStore.token}`;
-            const retryResult = await (alovaInstance as unknown as { Send(method: Method): Promise<unknown> }).Send(method);
+            const retryResult = await alovaInstance.Send(method);
             return retryResult as void;
           }
           onTokenRefreshFailed(new Error('Token 刷新失败'));

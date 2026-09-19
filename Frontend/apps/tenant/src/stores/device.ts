@@ -345,7 +345,7 @@ export const useCtpStore = defineStore('ctp', () => {
     loading.value = true;
     try {
       const res = await ctpApi.getDevice(deviceNo);
-      currentDevice.value = getData(res) as unknown as CtpDevice;
+      currentDevice.value = getData(res) as CtpDevice;
     } finally {
       loading.value = false;
     }
@@ -402,7 +402,7 @@ export const useLprStore = defineStore('lpr', () => {
     loading.value = true;
     try {
       const res = await lprApi.getPassRecord(id);
-      currentRecord.value = getData(res) as unknown as PassRecord;
+      currentRecord.value = getData(res) as PassRecord;
     } finally {
       loading.value = false;
     }
@@ -469,7 +469,7 @@ export const useTowStore = defineStore('tow', () => {
     loading.value = true;
     try {
       const res = await towApi.getTowCar(id);
-      currentCar.value = getData(res) as unknown as TowCar;
+      currentCar.value = getData(res) as TowCar;
     } finally {
       loading.value = false;
     }

@@ -75,7 +75,7 @@ export function usePerformanceMonitor() {
     const lcpEntries = performance.getEntriesByType('largest-contentful-paint');
     const LCP = lcpEntries.length > 0 ? (lcpEntries[lcpEntries.length - 1] as { startTime: number }).startTime : 0;
     const layoutShiftEntries = performance.getEntriesByType('layout-shift');
-    const CLS = (layoutShiftEntries as unknown as { value: number }[]).reduce((sum, entry) => sum + entry.value, 0);
+    const CLS = (layoutShiftEntries as { value: number }[]).reduce((sum, entry) => sum + entry.value, 0);
 
     const metrics: PerformanceMetrics = {
       FCP: Math.round(FCP),

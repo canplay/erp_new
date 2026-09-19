@@ -184,7 +184,7 @@ async function loadData() {
   try {
     const response = await listDataSources();
     // 类型断言：兼容新旧格式（已展开的 list/data 格式）
-    const respData = response as unknown as { list?: DataSource[]; data?: DataSource[] };
+    const respData = response as { list?: DataSource[]; data?: DataSource[] };
     dataSources.value = respData.list || respData.data || [];
   } catch {
     $q.notify({ type: 'negative', message: t('common.loadFailed') });

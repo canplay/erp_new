@@ -122,7 +122,7 @@ export function convertCoord(
   lat: string | number,
   gpsType: number,
 ): [number, number] {
-  const gcoord = (window as unknown as Record<string, unknown>).gcoord as {
+  const gcoord = (window as Record<string, unknown>).gcoord as {
     transform: (
       pt: [number, number],
       from: unknown,

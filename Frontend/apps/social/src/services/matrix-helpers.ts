@@ -45,6 +45,6 @@ export function mapEvent(event: MatrixEvent): RoomMessage {
     content: event.getContent<Record<string, unknown>>(),
     type: event.getType(),
     timestamp: event.getTs(),
-    status: (event as unknown as { status?: string }).status,
+    status: (event as { status?: string }).status,
   }
 }

@@ -104,7 +104,7 @@ export function useUserForm() {
           await updateUserStatus(currentUser.value.id, userForm.status);
         }
         if (Object.keys(payload).length > 0) {
-          await createUserApi({ ...payload, id: currentUser.value.id } as unknown as UserCreateForm);
+      await createUserApi({ ...payload, id: currentUser.value.id } as UserCreateForm);
         }
         $q.notify({ type: 'positive', message: $t('common.success') });
       } else {
@@ -116,7 +116,7 @@ export function useUserForm() {
         if (userForm.nickname) newUser.nickname = userForm.nickname;
         if (userForm.email) newUser.email = userForm.email;
         if (userForm.phone) newUser.phone = userForm.phone;
-        await createUserApi(newUser as unknown as UserCreateForm);
+        await createUserApi(newUser as UserCreateForm);
         $q.notify({ type: 'positive', message: $t('common.success') });
       }
       showUserDialog.value = false;
@@ -241,7 +241,7 @@ export function useUserForm() {
         if (row.nickname) newUser.nickname = row.nickname;
         if (row.email) newUser.email = row.email;
         if (row.phone) newUser.phone = row.phone;
-        await createUserApi(newUser as unknown as UserCreateForm);
+        await createUserApi(newUser as UserCreateForm);
         successCount++;
       } catch (error) {
         failCount++;

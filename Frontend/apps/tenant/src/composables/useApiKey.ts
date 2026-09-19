@@ -163,7 +163,7 @@ export function useApiKey() {
         if (form.ipWhitelist) request.allowed_ips = form.ipWhitelist.split(',').map((s) => s.trim());
         if (form.expires_at) request.expires_at = form.expires_at;
 
-        const response = await createApiKey(request as unknown as CreateApiKeyRequest);
+        const response = await createApiKey(request as CreateApiKeyRequest);
         const response_data = unwrapData<{ data: { key_id: string; key_secret: string } }>(response)?.data;
         newCreatedKey.value = `${response_data.key_id}:${response_data.key_secret}`;
         showDialog.value = false;

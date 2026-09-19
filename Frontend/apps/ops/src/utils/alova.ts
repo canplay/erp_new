@@ -102,16 +102,16 @@ export interface HttpClient {
 
 export const httpClient: HttpClient = {
   get<T>(url: string, params?: Record<string, unknown>): Promise<T> {
-    return alovaInstance.Get(url, params ? { params } : undefined) as unknown as Promise<T>;
+    return alovaInstance.Get<T>(url, params ? { params } : undefined) as Promise<T>;
   },
   post<T>(url: string, data?: unknown): Promise<T> {
-    return alovaInstance.Post(url, data as Record<string, unknown>) as unknown as Promise<T>;
+    return alovaInstance.Post<T>(url, data as Record<string, unknown>) as Promise<T>;
   },
   put<T>(url: string, data?: unknown): Promise<T> {
-    return alovaInstance.Put(url, data as Record<string, unknown>) as unknown as Promise<T>;
+    return alovaInstance.Put<T>(url, data as Record<string, unknown>) as Promise<T>;
   },
   delete<T>(url: string): Promise<T> {
-    return alovaInstance.Delete(url) as unknown as Promise<T>;
+    return alovaInstance.Delete<T>(url) as Promise<T>;
   },
 };
 

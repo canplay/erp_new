@@ -197,7 +197,7 @@ async function loadReportData() {
   try {
     const response = await getReportData(id);
     // 类型断言：兼容新旧格式（已展开的字段）
-    const respData = response as unknown as ReportResponse;
+    const respData = response as ReportResponse;
     const data = respData.data || respData;
     
     if (data) {

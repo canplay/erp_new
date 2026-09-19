@@ -386,7 +386,7 @@ export const usePermissionStore = defineStore("permission", () => {
       case PermissionScope.SELF: if (resourceOwner) return resourceOwner === getCurrentUserId(); return false;
       case PermissionScope.DEPARTMENT:
       case PermissionScope.DEPARTMENT_AND_CHILDREN: {
-        const currentDepartmentId = (useAuthStore().userInfo as unknown as { department_id?: number })?.department_id;
+        const currentDepartmentId = (useAuthStore().userInfo as { department_id?: number })?.department_id;
         if (!currentDepartmentId || !resourceDepartment) return false;
         return resourceDepartment === currentDepartmentId;
       }

@@ -32,16 +32,7 @@ function getSdk(): Promise<MatrixSdkExports> {
   return sdkPromise
 }
 
-// ─── Type Definitions ───────────────────────────────────────────
 
-interface ClientWithExtraMethods {
-  sendMessage(roomId: string, content: Record<string, unknown>, threadId?: string): Promise<{ event_id: string }>
-  sendReadReceipt(roomId: string, eventId: string): Promise<unknown>
-  uploadContent(file: File | Blob | ArrayBuffer, opts?: Record<string, unknown>): Promise<{ content_uri?: string; contentUri?: string }>
-  setAccountData(eventType: string, content: Record<string, unknown>): Promise<void>
-}
-
-// ─── Mapping Helpers (imported from matrix-helpers.ts) ────────
 
 // ─── MatrixService ──────────────────────────────────────────────
 
@@ -375,12 +366,11 @@ export class MatrixService {
   async sendMessage(roomId: string, content: Record<string, unknown>, threadId?: string): Promise<string> {
     try {
       let eventId: string
-      const extClient = this.client as unknown as ClientWithExtraMethods
       if (threadId) {
-        const res = await extClient.sendMessage(roomId, content, threadId)
+        const res = await this.client.sendMessage(roomId, content, threadId)
         eventId = res.event_id
       } else {
-        const res = await extClient.sendMessage(roomId, content)
+        const res = await this.client.sendMessage(roomId, content)
         eventId = res.event_id
       }
       return eventId
@@ -391,7 +381,7 @@ export class MatrixService {
 
   async sendReadReceipt(roomId: string, eventId: string): Promise<void> {
     try {
-      await (this.client as unknown as ClientWithExtraMethods).sendReadReceipt(roomId, eventId)
+      await this.client.sendReadReceipt(roomId, eventId)
     } catch (error) {
       this.handleError(error)
     }
@@ -448,8 +438,7 @@ export class MatrixService {
         newContent.format = 'org.matrix.custom.html'
         newContent.formatted_body = htmlBody
       }
-      const extClient = this.client as unknown as ClientWithExtraMethods
-      const res = await extClient.sendMessage(roomId, content)
+      const res = await this.client.sendMessage(roomId, content)
       return res.event_id
     } catch (error) {
       this.handleError(error)
@@ -583,7 +572,7 @@ export class MatrixService {
 
   async setAccountData(eventType: string, content: Record<string, unknown>): Promise<void> {
     try {
-      await (this.client as unknown as ClientWithExtraMethods).setAccountData(eventType, content)
+      await this.client.setAccountData(eventType, content)
     } catch (error) {
       this.handleError(error)
     }
@@ -647,8 +636,7 @@ export class MatrixService {
     opts?: Record<string, unknown>,
   ): Promise<UploadResult> {
     try {
-      const extClient = this.client as unknown as ClientWithExtraMethods
-      const res = await extClient.uploadContent(file, opts)
+      const res = await this.client.uploadContent(file, opts)
       return { contentUri: res.content_uri ?? res.contentUri ?? '' }
     } catch (error) {
       this.handleError(error)

@@ -22,12 +22,17 @@ pub use models::{
 
 // 导出仓储类型
 pub use repository::{
-    InMemoryReportRepository, InMemoryScheduledTaskRepository, InMemoryWorkflowRepository,
-    InstanceRepository, PostgresInstanceRepository, PostgresTaskRepository,
-    PostgresWorkflowRepository, ReportRepository, ScheduledTask as ScheduledTaskModel,
-    ScheduledTaskRepository, TaskRecord as TaskRecordModel, TaskRepository,
+    event_repository::{
+        InMemoryReportRepository, InMemoryScheduledTaskRepository, ReportRepository,
+        ScheduledTaskRepository,
+    },
+    instance_repository::{InstanceRepository, PostgresInstanceRepository},
+    task_repository::{PostgresTaskRepository, TaskRepository},
+    workflow_repository::{
+        InMemoryWorkflowRepository, PostgresWorkflowRepository, WorkflowRepository,
+    },
     Workflow as WorkflowModel, WorkflowEdge, WorkflowInstance as WorkflowInstanceModel,
-    WorkflowNode, WorkflowRepository,
+    WorkflowNode, ScheduledTask as ScheduledTaskModel, TaskRecord as TaskRecordModel,
 };
 
 pub use grpc_handlers::{WorkflowAppState, WorkflowGrpcService, WorkflowInfo};

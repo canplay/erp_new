@@ -267,11 +267,11 @@ impl TenantIsolationManager {
     /// SQL 过滤条件
     ///
     /// # Security
-    /// tenant_id 通过 `common::sanitize_identifier` 白名单校验，
+    /// tenant_id 通过 `common::utils::sanitize_identifier` 白名单校验，
     /// 只允许 `[a-zA-Z_][a-zA-Z0-9_]*` 格式，防止 SQL 注入。
     pub async fn generate_filter(&self, tenant_id: &str, _table_name: &str) -> AppResult<String> {
         // FIX [SQL-INJ-006]: 校验 tenant_id 格式，防止 SQL 注入
-        if let Err(e) = common::sanitize_identifier(tenant_id) {
+        if let Err(e) = common::utils::sanitize_identifier(tenant_id) {
             return Err(AppError::InvalidParam(format!("Invalid tenant_id: {e}" )));
         }
         let policies = self.policies.read().await;
@@ -306,7 +306,7 @@ impl TenantIsolationManager {
     /// 带租户过滤的完整查询
     ///
     /// # Security
-    /// 表名通过白名单校验 + `common::sanitize_identifier` 双重防护，防止 SQL 注入。
+    /// 表名通过白名单校验 + `common::utils::sanitize_identifier` 双重防护，防止 SQL 注入。
     /// 使用显式列名替代 `SELECT *`，避免泄露敏感字段。
     pub async fn build_filtered_query(&self, table: &str, base_query: Option<&str>) -> AppResult<String> {
         // FIX [SQL-INJ-008]: 白名单校验表名（纵深防御第一层）
@@ -314,7 +314,7 @@ impl TenantIsolationManager {
             return Err(AppError::InvalidParam(format!("Table not in whitelist: {table}")));
         }
         // FIX [SQL-INJ-007]: 校验表名格式（纵深防御第二层）
-        if let Err(e) = common::sanitize_identifier(table) {
+        if let Err(e) = common::utils::sanitize_identifier(table) {
             return Err(AppError::InvalidParam(format!("Invalid table name: {e}")));
         }
         let columns = Self::table_columns(table);

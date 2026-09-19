@@ -1,14 +1,38 @@
-//! Options 配置路由 — 仅管理员可查询/修改系统配置
+//! 系统配置路由 — 系统参数 + 业务选项
+//!
+//! 合并自 system_config_routes.rs + options_routes.rs
 
 use std::sync::Arc;
-use axum::{Router, Json, extract::{State, Extension}, routing::{get, post}};
+use axum::{
+    Router,
+    extract::{Path, Query, State, Extension},
+    routing::{get, put, post},
+    Json,
+};
 use serde_json::{json, Value};
 
 use crate::AppState;
 use crate::middleware::JwtClaims;
-use grpc_proto::ebike;
 use crate::routes::helpers::*;
 
+// ==================== 系统配置 ====================
+
+async fn list_system_configs_handler(
+    Query(_q): Query<PageQuery>,
+) -> Json<Value> {
+    json_success(json!([]))
+}
+
+async fn batch_update_system_configs_handler() -> Json<Value> { json_ok() }
+
+async fn update_system_config_handler(
+    Path(key): Path<String>,
+    Json(_body): Json<Value>,
+) -> Json<Value> {
+    json_success(json!({"key": key}))
+}
+
+// ==================== 业务选项 ====================
 
 pub async fn options_query(
     State(state): State<Arc<AppState>>,
@@ -53,11 +77,11 @@ pub async fn options_update(
         .await
         .map_err(|e| json_error(&format!("ebike-service 不可用：{e}" )))?;
 
-    let req = ebike::OptionsUpdateRequest {
-        name: body["name" ].as_str().unwrap_or("" ).to_string(),
-        system: body["system" ].as_i64().unwrap_or(0),
-        alert: body["alert" ].as_i64().unwrap_or(0),
-        level: body["level" ].as_i64().unwrap_or(0),
+    let req = grpc_proto::ebike::OptionsUpdateRequest {
+        name: body["name"].as_str().unwrap_or("").to_string(),
+        system: body["system"].as_i64().unwrap_or(0),
+        alert: body["alert"].as_i64().unwrap_or(0),
+        level: body["level"].as_i64().unwrap_or(0),
     };
 
     match client.options_update(req).await {
@@ -68,6 +92,20 @@ pub async fn options_update(
 
 pub fn routes() -> Router<Arc<AppState>> {
     Router::new()
+        // 系统配置
+        .route("/api/config/system-configs", get(list_system_configs_handler))
+        .route("/api/config/system-configs/batch", put(batch_update_system_configs_handler))
+        .route("/api/config/system-configs/{key}", put(update_system_config_handler))
+        // 业务选项
         .route("/options/query" , get(options_query))
         .route("/options/update" , post(options_update))
+}
+
+#[derive(Debug, serde::Deserialize)]
+struct PageQuery {
+    page: Option<i32>,
+    page_size: Option<i32>,
+    keyword: Option<String>,
+    status: Option<i32>,
+    role: Option<String>,
 }

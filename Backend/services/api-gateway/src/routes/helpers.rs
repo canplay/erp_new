@@ -81,13 +81,57 @@ pub async fn stub_json() -> Json<Value> {
 /// a JSON error response on failure (eliminates ~10 duplicate get_*_client fns).
 ///
 /// Usage: `grpc_client!(state, audit_client)`
-/// Expands to: `state.grpc_clients.read().await.audit_client().await.map_err(|e| json_error(&format!("{} 不可用: {}" , "audit_client" , e)))?`
+/// Expands to: `state.grpc_clients.read().await.audit_client().await.map_err(|e| json_error(&format!("{} 不可用: {}", "audit_client", e)))?`
 #[macro_export]
 macro_rules! grpc_client {
     ($state:expr, $client:ident) => {
         match $state.grpc_clients.read().await.$client().await {
             Ok(c) => c,
-            Err(e) => return json_error(&format!("{} 不可用: {}" , stringify!($client), e)),
+            Err(e) => return json_error(&format!("{} 不可用: {}", stringify!($client), e)),
         }
     };
+}
+
+// ==================== 共享查询参数与分页工具 ====================
+
+use serde::Deserialize;
+
+/// 通用分页查询参数
+#[derive(Debug, Deserialize)]
+pub struct PageQuery {
+    pub page: Option<i32>,
+    pub page_size: Option<i32>,
+    pub keyword: Option<String>,
+    pub status: Option<i32>,
+    pub role: Option<String>,
+}
+
+/// 通用分页查询参数（usize 版本，用于安全模块）
+#[derive(Debug, Deserialize)]
+pub struct ListQuery {
+    pub keyword: Option<String>,
+    pub status: Option<String>,
+    pub page: Option<usize>,
+    pub page_size: Option<usize>,
+}
+
+/// 分页函数
+pub fn paginate<T: Clone>(items: &[T], page: usize, page_size: usize) -> (Vec<T>, usize) {
+    let total = items.len();
+    let start = (page.saturating_sub(1)) * page_size;
+    let end = std::cmp::min(start + page_size, total);
+    let list = if start < total { items[start..end].to_vec() } else { vec![] };
+    (list, total)
+}
+
+/// 关键字过滤
+pub fn filter_by_keyword<T, F>(items: Vec<T>, keyword: &Option<String>, f: F) -> Vec<T>
+where F: Fn(&T) -> String {
+    match keyword {
+        Some(kw) if !kw.is_empty() => {
+            let kw = kw.to_lowercase();
+            items.into_iter().filter(|i| f(i).to_lowercase().contains(&kw)).collect()
+        }
+        _ => items,
+    }
 }

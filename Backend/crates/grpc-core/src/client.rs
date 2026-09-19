@@ -131,7 +131,7 @@ impl tonic::service::Interceptor for GrpcTokenInterceptor {
 /// 使用给定的地址和工厂函数创建并返回 `GrpcClient<T>`。
 ///
 /// 审计修复 (2026-08-04): 服务间鉴权——channel 统一经 `GrpcTokenInterceptor`
-/// 注入 `x-grpc-token` 请求头, 服务端由 `common::grpc_auth_interceptor` 校验。
+/// 注入 `x-grpc-token` 请求头, 服务端由 `common::grpc_auth::grpc_auth_interceptor` 校验。
 pub async fn connect_grpc<T, F>(
     addr: impl Into<String>,
     config: &GrpcClientConfig,

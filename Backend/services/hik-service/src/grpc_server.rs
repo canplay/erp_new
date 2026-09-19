@@ -13,7 +13,7 @@ use crate::models::HikRequest as ServiceHikRequest;
 
 pub async fn start_grpc_server(addr: SocketAddr, state: AppState) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     tracing::info!("[HikService] gRPC listening on {addr}" );
-    Server::builder().layer(tonic::service::interceptor::InterceptorLayer::new(common::grpc_auth_interceptor))
+    Server::builder().layer(tonic::service::interceptor::InterceptorLayer::new(common::grpc_auth::grpc_auth_interceptor))
         .add_service(HikServiceServer::new(GrpcHikService { state: Arc::new(state) }))
         .serve_with_shutdown(addr, shutdown_signal())
         .await?;
@@ -21,7 +21,7 @@ pub async fn start_grpc_server(addr: SocketAddr, state: AppState) -> Result<(), 
 }
 
 use tonic::transport::Server;
-use common::shutdown_signal;
+use common::shutdown::shutdown_signal;
 
 #[derive(Clone)]
 pub struct GrpcHikService {

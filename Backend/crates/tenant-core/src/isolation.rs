@@ -235,10 +235,10 @@ impl TenantIsolationManager {
     /// 在基础查询上自动添加租户过滤条件。
     ///
     /// # Security
-    /// 表名通过 `common::sanitize_identifier` 白名单校验，防止 SQL 注入。
+    /// 表名通过 `common::utils::sanitize_identifier` 白名单校验，防止 SQL 注入。
     pub async fn build_filtered_query(&self, table: &str, base_query: Option<&str>, tenant_id: Option<TenantId>) -> String {
         // FIX [SQL-INJ-005]: 校验表名格式
-        if let Err(e) = common::sanitize_identifier(table) {
+        if let Err(e) = common::utils::sanitize_identifier(table) {
             panic!("Invalid table name in build_filtered_query: {e}" );
         }
         if let Some(tid) = tenant_id {

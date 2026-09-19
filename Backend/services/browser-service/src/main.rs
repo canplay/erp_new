@@ -73,7 +73,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     bootstrap.start_with_grpc_fn(grpc_service).await?;
 
     #[cfg(feature = "telemetry" )]
-    common::shutdown_otel();
+    common::otel::shutdown_otel();
 
     Ok(())
 }

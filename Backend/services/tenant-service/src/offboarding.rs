@@ -270,7 +270,7 @@ impl OffboardingService {
         let schema_name = format!("tenant_tenant_{}" , tenant_id);
 
         // 验证生成的 schema 名格式正确
-        common::sanitize_schema_name(&schema_name)
+        common::utils::sanitize_schema_name(&schema_name)
             .map_err(|e| OffboardingError::SchemaDrop(e))?;
 
         Ok(schema_name)

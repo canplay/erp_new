@@ -1,7 +1,7 @@
 //! 用户仓储层
 
 use chrono::Utc;
-use common::{MAX_PAGE_SIZE, MIN_PAGE};
+use common::constants::{MAX_PAGE_SIZE, MIN_PAGE};
 use serde::{Deserialize, Serialize};
 use sqlx::{PgPool, Row};
 use thiserror::Error;

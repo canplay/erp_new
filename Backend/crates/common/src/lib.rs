@@ -10,19 +10,16 @@ pub mod constants;
 pub mod errors;
 pub mod grpc_error; // gRPC 错误映射（tonic::Status ↔ AppError）
 pub mod grpc_auth; // gRPC 服务间鉴权拦截器
-pub use grpc_auth::grpc_auth_interceptor;
 pub mod health; // 健康检查端点
 pub mod http; // HTTP 响应构建器
 pub mod init;
 pub mod metrics; // Prometheus metrics
-#[cfg(feature = "metrics-exporter" )]
+#[cfg(feature = "metrics-exporter")]
 pub mod metrics_exporter; // Prometheus metrics exporter
 pub mod migrations;
 pub mod middleware;
-#[cfg(feature = "telemetry" )]
+#[cfg(feature = "telemetry")]
 pub mod otel; // OpenTelemetry tracing
-#[cfg(feature = "telemetry" )]
-pub use otel::shutdown_otel;
 pub mod models;
 pub mod repository;
 pub mod response;
@@ -40,8 +37,7 @@ pub use repository::{
 // Re-export SQL sanitization utilities
 pub use utils::{sanitize_identifier, sanitize_schema_name, sanitize_uuid};
 
-// Re-export 导出常用工具函数（定义在 shutdown.rs 和 service_runner.rs 中）
-pub use service_runner::{ServiceRunner, ServiceRunnerHandle};
+// Re-export 导出常用工具函数（定义在 shutdown.rs 中）
 pub use shutdown::{
     shutdown_signal, shutdown_signal_default, shutdown_signal_with_timeout, shutdown_with_name,
 };
@@ -51,26 +47,13 @@ pub use auth::{
     HEADER_USER_ID, HEADER_USER_NAME, HEADER_USER_ROLE, HEADER_USER_TOKEN, UserContext,
 };
 pub use errors::{AppError, AppResult, error_response};
-pub use grpc_error::{GrpcAppErrorExt, GrpcResult, GrpcStatusExt, IntoTonicStatus};
 pub use response::ApiResponse;
-
-// Re-export constants
-pub use constants::*;
 
 // Re-export config types
 pub use config::{
     AppConfig, DatabaseConfig, JwtConfig, PoolConfig, RedisConfig, ServiceConfig,
     ServiceDatabaseConfig, create_db_pool, create_service_db_pool, parse_port_from_env,
 };
-
-// Re-export middleware types and functions
-pub use middleware::{
-    IpRateLimiter, RateLimitConfig,
-    cors_layer_with_config, cors_layer_with_env, cors_layer_with_origins,
-};
-
-// Re-export CSRF 保护相关
-pub use middleware::{HEADER_CSRF_TOKEN, csrf_protection_middleware, generate_csrf_token};
 
 // Re-export HTTP 响应辅助函数
 pub use http::{

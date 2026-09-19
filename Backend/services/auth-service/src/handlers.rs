@@ -64,7 +64,7 @@ impl AuthService for AuthServiceImpl {
             .user_repository
             .find_by_username(&req.username)
             .await
-            .map_err(common::IntoTonicStatus::into_grpc_status)?;
+            .map_err(common::grpc_error::IntoTonicStatus::into_grpc_status)?;
 
         match user {
             Some(user) => {
@@ -127,7 +127,7 @@ impl AuthService for AuthServiceImpl {
             .user_repository
             .create(&req.username, &password_hash, Some(req.email.clone()))
             .await
-            .map_err(common::IntoTonicStatus::into_grpc_status)?;
+            .map_err(common::grpc_error::IntoTonicStatus::into_grpc_status)?;
 
         // 生成 Token
         let token = self
@@ -184,7 +184,7 @@ impl AuthService for AuthServiceImpl {
             .user_repository
             .find_by_id(user_id)
             .await
-            .map_err(common::IntoTonicStatus::into_grpc_status)?;
+            .map_err(common::grpc_error::IntoTonicStatus::into_grpc_status)?;
 
         match user {
             Some(user) => {

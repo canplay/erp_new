@@ -1,12 +1,17 @@
+//! 健康检查路由 — 存活探针、就绪探针、详细健康、服务发现、数据库连接
+
 use std::sync::Arc;
 
-use axum::{Router, routing::get, extract::State, response::IntoResponse, Json};
+use axum::{
+    Json, Router,
+    extract::State,
+    routing::get,
+    response::IntoResponse,
+};
 use common::ApiResponse;
 
-
 use crate::{
-    AppState, DetailedHealth, DiscoveryHealth, DiscoveryServiceStatus, ServiceHealth,
-    grpc_clients,
+    AppState, DetailedHealth, DiscoveryHealth, DiscoveryServiceStatus, ServiceHealth, grpc_clients,
 };
 
 async fn health_handler() -> &'static str {
@@ -21,9 +26,9 @@ async fn ready_handler(
     let all_ready = !clients.available_services().await.is_empty();
 
     if all_ready {
-        (axum::http::StatusCode::OK, "OK" )
+        (axum::http::StatusCode::OK, "OK")
     } else {
-        (axum::http::StatusCode::SERVICE_UNAVAILABLE, "not ready" )
+        (axum::http::StatusCode::SERVICE_UNAVAILABLE, "not ready")
     }
 }
 
@@ -32,16 +37,16 @@ async fn detailed_health_handler(
 ) -> impl IntoResponse {
     let clients = state.grpc_clients.read().await;
     let services = vec![
-        ("auth-service" , clients.auth_service.is_connected().await),
-        ("user-service" , clients.user_service.is_connected().await),
-        ("cms-service" , clients.cms_service.is_connected().await),
-        ("message-service" , clients.message_service.is_connected().await),
-        ("feedback-service" , clients.feedback_service.is_connected().await),
-        ("tenant-service" , clients.tenant_service.is_connected().await),
-        ("file-service" , clients.file_service.is_connected().await),
-        ("workflow-service" , clients.workflow_service.is_connected().await),
-        ("audit-service" , clients.audit_service.is_connected().await),
-        ("api-key-service" , clients.api_key_service.is_connected().await),
+        ("auth-service", clients.auth_service.is_connected().await),
+        ("user-service", clients.user_service.is_connected().await),
+        ("cms-service", clients.cms_service.is_connected().await),
+        ("message-service", clients.message_service.is_connected().await),
+        ("feedback-service", clients.feedback_service.is_connected().await),
+        ("tenant-service", clients.tenant_service.is_connected().await),
+        ("file-service", clients.file_service.is_connected().await),
+        ("workflow-service", clients.workflow_service.is_connected().await),
+        ("audit-service", clients.audit_service.is_connected().await),
+        ("api-key-service", clients.api_key_service.is_connected().await),
     ];
     drop(clients);
 
@@ -68,7 +73,7 @@ async fn detailed_health_handler(
 
     let detailed = DetailedHealth {
         status: overall_status.to_string(),
-        version: env!("CARGO_PKG_VERSION" ).to_string(),
+        version: env!("CARGO_PKG_VERSION").to_string(),
         uptime_secs: state.uptime_secs(),
         services: services_health,
     };
@@ -141,23 +146,21 @@ pub struct GatewayDatabaseHealth {
 }
 
 /// 网关级数据库健康检查
-///
-/// 报告所有上游服务的数据库连接状态（通过 gRPC 可达性推断）
 async fn database_health_handler(
     State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     let clients = state.grpc_clients.read().await;
     let service_defs = [
-        ("auth-service" , "auth" ),
-        ("user-service" , "user" ),
-        ("cms-service" , "cms" ),
-        ("message-service" , "message" ),
-        ("feedback-service" , "feedback" ),
-        ("tenant-service" , "tenant" ),
-        ("file-service" , "file" ),
-        ("workflow-service" , "workflow" ),
-        ("audit-service" , "audit" ),
-        ("api-key-service" , "api-key" ),
+        ("auth-service", "auth"),
+        ("user-service", "user"),
+        ("cms-service", "cms"),
+        ("message-service", "message"),
+        ("feedback-service", "feedback"),
+        ("tenant-service", "tenant"),
+        ("file-service", "file"),
+        ("workflow-service", "workflow"),
+        ("audit-service", "audit"),
+        ("api-key-service", "api-key"),
     ];
 
     let mut connections = Vec::new();
@@ -186,7 +189,7 @@ async fn database_health_handler(
     }
     drop(clients);
 
-    let all_connected = connections.iter().all(|c| c.status == "connected" );
+    let all_connected = connections.iter().all(|c| c.status == "connected");
     let status = if all_connected {
         "healthy"
     } else {
@@ -201,9 +204,9 @@ async fn database_health_handler(
 
 pub fn routes() -> Router<Arc<AppState>> {
     Router::new()
-        .route("/health" , get(health_handler))
-        .route("/ready" , get(ready_handler))
-        .route("/health/detailed" , get(detailed_health_handler))
-        .route("/health/discovery" , get(discovery_health_handler))
-        .route("/health/database" , get(database_health_handler))
+        .route("/health", get(health_handler))
+        .route("/ready", get(ready_handler))
+        .route("/health/detailed", get(detailed_health_handler))
+        .route("/health/discovery", get(discovery_health_handler))
+        .route("/health/database", get(database_health_handler))
 }

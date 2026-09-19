@@ -14,7 +14,7 @@ use axum::{
 };
 use serde::{Deserialize, Serialize};
 
-use common::{
+use common::constants::{
     DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE, MAX_USERNAME_LENGTH, MIN_PAGE,
     MIN_USERNAME_LENGTH, VALID_ROLES, VALID_STATUSES, default_password,
 };

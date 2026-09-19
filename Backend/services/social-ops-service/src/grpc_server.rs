@@ -15,7 +15,7 @@ use grpc_proto::socialops::llm_provider_service_server::LlmProviderServiceServer
 use grpc_proto::socialops::rewrite_service_server::RewriteServiceServer;
 use grpc_proto::socialops::stats_service_server::StatsServiceServer;
 use grpc_proto::socialops::insight_service_server::InsightServiceServer;
-use common::shutdown_signal;
+use common::shutdown::shutdown_signal;
 
 use crate::grpc_handlers::{
     GrpcAccountService, GrpcCrawlService, GrpcContentService,
@@ -32,7 +32,7 @@ pub async fn start_grpc_server(
 
     tracing::info!("Starting gRPC server on {}" , addr);
 
-    Server::builder().layer(tonic::service::interceptor::InterceptorLayer::new(common::grpc_auth_interceptor))
+    Server::builder().layer(tonic::service::interceptor::InterceptorLayer::new(common::grpc_auth::grpc_auth_interceptor))
         .add_service(AccountServiceServer::new(GrpcAccountService::new(state.clone())))
         .add_service(CrawlServiceServer::new(GrpcCrawlService::new(state.clone())))
         .add_service(ContentServiceServer::new(GrpcContentService::new(state.clone())))

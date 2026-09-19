@@ -9,7 +9,7 @@ use grpc_proto::browser::browser_service_server::BrowserServiceServer;
 
 use crate::browser_pool::BrowserPool;
 use crate::grpc_handlers::GrpcAppState;
-use common::shutdown_signal;
+use common::shutdown::shutdown_signal;
 
 /// 启动 gRPC 服务器
 pub async fn start_grpc_server(
@@ -20,7 +20,7 @@ pub async fn start_grpc_server(
 
     tracing::info!("[BrowserService] gRPC listening on {}" , addr);
 
-    Server::builder().layer(tonic::service::interceptor::InterceptorLayer::new(common::grpc_auth_interceptor))
+    Server::builder().layer(tonic::service::interceptor::InterceptorLayer::new(common::grpc_auth::grpc_auth_interceptor))
         .add_service(BrowserServiceServer::new(state))
         .serve_with_shutdown(addr, shutdown_signal())
         .await?;

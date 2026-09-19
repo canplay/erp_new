@@ -161,6 +161,47 @@ impl BillingRepository {
         .await
     }
 
+    /// 更新订阅状态（状态机流转）
+    pub async fn update_subscription_status(
+        &self,
+        subscription_id: Uuid,
+        new_status: &str,
+    ) -> Result<(), sqlx::Error> {
+        sqlx::query(
+            r#"
+            UPDATE subscriptions SET status = $1, updated_at = $2 WHERE id = $3
+            "#,
+        )
+        .bind(new_status)
+        .bind(chrono::Utc::now())
+        .bind(subscription_id)
+        .execute(&self.pool)
+        .await?;
+
+        Ok(())
+    }
+
+    /// 取消订阅
+    pub async fn cancel_subscription(
+        &self,
+        subscription_id: Uuid,
+    ) -> Result<(), sqlx::Error> {
+        sqlx::query(
+            r#"
+            UPDATE subscriptions 
+            SET status = 'cancelled', canceled_at = $1, updated_at = $2 
+            WHERE id = $3
+            "#,
+        )
+        .bind(chrono::Utc::now())
+        .bind(chrono::Utc::now())
+        .bind(subscription_id)
+        .execute(&self.pool)
+        .await?;
+
+        Ok(())
+    }
+
     // ============ 发票管理 ============
 
     /// 创建发票
@@ -301,6 +342,130 @@ impl BillingRepository {
 
         Ok(total)
     }
+
+    /// 获取用量汇总（按指标分组）
+    pub async fn get_usage_summary(
+        &self,
+        tenant_id: Uuid,
+        start_time: chrono::DateTime<chrono::Utc>,
+        end_time: chrono::DateTime<chrono::Utc>,
+    ) -> Result<Vec<UsageSummaryRow>, sqlx::Error> {
+        sqlx::query_as::<_, UsageSummaryRow>(
+            r#"
+            SELECT metric, COALESCE(SUM(quantity), 0.0) as total_quantity,
+                   MIN(recorded_at) as period_start, MAX(recorded_at) as period_end
+            FROM usage_records
+            WHERE tenant_id = $1 AND recorded_at >= $2 AND recorded_at <= $3
+            GROUP BY metric
+            "#,
+        )
+        .bind(tenant_id)
+        .bind(start_time)
+        .bind(end_time)
+        .fetch_all(&self.pool)
+        .await
+    }
+
+    /// 检查配额是否超限
+    pub async fn check_quota(
+        &self,
+        tenant_id: Uuid,
+        metric: &str,
+        quota_limit: i64,
+        period_start: chrono::DateTime<chrono::Utc>,
+        period_end: chrono::DateTime<chrono::Utc>,
+    ) -> Result<QuotaCheckRow, sqlx::Error> {
+        let current_usage: f64 = sqlx::query_scalar::<_, f64>(
+            r#"
+            SELECT COALESCE(SUM(quantity), 0.0) as total
+            FROM usage_records
+            WHERE tenant_id = $1 AND metric = $2 AND recorded_at >= $3 AND recorded_at <= $4
+            "#,
+        )
+        .bind(tenant_id)
+        .bind(metric)
+        .bind(period_start)
+        .bind(period_end)
+        .fetch_one(&self.pool)
+        .await?;
+
+        let exceeded = current_usage > quota_limit as f64;
+        let overage = if exceeded {
+            current_usage - quota_limit as f64
+        } else {
+            0.0
+        };
+
+        Ok(QuotaCheckRow {
+            metric: metric.to_string(),
+            current_usage,
+            quota_limit,
+            exceeded,
+            overage,
+        })
+    }
+
+    /// 获取发票行项目（含用量明细）
+    pub async fn generate_invoice_line_items(
+        &self,
+        tenant_id: Uuid,
+        plan_id: Uuid,
+        period_start: chrono::DateTime<chrono::Utc>,
+        period_end: chrono::DateTime<chrono::Utc>,
+    ) -> Result<Vec<InvoiceLineItemRow>, sqlx::Error> {
+        // 获取计划配额
+        let plan: Option<PlanRow> = sqlx::query_as::<_, PlanRow>(
+            r#"
+            SELECT id, name, description, plan_type, status, price_monthly, price_yearly, 
+                   currency, features, quotas, sort_order, is_public, created_at, updated_at
+            FROM plans WHERE id = $1
+            "#,
+        )
+        .bind(plan_id)
+        .fetch_optional(&self.pool)
+        .await?;
+
+        let mut line_items = Vec::new();
+
+        if let Some(plan_row) = plan {
+            // 获取用量汇总
+            let usage_rows: Vec<(String, f64)> = sqlx::query_as::<_, (String, f64)>(
+                r#"
+                SELECT metric, COALESCE(SUM(quantity), 0.0) as total
+                FROM usage_records
+                WHERE tenant_id = $1 AND recorded_at >= $2 AND recorded_at <= $3
+                GROUP BY metric
+                "#,
+            )
+            .bind(tenant_id)
+            .bind(period_start)
+            .bind(period_end)
+            .fetch_all(&self.pool)
+            .await?;
+
+            let plan_quotas: std::collections::HashMap<String, i64> =
+                serde_json::from_value(plan_row.quotas.clone()).unwrap_or_default();
+
+            for (metric, total_usage) in usage_rows {
+                if let Some(&quota_limit) = plan_quotas.get(&metric) {
+                    if total_usage > quota_limit as f64 {
+                        let overage = total_usage - quota_limit as f64;
+                        let overage_fee = (overage * 0.01).max(0.0);
+                        line_items.push(InvoiceLineItemRow {
+                            description: format!("Overage for {}: {:.1} units over quota", metric, overage),
+                            quantity: overage as i32,
+                            unit_price: Decimal::try_from(0.01).unwrap_or(Decimal::ZERO),
+                            amount: Decimal::try_from(overage_fee)
+                                .unwrap_or(Decimal::ZERO)
+                                .round_dp(2),
+                        });
+                    }
+                }
+            }
+        }
+
+        Ok(line_items)
+    }
 }
 
 #[derive(sqlx::FromRow, Debug)]
@@ -361,4 +526,29 @@ pub struct InvoiceRow {
     pub notes: Option<String>,
     pub created_at: chrono::DateTime<chrono::Utc>,
     pub updated_at: chrono::DateTime<chrono::Utc>,
+}
+
+#[derive(sqlx::FromRow, Debug)]
+pub struct UsageSummaryRow {
+    pub metric: String,
+    pub total_quantity: f64,
+    pub period_start: chrono::DateTime<chrono::Utc>,
+    pub period_end: chrono::DateTime<chrono::Utc>,
+}
+
+#[derive(Debug)]
+pub struct QuotaCheckRow {
+    pub metric: String,
+    pub current_usage: f64,
+    pub quota_limit: i64,
+    pub exceeded: bool,
+    pub overage: f64,
+}
+
+#[derive(Debug)]
+pub struct InvoiceLineItemRow {
+    pub description: String,
+    pub quantity: i32,
+    pub unit_price: Decimal,
+    pub amount: Decimal,
 }

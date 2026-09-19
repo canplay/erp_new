@@ -1,4 +1,3 @@
-// @viewpoint platform-only
 // 复用共享 alova 封装（packages/api），不再重复定义 class M
 import { api, normalize, unwrapArray } from '@erp-new-frontend-monorepo/api';
 

@@ -1,138 +1,101 @@
 // admin 业务 API 封装
-// 共享 API 来自 @erp-new-frontend-monorepo/api；本文件保留 admin 平台视角独有 API
-export {
-  deviceApi,
-  dailyApi,
-  weeklyApi,
-  monthlyApi,
-  dangerApi,
-  personnelApi,
-  currentUserApi,
-  identityApi,
-  notificationsApi,
-  forgotPasswordApi,
-  filesApi,
-} from '@erp-new-frontend-monorepo/api';
-export type {
-  CurrentUserDto,
-  IdentityUser,
-  IdentityRole,
-  PermissionCatalogEntry,
-} from '@erp-new-frontend-monorepo/api';
-export { getAlova } from '@erp-new-frontend-monorepo/boot/alova';
-export {
-  auditsApi,
-  type AuditSummaryDto,
-  type AuditDetailDto,
-  type AuditSummaryAggregateDto,
-} from '@erp-new-frontend-monorepo/api';
+// 共享 API 来自 @erp-new-frontend-monorepo/api
 
-// admin 平台视角特有 API（按领域子模块）
+export { getAlova } from '@erp-new-frontend-monorepo/boot';
+
+// ==================== 从 packages/api 导入的共享 API ====================
+
 export {
-  regulatoryApi,
-  type RegulatoryReceivePayload,
-  type RegulatoryFeedbackPayload,
-  type RegulatoryReceiveRecordItem,
-  type RegulatoryFeedbackRecordItem,
-  type RegulatoryExportRecordItem,
-  type RegulatoryExportRecordsResult,
-} from './regulatory';
-export { impersonationApi } from './identity';
-export {
+  // 工具函数
+  api,
+  normalize,
+  unwrapArray,
+  // Identity
+  identityApi,
+  impersonationApi,
+  // Platform
   tenantsApi,
   billingApi,
   sessionsApi,
   webhooksApi,
   healthApi,
-  type HealthResult,
-  type HealthEntry,
-} from './platform';
-export {
+  // Catalog
   catalogApi,
-  type BrandDto,
-  type CategoryDto,
-  type ProductDto,
-  type CreateProductDto,
-  type UpdateProductDto,
-} from './catalog';
-export {
+  // Tickets
   ticketsApi,
-  type TicketDto,
-  type CommentDto,
-  type CreateTicketDto,
-  type UpdateTicketDto,
-} from './tickets';
+  // Regulatory
+  regulatoryApi,
+  // Groups
+  groupsApi,
+} from '@erp-new-frontend-monorepo/api';
 
-// 复用共享 alova 封装（packages/api），不再重复定义 class M
-import { api, normalize, unwrapArray } from '@erp-new-frontend-monorepo/api';
+export type {
+  // 基础类型
+  PagedResult,
+  // Identity
+  GrantDto,
+  IdentityUser,
+  IdentityRole,
+  PermissionCatalogEntry,
+  CurrentUserDto,
+  // Platform
+  TenantDto,
+  TenantStatusDto,
+  ProvisioningDto,
+  ThemeDto,
+  ThemeUpdateDto,
+  BillingPlanDto,
+  SubscriptionDto,
+  InvoiceDto,
+  InvoiceDetailDto,
+  UsageDto,
+  GenerateInvoiceDto,
+  CreatePlanDto,
+  UpdatePlanDto,
+  CreateSubscriptionDto,
+  SessionDto,
+  WebhookSubscriptionDto,
+  WebhookDeliveryDto,
+  HealthEntry,
+  HealthResult,
+  // Catalog
+  BrandDto,
+  CategoryDto,
+  MoneyDto,
+  ProductDto,
+  CreateProductDto,
+  UpdateProductDto,
+  // Tickets
+  TicketDto,
+  CommentDto,
+  CreateTicketDto,
+  UpdateTicketDto,
+  // Regulatory
+  RegulatoryReceivePayload,
+  RegulatoryFeedbackPayload,
+  RegulatoryReceiveRecordItem,
+  RegulatoryFeedbackRecordItem,
+  RegulatoryExportRecordItem,
+  RegulatoryExportRecordsResult,
+  // Groups
+  GroupItem,
+  GroupMemberDto,
+  CreateGroupResponse,
+  DeleteResponse,
+  AddMemberResponse,
+  RemoveMemberResponse,
+} from '@erp-new-frontend-monorepo/api';
 
-export interface GroupItem {
+// ==================== 兼容类型 ====================
+
+/** @deprecated 使用 IdentityRole 替代 */
+export interface AdminRole {
   id: string;
   name: string;
-  description?: string | null;
-  isDefault: boolean;
-  isSystemGroup: boolean;
-  memberCount: number;
-  roleIds?: string[] | null;
-  roleNames?: string[] | null;
-  createdAt: string;
+  description?: string;
+  permissions?: string[];
 }
 
-export interface GroupMemberDto {
-  id: string;
-  userId: string;
-  userName: string;
-  email: string;
-  fullName: string;
-  roleNames: string[];
-  joinedAt: string;
-}
-
-export interface CreateGroupResponse {
-  id: string;
-  name: string;
-  description?: string | null;
-  isDefault: boolean;
-  isSystemGroup: boolean;
-  memberCount: number;
-  roleIds?: string[] | null;
-  createdAt: string;
-}
-
-export interface DeleteResponse {
-  success: boolean;
-}
-
-export interface AddMemberResponse {
-  groupId: string;
-  userId: string;
-  joinedAt: string;
-}
-
-export interface RemoveMemberResponse {
-  success: boolean;
-}
-
-export const groupsApi = {
-  list: (page = 1, size = 20) =>
-    api
-      .Get<GroupItem[]>('/api/v1/identity/groups', { page, size })
-      .then((r) => normalize<GroupItem>(r, page, size)),
-  get: (id: string) => api.Get<GroupItem>(`/api/v1/identity/groups/${id}`),
-  members: (groupId: string) =>
-    api
-      .Get<GroupMemberDto[]>(`/api/v1/identity/groups/${groupId}/members`)
-      .then((r) => unwrapArray<GroupMemberDto>(r)),
-  create: (data: { name: string; description?: string }) =>
-    api.Post<CreateGroupResponse>('/api/v1/identity/groups', data),
-  remove: (id: string) => api.Delete<DeleteResponse>(`/api/v1/identity/groups/${id}`),
-  addMember: (groupId: string, userId: string) =>
-    api.Post<AddMemberResponse>(`/api/v1/identity/groups/${groupId}/members`, { userId }),
-  removeMember: (groupId: string, userId: string) =>
-    api.Delete<RemoveMemberResponse>(`/api/v1/identity/groups/${groupId}/members/${userId}`),
-};
-
-// admin 平台视角特有类型（原 index.ts 中定义，保持兼容）
 export interface AdminNotification {
   id: string;
   type: string;
@@ -143,11 +106,4 @@ export interface AdminNotification {
   metadataJson: string;
   readAtUtc?: string | null;
   createdAtUtc: string;
-}
-
-export interface AdminRole {
-  id: string;
-  name: string;
-  description?: string;
-  permissions?: string[];
 }

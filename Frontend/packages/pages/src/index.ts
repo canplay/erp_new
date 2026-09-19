@@ -10,6 +10,15 @@
  * Admin imports via:   @erp-new-frontend-monorepo/pages
  */
 
+// === Admin wrapper pages (thin wrappers around shared components, platform-agnostic) ===
+export { default as AdminLoginPage } from './auth/AdminLoginPage.vue';
+export { default as AdminRegisterPage } from './auth/AdminRegisterPage.vue';
+export { default as AdminFilesPage } from './AdminFilesPage.vue';
+export { default as AdminOcrPage } from './ocr/AdminOcrPage.vue';
+export { default as AdminAuditsPage } from './audit/AdminAuditsPage.vue';
+export { default as AdminBillingPage } from './billing/AdminBillingPage.vue';
+export { default as AdminNotFoundPage } from './AdminNotFoundPage.vue';
+
 // === Primary barrel exports (used by admin/ops/social) ===
 export { default as AuditsList } from './audit/PermissionChangeLogPage.vue';
 export { default as AuthLogin } from './LoginPage/Main.vue';

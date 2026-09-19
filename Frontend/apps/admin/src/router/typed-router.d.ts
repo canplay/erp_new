@@ -52,55 +52,6 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
-    '/audits/': RouteRecordInfo<
-      '/audits/',
-      '/audits',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
-    '/auth/confirm-email/': RouteRecordInfo<
-      '/auth/confirm-email/',
-      '/auth/confirm-email',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
-    '/auth/forgot-password/': RouteRecordInfo<
-      '/auth/forgot-password/',
-      '/auth/forgot-password',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
-    '/auth/login/': RouteRecordInfo<
-      '/auth/login/',
-      '/auth/login',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
-    '/auth/register/': RouteRecordInfo<
-      '/auth/register/',
-      '/auth/register',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
-    '/auth/reset-password/': RouteRecordInfo<
-      '/auth/reset-password/',
-      '/auth/reset-password',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
-    '/billing/': RouteRecordInfo<
-      '/billing/',
-      '/billing',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
     '/billing/invoice-detail/': RouteRecordInfo<
       '/billing/invoice-detail/',
       '/billing/invoice-detail',
@@ -178,13 +129,6 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
-    '/chat/': RouteRecordInfo<
-      '/chat/',
-      '/chat',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
     '/daily-control/': RouteRecordInfo<
       '/daily-control/',
       '/daily-control',
@@ -202,13 +146,6 @@ declare module 'vue-router/auto-routes' {
     '/equipment/detail/': RouteRecordInfo<
       '/equipment/detail/',
       '/equipment/detail',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
-    '/files/': RouteRecordInfo<
-      '/files/',
-      '/files',
       Record<never, never>,
       Record<never, never>,
       | never
@@ -262,20 +199,6 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
-    '/not-found/': RouteRecordInfo<
-      '/not-found/',
-      '/not-found',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
-    '/ocr/': RouteRecordInfo<
-      '/ocr/',
-      '/ocr',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
     '/personnel/': RouteRecordInfo<
       '/personnel/',
       '/personnel',
@@ -286,13 +209,6 @@ declare module 'vue-router/auto-routes' {
     '/personnel/PersonnelCertVerify': RouteRecordInfo<
       '/personnel/PersonnelCertVerify',
       '/personnel/PersonnelCertVerify',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
-    '/profile/': RouteRecordInfo<
-      '/profile/',
-      '/profile',
       Record<never, never>,
       Record<never, never>,
       | never
@@ -321,34 +237,6 @@ declare module 'vue-router/auto-routes' {
     '/roles/detail/': RouteRecordInfo<
       '/roles/detail/',
       '/roles/detail',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
-    '/sessions/': RouteRecordInfo<
-      '/sessions/',
-      '/sessions',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
-    '/settings/appearance/': RouteRecordInfo<
-      '/settings/appearance/',
-      '/settings/appearance',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
-    '/settings/security/': RouteRecordInfo<
-      '/settings/security/',
-      '/settings/security',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
-    '/settings/sessions/': RouteRecordInfo<
-      '/settings/sessions/',
-      '/settings/sessions',
       Record<never, never>,
       Record<never, never>,
       | never
@@ -460,62 +348,6 @@ declare module 'vue-router/auto-routes' {
       pathParamNames:
         | never
     }
-    'src/pages/audits/index.vue': {
-      routes:
-        | '/audits/'
-      views:
-        | never
-      pathParamNames:
-        | never
-    }
-    'src/pages/auth/confirm-email/index.vue': {
-      routes:
-        | '/auth/confirm-email/'
-      views:
-        | never
-      pathParamNames:
-        | never
-    }
-    'src/pages/auth/forgot-password/index.vue': {
-      routes:
-        | '/auth/forgot-password/'
-      views:
-        | never
-      pathParamNames:
-        | never
-    }
-    'src/pages/auth/login/index.vue': {
-      routes:
-        | '/auth/login/'
-      views:
-        | never
-      pathParamNames:
-        | never
-    }
-    'src/pages/auth/register/index.vue': {
-      routes:
-        | '/auth/register/'
-      views:
-        | never
-      pathParamNames:
-        | never
-    }
-    'src/pages/auth/reset-password/index.vue': {
-      routes:
-        | '/auth/reset-password/'
-      views:
-        | never
-      pathParamNames:
-        | never
-    }
-    'src/pages/billing/index.vue': {
-      routes:
-        | '/billing/'
-      views:
-        | never
-      pathParamNames:
-        | never
-    }
     'src/pages/billing/invoice-detail/index.vue': {
       routes:
         | '/billing/invoice-detail/'
@@ -604,14 +436,6 @@ declare module 'vue-router/auto-routes' {
       pathParamNames:
         | never
     }
-    'src/pages/chat/index.vue': {
-      routes:
-        | '/chat/'
-      views:
-        | never
-      pathParamNames:
-        | never
-    }
     'src/pages/daily-control/index.vue': {
       routes:
         | '/daily-control/'
@@ -631,14 +455,6 @@ declare module 'vue-router/auto-routes' {
     'src/pages/equipment/detail/index.vue': {
       routes:
         | '/equipment/detail/'
-      views:
-        | never
-      pathParamNames:
-        | never
-    }
-    'src/pages/files/index.vue': {
-      routes:
-        | '/files/'
       views:
         | never
       pathParamNames:
@@ -700,22 +516,6 @@ declare module 'vue-router/auto-routes' {
       pathParamNames:
         | never
     }
-    'src/pages/not-found/index.vue': {
-      routes:
-        | '/not-found/'
-      views:
-        | never
-      pathParamNames:
-        | never
-    }
-    'src/pages/ocr/index.vue': {
-      routes:
-        | '/ocr/'
-      views:
-        | never
-      pathParamNames:
-        | never
-    }
     'src/pages/personnel/index.vue': {
       routes:
         | '/personnel/'
@@ -727,14 +527,6 @@ declare module 'vue-router/auto-routes' {
     'src/pages/personnel/PersonnelCertVerify.vue': {
       routes:
         | '/personnel/PersonnelCertVerify'
-      views:
-        | never
-      pathParamNames:
-        | never
-    }
-    'src/pages/profile/index.vue': {
-      routes:
-        | '/profile/'
       views:
         | never
       pathParamNames:
@@ -767,38 +559,6 @@ declare module 'vue-router/auto-routes' {
     'src/pages/roles/detail/index.vue': {
       routes:
         | '/roles/detail/'
-      views:
-        | never
-      pathParamNames:
-        | never
-    }
-    'src/pages/sessions/index.vue': {
-      routes:
-        | '/sessions/'
-      views:
-        | never
-      pathParamNames:
-        | never
-    }
-    'src/pages/settings/appearance/index.vue': {
-      routes:
-        | '/settings/appearance/'
-      views:
-        | never
-      pathParamNames:
-        | never
-    }
-    'src/pages/settings/security/index.vue': {
-      routes:
-        | '/settings/security/'
-      views:
-        | never
-      pathParamNames:
-        | never
-    }
-    'src/pages/settings/sessions/index.vue': {
-      routes:
-        | '/settings/sessions/'
       views:
         | never
       pathParamNames:

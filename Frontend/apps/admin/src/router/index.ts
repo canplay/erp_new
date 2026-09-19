@@ -23,12 +23,12 @@ export default defineRouter(() => {
       {
         path: '/auth/login',
         name: 'login',
-        component: () => import('@/pages/auth/login/index.vue'),
+        component: () => import('@erp-new-frontend-monorepo/pages/src/auth/AdminLoginPage.vue'),
       },
       {
         path: '/auth/register',
         name: 'register',
-        component: () => import('@/pages/auth/register/index.vue'),
+        component: () => import('@erp-new-frontend-monorepo/pages/src/auth/AdminRegisterPage.vue'),
       },
       {
         path: '/',
@@ -134,13 +134,13 @@ export default defineRouter(() => {
           {
             path: 'audits',
             name: 'audits',
-            component: () => import('@/pages/audits/index.vue'),
+            component: () => import('@erp-new-frontend-monorepo/pages/src/audit/AdminAuditsPage.vue'),
             meta: { cap: 'audit-platform' },
           },
           {
             path: 'billing',
             name: 'billing',
-            component: () => import('@/pages/billing/index.vue'),
+            component: () => import('@erp-new-frontend-monorepo/pages/src/billing/AdminBillingPage.vue'),
             meta: { cap: 'billing' },
           },
           {
@@ -182,13 +182,13 @@ export default defineRouter(() => {
           {
             path: 'files',
             name: 'files',
-            component: () => import('@/pages/files/index.vue'),
+            component: () => import('@erp-new-frontend-monorepo/pages/src/AdminFilesPage.vue'),
             meta: { cap: 'files' },
           },
           {
             path: 'ocr',
             name: 'ocr',
-            component: () => import('@/pages/ocr/index.vue'),
+            component: () => import('@erp-new-frontend-monorepo/pages/src/ocr/AdminOcrPage.vue'),
             meta: { cap: 'ocr' },
           },
           {
@@ -220,7 +220,7 @@ export default defineRouter(() => {
       {
         path: '/:pathMatch(.*)*',
         name: 'not-found',
-        component: () => import('@/pages/not-found/index.vue'),
+        component: () => import('@erp-new-frontend-monorepo/pages/src/AdminNotFoundPage.vue'),
       },
     ],
 

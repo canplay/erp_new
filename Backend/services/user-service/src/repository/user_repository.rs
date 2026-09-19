@@ -3,7 +3,7 @@
 use chrono::Utc;
 use common::{MAX_PAGE_SIZE, MIN_PAGE};
 use serde::{Deserialize, Serialize};
-use sqlx::PgPool;
+use sqlx::{PgPool, Row};
 use thiserror::Error;
 
 /// 用户仓储错误类型
@@ -178,6 +178,46 @@ impl UserRepository {
         .await?;
 
         Ok(row)
+    }
+
+    /// 批量根据用户ID查找用户（N+1 修复：使用 WHERE id = ANY($1)）
+    pub async fn find_all_by_ids(
+        &self,
+        user_ids: &[i64],
+    ) -> Result<Vec<UserDetail>, UserRepositoryError> {
+        if user_ids.is_empty() {
+            return Ok(Vec::new());
+        }
+        let rows = sqlx::query(
+            r#"SELECT id, username, nickname, avatar, phone, email, gender, address,
+                      COALESCE(role, 'user') AS "role",
+                      COALESCE(status, 1) AS "status",
+                      COALESCE(created_at, NOW()) AS "created_at",
+                      COALESCE(updated_at, NOW()) AS "updated_at"
+               FROM users WHERE id = ANY($1)"#
+        )
+        .bind(user_ids)
+        .fetch_all(&self.pool)
+        .await?;
+
+        let users: Vec<UserDetail> = rows.iter().map(|row| {
+            UserDetail {
+                id: row.get("id"),
+                username: row.get("username"),
+                nickname: row.get("nickname"),
+                avatar: row.get("avatar"),
+                phone: row.get("phone"),
+                email: row.get("email"),
+                gender: row.get("gender"),
+                address: row.get("address"),
+                role: row.get("role"),
+                status: row.get("status"),
+                created_at: row.get("created_at"),
+                updated_at: row.get("updated_at"),
+            }
+        }).collect();
+
+        Ok(users)
     }
 
     /// 更新用户信息

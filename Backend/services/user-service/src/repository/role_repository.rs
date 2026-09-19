@@ -3,7 +3,7 @@
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
 use serde_json;
-use sqlx::PgPool;
+use sqlx::{PgPool, Row};
 use thiserror::Error;
 
 /// 角色仓储错误类型
@@ -415,7 +415,7 @@ impl RoleRepository {
         Ok(ids)
     }
 
-    /// 设置角色权限
+    /// 设置角色权限（N+1 修复：使用 UNNEST 批量 INSERT）
     pub async fn set_permissions(
         &self,
         role_id: i64,
@@ -429,13 +429,14 @@ impl RoleRepository {
             .execute(&mut *tx)
             .await?;
 
-        // 插入新权限
-        for perm_id in permission_ids {
-            sqlx::query!(
-                "INSERT INTO role_permissions (role_id, permission_id) VALUES ($1, $2)" ,
-                role_id,
-                perm_id,
+        // N+1 修复：使用 UNNEST 批量插入，替代逐条 INSERT
+        if !permission_ids.is_empty() {
+            sqlx::query(
+                r#"INSERT INTO role_permissions (role_id, permission_id)
+                   SELECT $1, unnest($2::bigint[])"#,
             )
+            .bind(role_id)
+            .bind(permission_ids)
             .execute(&mut *tx)
             .await?;
         }
@@ -509,7 +510,7 @@ impl RoleRepository {
         Ok(permissions)
     }
 
-    /// 复制角色权限
+    /// 复制角色权限（N+1 修复：使用 INSERT ... SELECT 替代嵌套循环）
     pub async fn copy_permissions(
         &self,
         source_role_id: i64,
@@ -517,20 +518,6 @@ impl RoleRepository {
     ) -> Result<(), RoleRepositoryError> {
         let mut tx = self.pool.begin().await?;
 
-        // 获取源角色的权限
-        let rows = sqlx::query!(
-            "SELECT permission_id FROM role_permissions WHERE role_id = $1" ,
-            source_role_id,
-        )
-        .fetch_all(&mut *tx)
-        .await?;
-
-        let permission_ids: Vec<i64> = rows
-            .into_iter()
-            .map(|row| row.permission_id)
-            .collect();
-
-        // 为每个目标角色设置权限
         for target_id in target_role_ids {
             // 删除现有权限
             sqlx::query!(
@@ -540,16 +527,15 @@ impl RoleRepository {
             .execute(&mut *tx)
             .await?;
 
-            // 复制权限
-            for perm_id in &permission_ids {
-                sqlx::query!(
-                    "INSERT INTO role_permissions (role_id, permission_id) VALUES ($1, $2)" ,
-                    target_id,
-                    perm_id,
-                )
-                .execute(&mut *tx)
-                .await?;
-            }
+            // N+1 修复：使用 INSERT ... SELECT 复制权限，替代逐条 SELECT + INSERT
+            sqlx::query(
+                r#"INSERT INTO role_permissions (role_id, permission_id)
+                   SELECT $1, permission_id FROM role_permissions WHERE role_id = $2"#,
+            )
+            .bind(target_id)
+            .bind(source_role_id)
+            .execute(&mut *tx)
+            .await?;
         }
 
         tx.commit().await?;
@@ -688,57 +674,61 @@ impl RoleRepository {
         Ok(result)
     }
 
-    /// 设置角色的数据权限配置
+    /// 设置角色的数据权限配置（N+1 修复：批量 INSERT + 事务）
     pub async fn set_data_permissions(
         &self,
         role_id: i64,
         permissions: &[serde_json::Value],
     ) -> Result<(), RoleRepositoryError> {
+        let mut tx = self.pool.begin().await?;
+
         // 删除现有数据权限
         sqlx::query!(
             "DELETE FROM role_data_permissions WHERE role_id = $1" ,
             role_id.to_string(),
         )
-        .execute(&self.pool)
+        .execute(&mut *tx)
         .await?;
 
-        // 插入新数据权限
-        for perm in permissions {
-            let resource_type = perm
-                .get("resource_type" )
-                .and_then(|v| v.as_str())
-                .unwrap_or("" );
-            let data_scope = perm
-                .get("data_scope" )
-                .and_then(|v| v.as_str())
-                .unwrap_or("all" );
-            let filter_expression = perm.get("filter_expression" ).and_then(|v| v.as_str());
-            let allowed_department_ids = perm.get("allowed_department_ids" );
-            let allowed_user_ids = perm.get("allowed_user_ids" );
-            let priority = perm.get("priority" ).and_then(serde_json::Value::as_i64).unwrap_or(0) as i32;
-            let enabled = perm
-                .get("enabled" )
-                .and_then(serde_json::Value::as_bool)
-                .unwrap_or(true);
+        // N+1 修复：使用 UNNEST 批量 INSERT，替代逐条插入
+        if !permissions.is_empty() {
+            let resource_types: Vec<&str> = permissions.iter()
+                .map(|p| p.get("resource_type").and_then(|v| v.as_str()).unwrap_or(""))
+                .collect();
+            let data_scopes: Vec<&str> = permissions.iter()
+                .map(|p| p.get("data_scope").and_then(|v| v.as_str()).unwrap_or("all"))
+                .collect();
+            let filter_expressions: Vec<Option<&str>> = permissions.iter()
+                .map(|p| p.get("filter_expression").and_then(|v| v.as_str()))
+                .collect();
+            let priorities: Vec<i32> = permissions.iter()
+                .map(|p| p.get("priority").and_then(serde_json::Value::as_i64).unwrap_or(0) as i32)
+                .collect();
+            let enableds: Vec<bool> = permissions.iter()
+                .map(|p| p.get("enabled").and_then(serde_json::Value::as_bool).unwrap_or(true))
+                .collect();
 
-            sqlx::query!(
-                r"INSERT INTO role_data_permissions
+            sqlx::query(
+                r#"INSERT INTO role_data_permissions
                    (id, role_id, resource_type, data_scope, filter_expression,
                     allowed_department_ids, allowed_user_ids, priority, enabled)
-                   VALUES (gen_random_uuid()::text, $1, $2, $3, $4, $5, $6, $7, $8)" ,
-                role_id.to_string(),
-                resource_type,
-                data_scope,
-                filter_expression,
-                allowed_department_ids,
-                allowed_user_ids,
-                priority,
-                enabled,
+                   SELECT gen_random_uuid()::text, $1, u.resource_type, u.data_scope,
+                          u.filter_expression, u.allowed_department_ids, u.allowed_user_ids,
+                          u.priority, u.enabled
+                   FROM UNNEST($2::text[], $3::text[], $4::text[], $5::int4[], $6::bool[])
+                   AS u(resource_type, data_scope, filter_expression, priority, enabled)"#,
             )
-            .execute(&self.pool)
+            .bind(role_id.to_string())
+            .bind(&resource_types[..])
+            .bind(&data_scopes[..])
+            .bind(&filter_expressions[..])
+            .bind(&priorities[..])
+            .bind(&enableds[..])
+            .execute(&mut *tx)
             .await?;
         }
 
+        tx.commit().await?;
         Ok(())
     }
 
@@ -776,50 +766,55 @@ impl RoleRepository {
         Ok(result)
     }
 
-    /// 设置角色的字段权限配置
+    /// 设置角色的字段权限配置（N+1 修复：批量 INSERT + 事务）
     pub async fn set_field_permissions(
         &self,
         role_id: i64,
         permissions: &[serde_json::Value],
     ) -> Result<(), RoleRepositoryError> {
+        let mut tx = self.pool.begin().await?;
+
         // 删除现有字段权限
         sqlx::query!(
             "DELETE FROM role_field_permissions WHERE role_id = $1" ,
             role_id.to_string(),
         )
-        .execute(&self.pool)
+        .execute(&mut *tx)
         .await?;
 
-        // 插入新字段权限
-        for perm in permissions {
-            let resource_type = perm
-                .get("resource_type" )
-                .and_then(|v| v.as_str())
-                .unwrap_or("" );
-            let field_name = perm
-                .get("field_name" )
-                .and_then(|v| v.as_str())
-                .unwrap_or("" );
-            let permission = perm
-                .get("permission" )
-                .and_then(|v| v.as_str())
-                .unwrap_or("read_write" );
-            let mask_pattern = perm.get("mask_pattern" ).and_then(|v| v.as_str());
+        // N+1 修复：使用 UNNEST 批量 INSERT，替代逐条插入
+        if !permissions.is_empty() {
+            let resource_types: Vec<&str> = permissions.iter()
+                .map(|p| p.get("resource_type").and_then(|v| v.as_str()).unwrap_or(""))
+                .collect();
+            let field_names: Vec<&str> = permissions.iter()
+                .map(|p| p.get("field_name").and_then(|v| v.as_str()).unwrap_or(""))
+                .collect();
+            let perms: Vec<&str> = permissions.iter()
+                .map(|p| p.get("permission").and_then(|v| v.as_str()).unwrap_or("read_write"))
+                .collect();
+            let mask_patterns: Vec<Option<&str>> = permissions.iter()
+                .map(|p| p.get("mask_pattern").and_then(|v| v.as_str()))
+                .collect();
 
-            sqlx::query!(
-                r"INSERT INTO role_field_permissions
+            sqlx::query(
+                r#"INSERT INTO role_field_permissions
                    (id, role_id, resource_type, field_name, permission, mask_pattern)
-                   VALUES (gen_random_uuid()::text, $1, $2, $3, $4, $5)" ,
-                role_id.to_string(),
-                resource_type,
-                field_name,
-                permission,
-                mask_pattern,
+                   SELECT gen_random_uuid()::text, $1, u.resource_type, u.field_name,
+                          u.permission, u.mask_pattern
+                   FROM UNNEST($2::text[], $3::text[], $4::text[], $5::text[])
+                   AS u(resource_type, field_name, permission, mask_pattern)"#,
             )
-            .execute(&self.pool)
+            .bind(role_id.to_string())
+            .bind(&resource_types[..])
+            .bind(&field_names[..])
+            .bind(&perms[..])
+            .bind(&mask_patterns[..])
+            .execute(&mut *tx)
             .await?;
         }
 
+        tx.commit().await?;
         Ok(())
     }
 
@@ -864,37 +859,48 @@ impl RoleRepository {
         Ok(result)
     }
 
-    /// 设置角色的继承关系
+    /// 设置角色的继承关系（N+1 修复：WHERE code = ANY($1)）
     pub async fn set_inherit(
         &self,
         role_id: i64,
         inherit_from: &[String],
     ) -> Result<(), RoleRepositoryError> {
+        let mut tx = self.pool.begin().await?;
+
         // 删除现有继承关系
         sqlx::query!(
             "DELETE FROM permission_inheritances WHERE child_role_id = $1::text" ,
             role_id.to_string(),
         )
-        .execute(&self.pool)
+        .execute(&mut *tx)
         .await?;
 
-        // 创建新的继承关系
-        for (idx, parent_code) in inherit_from.iter().enumerate() {
-            if let Some(parent) = self.find_by_code(parent_code).await? {
-                sqlx::query!(
-                    r"INSERT INTO permission_inheritances
+        // N+1 修复：使用 WHERE code = ANY($1) 批量查询，替代循环内逐条 find_by_code
+        if !inherit_from.is_empty() {
+            let rows = sqlx::query(
+                "SELECT id FROM roles WHERE code = ANY($1)" ,
+            )
+            .bind(inherit_from)
+            .fetch_all(&mut *tx)
+            .await?;
+
+            for (idx, row) in rows.iter().enumerate() {
+                let parent_id: i64 = row.get("id");
+                sqlx::query(
+                    r#"INSERT INTO permission_inheritances
                        (id, parent_role_id, child_role_id, inherit_data_permissions,
                         inherit_field_permissions, override_child_permissions, priority)
-                       VALUES (gen_random_uuid()::text, $1, $2, TRUE, TRUE, FALSE, $3)" ,
-                    parent.id.to_string(),
-                    role_id.to_string(),
-                    idx as i32,
+                       VALUES (gen_random_uuid()::text, $1, $2, TRUE, TRUE, FALSE, $3)"#,
                 )
-                .execute(&self.pool)
+                .bind(parent_id.to_string())
+                .bind(role_id.to_string())
+                .bind(idx as i32)
+                .execute(&mut *tx)
                 .await?;
             }
         }
 
+        tx.commit().await?;
         Ok(())
     }
 
@@ -911,7 +917,7 @@ impl RoleRepository {
         Ok(result.rows_affected() > 0)
     }
 
-    /// 应用角色模板到角色
+    /// 应用角色模板到角色（N+1 修复：复用 resolve_permission_ids 批量查询）
     pub async fn apply_template(
         &self,
         template_id: i64,
@@ -933,20 +939,8 @@ impl RoleRepository {
             let perms: Vec<String> =
                 serde_json::from_value(row.permissions.unwrap_or_default()).unwrap_or_default();
 
-            // 获取权限ID
-            let mut permission_ids = Vec::new();
-            for code in perms {
-                let perm_row = sqlx::query!(
-                    "SELECT id FROM permissions WHERE code = $1" ,
-                    code,
-                )
-                .fetch_optional(&self.pool)
-                .await?;
-
-                if let Some(pr) = perm_row {
-                    permission_ids.push(pr.id);
-                }
-            }
+            // N+1 修复：复用 resolve_permission_ids 批量查询，替代循环内逐条 SELECT
+            let permission_ids = self.resolve_permission_ids(&perms).await?;
 
             // 设置角色权限
             self.set_permissions(role.id, &permission_ids).await?;

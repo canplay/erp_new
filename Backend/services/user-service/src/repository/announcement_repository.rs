@@ -972,24 +972,29 @@ impl AnnouncementRepository {
         Ok(configs)
     }
 
-    /// 批量更新系统配置
+    /// 批量更新系统配置（N+1 修复：使用 UPDATE ... FROM UNNEST）
     pub async fn batch_update_system_configs(
         &self,
         configs: &[(String, String)],
     ) -> Result<bool, AnnouncementRepositoryError> {
-        let mut tx = self.pool.begin().await?;
-
-        for (key, value) in configs {
-            sqlx::query!(
-                "UPDATE system_configs SET config_value = $1, updated_at = NOW() WHERE config_key = $2" ,
-                value,
-                key,
-            )
-            .execute(&mut *tx)
-            .await?;
+        if configs.is_empty() {
+            return Ok(true);
         }
 
-        tx.commit().await?;
+        let keys: Vec<&str> = configs.iter().map(|(k, _)| k.as_str()).collect();
+        let values: Vec<&str> = configs.iter().map(|(_, v)| v.as_str()).collect();
+
+        sqlx::query(
+            r#"UPDATE system_configs AS sc
+               SET config_value = u.value, updated_at = NOW()
+               FROM UNNEST($1::text[], $2::text[]) AS u(key, value)
+               WHERE sc.config_key = u.key"#,
+        )
+        .bind(&keys[..])
+        .bind(&values[..])
+        .execute(&self.pool)
+        .await?;
+
         Ok(true)
     }
 }

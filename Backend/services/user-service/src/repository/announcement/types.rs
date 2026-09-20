@@ -9,9 +9,6 @@ use thiserror::Error;
 pub(crate) enum AnnouncementRepositoryError {
     #[error("数据库错误: {0}" )]
     Database(#[from] sqlx::Error),
-
-    #[error("公告不存在" )]
-    NotFound,
 }
 
 /// 公告信息
@@ -63,27 +60,9 @@ pub(crate) struct SystemConfig {
     pub updated_at: DateTime<Utc>,
 }
 
-/// 登录日志
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub(crate) struct LoginLog {
-    pub id: i64,
-    pub user_id: Option<i64>,
-    pub username: Option<String>,
-    pub ip_address: Option<String>,
-    pub user_agent: Option<String>,
-    pub login_status: i32,
-    pub fail_reason: Option<String>,
-    pub created_at: DateTime<Utc>,
-}
-
 /// 分页结果
 pub(crate) struct PaginatedAnnouncements {
     pub announcements: Vec<AnnouncementListItem>,
-    pub total: i64,
-}
-
-pub(crate) struct PaginatedLoginLogs {
-    pub logs: Vec<LoginLog>,
     pub total: i64,
 }
 

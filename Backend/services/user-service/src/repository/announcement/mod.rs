@@ -6,7 +6,6 @@ mod announcement_ops;
 mod config_ops;
 mod dictionary_item_ops;
 mod dictionary_type_ops;
-mod log_ops;
 mod types;
 
 pub(crate) use types::{

@@ -103,35 +103,4 @@ impl RoleRepository {
         Ok(result.rows_affected() > 0)
     }
 
-    /// 应用角色模板到角色（N+1 修复：复用 resolve_permission_ids 批量查询）
-    pub(crate) async fn apply_template(
-        &self,
-        template_id: i64,
-        role_code: &str,
-    ) -> Result<(), RoleRepositoryError> {
-        let role = self
-            .find_by_code(role_code)
-            .await?
-            .ok_or(RoleRepositoryError::NotFound)?;
-
-        let template_rows = sqlx::query!(
-            "SELECT permissions FROM role_templates WHERE id = $1" ,
-            template_id,
-        )
-        .fetch_optional(&self.pool)
-        .await?;
-
-        if let Some(row) = template_rows {
-            let perms: Vec<String> =
-                serde_json::from_value(row.permissions.unwrap_or_default()).unwrap_or_default();
-
-            // N+1 修复：复用 resolve_permission_ids 批量查询，替代循环内逐条 SELECT
-            let permission_ids = self.resolve_permission_ids(&perms).await?;
-
-            // 设置角色权限
-            self.set_permissions(role.id, &permission_ids).await?;
-        }
-
-        Ok(())
-    }
 }

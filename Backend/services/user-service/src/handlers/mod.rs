@@ -14,10 +14,10 @@ mod user_handlers;
 /// 应用状态
 #[derive(Clone)]
 pub struct AppState {
-    pub user_repository: UserRepository,
-    pub role_repository: RoleRepository,
-    pub department_repository: DepartmentRepository,
-    pub announcement_repository: AnnouncementRepository,
+    pub(crate) user_repository: UserRepository,
+    pub(crate) role_repository: RoleRepository,
+    pub(crate) department_repository: DepartmentRepository,
+    pub(crate) announcement_repository: AnnouncementRepository,
 }
 
 impl AppState {

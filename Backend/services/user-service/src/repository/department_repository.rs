@@ -11,9 +11,6 @@ pub(crate) enum DepartmentRepositoryError {
     #[error("数据库错误: {0}" )]
     Database(#[from] sqlx::Error),
 
-    #[error("部门不存在" )]
-    NotFound,
-
     #[error("部门已存在" )]
     AlreadyExists,
 
@@ -212,44 +209,7 @@ impl DepartmentRepository {
     }
 
     /// 根据代码查找部门
-    pub(crate) async fn find_by_code(
-        &self,
-        code: &str,
-    ) -> Result<Option<Department>, DepartmentRepositoryError> {
-        let row = sqlx::query_as!(
-            Department,
-            r##"SELECT d.id, d.name, d.code, d.parent_id,
-                      COALESCE(d.level, 0) AS "level!" ,
-                      COALESCE(d.sort_order, 0) AS "sort_order!" ,
-                      d.leader_id, d.description,
-                      COALESCE(d.status, 1) AS "status!" ,
-                      COALESCE(d.created_at, NOW()) AS "created_at!" ,
-                      COALESCE(d.updated_at, NOW()) AS "updated_at!" ,
-                      u.nickname as leader_name
-               FROM departments d
-               LEFT JOIN users u ON d.leader_id = u.id
-               WHERE d.code = $1"##,
-            code,
-        )
-        .fetch_optional(&self.pool)
-        .await?;
-
-        Ok(row.map(|r| Department {
-            id: r.id,
-            name: r.name,
-            code: r.code,
-            parent_id: r.parent_id,
-            level: r.level,
-            sort_order: r.sort_order,
-            leader_id: r.leader_id,
-            leader_name: r.leader_name,
-            description: r.description,
-            status: r.status,
-            created_at: r.created_at,
-            updated_at: r.updated_at,
-        }))
-    }
-
+    
     /// 更新部门
     pub(crate) async fn update(
         &self,
@@ -576,55 +536,4 @@ impl DepartmentRepository {
         Ok((user_ids, total))
     }
 
-    /// 移动部门
-    pub(crate) async fn move_department(
-        &self,
-        dept_id: i64,
-        new_parent_id: Option<i64>,
-    ) -> Result<bool, DepartmentRepositoryError> {
-        if let Some(new_parent) = new_parent_id {
-            if new_parent == dept_id {
-                return Err(DepartmentRepositoryError::CircularReference);
-            }
-
-            if self.is_descendant(new_parent, dept_id).await? {
-                return Err(DepartmentRepositoryError::CircularReference);
-            }
-        }
-
-        let level = if let Some(pid) = new_parent_id {
-            let row = sqlx::query!(
-                "SELECT level FROM departments WHERE id = $1" ,
-                pid
-            )
-            .fetch_optional(&self.pool)
-            .await?;
-
-            match row {
-                Some(r) => r.level.unwrap_or(0) + 1,
-                None => 0,
-            }
-        } else {
-            0
-        };
-
-        if level > 5 {
-            return Err(DepartmentRepositoryError::MaxLevelExceeded);
-        }
-
-        let result = sqlx::query!(
-            r"UPDATE departments
-               SET parent_id = $1,
-                   level = $2,
-                   updated_at = NOW()
-               WHERE id = $3" ,
-            new_parent_id,
-            level,
-            dept_id,
-        )
-        .execute(&self.pool)
-        .await?;
-
-        Ok(result.rows_affected() > 0)
     }
-}

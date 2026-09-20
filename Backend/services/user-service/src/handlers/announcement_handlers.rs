@@ -135,39 +135,193 @@ pub(crate) async fn batch_update_system_configs(s: &UserServiceImpl, request: Re
     Ok(Response::new(BatchUpdateSystemConfigsResponse { success: true }))
 }
 
-pub(crate) async fn get_role_permission_config(_s: &UserServiceImpl, _request: Request<GetRolePermissionConfigRequest>) -> Result<Response<GetRolePermissionConfigResponse>, Status> {
-    Ok(Response::new(GetRolePermissionConfigResponse { data_permissions: vec![], field_permissions: vec![] }))
+pub(crate) async fn get_role_permission_config(s: &UserServiceImpl, request: Request<GetRolePermissionConfigRequest>) -> Result<Response<GetRolePermissionConfigResponse>, Status> {
+    let req = request.into_inner();
+    let role = s.state.role_repository.find_by_code(&req.role_name).await
+        .map_err(|e| Status::internal(e.to_string()))?
+        .ok_or_else(|| Status::not_found("角色不存在"))?;
+
+    let data_rows = s.state.role_repository.get_data_permissions(role.id).await
+        .map_err(|e| Status::internal(e.to_string()))?;
+    let field_rows = s.state.role_repository.get_field_permissions(role.id).await
+        .map_err(|e| Status::internal(e.to_string()))?;
+
+    let data_permissions = data_rows.into_iter().map(|row| DataPermissionInfo {
+        permission: row.get("resource_type").and_then(|v| v.as_str()).unwrap_or_default().to_string(),
+        name: row.get("resource_type").and_then(|v| v.as_str()).unwrap_or_default().to_string(),
+        entity_type: row.get("resource_type").and_then(|v| v.as_str()).unwrap_or_default().to_string(),
+        scope: row.get("data_scope").and_then(|v| v.as_str()).and_then(|s| s.parse::<i32>().ok()).unwrap_or(0),
+        custom_scope: vec![],
+        filter_group_json: row.get("filter_expression").and_then(|v| v.as_str()).unwrap_or_default().to_string(),
+    }).collect();
+    let field_permissions = field_rows.into_iter().map(|row| FieldPermissionInfo {
+        permission: row.get("permission").and_then(|v| v.as_str()).unwrap_or_default().to_string(),
+        name: row.get("field_name").and_then(|v| v.as_str()).unwrap_or_default().to_string(),
+        entity_type: row.get("resource_type").and_then(|v| v.as_str()).unwrap_or_default().to_string(),
+        field: row.get("field_name").and_then(|v| v.as_str()).unwrap_or_default().to_string(),
+        can_view: row.get("permission").and_then(|v| v.as_str()).map(|p| p != "hidden").unwrap_or(true),
+        can_edit: row.get("permission").and_then(|v| v.as_str()).map(|p| p == "read_write").unwrap_or(false),
+        allowed_fields: vec![],
+        denied_fields: vec![],
+        read_only: row.get("permission").and_then(|v| v.as_str()).map(|p| p == "read_only").unwrap_or(false),
+        description: String::new(),
+        sensitive: false,
+    }).collect();
+
+    Ok(Response::new(GetRolePermissionConfigResponse { data_permissions, field_permissions }))
 }
 
-pub(crate) async fn update_role_permission_config(_s: &UserServiceImpl, _request: Request<UpdateRolePermissionConfigRequest>) -> Result<Response<UpdateRolePermissionConfigResponse>, Status> {
+pub(crate) async fn update_role_permission_config(s: &UserServiceImpl, request: Request<UpdateRolePermissionConfigRequest>) -> Result<Response<UpdateRolePermissionConfigResponse>, Status> {
+    let req = request.into_inner();
+    let role = s.state.role_repository.find_by_code(&req.role_name).await
+        .map_err(|e| Status::internal(e.to_string()))?
+        .ok_or_else(|| Status::not_found("角色不存在"))?;
+
+    let data_json: Vec<serde_json::Value> = req.data_permissions.iter().map(|d| serde_json::json!({
+        "resource_type": d.entity_type,
+        "data_scope": d.scope.to_string(),
+        "filter_expression": if d.filter_group_json.is_empty() { None } else { Some(d.filter_group_json.clone()) },
+        "priority": 0,
+        "enabled": true,
+    })).collect();
+    let field_json: Vec<serde_json::Value> = req.field_permissions.iter().map(|f| serde_json::json!({
+        "resource_type": f.entity_type,
+        "field_name": f.field,
+        "permission": if f.can_edit { "read_write" } else if f.can_view { "read_only" } else { "hidden" },
+        "mask_pattern": None::<String>,
+    })).collect();
+
+    s.state.role_repository.set_data_permissions(role.id, &data_json).await
+        .map_err(|e| Status::internal(e.to_string()))?;
+    s.state.role_repository.set_field_permissions(role.id, &field_json).await
+        .map_err(|e| Status::internal(e.to_string()))?;
+
     Ok(Response::new(UpdateRolePermissionConfigResponse { success: true }))
 }
 
-pub(crate) async fn get_role_data_permissions(_s: &UserServiceImpl, _request: Request<GetRoleDataPermissionsRequest>) -> Result<Response<GetRoleDataPermissionsResponse>, Status> {
-    Ok(Response::new(GetRoleDataPermissionsResponse { data_permissions: vec![] }))
+pub(crate) async fn get_role_data_permissions(s: &UserServiceImpl, request: Request<GetRoleDataPermissionsRequest>) -> Result<Response<GetRoleDataPermissionsResponse>, Status> {
+    let req = request.into_inner();
+    let role = s.state.role_repository.find_by_code(&req.role_name).await
+        .map_err(|e| Status::internal(e.to_string()))?
+        .ok_or_else(|| Status::not_found("角色不存在"))?;
+
+    let data_rows = s.state.role_repository.get_data_permissions(role.id).await
+        .map_err(|e| Status::internal(e.to_string()))?;
+    let data_permissions = data_rows.into_iter().map(|row| DataPermissionInfo {
+        permission: row.get("resource_type").and_then(|v| v.as_str()).unwrap_or_default().to_string(),
+        name: row.get("resource_type").and_then(|v| v.as_str()).unwrap_or_default().to_string(),
+        entity_type: row.get("resource_type").and_then(|v| v.as_str()).unwrap_or_default().to_string(),
+        scope: row.get("data_scope").and_then(|v| v.as_str()).and_then(|s| s.parse::<i32>().ok()).unwrap_or(0),
+        custom_scope: vec![],
+        filter_group_json: row.get("filter_expression").and_then(|v| v.as_str()).unwrap_or_default().to_string(),
+    }).collect();
+
+    Ok(Response::new(GetRoleDataPermissionsResponse { data_permissions }))
 }
 
-pub(crate) async fn set_role_data_permissions(_s: &UserServiceImpl, _request: Request<SetRoleDataPermissionsRequest>) -> Result<Response<SetRoleDataPermissionsResponse>, Status> {
+pub(crate) async fn set_role_data_permissions(s: &UserServiceImpl, request: Request<SetRoleDataPermissionsRequest>) -> Result<Response<SetRoleDataPermissionsResponse>, Status> {
+    let req = request.into_inner();
+    let role = s.state.role_repository.find_by_code(&req.role_name).await
+        .map_err(|e| Status::internal(e.to_string()))?
+        .ok_or_else(|| Status::not_found("角色不存在"))?;
+
+    let data_json: Vec<serde_json::Value> = req.data_permissions.iter().map(|d| serde_json::json!({
+        "resource_type": d.entity_type,
+        "data_scope": d.scope.to_string(),
+        "filter_expression": if d.filter_group_json.is_empty() { None } else { Some(d.filter_group_json.clone()) },
+        "priority": 0,
+        "enabled": true,
+    })).collect();
+    s.state.role_repository.set_data_permissions(role.id, &data_json).await
+        .map_err(|e| Status::internal(e.to_string()))?;
+
     Ok(Response::new(SetRoleDataPermissionsResponse { success: true }))
 }
 
-pub(crate) async fn get_role_field_permissions(_s: &UserServiceImpl, _request: Request<GetRoleFieldPermissionsRequest>) -> Result<Response<GetRoleFieldPermissionsResponse>, Status> {
-    Ok(Response::new(GetRoleFieldPermissionsResponse { field_permissions: vec![] }))
+pub(crate) async fn get_role_field_permissions(s: &UserServiceImpl, request: Request<GetRoleFieldPermissionsRequest>) -> Result<Response<GetRoleFieldPermissionsResponse>, Status> {
+    let req = request.into_inner();
+    let role = s.state.role_repository.find_by_code(&req.role_name).await
+        .map_err(|e| Status::internal(e.to_string()))?
+        .ok_or_else(|| Status::not_found("角色不存在"))?;
+
+    let field_rows = s.state.role_repository.get_field_permissions(role.id).await
+        .map_err(|e| Status::internal(e.to_string()))?;
+    let field_permissions = field_rows.into_iter().map(|row| FieldPermissionInfo {
+        permission: row.get("permission").and_then(|v| v.as_str()).unwrap_or_default().to_string(),
+        name: row.get("field_name").and_then(|v| v.as_str()).unwrap_or_default().to_string(),
+        entity_type: row.get("resource_type").and_then(|v| v.as_str()).unwrap_or_default().to_string(),
+        field: row.get("field_name").and_then(|v| v.as_str()).unwrap_or_default().to_string(),
+        can_view: row.get("permission").and_then(|v| v.as_str()).map(|p| p != "hidden").unwrap_or(true),
+        can_edit: row.get("permission").and_then(|v| v.as_str()).map(|p| p == "read_write").unwrap_or(false),
+        allowed_fields: vec![],
+        denied_fields: vec![],
+        read_only: row.get("permission").and_then(|v| v.as_str()).map(|p| p == "read_only").unwrap_or(false),
+        description: String::new(),
+        sensitive: false,
+    }).collect();
+
+    Ok(Response::new(GetRoleFieldPermissionsResponse { field_permissions }))
 }
 
-pub(crate) async fn set_role_field_permissions(_s: &UserServiceImpl, _request: Request<SetRoleFieldPermissionsRequest>) -> Result<Response<SetRoleFieldPermissionsResponse>, Status> {
+pub(crate) async fn set_role_field_permissions(s: &UserServiceImpl, request: Request<SetRoleFieldPermissionsRequest>) -> Result<Response<SetRoleFieldPermissionsResponse>, Status> {
+    let req = request.into_inner();
+    let role = s.state.role_repository.find_by_code(&req.role_name).await
+        .map_err(|e| Status::internal(e.to_string()))?
+        .ok_or_else(|| Status::not_found("角色不存在"))?;
+
+    let field_json: Vec<serde_json::Value> = req.field_permissions.iter().map(|f| serde_json::json!({
+        "resource_type": f.entity_type,
+        "field_name": f.field,
+        "permission": if f.can_edit { "read_write" } else if f.can_view { "read_only" } else { "hidden" },
+        "mask_pattern": None::<String>,
+    })).collect();
+    s.state.role_repository.set_field_permissions(role.id, &field_json).await
+        .map_err(|e| Status::internal(e.to_string()))?;
+
     Ok(Response::new(SetRoleFieldPermissionsResponse { success: true }))
 }
 
-pub(crate) async fn get_role_inherit_chain(_s: &UserServiceImpl, _request: Request<GetRoleInheritChainRequest>) -> Result<Response<GetRoleInheritChainResponse>, Status> {
-    Ok(Response::new(GetRoleInheritChainResponse { info: None }))
+pub(crate) async fn get_role_inherit_chain(s: &UserServiceImpl, request: Request<GetRoleInheritChainRequest>) -> Result<Response<GetRoleInheritChainResponse>, Status> {
+    let req = request.into_inner();
+    let role = s.state.role_repository.find_by_code(&req.role_name).await
+        .map_err(|e| Status::internal(e.to_string()))?
+        .ok_or_else(|| Status::not_found("角色不存在"))?;
+
+    let chain = s.state.role_repository.get_inherit_chain(role.id).await
+        .map_err(|e| Status::internal(e.to_string()))?;
+    let inherit_from: Vec<String> = chain.iter()
+        .filter_map(|row| row.get("parent_role_code").and_then(|v| v.as_str()).map(String::from))
+        .collect();
+    let permissions = s.state.role_repository.get_permissions(role.id).await
+        .map_err(|e| Status::internal(e.to_string()))?;
+    let effective_permissions: Vec<String> = permissions.into_iter().map(|p| p.code).collect();
+
+    Ok(Response::new(GetRoleInheritChainResponse {
+        info: Some(InheritInfo { role_name: role.name, inherit_from, effective_permissions }),
+    }))
 }
 
-pub(crate) async fn set_role_inherit(_s: &UserServiceImpl, _request: Request<SetRoleInheritRequest>) -> Result<Response<SetRoleInheritResponse>, Status> {
+pub(crate) async fn set_role_inherit(s: &UserServiceImpl, request: Request<SetRoleInheritRequest>) -> Result<Response<SetRoleInheritResponse>, Status> {
+    let req = request.into_inner();
+    let role = s.state.role_repository.find_by_code(&req.role_name).await
+        .map_err(|e| Status::internal(e.to_string()))?
+        .ok_or_else(|| Status::not_found("角色不存在"))?;
+
+    s.state.role_repository.set_inherit(role.id, &req.inherit_from).await
+        .map_err(|e| Status::internal(e.to_string()))?;
+
     Ok(Response::new(SetRoleInheritResponse { success: true }))
 }
 
-pub(crate) async fn remove_role_inherit(_s: &UserServiceImpl, _request: Request<RemoveRoleInheritRequest>) -> Result<Response<RemoveRoleInheritResponse>, Status> {
+pub(crate) async fn remove_role_inherit(s: &UserServiceImpl, request: Request<RemoveRoleInheritRequest>) -> Result<Response<RemoveRoleInheritResponse>, Status> {
+    let req = request.into_inner();
+    let role = s.state.role_repository.find_by_code(&req.role_name).await
+        .map_err(|e| Status::internal(e.to_string()))?
+        .ok_or_else(|| Status::not_found("角色不存在"))?;
+
+    s.state.role_repository.remove_inherit(role.id).await
+        .map_err(|e| Status::internal(e.to_string()))?;
+
     Ok(Response::new(RemoveRoleInheritResponse { success: true }))
 }
 
@@ -203,7 +357,18 @@ pub(crate) async fn batch_assign_permissions(_s: &UserServiceImpl, _request: Req
     Ok(Response::new(BatchAssignPermissionsResponse { success: true, affected: 0 }))
 }
 
-pub(crate) async fn copy_role_permissions(_s: &UserServiceImpl, _request: Request<CopyRolePermissionsRequest>) -> Result<Response<CopyRolePermissionsResponse>, Status> {
+pub(crate) async fn copy_role_permissions(s: &UserServiceImpl, request: Request<CopyRolePermissionsRequest>) -> Result<Response<CopyRolePermissionsResponse>, Status> {
+    let req = request.into_inner();
+    let from_role = s.state.role_repository.find_by_code(&req.from_role).await
+        .map_err(|e| Status::internal(e.to_string()))?
+        .ok_or_else(|| Status::not_found("源角色不存在"))?;
+    let to_role = s.state.role_repository.find_by_code(&req.to_role).await
+        .map_err(|e| Status::internal(e.to_string()))?
+        .ok_or_else(|| Status::not_found("目标角色不存在"))?;
+
+    s.state.role_repository.copy_permissions(from_role.id, &[to_role.id]).await
+        .map_err(|e| Status::internal(e.to_string()))?;
+
     Ok(Response::new(CopyRolePermissionsResponse { success: true }))
 }
 

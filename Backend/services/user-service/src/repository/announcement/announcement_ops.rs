@@ -180,48 +180,4 @@ impl AnnouncementRepository {
         })
     }
 
-    /// 获取活跃公告（公开接口）
-    pub(crate) async fn get_active(
-        &self,
-    ) -> Result<Vec<AnnouncementListItem>, AnnouncementRepositoryError> {
-        let rows = sqlx::query_as!(
-            AnnouncementListItem,
-            r#"SELECT a.id, a.title,
-                      COALESCE(a.announcement_type, '') AS "announcement_type!" ,
-                      COALESCE(a.priority, 0) AS "priority!" ,
-                      COALESCE(a.is_pinned, false) AS "is_pinned!" ,
-                      COALESCE(a.is_active, false) AS "is_active!" ,
-                      a.start_time, a.end_time,
-                      COALESCE(a.created_at, NOW()) AS "created_at!" ,
-                      u.nickname as created_by_name
-               FROM announcements a
-               LEFT JOIN users u ON a.created_by = u.id
-               WHERE a.is_active = TRUE
-                 AND (a.start_time IS NULL OR a.start_time <= NOW())
-                 AND (a.end_time IS NULL OR a.end_time >= NOW())
-               ORDER BY a.is_pinned DESC, a.priority DESC, a.created_at DESC
-               LIMIT 10"#,
-        )
-        .fetch_all(&self.pool)
-        .await?;
-
-        let announcements: Vec<AnnouncementListItem> = rows
-            .into_iter()
-            .map(|row| AnnouncementListItem {
-                id: row.id,
-                title: row.title,
-                announcement_type: row.announcement_type,
-                priority: row.priority,
-                is_pinned: row.is_pinned,
-                is_active: row.is_active,
-                start_time: row.start_time,
-                end_time: row.end_time,
-                created_by_name: row.created_by_name,
-                created_at: row.created_at,
-            })
-            .collect();
-
-        Ok(announcements)
-    }
-
 }

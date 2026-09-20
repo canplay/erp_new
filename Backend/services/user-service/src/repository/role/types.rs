@@ -10,9 +10,6 @@ pub(crate) enum RoleRepositoryError {
     #[error("数据库错误: {0}" )]
     Database(#[from] sqlx::Error),
 
-    #[error("角色不存在" )]
-    NotFound,
-
     #[error("角色已存在" )]
     AlreadyExists,
 
@@ -68,18 +65,6 @@ pub(crate) struct Permission {
     pub icon: Option<String>,
     pub sort_order: i32,
     pub status: i32,
-}
-
-/// 角色模板
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub(crate) struct RoleTemplate {
-    pub id: i64,
-    pub name: String,
-    pub description: Option<String>,
-    pub permissions: Vec<String>,
-    pub role_type: Option<String>,
-    pub is_system: bool,
-    pub created_at: chrono::DateTime<Utc>,
 }
 
 /// 分页结果

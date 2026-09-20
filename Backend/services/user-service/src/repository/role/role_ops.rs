@@ -90,27 +90,6 @@ impl RoleRepository {
         Ok(row)
     }
 
-    /// 根据ID查找角色
-    pub(crate) async fn find_by_id(&self, role_id: i64) -> Result<Option<Role>, RoleRepositoryError> {
-        let row = sqlx::query_as!(
-            Role,
-            r#"SELECT id, name, code, description,
-                      COALESCE(role_type, 'user') AS "role_type!" ,
-                      parent_id,
-                      COALESCE(level, 0) AS "level!" ,
-                      COALESCE(sort_order, 0) AS "sort_order!" ,
-                      COALESCE(status, 1) AS "status!" ,
-                      COALESCE(is_default, false) AS "is_default!" ,
-                      COALESCE(created_at, NOW()) AS "created_at!" ,
-                      COALESCE(updated_at, NOW()) AS "updated_at!"
-               FROM roles WHERE id = $1"#,
-            role_id,
-        )
-        .fetch_optional(&self.pool)
-        .await?;
-
-        Ok(row)
-    }
 
     /// 更新角色
     pub(crate) async fn update(
@@ -374,42 +353,6 @@ impl RoleRepository {
         Ok((user_ids, total))
     }
 
-    /// 获取所有权限（树形）
-    pub(crate) async fn list_permissions(&self) -> Result<Vec<Permission>, RoleRepositoryError> {
-        let rows = sqlx::query_as!(
-            Permission,
-            r#"SELECT id, name, code,
-                      COALESCE(permission_type, '') AS "permission_type!" ,
-                      parent_id,
-                      COALESCE(path, '') AS "path!" ,
-                      COALESCE(method, '') AS "method!" ,
-                      COALESCE(icon, '') AS "icon!" ,
-                      COALESCE(sort_order, 0) AS "sort_order!" ,
-                      COALESCE(status, 1) AS "status!"
-               FROM permissions
-               ORDER BY sort_order, id"#,
-        )
-        .fetch_all(&self.pool)
-        .await?;
-
-        let permissions: Vec<Permission> = rows
-            .into_iter()
-            .map(|row| Permission {
-                id: row.id,
-                name: row.name,
-                code: row.code,
-                permission_type: row.permission_type,
-                parent_id: row.parent_id,
-                path: row.path,
-                method: row.method,
-                icon: row.icon,
-                sort_order: row.sort_order,
-                status: row.status,
-            })
-            .collect();
-
-        Ok(permissions)
-    }
 
     /// 复制角色权限（N+1 修复：使用 INSERT ... SELECT 替代嵌套循环）
     pub(crate) async fn copy_permissions(
@@ -443,101 +386,8 @@ impl RoleRepository {
         Ok(())
     }
 
-    /// 角色模板 CRUD
-    /// 创建角色模板
-    pub(crate) async fn create_template(
-        &self,
-        name: &str,
-        description: Option<String>,
-        permissions: Vec<String>,
-        role_type: Option<String>,
-    ) -> Result<i64, RoleRepositoryError> {
-        let row = sqlx::query!(
-            r"INSERT INTO role_templates (name, description, permissions, role_type)
-               VALUES ($1, $2, $3, $4)
-               RETURNING id" ,
-            name,
-            description.as_deref(),
-            serde_json::to_value(&permissions).unwrap_or_default(),
-            role_type.as_deref(),
-        )
-        .fetch_one(&self.pool)
-        .await?;
 
-        Ok(row.id)
-    }
 
-    /// 获取角色模板列表
-    pub(crate) async fn list_templates(&self) -> Result<Vec<RoleTemplate>, RoleRepositoryError> {
-        let rows = sqlx::query!(
-            r#"SELECT id, name, description,
-                      COALESCE(permissions, '[]'::jsonb) AS permissions,
-                      COALESCE(role_type, '') AS role_type,
-                      COALESCE(is_system, false) AS is_system,
-                      COALESCE(created_at, NOW()) AS created_at
-               FROM role_templates
-               ORDER BY is_system DESC, created_at DESC"#,
-        )
-        .fetch_all(&self.pool)
-        .await?;
 
-        let templates: Vec<RoleTemplate> = rows
-            .into_iter()
-            .map(|row| {
-                let perms: Vec<String> =
-                    serde_json::from_value(row.permissions.unwrap_or_default()).unwrap_or_default();
-
-                RoleTemplate {
-                    id: row.id,
-                    name: row.name,
-                    description: row.description,
-                    permissions: perms,
-                    role_type: row.role_type,
-                    is_system: row.is_system.unwrap_or(false),
-                    created_at: row.created_at.unwrap_or_else(chrono::Utc::now),
-                }
-            })
-            .collect();
-
-        Ok(templates)
-    }
-
-    /// 更新角色模板
-    pub(crate) async fn update_template(
-        &self,
-        id: i64,
-        name: Option<String>,
-        description: Option<String>,
-        permissions: Option<Vec<String>>,
-    ) -> Result<bool, RoleRepositoryError> {
-        let result = sqlx::query!(
-            r"UPDATE role_templates
-               SET name = COALESCE($1, name),
-                   description = COALESCE($2, description),
-                   permissions = COALESCE($3, permissions),
-                   updated_at = NOW()
-               WHERE id = $4 AND is_system = FALSE" ,
-            name.as_deref(),
-            description.as_deref(),
-            permissions.map(|p| serde_json::to_value(&p).unwrap_or_default()),
-            id,
-        )
-        .execute(&self.pool)
-        .await?;
-
-        Ok(result.rows_affected() > 0)
-    }
-
-    /// 删除角色模板
-    pub(crate) async fn delete_template(&self, id: i64) -> Result<bool, RoleRepositoryError> {
-        let result = sqlx::query!(
-            "DELETE FROM role_templates WHERE id = $1 AND is_system = FALSE" ,
-            id,
-        )
-        .execute(&self.pool)
-        .await?;
-
-        Ok(result.rows_affected() > 0)
-    }
 
 }

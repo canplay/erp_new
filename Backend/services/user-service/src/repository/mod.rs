@@ -2,17 +2,17 @@
 //!
 //! 数据访问层，提供统一的数据库操作接口
 
-mod announcement_repository;
+mod announcement;
 mod department_repository;
 mod role_repository;
 mod user_repository;
 
 // 导出所有 Repository 和类型
-pub(crate) use announcement_repository::{
+pub(crate) use announcement::{
     Announcement, AnnouncementListItem, AnnouncementRepository, AnnouncementRepositoryError,
-    CreateAnnouncementParams, CreateDictionaryItemParams, DictionaryItem, DictionaryType, LoginLog,
-    PaginatedAnnouncements, PaginatedDictionaryItems, PaginatedDictionaryTypes, PaginatedLoginLogs,
-    SystemConfig, UpdateAnnouncementParams, UpdateDictionaryItemParams,
+    CreateAnnouncementParams, CreateDictionaryItemParams, DictionaryItem, DictionaryType,
+    LoginLog, PaginatedAnnouncements, PaginatedDictionaryItems, PaginatedDictionaryTypes,
+    PaginatedLoginLogs, SystemConfig, UpdateAnnouncementParams, UpdateDictionaryItemParams,
 };
 pub(crate) use department_repository::{
     Department, DepartmentListItem, DepartmentRepository, DepartmentRepositoryError,

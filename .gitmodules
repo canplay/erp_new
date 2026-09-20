@@ -2,7 +2,7 @@
 	path = ThirdParty/UFO
 	url = https://github.com/microsoft/UFO
 [submodule "ThirdParty/RAGFlow"]
-	path = ThirdParty/RAGFlow
+	path = ThirdParty/ragflow
 	url = https://github.com/infiniflow/ragflow
 [submodule "ThirdParty/tuwunel"]
 	path = ThirdParty/tuwunel
@@ -13,3 +13,6 @@
 [submodule "ThirdParty/AgentTeams"]
 	path = ThirdParty/AgentTeams
 	url = https://github.com/agentscope-ai/AgentTeams.git
+[submodule "ThirdParty/ragflow"]
+	path = ThirdParty/ragflow
+	url = https://github.com/infiniflow/ragflow

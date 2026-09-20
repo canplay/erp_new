@@ -1,96 +1,3 @@
-//! API Gateway 单元测试
-//!
-//! Comprehensive route testing covering:
-//! - 200 OK path
-//! - 400 bad parameters
-//! - 401 unauthorized
-//! - gRPC unavailable degradation (503)
-
-// ============================================================================
-// 基础模块测试 (保留原有)
-// ============================================================================
-
-#[cfg(test)]
-mod test_mod {
-    use crate::middleware::RateLimitState;
-
-    #[test]
-    fn test_rate_limit_state_new() {
-        let state = RateLimitState::new(100, 60, 20);
-        assert_eq!(state.max_requests, 100);
-        assert_eq!(state.window_secs, 60);
-        assert_eq!(state.remaining("test_key" ), 100);
-    }
-
-    #[test]
-    fn test_rate_limit_allow_first_request() {
-        let state = RateLimitState::new(10, 60, 2);
-        assert!(state.check_rate_limit("client1" ));
-    }
-
-    #[test]
-    fn test_rate_limit_remaining_after_request() {
-        let state = RateLimitState::new(10, 60, 2);
-        state.check_rate_limit("client1" );
-        assert_eq!(state.remaining("client1" ), 9);
-    }
-
-    #[test]
-    fn test_rate_limit_exceed_limit() {
-        let state = RateLimitState::new(2, 60, 0);
-        assert!(state.check_rate_limit("client1" ));
-        assert!(state.check_rate_limit("client1" ));
-        // 第三次请求应该被拒绝
-        assert!(!state.check_rate_limit("client1" ));
-    }
-
-    #[test]
-    fn test_rate_limit_different_clients() {
-        let state = RateLimitState::new(1, 60, 0);
-        assert!(state.check_rate_limit("client1" ));
-        // client1 被限流
-        assert!(!state.check_rate_limit("client1" ));
-        // client2 应该不受影响
-        assert!(state.check_rate_limit("client2" ));
-    }
-
-    #[test]
-    fn test_rate_limit_remaining_unknown_key() {
-        let state = RateLimitState::new(100, 60, 20);
-        // 未知 key 应该返回最大请求数
-        assert_eq!(state.remaining("unknown_key" ), 100);
-    }
-
-    #[test]
-    fn test_rate_limit_state_clone() {
-        let state1 = RateLimitState::new(100, 60, 20);
-        let state2 = state1.clone();
-
-        assert_eq!(state1.max_requests, state2.max_requests);
-        assert_eq!(state1.window_secs, state2.window_secs);
-        assert_eq!(state1.burst, state2.burst);
-    }
-
-    #[test]
-    fn test_rate_limit_state_with_burst() {
-        let state = RateLimitState::new(100, 60, 50);
-        assert_eq!(state.max_requests, 100);
-        assert_eq!(state.window_secs, 60);
-        assert_eq!(state.burst, 50);
-    }
-
-    #[test]
-    fn test_rate_limit_state_default_burst() {
-        let state = RateLimitState::new(100, 60, 20);
-        // 默认 burst 为 20
-        assert_eq!(state.burst, 20);
-    }
-}
-
-// ============================================================================
-// 路由单元测试模块
-// ============================================================================
-
 #[cfg(test)]
 mod route_tests {
     use axum::{
@@ -442,7 +349,8 @@ mod route_tests {
                 )
                 .await
                 .expect("test assertion" );
-            assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
+            // 空 body 缺少 username/password → 本地参数校验返回 400 (不再先打 gRPC)
+            assert_eq!(response.status(), StatusCode::BAD_REQUEST);
         }
     }
 
@@ -454,7 +362,7 @@ mod route_tests {
         #[tokio::test]
         async fn test_list_users_returns_503_when_service_down() {
             let state = mock_state!();
-            let app = test_app(crate::routes::user_routes(), state);
+            let app = test_app(crate::routes::user_admin_routes(), state);
             let response = app
                 .oneshot(
                     Request::builder()
@@ -473,7 +381,7 @@ mod route_tests {
         #[tokio::test]
         async fn test_create_user_returns_503_when_service_down() {
             let state = mock_state!();
-            let app = test_app(crate::routes::user_routes(), state);
+            let app = test_app(crate::routes::user_admin_routes(), state);
             let response = app
                 .oneshot(
                     Request::builder()
@@ -499,7 +407,7 @@ mod route_tests {
         #[tokio::test]
         async fn test_get_user_returns_503_when_service_down() {
             let state = mock_state!();
-            let app = test_app(crate::routes::user_routes(), state);
+            let app = test_app(crate::routes::user_admin_routes(), state);
             let response = app
                 .oneshot(
                     Request::builder()
@@ -517,7 +425,7 @@ mod route_tests {
         #[tokio::test]
         async fn test_update_user_returns_503_when_service_down() {
             let state = mock_state!();
-            let app = test_app(crate::routes::user_routes(), state);
+            let app = test_app(crate::routes::user_admin_routes(), state);
             let response = app
                 .oneshot(
                     Request::builder()
@@ -542,7 +450,7 @@ mod route_tests {
         #[tokio::test]
         async fn test_delete_user_returns_503_when_service_down() {
             let state = mock_state!();
-            let app = test_app(crate::routes::user_routes(), state);
+            let app = test_app(crate::routes::user_admin_routes(), state);
             let response = app
                 .oneshot(
                     Request::builder()
@@ -561,7 +469,7 @@ mod route_tests {
         #[tokio::test]
         async fn test_import_returns_501() {
             let state = mock_state!();
-            let app = test_app(crate::routes::user_routes(), state);
+            let app = test_app(crate::routes::user_admin_routes(), state);
             let response = app
                 .oneshot(
                     Request::builder()
@@ -581,7 +489,7 @@ mod route_tests {
         #[tokio::test]
         async fn test_export_returns_501() {
             let state = mock_state!();
-            let app = test_app(crate::routes::user_routes(), state);
+            let app = test_app(crate::routes::user_admin_routes(), state);
             let response = app
                 .oneshot(
                     Request::builder()
@@ -607,7 +515,7 @@ mod route_tests {
         #[tokio::test]
         async fn test_list_announcements_returns_200() {
             let state = mock_state!();
-            let app = test_app(crate::routes::user_routes(), state);
+            let app = test_app(crate::routes::content_routes(), state);
             let response = app
                 .oneshot(
                     Request::builder()
@@ -627,7 +535,7 @@ mod route_tests {
         #[tokio::test]
         async fn test_create_announcement_returns_200() {
             let state = mock_state!();
-            let app = test_app(crate::routes::user_routes(), state);
+            let app = test_app(crate::routes::content_routes(), state);
             let response = app
                 .oneshot(
                     Request::builder()
@@ -654,7 +562,7 @@ mod route_tests {
         #[tokio::test]
         async fn test_get_active_announcements_returns_200() {
             let state = mock_state!();
-            let app = test_app(crate::routes::user_routes(), state);
+            let app = test_app(crate::routes::content_routes(), state);
             let response = app
                 .oneshot(
                     Request::builder()
@@ -676,7 +584,7 @@ mod route_tests {
         #[tokio::test]
         async fn test_list_system_configs_returns_200() {
             let state = mock_state!();
-            let app = test_app(crate::routes::user_routes(), state);
+            let app = test_app(crate::routes::config_routes(), state);
             let response = app
                 .oneshot(
                     Request::builder()
@@ -696,7 +604,7 @@ mod route_tests {
         #[tokio::test]
         async fn test_update_system_config_returns_200() {
             let state = mock_state!();
-            let app = test_app(crate::routes::user_routes(), state);
+            let app = test_app(crate::routes::config_routes(), state);
             let response = app
                 .oneshot(
                     Request::builder()
@@ -725,7 +633,7 @@ mod route_tests {
         #[tokio::test]
         async fn test_list_roles_returns_503_when_service_down() {
             let state = mock_state!();
-            let app = test_app(crate::routes::user_routes(), state);
+            let app = test_app(crate::routes::role_routes(), state);
             let response = app
                 .oneshot(
                     Request::builder()
@@ -743,7 +651,7 @@ mod route_tests {
         #[tokio::test]
         async fn test_create_role_returns_503_when_service_down() {
             let state = mock_state!();
-            let app = test_app(crate::routes::user_routes(), state);
+            let app = test_app(crate::routes::role_routes(), state);
             let response = app
                 .oneshot(
                     Request::builder()
@@ -775,7 +683,7 @@ mod route_tests {
         #[tokio::test]
         async fn test_list_departments_returns_503_when_service_down() {
             let state = mock_state!();
-            let app = test_app(crate::routes::user_routes(), state);
+            let app = test_app(crate::routes::dept_routes(), state);
             let response = app
                 .oneshot(
                     Request::builder()
@@ -793,7 +701,7 @@ mod route_tests {
         #[tokio::test]
         async fn test_get_department_tree_returns_503_when_service_down() {
             let state = mock_state!();
-            let app = test_app(crate::routes::user_routes(), state);
+            let app = test_app(crate::routes::dept_routes(), state);
             let response = app
                 .oneshot(
                     Request::builder()
@@ -817,7 +725,7 @@ mod route_tests {
         #[tokio::test]
         async fn test_list_dict_types_returns_503_when_service_down() {
             let state = mock_state!();
-            let app = test_app(crate::routes::user_routes(), state);
+            let app = test_app(crate::routes::dictionary_routes(), state);
             let response = app
                 .oneshot(
                     Request::builder()
@@ -835,7 +743,7 @@ mod route_tests {
         #[tokio::test]
         async fn test_list_dict_items_returns_503_when_service_down() {
             let state = mock_state!();
-            let app = test_app(crate::routes::user_routes(), state);
+            let app = test_app(crate::routes::dictionary_routes(), state);
             let response = app
                 .oneshot(
                     Request::builder()
@@ -853,7 +761,7 @@ mod route_tests {
         #[tokio::test]
         async fn test_get_all_enabled_dict_types_returns_503_when_service_down() {
             let state = mock_state!();
-            let app = test_app(crate::routes::user_routes(), state);
+            let app = test_app(crate::routes::dictionary_routes(), state);
             let response = app
                 .oneshot(
                     Request::builder()

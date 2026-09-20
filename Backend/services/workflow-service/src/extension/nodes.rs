@@ -3,7 +3,6 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 
 use crate::extension::config::generate_id;
-use crate::extension::manager::NodeExtension;
 use crate::extension::types::*;
 
 /// 节点管理器 (async version with in-memory state)

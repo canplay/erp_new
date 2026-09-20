@@ -205,7 +205,7 @@ impl Report {
 
 // Workflow Repository
 pub use workflow_repository::{
-    InMemoryWorkflowRepository, PostgresWorkflowRepository, WorkflowRepository,
+    PostgresWorkflowRepository, WorkflowRepository,
 };
 
 // Instance Repository
@@ -216,6 +216,6 @@ pub use task_repository::{PostgresTaskRepository, TaskRepository};
 
 // Event Repository (Report + ScheduledTask)
 pub use event_repository::{
-    InMemoryReportRepository, InMemoryScheduledTaskRepository, ReportRepository,
+    ReportRepository,
     ScheduledTaskRepository,
 };

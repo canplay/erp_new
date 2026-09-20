@@ -4,7 +4,7 @@
 
 mod announcement;
 mod department_repository;
-mod role_repository;
+mod role;
 mod user_repository;
 
 // 导出所有 Repository 和类型
@@ -18,7 +18,7 @@ pub(crate) use department_repository::{
     Department, DepartmentListItem, DepartmentRepository, DepartmentRepositoryError,
     DepartmentTreeNode, PaginatedDepartments, UpdateDepartmentParams,
 };
-pub(crate) use role_repository::{
+pub(crate) use role::{
     PaginatedRoles, Permission, Role, RoleListItem, RoleRepository, RoleRepositoryError,
     RoleTemplate,
 };

@@ -6,9 +6,10 @@
 
 | 维度 | 数据 |
 |---|---|
-| 后端 | 22 微服务 / 10 共享 Crates / ~429 Rust 源文件 |
-| 前端 | 4 应用（admin 47 / tenant / ops / social）/ 10 共享包 / 309 Vue+TS 组件 |
-| 数据库 | PostgreSQL 16+ / 119 张表 |
+| 后端 | 22 微服务 / 10 共享 Crates / 492 Rust 源文件 |
+| 前端 | 4 应用（admin 47 / tenant / ops / social）/ 10 共享包 / 309 Vue + 540 TS 文件 |
+| 数据库 | PostgreSQL 16+ / 117 张表 |
+| 测试 | `cargo test --workspace --lib` 380 passed / 0 failed |
 | 部署 | Helm / docker-compose |
 
 **技术栈**：
@@ -17,7 +18,7 @@
 |---|---|
 | 后端框架 | Rust (Axum) + gRPC (Tonic) |
 | 前端框架 | Vue 3.5 + Quasar 2 + Pinia + Vite |
-| 数据库 | PostgreSQL（115 表） |
+| 数据库 | PostgreSQL（117 表） |
 | 缓存 | Redis |
 | 认证 | JWT Bearer |
 | 部署 | Helm / docker-compose |
@@ -59,7 +60,7 @@ flowchart TB
     end
 
     subgraph INFRA["基础设施"]
-        PG[("PostgreSQL 16+<br/>115 表")]
+        PG[("PostgreSQL 16+<br/>117 表")]
         RD[("Redis 7+<br/>缓存/会话")]
     end
 
@@ -177,6 +178,7 @@ GitHub Actions 自动执行：
 
 | 版本 | 日期 | 说明 |
 |---|---|---|
+| v0.9.0 | 2026-09-20 | 深度重构: N+1 修复(31处审计+11处修复), 超大文件拆分(9文件→42模块), common re-export 精简(40+→12), as unknown as 清零, sqlx 离线缓存重建, 380 测试全通过 |
 | v0.8.0 | 2026-09-19 | 全面优化: f64→Decimal, batch事务, SQL白名单, SELECT *, 租户隔离, pay回调, 类型安全, 日志统一, dead_code清零 |
 | v0.6.0 | 2026-09-16 | CI/CD, Prometheus metrics, docker-compose auto-init |
 | v0.5.0 | 2026-09-16 | SQL 合并, migrations 模块, any 清理 |

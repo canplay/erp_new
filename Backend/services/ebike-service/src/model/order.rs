@@ -110,7 +110,7 @@ mod tests {
         let order = OrderInfo::default();
         assert!(order.code.is_none());
         assert_eq!(order.status, 0);
-        assert_eq!(order.hash, " ");
+        assert_eq!(order.hash, "");
         assert_eq!(order.payable, 0);
     }
 }

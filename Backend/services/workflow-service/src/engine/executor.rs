@@ -1,7 +1,7 @@
 use chrono::Utc;
 use uuid::Uuid;
 
-use crate::engine::state::{EdgeDefinition, ExecutionContext, NodeDefinition, WorkflowDefinition};
+use crate::engine::state::{EdgeDefinition, NodeDefinition, WorkflowDefinition};
 use common::AppError;
 
 pub use common::AppError as EngineError;

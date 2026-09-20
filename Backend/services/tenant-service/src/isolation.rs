@@ -294,7 +294,7 @@ impl TenantIsolationManager {
     }
 
     /// 允许构建动态查询的表白名单
-    const ALLOWED_TABLES: &[&str] = &["tenants", "tenant_users", "audit_logs", "plans", "subscriptions", "invoices", "usage_records", "tenant_settings"];
+    const ALLOWED_TABLES: &[&str] = &["tenants", "tenant_users", "audit_logs", "subscription_plans", "subscriptions", "invoices", "tenant_settings"];
 
     /// 构建数据过滤查询
     ///
@@ -337,11 +337,10 @@ impl TenantIsolationManager {
             "tenants" => "id, name, code, domain, description, max_users, max_storage, status, expires_at, created_at, updated_at",
             "tenant_users" => "id, tenant_id, user_id, username, email, role, department, position, status, joined_at",
             "audit_logs" => "id, tenant_id, user_id, action, resource_type, resource_id, details, created_at",
-            "plans" => "id, name, description, plan_type, status, price_monthly, price_yearly, currency, features, quotas, sort_order, is_public, created_at, updated_at",
-            "subscriptions" => "id, tenant_id, plan_id, status, current_period_start, current_period_end, trial_end, unit_price, created_at, updated_at",
-            "invoices" => "id, subscription_id, tenant_id, amount, currency, status, issued_at, due_at, paid_at, created_at",
-            "usage_records" => "id, tenant_id, resource_type, quantity, recorded_at, created_at",
-            "tenant_settings" => "id, tenant_id, key, value, created_at, updated_at",
+            "subscription_plans" => "id, name, description, price_cents, currency, interval, interval_count, trial_days, active, features, created_at, updated_at",
+            "subscriptions" => "id, tenant_id, plan_id, status, current_period_start, current_period_end, cancel_at_period_end, created_at, updated_at",
+            "invoices" => "id, tenant_id, subscription_id, status, amount_cents, currency, period_start, period_end, paid_at, created_at",
+            "tenant_settings" => "tenant_id, theme, settings, features, updated_at",
             _ => "id, tenant_id, created_at",
         }
     }

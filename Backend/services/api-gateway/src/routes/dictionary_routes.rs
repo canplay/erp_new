@@ -4,7 +4,7 @@ use std::sync::Arc;
 use axum::{
     Router,
     extract::{Path, Query, State},
-    routing::{get, post, put, delete},
+    routing::{get, post, put},
     Json,
 };
 use serde::Deserialize;
@@ -13,7 +13,6 @@ use serde_json::{json, Value};
 use crate::AppState;
 use crate::routes::helpers::*;
 
-use crate::routes::helpers::*;
 
 /// 字典查询参数（包含 type 字段）
 #[derive(Debug, Deserialize)]

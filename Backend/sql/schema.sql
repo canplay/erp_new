@@ -16,16 +16,18 @@
 -- =============================================================================
 
 /* 安全加固: 创建应用专用角色 (修复: 原使用 postgres 超级用户连库) */
-DO $$
+-- MYAI_APP_PASSWORD 通过 psql -v MYAI_APP_PASSWORD=xxx 传入；未传时使用默认值
+-- 注意: socialops schema 在文件后部创建，其 GRANT 在该处执行
+DO $do$
 BEGIN
     -- 创建应用角色(如果不存在)
     IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'myai_app') THEN
-        CREATE ROLE myai_app LOGIN PASSWORD :'MYAI_APP_PASSWORD';
+        CREATE ROLE myai_app LOGIN PASSWORD 'myai_app_default_change_me';
     END IF;
     -- 授予 schema 使用权限
     GRANT USAGE ON SCHEMA public TO myai_app;
-    GRANT USAGE ON SCHEMA socialops TO myai_app;
-END $$;
+END
+$do$;
 
 -- 注意: 表级权限在每张表创建后通过 ALTER TABLE ... OWNER TO myai_app 设置
 
@@ -195,15 +197,23 @@ END $$;
 -- Type structures (枚举类型定义)
 -- =============================================================================
 
-CREATE TYPE IF NOT EXISTS "public"."file_category" AS ENUM (
-  'general',   -- 通用文件
-  'image',     -- 图片文件
-  'document',  -- 文档文件
-  'video',     -- 视频文件
-  'audio',     -- 音频文件
-  'avatar',    -- 头像
-  'attachment' -- 附件
-);
+-- PostgreSQL 不支持 CREATE TYPE IF NOT EXISTS，用 DO 块实现幂等
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type t JOIN pg_namespace n ON t.typnamespace = n.oid
+                   WHERE t.typname = 'file_category' AND n.nspname = 'public') THEN
+        CREATE TYPE "public"."file_category" AS ENUM (
+          'general',   -- 通用文件
+          'image',     -- 图片文件
+          'document',  -- 文档文件
+          'video',     -- 视频文件
+          'audio',     -- 音频文件
+          'avatar',    -- 头像
+          'attachment' -- 附件
+        );
+    END IF;
+END
+$do$;
 
 -- =============================================================================
 -- Sequence structures (序列定义)
@@ -889,8 +899,20 @@ CREATE TABLE IF NOT EXISTS "public"."dictionary_types" (
 );
 ALTER SEQUENCE "public"."dictionary_types_id_seq" OWNED BY "public"."dictionary_types"."id";
 ALTER TABLE ONLY "public"."dictionary_types" ALTER COLUMN "id" SET DEFAULT nextval('dictionary_types_id_seq'::regclass);
-ALTER TABLE ONLY "public"."dictionary_types" ADD CONSTRAINT "dictionary_types_pkey" PRIMARY KEY ("id");
-ALTER TABLE ONLY "public"."dictionary_types" ADD CONSTRAINT "dictionary_types_code_key" UNIQUE ("code");
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'dictionary_types_pkey') THEN
+        ALTER TABLE ONLY "public"."dictionary_types" ADD CONSTRAINT "dictionary_types_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'dictionary_types_code_key') THEN
+        ALTER TABLE ONLY "public"."dictionary_types" ADD CONSTRAINT "dictionary_types_code_key" UNIQUE ("code");
+    END IF;
+END
+$do$;
 COMMENT ON TABLE "public"."dictionary_types" IS '字典类型表 - 数据字典类型定义';
 COMMENT ON COLUMN "public"."dictionary_types"."code" IS '类型编码 - 唯一标识，如 gender, status';
 COMMENT ON COLUMN "public"."dictionary_types"."name" IS '类型名称 - 显示名称，如 性别, 状态';
@@ -913,8 +935,20 @@ CREATE TABLE IF NOT EXISTS "public"."dictionary_items" (
 );
 ALTER SEQUENCE "public"."dictionary_items_id_seq" OWNED BY "public"."dictionary_items"."id";
 ALTER TABLE ONLY "public"."dictionary_items" ALTER COLUMN "id" SET DEFAULT nextval('dictionary_items_id_seq'::regclass);
-ALTER TABLE ONLY "public"."dictionary_items" ADD CONSTRAINT "dictionary_items_pkey" PRIMARY KEY ("id");
-ALTER TABLE ONLY "public"."dictionary_items" ADD CONSTRAINT "dictionary_items_type_id_fkey" FOREIGN KEY ("type_id") REFERENCES "public"."dictionary_types"("id") ON DELETE CASCADE;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'dictionary_items_pkey') THEN
+        ALTER TABLE ONLY "public"."dictionary_items" ADD CONSTRAINT "dictionary_items_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'dictionary_items_type_id_fkey') THEN
+        ALTER TABLE ONLY "public"."dictionary_items" ADD CONSTRAINT "dictionary_items_type_id_fkey" FOREIGN KEY ("type_id") REFERENCES "public"."dictionary_types"("id") ON DELETE CASCADE;
+    END IF;
+END
+$do$;
 COMMENT ON TABLE "public"."dictionary_items" IS '字典项表 - 数据字典的具体选项';
 COMMENT ON COLUMN "public"."dictionary_items"."label" IS '显示标签 - 如 男, 女';
 COMMENT ON COLUMN "public"."dictionary_items"."value" IS '存储值 - 如 1, 2';
@@ -1595,14 +1629,14 @@ CREATE TABLE IF NOT EXISTS "public"."car" (
   "status" int8,
   "provide" varchar(255) COLLATE "pg_catalog"."default",
   "speed" float8,
-  "gps" json,
+  "gps" jsonb,
   "create_date" timestamp(0),
   "update_date" timestamp(0),
   "delete" bool,
   "alert" varchar(255) COLLATE "pg_catalog"."default",
   "remark" varchar(255) COLLATE "pg_catalog"."default",
   "type" int8,
-  "time" json
+  "time" jsonb
 );
 COMMENT ON TABLE "public"."car" IS '电动自行车车辆表';
 COMMENT ON COLUMN "public"."car"."code" IS '车辆编码';
@@ -1618,7 +1652,13 @@ COMMENT ON COLUMN "public"."car"."remark" IS '备注';
 COMMENT ON COLUMN "public"."car"."type" IS '类型';
 COMMENT ON COLUMN "public"."car"."time" IS '时间信息';
 
-ALTER TABLE "public"."car" ADD CONSTRAINT "ebike_car_pkey" PRIMARY KEY ("code");
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'ebike_car_pkey') THEN
+        ALTER TABLE "public"."car" ADD CONSTRAINT "ebike_car_pkey" PRIMARY KEY ("code");
+    END IF;
+END
+$do$;
 
 CREATE TABLE IF NOT EXISTS "public"."car_history_2021_6" (
   "hash" varchar(255) COLLATE "pg_catalog"."default" NOT NULL,
@@ -1626,8 +1666,8 @@ CREATE TABLE IF NOT EXISTS "public"."car_history_2021_6" (
   "status" int8,
   "provide" varchar(255) COLLATE "pg_catalog"."default",
   "speed" float8,
-  "gps" json,
-  "time" json,
+  "gps" jsonb,
+  "time" jsonb,
   "create_date" timestamp(6),
   "update_date" timestamp(6),
   "delete" bool,
@@ -1637,12 +1677,18 @@ CREATE TABLE IF NOT EXISTS "public"."car_history_2021_6" (
 );
 COMMENT ON TABLE "public"."car_history_2021_6" IS '电动自行车车辆历史表（2021年6月快照）';
 
-ALTER TABLE "public"."car_history_2021_6" ADD CONSTRAINT "history_2021_6_pkey" PRIMARY KEY ("hash");
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'history_2021_6_pkey') THEN
+        ALTER TABLE "public"."car_history_2021_6" ADD CONSTRAINT "history_2021_6_pkey" PRIMARY KEY ("hash");
+    END IF;
+END
+$do$;
 
 CREATE TABLE IF NOT EXISTS "public"."storage" (
   "code" varchar(255) COLLATE "pg_catalog"."default" NOT NULL,
   "provide" varchar(255) COLLATE "pg_catalog"."default",
-  "gps" json,
+  "gps" jsonb,
   "create_date" timestamp(0),
   "update_date" timestamp(0),
   "delete" bool,
@@ -1669,14 +1715,20 @@ COMMENT ON COLUMN "public"."storage"."status" IS '状态';
 COMMENT ON COLUMN "public"."storage"."points" IS '积分';
 COMMENT ON COLUMN "public"."storage"."type" IS '类型';
 
-ALTER TABLE "public"."storage" ADD CONSTRAINT "ebike_storage_pkey" PRIMARY KEY ("code");
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'ebike_storage_pkey') THEN
+        ALTER TABLE "public"."storage" ADD CONSTRAINT "ebike_storage_pkey" PRIMARY KEY ("code");
+    END IF;
+END
+$do$;
 
 CREATE TABLE IF NOT EXISTS "public"."storage_history_2021_6" (
   "hash" varchar(255) COLLATE "pg_catalog"."default" NOT NULL,
   "code" varchar(255) COLLATE "pg_catalog"."default",
   "status" int8,
   "provide" varchar(255) COLLATE "pg_catalog"."default",
-  "gps" json,
+  "gps" jsonb,
   "create_date" timestamp(6),
   "update_date" timestamp(6),
   "delete" bool,
@@ -1689,15 +1741,21 @@ CREATE TABLE IF NOT EXISTS "public"."storage_history_2021_6" (
 );
 COMMENT ON TABLE "public"."storage_history_2021_6" IS '电动自行车存储历史表（2021年6月快照）';
 
-ALTER TABLE "public"."storage_history_2021_6" ADD CONSTRAINT "history_2021_6_copy1_pkey" PRIMARY KEY ("hash");
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'history_2021_6_copy1_pkey') THEN
+        ALTER TABLE "public"."storage_history_2021_6" ADD CONSTRAINT "history_2021_6_copy1_pkey" PRIMARY KEY ("hash");
+    END IF;
+END
+$do$;
 
 CREATE TABLE IF NOT EXISTS "public"."order_2021_6" (
   "code" varchar(255) COLLATE "pg_catalog"."default",
   "status" int8,
   "provide" varchar(255) COLLATE "pg_catalog"."default",
   "speed" float8,
-  "gps" json,
-  "time" json,
+  "gps" jsonb,
+  "time" jsonb,
   "create_date" timestamp(0),
   "update_date" timestamp(0),
   "delete" bool,
@@ -1737,11 +1795,17 @@ COMMENT ON COLUMN "public"."order_2021_6"."paytype" IS '支付类型';
 COMMENT ON COLUMN "public"."order_2021_6"."paytime" IS '支付时间';
 COMMENT ON COLUMN "public"."order_2021_6"."paystatus" IS '支付状态';
 
-ALTER TABLE "public"."order_2021_6" ADD CONSTRAINT "car_copy1_pkey" PRIMARY KEY ("hash");
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'car_copy1_pkey') THEN
+        ALTER TABLE "public"."order_2021_6" ADD CONSTRAINT "car_copy1_pkey" PRIMARY KEY ("hash");
+    END IF;
+END
+$do$;
 
 CREATE TABLE IF NOT EXISTS "public"."options" (
   "name" varchar(255) COLLATE "pg_catalog"."default",
-  "options" json,
+  "options" jsonb,
   "create_date" timestamp(6),
   "update_date" timestamp(6),
   "delete" bool,
@@ -1756,7 +1820,7 @@ COMMENT ON COLUMN "public"."options"."delete" IS '软删除';
 COMMENT ON COLUMN "public"."options"."level" IS '层级';
 
 -- 插入默认 ebike 配置选项
-INSERT INTO "public"."options" VALUES ('默认', '{"system":120,"alert":300}', '2021-06-16 22:15:00', '2021-06-16 22:15:02', 'f', 0);
+INSERT INTO "public"."options" VALUES ('默认', '{"system":120,"alert":300}', '2021-06-16 22:15:00', '2021-06-16 22:15:02', 'f', 0) ON CONFLICT DO NOTHING;
 
 -- =============================================================================
 -- Table structures: ebike-service (新增 2026-07-22)
@@ -1896,12 +1960,696 @@ COMMENT ON COLUMN "public"."sys_api_call_logs"."username" IS '用户名 - 发起
 COMMENT ON COLUMN "public"."sys_api_call_logs"."error" IS '错误信息 - 请求失败时的错误详情';
 COMMENT ON COLUMN "public"."sys_api_call_logs"."created_at" IS '创建时间 - 请求发生时间';
 
-CREATE INDEX "idx_api_call_logs_created_at" ON "public"."sys_api_call_logs" ("created_at");
-CREATE INDEX "idx_api_call_logs_method" ON "public"."sys_api_call_logs" ("method");
-CREATE INDEX "idx_api_call_logs_path" ON "public"."sys_api_call_logs" ("path");
-CREATE INDEX "idx_api_call_logs_status_code" ON "public"."sys_api_call_logs" ("status_code");
-CREATE INDEX "idx_api_call_logs_user_id" ON "public"."sys_api_call_logs" ("user_id");
-CREATE INDEX "idx_api_call_logs_response_time" ON "public"."sys_api_call_logs" ("response_time");
+CREATE INDEX IF NOT EXISTS "idx_api_call_logs_created_at" ON "public"."sys_api_call_logs" ("created_at");
+CREATE INDEX IF NOT EXISTS "idx_api_call_logs_method" ON "public"."sys_api_call_logs" ("method");
+CREATE INDEX IF NOT EXISTS "idx_api_call_logs_path" ON "public"."sys_api_call_logs" ("path");
+CREATE INDEX IF NOT EXISTS "idx_api_call_logs_status_code" ON "public"."sys_api_call_logs" ("status_code");
+CREATE INDEX IF NOT EXISTS "idx_api_call_logs_user_id" ON "public"."sys_api_call_logs" ("user_id");
+CREATE INDEX IF NOT EXISTS "idx_api_call_logs_response_time" ON "public"."sys_api_call_logs" ("response_time");
+
+-- =============================================================================
+-- Primary Keys (主键)
+-- =============================================================================
+
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'users_pkey') THEN
+        ALTER TABLE "public"."users" ADD CONSTRAINT "users_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'departments_pkey') THEN
+        ALTER TABLE "public"."departments" ADD CONSTRAINT "departments_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'sessions_pkey') THEN
+        ALTER TABLE "public"."sessions" ADD CONSTRAINT "sessions_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'sys_login_logs_pkey') THEN
+        ALTER TABLE "public"."sys_login_logs" ADD CONSTRAINT "sys_login_logs_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'sys_login_device_pkey') THEN
+        ALTER TABLE "public"."sys_login_device" ADD CONSTRAINT "sys_login_device_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'user_roles_pkey') THEN
+        ALTER TABLE "public"."user_roles" ADD CONSTRAINT "user_roles_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'user_departments_pkey') THEN
+        ALTER TABLE "public"."user_departments" ADD CONSTRAINT "user_departments_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'roles_pkey') THEN
+        ALTER TABLE "public"."roles" ADD CONSTRAINT "roles_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'permissions_pkey') THEN
+        ALTER TABLE "public"."permissions" ADD CONSTRAINT "permissions_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'role_permissions_pkey') THEN
+        ALTER TABLE "public"."role_permissions" ADD CONSTRAINT "role_permissions_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'role_templates_pkey') THEN
+        ALTER TABLE "public"."role_templates" ADD CONSTRAINT "role_templates_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'api_permissions_pkey') THEN
+        ALTER TABLE "public"."api_permissions" ADD CONSTRAINT "api_permissions_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'cms_category_pkey') THEN
+        ALTER TABLE "public"."cms_category" ADD CONSTRAINT "cms_category_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'cms_article_pkey') THEN
+        ALTER TABLE "public"."cms_article" ADD CONSTRAINT "cms_article_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'cms_comment_pkey') THEN
+        ALTER TABLE "public"."cms_comment" ADD CONSTRAINT "cms_comment_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'sys_message_pkey') THEN
+        ALTER TABLE "public"."sys_message" ADD CONSTRAINT "sys_message_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'sys_message_user_pkey') THEN
+        ALTER TABLE "public"."sys_message_user" ADD CONSTRAINT "sys_message_user_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'announcements_pkey') THEN
+        ALTER TABLE "public"."announcements" ADD CONSTRAINT "announcements_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'sys_files_pkey') THEN
+        ALTER TABLE "public"."sys_files" ADD CONSTRAINT "sys_files_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'sys_feedback_pkey') THEN
+        ALTER TABLE "public"."sys_feedback" ADD CONSTRAINT "sys_feedback_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'sys_operation_logs_pkey') THEN
+        ALTER TABLE "public"."sys_operation_logs" ADD CONSTRAINT "sys_operation_logs_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'sys_sensitive_audits_pkey') THEN
+        ALTER TABLE "public"."sys_sensitive_audits" ADD CONSTRAINT "sys_sensitive_audits_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'sys_ip_whitelist_pkey') THEN
+        ALTER TABLE "public"."sys_ip_whitelist" ADD CONSTRAINT "sys_ip_whitelist_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'workflows_pkey') THEN
+        ALTER TABLE "public"."workflows" ADD CONSTRAINT "workflows_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'workflow_nodes_pkey') THEN
+        ALTER TABLE "public"."workflow_nodes" ADD CONSTRAINT "workflow_nodes_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'workflow_edges_pkey') THEN
+        ALTER TABLE "public"."workflow_edges" ADD CONSTRAINT "workflow_edges_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'workflow_instances_pkey') THEN
+        ALTER TABLE "public"."workflow_instances" ADD CONSTRAINT "workflow_instances_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'task_records_pkey') THEN
+        ALTER TABLE "public"."task_records" ADD CONSTRAINT "task_records_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'reports_pkey') THEN
+        ALTER TABLE "public"."reports" ADD CONSTRAINT "reports_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'report_tasks_pkey') THEN
+        ALTER TABLE "public"."report_tasks" ADD CONSTRAINT "report_tasks_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'schedule_tasks_pkey') THEN
+        ALTER TABLE "public"."schedule_tasks" ADD CONSTRAINT "schedule_tasks_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'task_executions_pkey') THEN
+        ALTER TABLE "public"."task_executions" ADD CONSTRAINT "task_executions_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'data_sources_pkey') THEN
+        ALTER TABLE "public"."data_sources" ADD CONSTRAINT "data_sources_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'api_keys_pkey') THEN
+        ALTER TABLE "public"."api_keys" ADD CONSTRAINT "api_keys_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'api_key_usage_logs_pkey') THEN
+        ALTER TABLE "public"."api_key_usage_logs" ADD CONSTRAINT "api_key_usage_logs_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'system_configs_pkey') THEN
+        ALTER TABLE "public"."system_configs" ADD CONSTRAINT "system_configs_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'role_function_permissions_pkey') THEN
+        ALTER TABLE "public"."role_function_permissions" ADD CONSTRAINT "role_function_permissions_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'role_data_permissions_pkey') THEN
+        ALTER TABLE "public"."role_data_permissions" ADD CONSTRAINT "role_data_permissions_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'role_field_permissions_pkey') THEN
+        ALTER TABLE "public"."role_field_permissions" ADD CONSTRAINT "role_field_permissions_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'permission_inheritances_pkey') THEN
+        ALTER TABLE "public"."permission_inheritances" ADD CONSTRAINT "permission_inheritances_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'permission_expiry_pkey') THEN
+        ALTER TABLE "public"."permission_expiry" ADD CONSTRAINT "permission_expiry_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'permission_expiries_pkey') THEN
+        ALTER TABLE "public"."permission_expiries" ADD CONSTRAINT "permission_expiries_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'permission_change_logs_pkey') THEN
+        ALTER TABLE "public"."permission_change_logs" ADD CONSTRAINT "permission_change_logs_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'data_permission_rules_pkey') THEN
+        ALTER TABLE "public"."data_permission_rules" ADD CONSTRAINT "data_permission_rules_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'field_permission_configs_pkey') THEN
+        ALTER TABLE "public"."field_permission_configs" ADD CONSTRAINT "field_permission_configs_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'tow_car_pkey') THEN
+        ALTER TABLE "public"."tow_car" ADD CONSTRAINT "tow_car_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'tow_car_class_pkey') THEN
+        ALTER TABLE "public"."tow_car_class" ADD CONSTRAINT "tow_car_class_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'tow_car_type_pkey') THEN
+        ALTER TABLE "public"."tow_car_type" ADD CONSTRAINT "tow_car_type_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'tow_car_color_pkey') THEN
+        ALTER TABLE "public"."tow_car_color" ADD CONSTRAINT "tow_car_color_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'tow_dc_type_pkey') THEN
+        ALTER TABLE "public"."tow_dc_type" ADD CONSTRAINT "tow_dc_type_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'tow_dc_causes_pkey') THEN
+        ALTER TABLE "public"."tow_dc_causes" ADD CONSTRAINT "tow_dc_causes_pkey" PRIMARY KEY ("id");
+    END IF;
+END
+$do$;
+
+-- =============================================================================
+-- Unique Constraints (唯一约束)
+-- =============================================================================
+
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'users_username_key') THEN
+        ALTER TABLE "public"."users" ADD CONSTRAINT "users_username_key" UNIQUE ("username");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'departments_code_key') THEN
+        ALTER TABLE "public"."departments" ADD CONSTRAINT "departments_code_key" UNIQUE ("code");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'roles_name_key') THEN
+        ALTER TABLE "public"."roles" ADD CONSTRAINT "roles_name_key" UNIQUE ("name");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'roles_code_key') THEN
+        ALTER TABLE "public"."roles" ADD CONSTRAINT "roles_code_key" UNIQUE ("code");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'permissions_code_key') THEN
+        ALTER TABLE "public"."permissions" ADD CONSTRAINT "permissions_code_key" UNIQUE ("code");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'api_keys_key_id_key') THEN
+        ALTER TABLE "public"."api_keys" ADD CONSTRAINT "api_keys_key_id_key" UNIQUE ("key_id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'cms_category_slug_key') THEN
+        ALTER TABLE "public"."cms_category" ADD CONSTRAINT "cms_category_slug_key" UNIQUE ("slug");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'cms_article_slug_key') THEN
+        ALTER TABLE "public"."cms_article" ADD CONSTRAINT "cms_article_slug_key" UNIQUE ("slug");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'sys_message_user_message_id_user_id_key') THEN
+        ALTER TABLE "public"."sys_message_user" ADD CONSTRAINT "sys_message_user_message_id_user_id_key" UNIQUE ("message_id", "user_id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'user_roles_user_id_role_id_key') THEN
+        ALTER TABLE "public"."user_roles" ADD CONSTRAINT "user_roles_user_id_role_id_key" UNIQUE ("user_id", "role_id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'user_departments_user_id_department_id_key') THEN
+        ALTER TABLE "public"."user_departments" ADD CONSTRAINT "user_departments_user_id_department_id_key" UNIQUE ("user_id", "department_id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'role_permissions_role_id_permission_id_key') THEN
+        ALTER TABLE "public"."role_permissions" ADD CONSTRAINT "role_permissions_role_id_permission_id_key" UNIQUE ("role_id", "permission_id");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'role_function_permissions_role_id_permission_key') THEN
+        ALTER TABLE "public"."role_function_permissions" ADD CONSTRAINT "role_function_permissions_role_id_permission_key" UNIQUE ("role_id", "permission");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'role_field_permissions_role_id_resource_type_field_name_key') THEN
+        ALTER TABLE "public"."role_field_permissions" ADD CONSTRAINT "role_field_permissions_role_id_resource_type_field_name_key" UNIQUE ("role_id", "resource_type", "field_name");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'api_permissions_code_key') THEN
+        ALTER TABLE "public"."api_permissions" ADD CONSTRAINT "api_permissions_code_key" UNIQUE ("code");
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'system_configs_category_config_key_key') THEN
+        ALTER TABLE "public"."system_configs" ADD CONSTRAINT "system_configs_category_config_key_key" UNIQUE ("category", "config_key");
+    END IF;
+END
+$do$;
+
+-- =============================================================================
+-- Check Constraints (检查约束)
+-- =============================================================================
+
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'chk_dept_level') THEN
+        ALTER TABLE "public"."departments" ADD CONSTRAINT "chk_dept_level" CHECK (level <= 5);
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'chk_role_level') THEN
+        ALTER TABLE "public"."roles" ADD CONSTRAINT "chk_role_level" CHECK (level <= 3);
+    END IF;
+END
+$do$;
+
+-- =============================================================================
+-- Foreign Keys (外键)
+-- =============================================================================
+
+-- user-service foreign keys
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'sessions_user_id_fkey') THEN
+        ALTER TABLE "public"."sessions" ADD CONSTRAINT "sessions_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'departments_parent_id_fkey') THEN
+        ALTER TABLE "public"."departments" ADD CONSTRAINT "departments_parent_id_fkey" FOREIGN KEY ("parent_id") REFERENCES "public"."departments" ("id") ON DELETE SET NULL ON UPDATE NO ACTION;
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'departments_leader_id_fkey') THEN
+        ALTER TABLE "public"."departments" ADD CONSTRAINT "departments_leader_id_fkey" FOREIGN KEY ("leader_id") REFERENCES "public"."users" ("id") ON DELETE SET NULL ON UPDATE NO ACTION;
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'user_roles_user_id_fkey') THEN
+        ALTER TABLE "public"."user_roles" ADD CONSTRAINT "user_roles_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'user_roles_role_id_fkey') THEN
+        ALTER TABLE "public"."user_roles" ADD CONSTRAINT "user_roles_role_id_fkey" FOREIGN KEY ("role_id") REFERENCES "public"."roles" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'user_departments_user_id_fkey') THEN
+        ALTER TABLE "public"."user_departments" ADD CONSTRAINT "user_departments_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'user_departments_department_id_fkey') THEN
+        ALTER TABLE "public"."user_departments" ADD CONSTRAINT "user_departments_department_id_fkey" FOREIGN KEY ("department_id") REFERENCES "public"."departments" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+    END IF;
+END
+$do$;
+
+-- auth-service foreign keys
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'permissions_parent_id_fkey') THEN
+        ALTER TABLE "public"."permissions" ADD CONSTRAINT "permissions_parent_id_fkey" FOREIGN KEY ("parent_id") REFERENCES "public"."permissions" ("id") ON DELETE SET NULL ON UPDATE NO ACTION;
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'role_permissions_role_id_fkey') THEN
+        ALTER TABLE "public"."role_permissions" ADD CONSTRAINT "role_permissions_role_id_fkey" FOREIGN KEY ("role_id") REFERENCES "public"."roles" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'role_permissions_permission_id_fkey') THEN
+        ALTER TABLE "public"."role_permissions" ADD CONSTRAINT "role_permissions_permission_id_fkey" FOREIGN KEY ("permission_id") REFERENCES "public"."permissions" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'roles_parent_id_fkey') THEN
+        ALTER TABLE "public"."roles" ADD CONSTRAINT "roles_parent_id_fkey" FOREIGN KEY ("parent_id") REFERENCES "public"."roles" ("id") ON DELETE SET NULL ON UPDATE NO ACTION;
+    END IF;
+END
+$do$;
+
+-- cms-service foreign keys
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'cms_article_category_id_fkey') THEN
+        ALTER TABLE "public"."cms_article" ADD CONSTRAINT "cms_article_category_id_fkey" FOREIGN KEY ("category_id") REFERENCES "public"."cms_category" ("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'cms_article_author_id_fkey') THEN
+        ALTER TABLE "public"."cms_article" ADD CONSTRAINT "cms_article_author_id_fkey" FOREIGN KEY ("author_id") REFERENCES "public"."users" ("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'cms_comment_article_id_fkey') THEN
+        ALTER TABLE "public"."cms_comment" ADD CONSTRAINT "cms_comment_article_id_fkey" FOREIGN KEY ("article_id") REFERENCES "public"."cms_article" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'cms_comment_user_id_fkey') THEN
+        ALTER TABLE "public"."cms_comment" ADD CONSTRAINT "cms_comment_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+    END IF;
+END
+$do$;
+
+-- messaging-service foreign keys
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'sys_message_sender_id_fkey') THEN
+        ALTER TABLE "public"."sys_message" ADD CONSTRAINT "sys_message_sender_id_fkey" FOREIGN KEY ("sender_id") REFERENCES "public"."users" ("id") ON DELETE SET NULL ON UPDATE NO ACTION;
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'sys_message_user_message_id_fkey') THEN
+        ALTER TABLE "public"."sys_message_user" ADD CONSTRAINT "sys_message_user_message_id_fkey" FOREIGN KEY ("message_id") REFERENCES "public"."sys_message" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'sys_message_user_user_id_fkey') THEN
+        ALTER TABLE "public"."sys_message_user" ADD CONSTRAINT "sys_message_user_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'announcements_created_by_fkey') THEN
+        ALTER TABLE "public"."announcements" ADD CONSTRAINT "announcements_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "public"."users" ("id") ON DELETE SET NULL ON UPDATE NO ACTION;
+    END IF;
+END
+$do$;
+
+-- workflow-service foreign keys
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'workflow_nodes_workflow_id_fkey') THEN
+        ALTER TABLE "public"."workflow_nodes" ADD CONSTRAINT "workflow_nodes_workflow_id_fkey" FOREIGN KEY ("workflow_id") REFERENCES "public"."workflows" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'workflow_edges_workflow_id_fkey') THEN
+        ALTER TABLE "public"."workflow_edges" ADD CONSTRAINT "workflow_edges_workflow_id_fkey" FOREIGN KEY ("workflow_id") REFERENCES "public"."workflows" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'workflow_instances_workflow_id_fkey') THEN
+        ALTER TABLE "public"."workflow_instances" ADD CONSTRAINT "workflow_instances_workflow_id_fkey" FOREIGN KEY ("workflow_id") REFERENCES "public"."workflows" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+    END IF;
+END
+$do$;
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'task_records_instance_id_fkey') THEN
+        ALTER TABLE "public"."task_records" ADD CONSTRAINT "task_records_instance_id_fkey" FOREIGN KEY ("instance_id") REFERENCES "public"."workflow_instances" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+    END IF;
+END
+$do$;
+
+-- clean-service foreign keys
+DO $do$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'report_tasks_report_id_fkey') THEN
+        ALTER TABLE "public"."report_tasks" ADD CONSTRAINT "report_tasks_report_id_fkey" FOREIGN KEY ("report_id") REFERENCES "public"."reports" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+    END IF;
+END
+$do$;
+
+
 
 -- =============================================================================
 -- Initial data (初始数据)
@@ -1919,14 +2667,16 @@ INSERT INTO "public"."system_configs" ("category", "config_key", "config_value",
 ('security', 'session_timeout', '3600', 'number', '会话超时(秒)', '用户会话超时时间', 0),
 ('upload', 'max_file_size', '10485760', 'number', '最大文件大小', '上传文件最大大小(字节)', 0),
 ('upload', 'allowed_extensions', 'jpg,png,pdf,doc,docx,xls,xlsx', 'string', '允许的扩展名', '允许上传的文件扩展名', 0),
-('upload', 'save_path', '/uploads', 'string', '保存路径', '文件保存路径', 0);
+('upload', 'save_path', '/uploads', 'string', '保存路径', '文件保存路径', 0)
+ON CONFLICT DO NOTHING;
 
 -- 插入默认角色
 INSERT INTO "public"."roles" ("id", "name", "code", "description", "role_type", "parent_id", "level", "sort_order", "status", "is_default") VALUES
 (1, '超级管理员', 'super_admin', '拥有系统所有权限', 'system', NULL, 0, 0, 1, 'f'),
 (2, '系统管理员', 'admin', '系统管理权限', 'system', NULL, 1, 0, 1, 'f'),
 (3, '普通用户', 'user', '普通用户权限', 'system', NULL, 1, 0, 1, 't'),
-(4, '访客', 'guest', '只读权限', 'system', NULL, 1, 0, 1, 'f');
+(4, '访客', 'guest', '只读权限', 'system', NULL, 1, 0, 1, 'f')
+ON CONFLICT DO NOTHING;
 
 -- 插入默认权限
 INSERT INTO "public"."permissions" ("id", "name", "code", "permission_type", "parent_id", "path", "method", "icon", "sort_order", "status") VALUES
@@ -1950,14 +2700,16 @@ INSERT INTO "public"."permissions" ("id", "name", "code", "permission_type", "pa
 (18, '公告列表', 'announcement:list', 'button', NULL, '/api/admin/announcements', 'GET', NULL, 0, 1),
 (19, '创建公告', 'announcement:create', 'button', NULL, '/api/admin/announcements', 'POST', NULL, 0, 1),
 (20, '更新公告', 'announcement:update', 'button', NULL, '/api/admin/announcements', 'PUT', NULL, 0, 1),
-(21, '删除公告', 'announcement:delete', 'button', NULL, '/api/admin/announcements', 'DELETE', NULL, 0, 1);
+(21, '删除公告', 'announcement:delete', 'button', NULL, '/api/admin/announcements', 'DELETE', NULL, 0, 1)
+ON CONFLICT DO NOTHING;
 
 -- 插入超级管理员角色权限
 INSERT INTO "public"."role_permissions" ("id", "role_id", "permission_id") VALUES
 (1, 1, 1), (2, 1, 2), (3, 1, 3), (4, 1, 4), (5, 1, 5), (6, 1, 6),
 (7, 1, 7), (8, 1, 8), (9, 1, 9), (10, 1, 10), (11, 1, 11),
 (12, 1, 12), (13, 1, 13), (14, 1, 14), (15, 1, 15),
-(16, 1, 16), (17, 1, 17), (18, 1, 18), (19, 1, 19), (20, 1, 20), (21, 1, 21);
+(16, 1, 16), (17, 1, 17), (18, 1, 18), (19, 1, 19), (20, 1, 20), (21, 1, 21)
+ON CONFLICT DO NOTHING;
 
 -- 插入管理员角色权限
 INSERT INTO "public"."role_permissions" ("id", "role_id", "permission_id") VALUES
@@ -1965,19 +2717,23 @@ INSERT INTO "public"."role_permissions" ("id", "role_id", "permission_id") VALUE
 (27, 2, 7), (28, 2, 8), (29, 2, 9), (30, 2, 11),
 (31, 2, 12), (32, 2, 13), (33, 2, 14),
 (34, 2, 16), (35, 2, 17),
-(36, 2, 18), (37, 2, 19), (38, 2, 20);
+(36, 2, 18), (37, 2, 19), (38, 2, 20)
+ON CONFLICT DO NOTHING;
 
 -- 插入普通用户角色权限
 INSERT INTO "public"."role_permissions" ("id", "role_id", "permission_id") VALUES
-(39, 3, 1), (40, 3, 12);
+(39, 3, 1), (40, 3, 12)
+ON CONFLICT DO NOTHING;
 
 -- 插入默认用户 (密码: admin123)
 INSERT INTO "public"."users" ("id", "username", "nickname", "password_hash", "avatar", "phone", "email", "gender", "address", "role", "status") VALUES
-(1, 'admin', 'Administrator', '$2b$12$CZm6fwvZeC6N6V0rxs9a/O9zADNIWs9GpniO2TnuMlN9CHw5fXuri', NULL, NULL, 'admin@example.com', 0, NULL, 'admin', 1);
+(1, 'admin', 'Administrator', '$2b$12$CZm6fwvZeC6N6V0rxs9a/O9zADNIWs9GpniO2TnuMlN9CHw5fXuri', NULL, NULL, 'admin@example.com', 0, NULL, 'admin', 1)
+ON CONFLICT DO NOTHING;
 
 -- 插入用户角色
 INSERT INTO "public"."user_roles" ("id", "user_id", "role_id") VALUES
-(1, 1, 1);
+(1, 1, 1)
+ON CONFLICT DO NOTHING;
 
 -- 插入默认部门
 INSERT INTO "public"."departments" ("id", "name", "code", "parent_id", "level", "sort_order", "leader_id", "description", "status") VALUES
@@ -1986,26 +2742,30 @@ INSERT INTO "public"."departments" ("id", "name", "code", "parent_id", "level", 
 (3, '运营部', 'ops', 1, 1, 2, NULL, NULL, 1),
 (4, '财务部', 'finance', 1, 1, 3, NULL, NULL, 1),
 (5, '前端组', 'frontend', 2, 2, 1, NULL, NULL, 1),
-(6, '后端组', 'backend', 2, 2, 2, NULL, NULL, 1);
+(6, '后端组', 'backend', 2, 2, 2, NULL, NULL, 1)
+ON CONFLICT DO NOTHING;
 
 -- 插入默认CMS分类
 INSERT INTO "public"."cms_category" ("id", "parent_id", "name", "slug", "description", "icon", "sort_order", "seo_title", "seo_keywords", "seo_description", "status", "allow_attachment") VALUES
 (1, 0, '新闻资讯', 'news', NULL, NULL, 1, NULL, NULL, NULL, 1, 1),
 (2, 0, '产品动态', 'product', NULL, NULL, 2, NULL, NULL, NULL, 1, 1),
 (3, 0, '技术文档', 'docs', NULL, NULL, 3, NULL, NULL, NULL, 1, 1),
-(4, 0, '帮助中心', 'help', NULL, NULL, 4, NULL, NULL, NULL, 1, 1);
+(4, 0, '帮助中心', 'help', NULL, NULL, 4, NULL, NULL, NULL, 1, 1)
+ON CONFLICT DO NOTHING;
 
 -- 插入默认公告
 INSERT INTO "public"."announcements" ("id", "title", "content", "announcement_type", "priority", "is_pinned", "is_active", "start_time", "end_time", "created_by", "created_at", "updated_at") VALUES
 (1, '欢迎使用 MyAI 管理后台', '欢迎使用 MyAI 智能管理后台系统，祝您使用愉快！', 'info', 1, 't', 't', '2026-05-13 13:53:21.49594+00', NULL, NULL, '2026-05-13 13:53:21.49594+00', '2026-05-13 13:53:21.49594+00'),
-(2, '系统维护通知', '系统将于本周日凌晨 2:00-6:00 进行例行维护，请提前做好准备。', 'warning', 0, 'f', 't', '2026-05-13 13:53:21.49594+00', NULL, NULL, '2026-05-13 13:53:21.49594+00', '2026-05-13 13:53:21.49594+00');
+(2, '系统维护通知', '系统将于本周日凌晨 2:00-6:00 进行例行维护，请提前做好准备。', 'warning', 0, 'f', 't', '2026-05-13 13:53:21.49594+00', NULL, NULL, '2026-05-13 13:53:21.49594+00', '2026-05-13 13:53:21.49594+00')
+ON CONFLICT DO NOTHING;
 
 -- 插入车辆类型
 INSERT INTO "public"."tow_car_type" ("name", "remark", "sort_order") VALUES
 ('小型车', '蓝色车牌', 1),
 ('大型车', '黄色车牌', 2),
 ('新能源车', '绿色车牌', 3),
-('摩托车', '两轮车', 4);
+('摩托车', '两轮车', 4)
+ON CONFLICT DO NOTHING;
 
 -- 插入车辆颜色
 INSERT INTO "public"."tow_car_color" ("name", "remark", "sort_order") VALUES
@@ -2016,14 +2776,16 @@ INSERT INTO "public"."tow_car_color" ("name", "remark", "sort_order") VALUES
 ('红色', '红色车身', 5),
 ('蓝色', '蓝色车身', 6),
 ('黄色', '黄色车身', 7),
-('绿色', '绿色车身', 8);
+('绿色', '绿色车身', 8)
+ON CONFLICT DO NOTHING;
 
 -- 插入扣押原因类型
 INSERT INTO "public"."tow_dc_type" ("name", "code", "remark", "sort_order") VALUES
 ('违章停车', 'illegal_parking', '违反交通法规停放', 1),
 ('占道经营', 'street_vending', '占用道路经营', 2),
 ('乱停乱放', 'random_parking', '随意停放影响交通', 3),
-('其他', 'other', '其他违规行为', 99);
+('其他', 'other', '其他违规行为', 99)
+ON CONFLICT DO NOTHING;
 
 -- 插入扣押原因明细
 INSERT INTO "public"."tow_dc_causes" ("name", "type_id", "type_name", "remark", "sort_order") VALUES
@@ -2033,13 +2795,15 @@ INSERT INTO "public"."tow_dc_causes" ("name", "type_id", "type_name", "remark", 
 ('在黄色网格线内停放', 1, '违章停车', '停在黄色网格线内', 4),
 ('在盲道上停放', 1, '违章停车', '占用盲道', 5),
 ('超时停放', 2, '占道经营', '超出允许停放时间', 1),
-('超出经营区域', 2, '占道经营', '超出规定的经营区域', 2);
+('超出经营区域', 2, '占道经营', '超出规定的经营区域', 2)
+ON CONFLICT DO NOTHING;
 
 -- 插入消息模板
 INSERT INTO "public"."message_templates" ("id", "name", "template_type", "title_template", "content_template", "variables", "is_active") VALUES
 (1, '欢迎通知', 'notification', '欢迎 ${username} 加入系统', '欢迎 ${username}！您的账户已成功创建，可以开始使用系统了。', '["username"]', true),
 (2, '密码重置', 'email', '密码重置验证码', '您的验证码是 ${code}，有效期 ${expire_minutes} 分钟，请勿泄露给他人。', '["code", "expire_minutes"]', true),
-(3, '订单通知', 'push', '订单 ${order_id} 状态更新', '您的订单 ${order_id} 已 ${status}，${message}', '["order_id", "status", "message"]', true);
+(3, '订单通知', 'push', '订单 ${order_id} 状态更新', '您的订单 ${order_id} 已 ${status}，${message}', '["order_id", "status", "message"]', true)
+ON CONFLICT DO NOTHING;
 
 -- =============================================================================
 -- 演示数据 (2026-08-12) - 第一批: 核心业务表
@@ -2116,7 +2880,7 @@ ON CONFLICT (id) DO NOTHING;
 
 -- 电动自行车车辆 (ebike-service / car 表, provide 引用 operators)
 INSERT INTO "public"."car" ("code", "status", "provide", "speed", "gps", "create_date", "update_date", "delete", "alert", "remark", "type", "time") VALUES
-('EB-HL-0001', 1, 'hellobike', 0.0, '{"lng":104.255441,"lat":23.382518}', '2026-08-01 08:00:00', '2026-08-12 09:00:00', false, NULL, '演示车辆-哈啰', 1, '{"last_ride":"2026-08-11 20:30"}')
+('EB-HL-0001', 1, 'hello', 0.0, '{"lng":104.255441,"lat":23.382518}', '2026-08-01 08:00:00', '2026-08-12 09:00:00', false, NULL, '演示车辆-哈啰', 1, '{"last_ride":"2026-08-11 20:30"}')
 ON CONFLICT (code) DO NOTHING;
 
 INSERT INTO "public"."car" ("code", "status", "provide", "speed", "gps", "create_date", "update_date", "delete", "alert", "remark", "type", "time") VALUES
@@ -2128,7 +2892,7 @@ INSERT INTO "public"."car" ("code", "status", "provide", "speed", "gps", "create
 ON CONFLICT (code) DO NOTHING;
 
 INSERT INTO "public"."car" ("code", "status", "provide", "speed", "gps", "create_date", "update_date", "delete", "alert", "remark", "type", "time") VALUES
-('EB-HL-0004', 2, 'hellobike', 0.0, '{"lng":104.251440,"lat":23.393186}', '2026-08-04 11:00:00', '2026-08-12 09:15:00', false, '违停告警', '演示车辆-违停处理中', 2, '{"last_ride":"2026-08-10 18:20"}')
+('EB-HL-0004', 2, 'hello', 0.0, '{"lng":104.251440,"lat":23.393186}', '2026-08-04 11:00:00', '2026-08-12 09:15:00', false, '违停告警', '演示车辆-违停处理中', 2, '{"last_ride":"2026-08-10 18:20"}')
 ON CONFLICT (code) DO NOTHING;
 
 INSERT INTO "public"."car" ("code", "status", "provide", "speed", "gps", "create_date", "update_date", "delete", "alert", "remark", "type", "time") VALUES
@@ -2137,7 +2901,7 @@ ON CONFLICT (code) DO NOTHING;
 
 -- 违停记录 (ebike-service / violations, provide 引用 operators)
 INSERT INTO "public"."violations" ("id", "car_code", "provide", "lng", "lat", "violation_type", "status", "alert_level", "created_at", "resolved_at", "remark") VALUES
-(1, 'EB-HL-0004', 'hellobike', '104.258374', '23.384138', '乱停乱放', 0, 2, '2026-08-12 08:30:00', NULL, '停在人行道禁停区')
+(1, 'EB-HL-0004', 'hello', '104.258374', '23.384138', '乱停乱放', 0, 2, '2026-08-12 08:30:00', NULL, '停在人行道禁停区')
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO "public"."violations" ("id", "car_code", "provide", "lng", "lat", "violation_type", "status", "alert_level", "created_at", "resolved_at", "remark") VALUES
@@ -2149,7 +2913,7 @@ INSERT INTO "public"."violations" ("id", "car_code", "provide", "lng", "lat", "v
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO "public"."violations" ("id", "car_code", "provide", "lng", "lat", "violation_type", "status", "alert_level", "created_at", "resolved_at", "remark") VALUES
-(4, 'EB-HL-0001', 'hellobike', '104.241684', '23.383651', '乱停乱放', 3, 3, '2026-08-09 09:00:00', NULL, '超时未处理-重点关注')
+(4, 'EB-HL-0001', 'hello', '104.241684', '23.383651', '乱停乱放', 3, 3, '2026-08-09 09:00:00', NULL, '超时未处理-重点关注')
 ON CONFLICT (id) DO NOTHING;
 
 -- CMS 文章 (cms-service, category_id 引用 cms_category seed id 1-4)
@@ -2232,122 +2996,6 @@ INSERT INTO "public"."ebike_user" ("username", "password", "create_date", "updat
 SELECT 'ebike_demo2', '$2b$12$DemoPlaceholderHashDoNotUseInProd0', '2026-08-02 10:00:00', '2026-08-11 10:00:00', false, 1, '2026-08-11 09:00:00', 2
 WHERE NOT EXISTS (SELECT 1 FROM "public"."ebike_user" WHERE username = 'ebike_demo2');
 
--- LPR 车牌识别记录 (lpr-service)
-INSERT INTO "public"."lpr_pass_records" ("id", "plate_no", "plate_color", "plate_type", "vehicle_type", "device_id", "device_name", "park_code", "lane_code", "direction", "pass_time", "image_url", "confidence", "status", "related_order_id", "remark", "created_at", "updated_at") VALUES
-(1, '粤B12345', 'blue', 'small', 'car', 'DEV-001', '东门入口摄像机', 'PK-001', 'L1', 'entry', '2026-08-12 08:05:00', '/images/lpr/demo1.jpg', 0.97, 'processed', 'ORDER-001', '演示数据-入场', '2026-08-12 08:05:00', '2026-08-12 08:06:00')
-ON CONFLICT (id) DO NOTHING;
-
-INSERT INTO "public"."lpr_pass_records" ("id", "plate_no", "plate_color", "plate_type", "vehicle_type", "device_id", "device_name", "park_code", "lane_code", "direction", "pass_time", "image_url", "confidence", "status", "related_order_id", "remark", "created_at", "updated_at") VALUES
-(2, '粤B67890', 'green', 'new_energy', 'car', 'DEV-002', '西门出口摄像机', 'PK-001', 'L2', 'exit', '2026-08-12 09:10:00', '/images/lpr/demo2.jpg', 0.95, 'processed', 'ORDER-002', '演示数据-出场', '2026-08-12 09:10:00', '2026-08-12 09:11:00')
-ON CONFLICT (id) DO NOTHING;
-
-INSERT INTO "public"."lpr_pass_records" ("id", "plate_no", "plate_color", "plate_type", "vehicle_type", "device_id", "device_name", "park_code", "lane_code", "direction", "pass_time", "image_url", "confidence", "status", "related_order_id", "remark", "created_at", "updated_at") VALUES
-(3, '粤C24680', 'blue', 'large', 'truck', 'DEV-003', '北门入口摄像机', 'PK-002', 'L1', 'entry', '2026-08-12 07:55:00', '/images/lpr/demo3.jpg', 0.88, 'pending', '', '演示数据-待处理', '2026-08-12 07:55:00', '2026-08-12 07:55:00')
-ON CONFLICT (id) DO NOTHING;
-
--- SocialOps 社交账号 (social-ops-service, socialops schema)
-INSERT INTO socialops.social_accounts ("id", "user_id", "platform", "account_name", "account_id", "avatar_url", "is_active", "config_json", "created_at", "updated_at") VALUES
-('a1b2c3d4-0000-0000-0000-000000000001', NULL, 'wechat', '深圳交警发布', 'wx-official-001', NULL, true, '{"category":"官方账号","description":"演示用官方公众号"}'::jsonb, '2026-08-01 09:00:00+08', '2026-08-12 09:00:00+08')
-ON CONFLICT (id) DO NOTHING;
-
-INSERT INTO socialops.social_accounts ("id", "user_id", "platform", "account_name", "account_id", "avatar_url", "is_active", "config_json", "created_at", "updated_at") VALUES
-('a1b2c3d4-0000-0000-0000-000000000002', NULL, 'weibo', '深圳拖车服务', 'wb-001', NULL, true, '{"category":"业务账号","description":"演示用微博业务号"}'::jsonb, '2026-08-02 10:00:00+08', '2026-08-12 09:05:00+08')
-ON CONFLICT (id) DO NOTHING;
-
--- =============================================================================
--- 演示数据 (2026-08-12) - 第二批: 租户/审计/调度模块
--- =============================================================================
-
--- 租户 (tenant-service, 第二批新增表)
-INSERT INTO "public"."tenants" ("id", "name", "code", "domain", "description", "max_users", "max_storage", "status", "expires_at", "created_at", "updated_at") VALUES
-(1, '深圳总公司', 'sz-hq', 'sz-hq.example.com', '演示用深圳总部租户', 500, 107374182400, 1, NULL, '2026-08-01 09:00:00+08', '2026-08-01 09:00:00+08')
-ON CONFLICT (id) DO NOTHING;
-
-INSERT INTO "public"."tenants" ("id", "name", "code", "domain", "description", "max_users", "max_storage", "status", "expires_at", "created_at", "updated_at") VALUES
-(2, '广州分公司', 'gz-branch', 'gz-branch.example.com', '演示用广州分公司租户', 200, 53687091200, 1, '2027-12-31 23:59:59+08', '2026-08-02 10:00:00+08', '2026-08-02 10:00:00+08')
-ON CONFLICT (id) DO NOTHING;
-
--- 租户用户关联 (tenant-service)
-INSERT INTO "public"."tenant_users" ("id", "tenant_id", "user_id", "role", "department", "position", "status", "joined_at", "created_at") VALUES
-(1, 1, 1, 'admin', '技术部', '系统管理员', 1, '2026-08-01 09:00:00+08', '2026-08-01 09:00:00+08')
-ON CONFLICT (id) DO NOTHING;
-
--- 报表任务 (report-service, report_id 引用 reports seed)
-INSERT INTO "public"."report_tasks" ("id", "report_id", "status", "result", "error_message", "started_at", "completed_at") VALUES
-('rt-0001', 'rp-tow-stats', 'completed', '{"rows": 12, "generated_at": "2026-08-12T08:00:00+08:00"}'::jsonb, NULL, '2026-08-12 08:00:00+08', '2026-08-12 08:01:00+08')
-ON CONFLICT (id) DO NOTHING;
-
--- 调度任务 (schedule-task)
-INSERT INTO "public"."schedule_tasks" ("id", "name", "description", "task_type", "cron_expression", "interval_seconds", "start_time", "end_time", "task_handler", "task_params", "status", "execute_strategy", "max_retries", "retry_count", "timeout_seconds", "last_run_time", "next_run_time", "created_by", "tenant_id", "created_at", "updated_at") VALUES
-('st-0001', '每日报表生成', '每天凌晨生成拖车统计报表', 'cron', '0 1 * * *', NULL, '2026-08-01 00:00:00+08', NULL, 'report_generator', '{"report_id": "rp-tow-stats"}'::jsonb, 'running', 'immediate', 3, 0, 3600, '2026-08-12 01:00:00+08', '2026-08-13 01:00:00+08', 'admin', '1', '2026-08-01 00:00:00+08', '2026-08-12 01:00:00+08')
-ON CONFLICT (id) DO NOTHING;
-
-INSERT INTO "public"."schedule_tasks" ("id", "name", "description", "task_type", "cron_expression", "interval_seconds", "start_time", "end_time", "task_handler", "task_params", "status", "execute_strategy", "max_retries", "retry_count", "timeout_seconds", "last_run_time", "next_run_time", "created_by", "tenant_id", "created_at", "updated_at") VALUES
-('st-0002', 'LPR 数据清理', '每小时清理过期 LPR 记录', 'interval', NULL, 3600, '2026-08-01 00:00:00+08', NULL, 'lpr_cleaner', '{"retention_days": 90}'::jsonb, 'paused', 'immediate', 2, 0, 1800, '2026-08-11 12:00:00+08', NULL, 'admin', '1', '2026-08-01 00:00:00+08', '2026-08-11 12:00:00+08')
-ON CONFLICT (id) DO NOTHING;
-
--- 任务执行记录 (schedule-task)
-INSERT INTO "public"."task_executions" ("id", "task_id", "status", "start_time", "end_time", "result", "error_message", "retry_count", "created_at") VALUES
-('te-0001', 'st-0001', 'completed', '2026-08-12 01:00:00+08', '2026-08-12 01:01:30+08', '报表生成成功, 共 12 行', NULL, 0, '2026-08-12 01:00:00+08')
-ON CONFLICT (id) DO NOTHING;
-
-INSERT INTO "public"."task_executions" ("id", "task_id", "status", "start_time", "end_time", "result", "error_message", "retry_count", "created_at") VALUES
-('te-0002', 'st-0002', 'failed', '2026-08-11 12:00:00+08', '2026-08-11 12:00:30+08', NULL, '数据库连接超时', 1, '2026-08-11 12:00:00+08')
-ON CONFLICT (id) DO NOTHING;
-
--- 数据源 (report-service)
-INSERT INTO "public"."data_sources" ("id", "name", "ds_type", "config", "created_at", "updated_at") VALUES
-('ds-0001', '生产 PostgreSQL', 'postgresql', '{"host": "pg-cluster-postgresql-0", "port": 5432, "database": "myai"}'::jsonb, '2026-08-01 09:00:00+08', '2026-08-01 09:00:00+08')
-ON CONFLICT (id) DO NOTHING;
-
-INSERT INTO "public"."data_sources" ("id", "name", "ds_type", "config", "created_at", "updated_at") VALUES
-('ds-0002', '报表缓存 Redis', 'redis', '{"host": "redis-replication-redis-0", "port": 6379, "db": 0}'::jsonb, '2026-08-02 10:00:00+08', '2026-08-02 10:00:00+08')
-ON CONFLICT (id) DO NOTHING;
-
--- 操作日志 (audit-service)
-INSERT INTO "public"."sys_operation_logs" ("id", "user_id", "username", "module", "business_type", "method", "request_method", "request_url", "request_params", "request_body", "response_data", "status", "error_msg", "execution_time", "ip_address", "created_at") VALUES
-(1, 1, 'admin', '角色管理', 'update', 'update_role', 'PUT', '/api/admin/roles/2', '{"name": "系统管理员"}', '{"description": "系统管理权限"}', '{"code": 200}', 1, NULL, 45, '192.0.2.8', '2026-08-12 09:30:00+08')
-ON CONFLICT (id) DO NOTHING;
-
-INSERT INTO "public"."sys_operation_logs" ("id", "user_id", "username", "module", "business_type", "request_method", "request_url", "request_params", "request_body", "response_data", "status", "error_msg", "execution_time", "ip_address", "created_at") VALUES
-(2, 1, 'admin', '用户管理', 'delete', 'DELETE', '/api/admin/users/99', NULL, NULL, '{"code": 404, "msg": "用户不存在"}', 0, '用户不存在', 12, '192.0.2.8', '2026-08-12 09:45:00+08')
-ON CONFLICT (id) DO NOTHING;
-
--- 登录日志 (auth-service)
-INSERT INTO "public"."sys_login_logs" ("id", "user_id", "username", "ip_address", "user_agent", "login_location", "login_status", "fail_reason", "login_type", "created_at") VALUES
-(1, 1, 'admin', '192.0.2.8', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36', '深圳市', 1, NULL, 'password', '2026-08-12 09:00:00+08')
-ON CONFLICT (id) DO NOTHING;
-
-INSERT INTO "public"."sys_login_logs" ("id", "user_id", "username", "ip_address", "user_agent", "login_location", "login_status", "fail_reason", "login_type", "created_at") VALUES
-(2, NULL, 'unknown', '203.0.113.7', 'curl/8.0', NULL, 0, '密码错误', 'password', '2026-08-12 08:55:00+08')
-ON CONFLICT (id) DO NOTHING;
-
--- 敏感操作审计 (audit-service)
-INSERT INTO "public"."sys_sensitive_audits" ("id", "user_id", "username", "operation_type", "operation_desc", "request_data", "ip_address", "confirm_status", "confirm_time", "confirmed_by", "created_at") VALUES
-(1, 1, 'admin', 'delete_role', '删除角色: 测试角色', '{"role_id": 99}', '192.0.2.8', 1, '2026-08-12 09:50:00+08', 1, '2026-08-12 09:49:00+08')
-ON CONFLICT (id) DO NOTHING;
-
-INSERT INTO "public"."sys_sensitive_audits" ("id", "user_id", "username", "operation_type", "operation_desc", "request_data", "ip_address", "confirm_status", "confirm_time", "confirmed_by", "created_at") VALUES
-(2, 1, 'admin', 'reset_password', '重置用户密码: user99', '{"user_id": 99}', '192.0.2.8', 0, NULL, NULL, '2026-08-12 10:00:00+08')
-ON CONFLICT (id) DO NOTHING;
-
--- 审计日志 (audit-service, 第二批新增表)
--- audit_logs.id 为 GENERATED ALWAYS AS IDENTITY, 需 OVERRIDING SYSTEM VALUE 显式插入
-INSERT INTO "public"."audit_logs" ("id", "tenant_id", "user_id", "username", "action", "resource_type", "resource_id", "details", "ip_address", "created_at") OVERRIDING SYSTEM VALUE VALUES
-(1, 1, 1, 'admin', 'ROLE_UPDATE', 'role', 2, '更新角色: 系统管理员', '192.0.2.8', '2026-08-12 09:30:00+08')
-ON CONFLICT (id) DO NOTHING;
-
-INSERT INTO "public"."audit_logs" ("id", "tenant_id", "user_id", "username", "action", "resource_type", "resource_id", "details", "ip_address", "created_at") OVERRIDING SYSTEM VALUE VALUES
-(2, 1, NULL, 'system', 'API_KEY_CREATE', 'api_key', NULL, '创建 API 密钥', '192.0.2.9', '2026-08-12 10:30:00+08')
-ON CONFLICT (id) DO NOTHING;
-
--- API 用量日志 (api-gateway, 第二批新增表)
--- api_usage_logs.id 为 GENERATED ALWAYS AS IDENTITY, 需 OVERRIDING SYSTEM VALUE 显式插入
-INSERT INTO "public"."api_usage_logs" ("id", "tenant_id", "created_at") OVERRIDING SYSTEM VALUE VALUES
-(1, 1, '2026-08-12 08:00:00+08'),
-(2, 1, '2026-08-12 09:00:00+08'),
-(3, 1, '2026-08-12 10:00:00+08')
-ON CONFLICT (id) DO NOTHING;
 
 -- =============================================================================
 -- Sequence setval
@@ -2389,376 +3037,252 @@ SELECT setval('"public"."message_templates_id_seq"', 3, true);
 -- =============================================================================
 
 -- users indexes
-CREATE INDEX "idx_users_username" ON "public"."users" USING btree ("username" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_users_email" ON "public"."users" USING btree ("email" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_users_status" ON "public"."users" USING btree ("status" "pg_catalog"."int4_ops" ASC NULLS LAST);
-CREATE INDEX "idx_users_role_status" ON "public"."users" USING btree ("role" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST, "status" "pg_catalog"."int4_ops" ASC NULLS LAST);
-CREATE INDEX "idx_users_created_at" ON "public"."users" USING btree ("created_at" "pg_catalog"."timestamptz_ops" DESC NULLS FIRST);
+CREATE INDEX IF NOT EXISTS "idx_users_username" ON "public"."users" USING btree ("username" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_users_email" ON "public"."users" USING btree ("email" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_users_status" ON "public"."users" USING btree ("status" "pg_catalog"."int4_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_users_role_status" ON "public"."users" USING btree ("role" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST, "status" "pg_catalog"."int4_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_users_created_at" ON "public"."users" USING btree ("created_at" "pg_catalog"."timestamptz_ops" DESC NULLS FIRST);
 
 -- departments indexes
-CREATE INDEX "idx_departments_code" ON "public"."departments" USING btree ("code" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_departments_parent_id" ON "public"."departments" USING btree ("parent_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
-CREATE INDEX "idx_departments_status" ON "public"."departments" USING btree ("status" "pg_catalog"."int4_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_departments_code" ON "public"."departments" USING btree ("code" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_departments_parent_id" ON "public"."departments" USING btree ("parent_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_departments_status" ON "public"."departments" USING btree ("status" "pg_catalog"."int4_ops" ASC NULLS LAST);
 
 -- sessions indexes
-CREATE INDEX "idx_sessions_user_id" ON "public"."sessions" USING btree ("user_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
-CREATE INDEX "idx_sessions_expires_at" ON "public"."sessions" USING btree ("expires_at" "pg_catalog"."timestamp_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_sessions_user_id" ON "public"."sessions" USING btree ("user_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_sessions_expires_at" ON "public"."sessions" USING btree ("expires_at" "pg_catalog"."timestamp_ops" ASC NULLS LAST);
 
 -- sys_login_logs indexes
-CREATE INDEX "idx_sys_login_logs_user_id" ON "public"."sys_login_logs" USING btree ("user_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
-CREATE INDEX "idx_sys_login_logs_username" ON "public"."sys_login_logs" USING btree ("username" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_sys_login_logs_ip_address" ON "public"."sys_login_logs" USING btree ("ip_address" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_sys_login_logs_login_status" ON "public"."sys_login_logs" USING btree ("login_status" "pg_catalog"."int2_ops" ASC NULLS LAST);
-CREATE INDEX "idx_sys_login_logs_created_at" ON "public"."sys_login_logs" USING btree ("created_at" "pg_catalog"."timestamptz_ops" DESC NULLS FIRST);
+CREATE INDEX IF NOT EXISTS "idx_sys_login_logs_user_id" ON "public"."sys_login_logs" USING btree ("user_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_sys_login_logs_username" ON "public"."sys_login_logs" USING btree ("username" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_sys_login_logs_ip_address" ON "public"."sys_login_logs" USING btree ("ip_address" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_sys_login_logs_login_status" ON "public"."sys_login_logs" USING btree ("login_status" "pg_catalog"."int2_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_sys_login_logs_created_at" ON "public"."sys_login_logs" USING btree ("created_at" "pg_catalog"."timestamptz_ops" DESC NULLS FIRST);
 
 -- sys_login_device indexes
-CREATE INDEX "idx_sys_login_device_user_id" ON "public"."sys_login_device" USING btree ("user_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
-CREATE INDEX "idx_sys_login_device_device_id" ON "public"."sys_login_device" USING btree ("device_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_sys_login_device_login_time" ON "public"."sys_login_device" USING btree ("login_time" "pg_catalog"."timestamptz_ops" ASC NULLS LAST);
-CREATE INDEX "idx_sys_login_device_is_active" ON "public"."sys_login_device" USING btree ("is_active" "pg_catalog"."int2_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_sys_login_device_user_id" ON "public"."sys_login_device" USING btree ("user_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_sys_login_device_device_id" ON "public"."sys_login_device" USING btree ("device_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_sys_login_device_login_time" ON "public"."sys_login_device" USING btree ("login_time" "pg_catalog"."timestamptz_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_sys_login_device_is_active" ON "public"."sys_login_device" USING btree ("is_active" "pg_catalog"."int2_ops" ASC NULLS LAST);
 
 -- user_roles indexes
-CREATE INDEX "idx_user_roles_user_id" ON "public"."user_roles" USING btree ("user_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
-CREATE INDEX "idx_user_roles_role_id" ON "public"."user_roles" USING btree ("role_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_user_roles_user_id" ON "public"."user_roles" USING btree ("user_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_user_roles_role_id" ON "public"."user_roles" USING btree ("role_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
 
 -- user_departments indexes
-CREATE INDEX "idx_user_departments_user_id" ON "public"."user_departments" USING btree ("user_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
-CREATE INDEX "idx_user_departments_department_id" ON "public"."user_departments" USING btree ("department_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_user_departments_user_id" ON "public"."user_departments" USING btree ("user_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_user_departments_department_id" ON "public"."user_departments" USING btree ("department_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
 
 -- roles indexes
-CREATE INDEX "idx_roles_code" ON "public"."roles" USING btree ("code" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_roles_parent_id" ON "public"."roles" USING btree ("parent_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
-CREATE INDEX "idx_roles_status" ON "public"."roles" USING btree ("status" "pg_catalog"."int4_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_roles_code" ON "public"."roles" USING btree ("code" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_roles_parent_id" ON "public"."roles" USING btree ("parent_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_roles_status" ON "public"."roles" USING btree ("status" "pg_catalog"."int4_ops" ASC NULLS LAST);
 
 -- permissions indexes
-CREATE INDEX "idx_permissions_code" ON "public"."permissions" USING btree ("code" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_permissions_parent_id" ON "public"."permissions" USING btree ("parent_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
-CREATE INDEX "idx_permissions_type" ON "public"."permissions" USING btree ("permission_type" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_permissions_code" ON "public"."permissions" USING btree ("code" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_permissions_parent_id" ON "public"."permissions" USING btree ("parent_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_permissions_type" ON "public"."permissions" USING btree ("permission_type" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
 
 -- role_permissions indexes
-CREATE INDEX "idx_role_permissions_role_id" ON "public"."role_permissions" USING btree ("role_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
-CREATE INDEX "idx_role_permissions_permission_id" ON "public"."role_permissions" USING btree ("permission_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_role_permissions_role_id" ON "public"."role_permissions" USING btree ("role_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_role_permissions_permission_id" ON "public"."role_permissions" USING btree ("permission_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
 
 -- api_keys indexes
-CREATE INDEX "idx_api_keys_key_id" ON "public"."api_keys" USING btree ("key_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_api_keys_user_id" ON "public"."api_keys" USING btree ("user_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
-CREATE INDEX "idx_api_keys_tenant_id" ON "public"."api_keys" USING btree ("tenant_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
-CREATE INDEX "idx_api_keys_status" ON "public"."api_keys" USING btree ("status" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_api_keys_created_at" ON "public"."api_keys" USING btree ("created_at" "pg_catalog"."timestamptz_ops" DESC NULLS FIRST);
+CREATE INDEX IF NOT EXISTS "idx_api_keys_key_id" ON "public"."api_keys" USING btree ("key_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_api_keys_user_id" ON "public"."api_keys" USING btree ("user_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_api_keys_tenant_id" ON "public"."api_keys" USING btree ("tenant_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_api_keys_status" ON "public"."api_keys" USING btree ("status" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_api_keys_created_at" ON "public"."api_keys" USING btree ("created_at" "pg_catalog"."timestamptz_ops" DESC NULLS FIRST);
 
 -- api_key_usage_logs indexes
-CREATE INDEX "idx_api_key_usage_key_id" ON "public"."api_key_usage_logs" USING btree ("key_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_api_key_usage_created_at" ON "public"."api_key_usage_logs" USING btree ("created_at" "pg_catalog"."timestamptz_ops" DESC NULLS FIRST);
+CREATE INDEX IF NOT EXISTS "idx_api_key_usage_key_id" ON "public"."api_key_usage_logs" USING btree ("key_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_api_key_usage_created_at" ON "public"."api_key_usage_logs" USING btree ("created_at" "pg_catalog"."timestamptz_ops" DESC NULLS FIRST);
 
 -- cms_category indexes
-CREATE INDEX "idx_cms_category_parent_id" ON "public"."cms_category" USING btree ("parent_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
-CREATE INDEX "idx_cms_category_status" ON "public"."cms_category" USING btree ("status" "pg_catalog"."int2_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_cms_category_parent_id" ON "public"."cms_category" USING btree ("parent_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_cms_category_status" ON "public"."cms_category" USING btree ("status" "pg_catalog"."int2_ops" ASC NULLS LAST);
 
 -- cms_article indexes
-CREATE INDEX "idx_cms_article_category_id" ON "public"."cms_article" USING btree ("category_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
-CREATE INDEX "idx_cms_article_author_id" ON "public"."cms_article" USING btree ("author_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
-CREATE INDEX "idx_cms_article_status" ON "public"."cms_article" USING btree ("status" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_cms_article_is_top" ON "public"."cms_article" USING btree ("is_top" "pg_catalog"."int2_ops" ASC NULLS LAST);
-CREATE INDEX "idx_cms_article_is_featured" ON "public"."cms_article" USING btree ("is_featured" "pg_catalog"."int2_ops" ASC NULLS LAST);
-CREATE INDEX "idx_cms_article_published_at" ON "public"."cms_article" USING btree ("published_at" "pg_catalog"."timestamptz_ops" ASC NULLS LAST);
-CREATE INDEX "idx_cms_article_created_at" ON "public"."cms_article" USING btree ("created_at" "pg_catalog"."timestamptz_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_cms_article_category_id" ON "public"."cms_article" USING btree ("category_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_cms_article_author_id" ON "public"."cms_article" USING btree ("author_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_cms_article_status" ON "public"."cms_article" USING btree ("status" "pg_catalog"."int4_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_cms_article_is_top" ON "public"."cms_article" USING btree ("is_top" "pg_catalog"."bool_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_cms_article_is_featured" ON "public"."cms_article" USING btree ("is_featured" "pg_catalog"."bool_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_cms_article_published_at" ON "public"."cms_article" USING btree ("published_at" "pg_catalog"."timestamptz_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_cms_article_created_at" ON "public"."cms_article" USING btree ("created_at" "pg_catalog"."timestamptz_ops" ASC NULLS LAST);
 
 -- cms_comment indexes
-CREATE INDEX "idx_cms_comment_article_id" ON "public"."cms_comment" USING btree ("article_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
-CREATE INDEX "idx_cms_comment_user_id" ON "public"."cms_comment" USING btree ("user_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
-CREATE INDEX "idx_cms_comment_parent_id" ON "public"."cms_comment" USING btree ("parent_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
-CREATE INDEX "idx_cms_comment_status" ON "public"."cms_comment" USING btree ("status" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_cms_comment_created_at" ON "public"."cms_comment" USING btree ("created_at" "pg_catalog"."timestamptz_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_cms_comment_article_id" ON "public"."cms_comment" USING btree ("article_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_cms_comment_user_id" ON "public"."cms_comment" USING btree ("user_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_cms_comment_parent_id" ON "public"."cms_comment" USING btree ("parent_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_cms_comment_status" ON "public"."cms_comment" USING btree ("status" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_cms_comment_created_at" ON "public"."cms_comment" USING btree ("created_at" "pg_catalog"."timestamptz_ops" ASC NULLS LAST);
 
 -- sys_message indexes
-CREATE INDEX "idx_sys_message_type" ON "public"."sys_message" USING btree ("type" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_sys_message_sender_id" ON "public"."sys_message" USING btree ("sender_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
-CREATE INDEX "idx_sys_message_priority" ON "public"."sys_message" USING btree ("priority" "pg_catalog"."int2_ops" ASC NULLS LAST);
-CREATE INDEX "idx_sys_message_created_at" ON "public"."sys_message" USING btree ("created_at" "pg_catalog"."timestamptz_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_sys_message_type" ON "public"."sys_message" USING btree ("type" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_sys_message_sender_id" ON "public"."sys_message" USING btree ("sender_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_sys_message_priority" ON "public"."sys_message" USING btree ("priority" "pg_catalog"."int2_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_sys_message_created_at" ON "public"."sys_message" USING btree ("created_at" "pg_catalog"."timestamptz_ops" ASC NULLS LAST);
 
 -- sys_message_user indexes
-CREATE INDEX "idx_sys_message_user_user_id" ON "public"."sys_message_user" USING btree ("user_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
-CREATE INDEX "idx_sys_message_user_is_read" ON "public"."sys_message_user" USING btree ("is_read" "pg_catalog"."int2_ops" ASC NULLS LAST);
-CREATE INDEX "idx_sys_message_user_is_deleted" ON "public"."sys_message_user" USING btree ("is_deleted" "pg_catalog"."int2_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_sys_message_user_user_id" ON "public"."sys_message_user" USING btree ("user_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_sys_message_user_is_read" ON "public"."sys_message_user" USING btree ("is_read" "pg_catalog"."int2_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_sys_message_user_is_deleted" ON "public"."sys_message_user" USING btree ("is_deleted" "pg_catalog"."int2_ops" ASC NULLS LAST);
 
 -- announcements indexes
-CREATE INDEX "idx_announcements_active" ON "public"."announcements" USING btree ("is_active" "pg_catalog"."bool_ops" ASC NULLS LAST, "is_pinned" "pg_catalog"."bool_ops" ASC NULLS LAST, "start_time" "pg_catalog"."timestamptz_ops" ASC NULLS LAST, "end_time" "pg_catalog"."timestamptz_ops" ASC NULLS LAST);
-CREATE INDEX "idx_announcements_created_by" ON "public"."announcements" USING btree ("created_by" "pg_catalog"."int8_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_announcements_active" ON "public"."announcements" USING btree ("is_active" "pg_catalog"."bool_ops" ASC NULLS LAST, "is_pinned" "pg_catalog"."bool_ops" ASC NULLS LAST, "start_time" "pg_catalog"."timestamptz_ops" ASC NULLS LAST, "end_time" "pg_catalog"."timestamptz_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_announcements_created_by" ON "public"."announcements" USING btree ("created_by" "pg_catalog"."int8_ops" ASC NULLS LAST);
 
 -- sys_files indexes
-CREATE INDEX "idx_sys_files_category" ON "public"."sys_files" USING btree ("category" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_sys_files_created_by" ON "public"."sys_files" USING btree ("created_by" "pg_catalog"."int8_ops" ASC NULLS LAST);
-CREATE INDEX "idx_sys_files_tenant_id" ON "public"."sys_files" USING btree ("tenant_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
-CREATE INDEX "idx_sys_files_mime_type" ON "public"."sys_files" USING btree ("mime_type" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_sys_files_created_at" ON "public"."sys_files" USING btree ("created_at" "pg_catalog"."timestamptz_ops" ASC NULLS LAST);
-CREATE INDEX "idx_sys_files_deleted_at" ON "public"."sys_files" USING btree ("deleted_at" "pg_catalog"."timestamptz_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_sys_files_category" ON "public"."sys_files" USING btree ("category" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_sys_files_created_by" ON "public"."sys_files" USING btree ("created_by" "pg_catalog"."int8_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_sys_files_tenant_id" ON "public"."sys_files" USING btree ("tenant_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_sys_files_mime_type" ON "public"."sys_files" USING btree ("mime_type" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_sys_files_created_at" ON "public"."sys_files" USING btree ("created_at" "pg_catalog"."timestamptz_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_sys_files_deleted_at" ON "public"."sys_files" USING btree ("deleted_at" "pg_catalog"."timestamptz_ops" ASC NULLS LAST);
 
 -- sys_feedback indexes
-CREATE INDEX "idx_sys_feedback_user_id" ON "public"."sys_feedback" USING btree ("user_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
-CREATE INDEX "idx_sys_feedback_type" ON "public"."sys_feedback" USING btree ("type" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_sys_feedback_status" ON "public"."sys_feedback" USING btree ("status" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_sys_feedback_created_at" ON "public"."sys_feedback" USING btree ("created_at" "pg_catalog"."timestamptz_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_sys_feedback_user_id" ON "public"."sys_feedback" USING btree ("user_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_sys_feedback_type" ON "public"."sys_feedback" USING btree ("type" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_sys_feedback_status" ON "public"."sys_feedback" USING btree ("status" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_sys_feedback_created_at" ON "public"."sys_feedback" USING btree ("created_at" "pg_catalog"."timestamptz_ops" ASC NULLS LAST);
 
 -- sys_operation_logs indexes
-CREATE INDEX "idx_sys_operation_logs_user_id" ON "public"."sys_operation_logs" USING btree ("user_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
-CREATE INDEX "idx_sys_operation_logs_username" ON "public"."sys_operation_logs" USING btree ("username" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_sys_operation_logs_module" ON "public"."sys_operation_logs" USING btree ("module" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_sys_operation_logs_business_type" ON "public"."sys_operation_logs" USING btree ("business_type" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_sys_operation_logs_status" ON "public"."sys_operation_logs" USING btree ("status" "pg_catalog"."int2_ops" ASC NULLS LAST);
-CREATE INDEX "idx_sys_operation_logs_ip_address" ON "public"."sys_operation_logs" USING btree ("ip_address" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_sys_operation_logs_created_at" ON "public"."sys_operation_logs" USING btree ("created_at" "pg_catalog"."timestamptz_ops" DESC NULLS FIRST);
-CREATE INDEX "idx_sys_operation_logs_user_time" ON "public"."sys_operation_logs" USING btree ("user_id" "pg_catalog"."int8_ops" ASC NULLS LAST, "created_at" "pg_catalog"."timestamptz_ops" DESC NULLS FIRST);
+CREATE INDEX IF NOT EXISTS "idx_sys_operation_logs_user_id" ON "public"."sys_operation_logs" USING btree ("user_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_sys_operation_logs_username" ON "public"."sys_operation_logs" USING btree ("username" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_sys_operation_logs_module" ON "public"."sys_operation_logs" USING btree ("module" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_sys_operation_logs_business_type" ON "public"."sys_operation_logs" USING btree ("business_type" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_sys_operation_logs_status" ON "public"."sys_operation_logs" USING btree ("status" "pg_catalog"."int2_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_sys_operation_logs_ip_address" ON "public"."sys_operation_logs" USING btree ("ip_address" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_sys_operation_logs_created_at" ON "public"."sys_operation_logs" USING btree ("created_at" "pg_catalog"."timestamptz_ops" DESC NULLS FIRST);
+CREATE INDEX IF NOT EXISTS "idx_sys_operation_logs_user_time" ON "public"."sys_operation_logs" USING btree ("user_id" "pg_catalog"."int8_ops" ASC NULLS LAST, "created_at" "pg_catalog"."timestamptz_ops" DESC NULLS FIRST);
 
 -- sys_sensitive_audits indexes
-CREATE INDEX "idx_sys_sensitive_audits_user_id" ON "public"."sys_sensitive_audits" USING btree ("user_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
-CREATE INDEX "idx_sys_sensitive_audits_username" ON "public"."sys_sensitive_audits" USING btree ("username" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_sys_sensitive_audits_type" ON "public"."sys_sensitive_audits" USING btree ("operation_type" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_sys_sensitive_audits_status" ON "public"."sys_sensitive_audits" USING btree ("confirm_status" "pg_catalog"."int2_ops" ASC NULLS LAST);
-CREATE INDEX "idx_sys_sensitive_audits_created_at" ON "public"."sys_sensitive_audits" USING btree ("created_at" "pg_catalog"."timestamptz_ops" DESC NULLS FIRST);
+CREATE INDEX IF NOT EXISTS "idx_sys_sensitive_audits_user_id" ON "public"."sys_sensitive_audits" USING btree ("user_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_sys_sensitive_audits_username" ON "public"."sys_sensitive_audits" USING btree ("username" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_sys_sensitive_audits_type" ON "public"."sys_sensitive_audits" USING btree ("operation_type" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_sys_sensitive_audits_status" ON "public"."sys_sensitive_audits" USING btree ("confirm_status" "pg_catalog"."int2_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_sys_sensitive_audits_created_at" ON "public"."sys_sensitive_audits" USING btree ("created_at" "pg_catalog"."timestamptz_ops" DESC NULLS FIRST);
 
 -- sys_ip_whitelist indexes
-CREATE INDEX "idx_sys_ip_whitelist_ip" ON "public"."sys_ip_whitelist" USING btree ("ip_address" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_sys_ip_whitelist_enabled" ON "public"."sys_ip_whitelist" USING btree ("is_enabled" "pg_catalog"."int2_ops" ASC NULLS LAST);
-CREATE INDEX "idx_sys_ip_whitelist_created_at" ON "public"."sys_ip_whitelist" USING btree ("created_at" "pg_catalog"."timestamptz_ops" DESC NULLS FIRST);
+CREATE INDEX IF NOT EXISTS "idx_sys_ip_whitelist_ip" ON "public"."sys_ip_whitelist" USING btree ("ip_address" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_sys_ip_whitelist_enabled" ON "public"."sys_ip_whitelist" USING btree ("is_enabled" "pg_catalog"."int2_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_sys_ip_whitelist_created_at" ON "public"."sys_ip_whitelist" USING btree ("created_at" "pg_catalog"."timestamptz_ops" DESC NULLS FIRST);
 
 -- workflows indexes
-CREATE INDEX "idx_workflows_status" ON "public"."workflows" USING btree ("status" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_workflows_created_by" ON "public"."workflows" USING btree ("created_by" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_workflows_created_at" ON "public"."workflows" USING btree ("created_at" "pg_catalog"."timestamptz_ops" DESC NULLS FIRST);
+CREATE INDEX IF NOT EXISTS "idx_workflows_status" ON "public"."workflows" USING btree ("status" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_workflows_created_by" ON "public"."workflows" USING btree ("created_by" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_workflows_created_at" ON "public"."workflows" USING btree ("created_at" "pg_catalog"."timestamptz_ops" DESC NULLS FIRST);
 
 -- workflow_nodes indexes
-CREATE INDEX "idx_workflow_nodes_workflow_id" ON "public"."workflow_nodes" USING btree ("workflow_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_workflow_nodes_type" ON "public"."workflow_nodes" USING btree ("node_type" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_workflow_nodes_workflow_id" ON "public"."workflow_nodes" USING btree ("workflow_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_workflow_nodes_type" ON "public"."workflow_nodes" USING btree ("node_type" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
 
 -- workflow_edges indexes
-CREATE INDEX "idx_workflow_edges_workflow_id" ON "public"."workflow_edges" USING btree ("workflow_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_workflow_edges_source" ON "public"."workflow_edges" USING btree ("source_node_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_workflow_edges_target" ON "public"."workflow_edges" USING btree ("target_node_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_workflow_edges_workflow_id" ON "public"."workflow_edges" USING btree ("workflow_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_workflow_edges_source" ON "public"."workflow_edges" USING btree ("source_node_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_workflow_edges_target" ON "public"."workflow_edges" USING btree ("target_node_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
 
 -- workflow_instances indexes
-CREATE INDEX "idx_workflow_instances_workflow_id" ON "public"."workflow_instances" USING btree ("workflow_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_workflow_instances_status" ON "public"."workflow_instances" USING btree ("status" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_workflow_instances_started_by" ON "public"."workflow_instances" USING btree ("started_by" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_workflow_instances_started_at" ON "public"."workflow_instances" USING btree ("started_at" "pg_catalog"."timestamptz_ops" DESC NULLS FIRST);
+CREATE INDEX IF NOT EXISTS "idx_workflow_instances_workflow_id" ON "public"."workflow_instances" USING btree ("workflow_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_workflow_instances_status" ON "public"."workflow_instances" USING btree ("status" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_workflow_instances_started_by" ON "public"."workflow_instances" USING btree ("started_by" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_workflow_instances_started_at" ON "public"."workflow_instances" USING btree ("started_at" "pg_catalog"."timestamptz_ops" DESC NULLS FIRST);
 
 -- task_records indexes
-CREATE INDEX "idx_task_records_instance_id" ON "public"."task_records" USING btree ("instance_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_task_records_assignee" ON "public"."task_records" USING btree ("assignee" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_task_records_status" ON "public"."task_records" USING btree ("status" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_task_records_started_at" ON "public"."task_records" USING btree ("started_at" "pg_catalog"."timestamptz_ops" DESC NULLS FIRST);
+CREATE INDEX IF NOT EXISTS "idx_task_records_instance_id" ON "public"."task_records" USING btree ("instance_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_task_records_assignee" ON "public"."task_records" USING btree ("assignee" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_task_records_status" ON "public"."task_records" USING btree ("status" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_task_records_started_at" ON "public"."task_records" USING btree ("started_at" "pg_catalog"."timestamptz_ops" DESC NULLS FIRST);
 
 -- reports indexes
-CREATE INDEX "idx_reports_status" ON "public"."reports" USING btree ("status" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_reports_report_type" ON "public"."reports" USING btree ("report_type" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_reports_created_by" ON "public"."reports" USING btree ("created_by" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_reports_created_at" ON "public"."reports" USING btree ("created_at" "pg_catalog"."timestamptz_ops" DESC NULLS FIRST);
+CREATE INDEX IF NOT EXISTS "idx_reports_status" ON "public"."reports" USING btree ("status" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_reports_report_type" ON "public"."reports" USING btree ("report_type" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_reports_created_by" ON "public"."reports" USING btree ("created_by" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_reports_created_at" ON "public"."reports" USING btree ("created_at" "pg_catalog"."timestamptz_ops" DESC NULLS FIRST);
 
 -- report_tasks indexes
-CREATE INDEX "idx_report_tasks_report_id" ON "public"."report_tasks" USING btree ("report_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_report_tasks_status" ON "public"."report_tasks" USING btree ("status" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_report_tasks_report_id" ON "public"."report_tasks" USING btree ("report_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_report_tasks_status" ON "public"."report_tasks" USING btree ("status" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
 
 -- schedule_tasks indexes
-CREATE INDEX "idx_schedule_tasks_status" ON "public"."schedule_tasks" USING btree ("status" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_schedule_tasks_handler" ON "public"."schedule_tasks" USING btree ("task_handler" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_schedule_tasks_next_run" ON "public"."schedule_tasks" USING btree ("next_run_time" "pg_catalog"."timestamptz_ops" ASC NULLS LAST);
-CREATE INDEX "idx_schedule_tasks_tenant" ON "public"."schedule_tasks" USING btree ("tenant_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_schedule_tasks_created" ON "public"."schedule_tasks" USING btree ("created_at" "pg_catalog"."timestamptz_ops" DESC NULLS FIRST);
+CREATE INDEX IF NOT EXISTS "idx_schedule_tasks_status" ON "public"."schedule_tasks" USING btree ("status" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_schedule_tasks_handler" ON "public"."schedule_tasks" USING btree ("task_handler" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_schedule_tasks_next_run" ON "public"."schedule_tasks" USING btree ("next_run_time" "pg_catalog"."timestamptz_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_schedule_tasks_tenant" ON "public"."schedule_tasks" USING btree ("tenant_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_schedule_tasks_created" ON "public"."schedule_tasks" USING btree ("created_at" "pg_catalog"."timestamptz_ops" DESC NULLS FIRST);
 
 -- task_executions indexes
-CREATE INDEX "idx_task_executions_task" ON "public"."task_executions" USING btree ("task_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_task_executions_status" ON "public"."task_executions" USING btree ("status" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_task_executions_created" ON "public"."task_executions" USING btree ("created_at" "pg_catalog"."timestamptz_ops" DESC NULLS FIRST);
+CREATE INDEX IF NOT EXISTS "idx_task_executions_task" ON "public"."task_executions" USING btree ("task_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_task_executions_status" ON "public"."task_executions" USING btree ("status" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_task_executions_created" ON "public"."task_executions" USING btree ("created_at" "pg_catalog"."timestamptz_ops" DESC NULLS FIRST);
 
 -- data_sources indexes
-CREATE INDEX "idx_data_sources_name" ON "public"."data_sources" USING btree ("name" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_data_sources_ds_type" ON "public"."data_sources" USING btree ("ds_type" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_data_sources_name" ON "public"."data_sources" USING btree ("name" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_data_sources_ds_type" ON "public"."data_sources" USING btree ("ds_type" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
 
 -- system_configs indexes
-CREATE INDEX "idx_system_configs_category" ON "public"."system_configs" USING btree ("category" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_system_configs_key" ON "public"."system_configs" USING btree ("config_key" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_system_configs_category" ON "public"."system_configs" USING btree ("category" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_system_configs_key" ON "public"."system_configs" USING btree ("config_key" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
 
 -- api_permissions indexes
-CREATE INDEX "idx_ap_code" ON "public"."api_permissions" USING btree ("code" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_ap_module" ON "public"."api_permissions" USING btree ("module" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_ap_code" ON "public"."api_permissions" USING btree ("code" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_ap_module" ON "public"."api_permissions" USING btree ("module" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
 
 -- role_function_permissions indexes
-CREATE INDEX "idx_rfp_role_id" ON "public"."role_function_permissions" USING btree ("role_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_rfp_role_id" ON "public"."role_function_permissions" USING btree ("role_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
 
 -- role_data_permissions indexes
-CREATE INDEX "idx_rdp_role_id" ON "public"."role_data_permissions" USING btree ("role_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_rdp_resource_type" ON "public"."role_data_permissions" USING btree ("resource_type" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_rdp_role_id" ON "public"."role_data_permissions" USING btree ("role_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_rdp_resource_type" ON "public"."role_data_permissions" USING btree ("resource_type" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
 
 -- role_field_permissions indexes
-CREATE INDEX "idx_rfpp_role_id" ON "public"."role_field_permissions" USING btree ("role_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_rfpp_resource" ON "public"."role_field_permissions" USING btree ("resource_type" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_rfpp_role_id" ON "public"."role_field_permissions" USING btree ("role_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_rfpp_resource" ON "public"."role_field_permissions" USING btree ("resource_type" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
 
 -- permission_inheritances indexes
-CREATE INDEX "idx_inherit_parent" ON "public"."permission_inheritances" USING btree ("parent_role_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_inherit_child" ON "public"."permission_inheritances" USING btree ("child_role_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_inherit_parent" ON "public"."permission_inheritances" USING btree ("parent_role_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_inherit_child" ON "public"."permission_inheritances" USING btree ("child_role_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
 
 -- permission_expiry indexes
-CREATE INDEX "idx_permission_expiry_user_id" ON "public"."permission_expiry" USING btree ("user_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_permission_expiry_role_id" ON "public"."permission_expiry" USING btree ("role_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_permission_expiry_expires_at" ON "public"."permission_expiry" USING btree ("expires_at" "pg_catalog"."timestamptz_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_permission_expiry_user_id" ON "public"."permission_expiry" USING btree ("user_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_permission_expiry_role_id" ON "public"."permission_expiry" USING btree ("role_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_permission_expiry_expires_at" ON "public"."permission_expiry" USING btree ("expires_at" "pg_catalog"."timestamptz_ops" ASC NULLS LAST);
 
 -- permission_expiries indexes
-CREATE INDEX "idx_expiry_user" ON "public"."permission_expiries" USING btree ("user_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_expiry_role_id" ON "public"."permission_expiries" USING btree ("role_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_expiry_expires" ON "public"."permission_expiries" USING btree ("expires_at" "pg_catalog"."timestamptz_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_expiry_user" ON "public"."permission_expiries" USING btree ("user_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_expiry_role_id" ON "public"."permission_expiries" USING btree ("role_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_expiry_expires" ON "public"."permission_expiries" USING btree ("expires_at" "pg_catalog"."timestamptz_ops" ASC NULLS LAST);
 
 -- permission_change_logs indexes
-CREATE INDEX "idx_pcl_role_name" ON "public"."permission_change_logs" USING btree ("role_name" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_pcl_operator" ON "public"."permission_change_logs" USING btree ("operator" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_pcl_change_type" ON "public"."permission_change_logs" USING btree ("change_type" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_pcl_created_at" ON "public"."permission_change_logs" USING btree ("created_at" "pg_catalog"."timestamptz_ops" DESC NULLS FIRST);
+CREATE INDEX IF NOT EXISTS "idx_pcl_role_name" ON "public"."permission_change_logs" USING btree ("role_name" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_pcl_operator" ON "public"."permission_change_logs" USING btree ("operator" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_pcl_change_type" ON "public"."permission_change_logs" USING btree ("change_type" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_pcl_created_at" ON "public"."permission_change_logs" USING btree ("created_at" "pg_catalog"."timestamptz_ops" DESC NULLS FIRST);
 
 -- data_permission_rules indexes
-CREATE INDEX "idx_data_perm_role" ON "public"."data_permission_rules" USING btree ("role_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_data_perm_resource" ON "public"."data_permission_rules" USING btree ("resource_type" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_data_perm_enabled" ON "public"."data_permission_rules" USING btree ("enabled" "pg_catalog"."bool_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_data_perm_role" ON "public"."data_permission_rules" USING btree ("role_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_data_perm_resource" ON "public"."data_permission_rules" USING btree ("resource_type" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_data_perm_enabled" ON "public"."data_permission_rules" USING btree ("enabled" "pg_catalog"."bool_ops" ASC NULLS LAST);
 
 -- field_permission_configs indexes
-CREATE INDEX "idx_field_perm_role" ON "public"."field_permission_configs" USING btree ("role_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_field_perm_resource" ON "public"."field_permission_configs" USING btree ("resource_type" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_field_perm_field" ON "public"."field_permission_configs" USING btree ("field_name" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_field_perm_role" ON "public"."field_permission_configs" USING btree ("role_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_field_perm_resource" ON "public"."field_permission_configs" USING btree ("resource_type" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_field_perm_field" ON "public"."field_permission_configs" USING btree ("field_name" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
 
 -- tow_car indexes
-CREATE INDEX "idx_tow_car_license" ON "public"."tow_car" USING btree ("license" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_tow_car_dc_date" ON "public"."tow_car" USING btree ("dc_date" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_tow_car_rs_date" ON "public"."tow_car" USING btree ("rs_date" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_tow_car_cmd_unit" ON "public"."tow_car" USING btree ("cmd_unit" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-CREATE INDEX "idx_tow_car_delete" ON "public"."tow_car" USING btree ("delete" "pg_catalog"."bool_ops" ASC NULLS LAST);
-CREATE INDEX "idx_tow_car_dc_key" ON "public"."tow_car" USING btree ("dc_key" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_tow_car_license" ON "public"."tow_car" USING btree ("license" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_tow_car_dc_date" ON "public"."tow_car" USING btree ("dc_date" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_tow_car_rs_date" ON "public"."tow_car" USING btree ("rs_date" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_tow_car_cmd_unit" ON "public"."tow_car" USING btree ("cmd_unit" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_tow_car_delete" ON "public"."tow_car" USING btree ("delete" "pg_catalog"."bool_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_tow_car_dc_key" ON "public"."tow_car" USING btree ("dc_key" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
 
 -- tow_car_class indexes
-CREATE INDEX "idx_tow_car_class_cpt" ON "public"."tow_car_class" USING btree ("cpt" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_tow_car_class_cpt" ON "public"."tow_car_class" USING btree ("cpt" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
 
 -- tow_dc_causes indexes
-CREATE INDEX "idx_tow_dc_causes_type_id" ON "public"."tow_dc_causes" USING btree ("type_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
-
--- =============================================================================
--- Primary Keys (主键)
--- =============================================================================
-
-ALTER TABLE "public"."users" ADD CONSTRAINT "users_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."departments" ADD CONSTRAINT "departments_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."sessions" ADD CONSTRAINT "sessions_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."sys_login_logs" ADD CONSTRAINT "sys_login_logs_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."sys_login_device" ADD CONSTRAINT "sys_login_device_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."user_roles" ADD CONSTRAINT "user_roles_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."user_departments" ADD CONSTRAINT "user_departments_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."roles" ADD CONSTRAINT "roles_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."permissions" ADD CONSTRAINT "permissions_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."role_permissions" ADD CONSTRAINT "role_permissions_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."role_templates" ADD CONSTRAINT "role_templates_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."api_permissions" ADD CONSTRAINT "api_permissions_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."cms_category" ADD CONSTRAINT "cms_category_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."cms_article" ADD CONSTRAINT "cms_article_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."cms_comment" ADD CONSTRAINT "cms_comment_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."sys_message" ADD CONSTRAINT "sys_message_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."sys_message_user" ADD CONSTRAINT "sys_message_user_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."announcements" ADD CONSTRAINT "announcements_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."sys_files" ADD CONSTRAINT "sys_files_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."sys_feedback" ADD CONSTRAINT "sys_feedback_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."sys_operation_logs" ADD CONSTRAINT "sys_operation_logs_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."sys_sensitive_audits" ADD CONSTRAINT "sys_sensitive_audits_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."sys_ip_whitelist" ADD CONSTRAINT "sys_ip_whitelist_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."workflows" ADD CONSTRAINT "workflows_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."workflow_nodes" ADD CONSTRAINT "workflow_nodes_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."workflow_edges" ADD CONSTRAINT "workflow_edges_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."workflow_instances" ADD CONSTRAINT "workflow_instances_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."task_records" ADD CONSTRAINT "task_records_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."reports" ADD CONSTRAINT "reports_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."report_tasks" ADD CONSTRAINT "report_tasks_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."schedule_tasks" ADD CONSTRAINT "schedule_tasks_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."task_executions" ADD CONSTRAINT "task_executions_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."data_sources" ADD CONSTRAINT "data_sources_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."api_keys" ADD CONSTRAINT "api_keys_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."api_key_usage_logs" ADD CONSTRAINT "api_key_usage_logs_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."system_configs" ADD CONSTRAINT "system_configs_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."role_function_permissions" ADD CONSTRAINT "role_function_permissions_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."role_data_permissions" ADD CONSTRAINT "role_data_permissions_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."role_field_permissions" ADD CONSTRAINT "role_field_permissions_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."permission_inheritances" ADD CONSTRAINT "permission_inheritances_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."permission_expiry" ADD CONSTRAINT "permission_expiry_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."permission_expiries" ADD CONSTRAINT "permission_expiries_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."permission_change_logs" ADD CONSTRAINT "permission_change_logs_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."data_permission_rules" ADD CONSTRAINT "data_permission_rules_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."field_permission_configs" ADD CONSTRAINT "field_permission_configs_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."tow_car" ADD CONSTRAINT "tow_car_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."tow_car_class" ADD CONSTRAINT "tow_car_class_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."tow_car_type" ADD CONSTRAINT "tow_car_type_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."tow_car_color" ADD CONSTRAINT "tow_car_color_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."tow_dc_type" ADD CONSTRAINT "tow_dc_type_pkey" PRIMARY KEY ("id");
-ALTER TABLE "public"."tow_dc_causes" ADD CONSTRAINT "tow_dc_causes_pkey" PRIMARY KEY ("id");
-
--- =============================================================================
--- Unique Constraints (唯一约束)
--- =============================================================================
-
-ALTER TABLE "public"."users" ADD CONSTRAINT "users_username_key" UNIQUE ("username");
-ALTER TABLE "public"."departments" ADD CONSTRAINT "departments_code_key" UNIQUE ("code");
-ALTER TABLE "public"."roles" ADD CONSTRAINT "roles_name_key" UNIQUE ("name");
-ALTER TABLE "public"."roles" ADD CONSTRAINT "roles_code_key" UNIQUE ("code");
-ALTER TABLE "public"."permissions" ADD CONSTRAINT "permissions_code_key" UNIQUE ("code");
-ALTER TABLE "public"."api_keys" ADD CONSTRAINT "api_keys_key_id_key" UNIQUE ("key_id");
-ALTER TABLE "public"."cms_category" ADD CONSTRAINT "cms_category_slug_key" UNIQUE ("slug");
-ALTER TABLE "public"."cms_article" ADD CONSTRAINT "cms_article_slug_key" UNIQUE ("slug");
-ALTER TABLE "public"."sys_message_user" ADD CONSTRAINT "sys_message_user_message_id_user_id_key" UNIQUE ("message_id", "user_id");
-ALTER TABLE "public"."user_roles" ADD CONSTRAINT "user_roles_user_id_role_id_key" UNIQUE ("user_id", "role_id");
-ALTER TABLE "public"."user_departments" ADD CONSTRAINT "user_departments_user_id_department_id_key" UNIQUE ("user_id", "department_id");
-ALTER TABLE "public"."role_permissions" ADD CONSTRAINT "role_permissions_role_id_permission_id_key" UNIQUE ("role_id", "permission_id");
-ALTER TABLE "public"."role_function_permissions" ADD CONSTRAINT "role_function_permissions_role_id_permission_key" UNIQUE ("role_id", "permission");
-ALTER TABLE "public"."role_field_permissions" ADD CONSTRAINT "role_field_permissions_role_id_resource_type_field_name_key" UNIQUE ("role_id", "resource_type", "field_name");
-ALTER TABLE "public"."api_permissions" ADD CONSTRAINT "api_permissions_code_key" UNIQUE ("code");
-ALTER TABLE "public"."system_configs" ADD CONSTRAINT "system_configs_category_config_key_key" UNIQUE ("category", "config_key");
-
--- =============================================================================
--- Check Constraints (检查约束)
--- =============================================================================
-
-ALTER TABLE "public"."departments" ADD CONSTRAINT "chk_dept_level" CHECK (level <= 5);
-ALTER TABLE "public"."roles" ADD CONSTRAINT "chk_role_level" CHECK (level <= 3);
-
--- =============================================================================
--- Foreign Keys (外键)
--- =============================================================================
-
--- user-service foreign keys
-ALTER TABLE "public"."sessions" ADD CONSTRAINT "sessions_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
-ALTER TABLE "public"."departments" ADD CONSTRAINT "departments_parent_id_fkey" FOREIGN KEY ("parent_id") REFERENCES "public"."departments" ("id") ON DELETE SET NULL ON UPDATE NO ACTION;
-ALTER TABLE "public"."departments" ADD CONSTRAINT "departments_leader_id_fkey" FOREIGN KEY ("leader_id") REFERENCES "public"."users" ("id") ON DELETE SET NULL ON UPDATE NO ACTION;
-ALTER TABLE "public"."user_roles" ADD CONSTRAINT "user_roles_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
-ALTER TABLE "public"."user_roles" ADD CONSTRAINT "user_roles_role_id_fkey" FOREIGN KEY ("role_id") REFERENCES "public"."roles" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
-ALTER TABLE "public"."user_departments" ADD CONSTRAINT "user_departments_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
-ALTER TABLE "public"."user_departments" ADD CONSTRAINT "user_departments_department_id_fkey" FOREIGN KEY ("department_id") REFERENCES "public"."departments" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
-
--- auth-service foreign keys
-ALTER TABLE "public"."permissions" ADD CONSTRAINT "permissions_parent_id_fkey" FOREIGN KEY ("parent_id") REFERENCES "public"."permissions" ("id") ON DELETE SET NULL ON UPDATE NO ACTION;
-ALTER TABLE "public"."role_permissions" ADD CONSTRAINT "role_permissions_role_id_fkey" FOREIGN KEY ("role_id") REFERENCES "public"."roles" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
-ALTER TABLE "public"."role_permissions" ADD CONSTRAINT "role_permissions_permission_id_fkey" FOREIGN KEY ("permission_id") REFERENCES "public"."permissions" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
-ALTER TABLE "public"."roles" ADD CONSTRAINT "roles_parent_id_fkey" FOREIGN KEY ("parent_id") REFERENCES "public"."roles" ("id") ON DELETE SET NULL ON UPDATE NO ACTION;
-
--- cms-service foreign keys
-ALTER TABLE "public"."cms_article" ADD CONSTRAINT "cms_article_category_id_fkey" FOREIGN KEY ("category_id") REFERENCES "public"."cms_category" ("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
-ALTER TABLE "public"."cms_article" ADD CONSTRAINT "cms_article_author_id_fkey" FOREIGN KEY ("author_id") REFERENCES "public"."users" ("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
-ALTER TABLE "public"."cms_comment" ADD CONSTRAINT "cms_comment_article_id_fkey" FOREIGN KEY ("article_id") REFERENCES "public"."cms_article" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
-ALTER TABLE "public"."cms_comment" ADD CONSTRAINT "cms_comment_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
-
--- messaging-service foreign keys
-ALTER TABLE "public"."sys_message" ADD CONSTRAINT "sys_message_sender_id_fkey" FOREIGN KEY ("sender_id") REFERENCES "public"."users" ("id") ON DELETE SET NULL ON UPDATE NO ACTION;
-ALTER TABLE "public"."sys_message_user" ADD CONSTRAINT "sys_message_user_message_id_fkey" FOREIGN KEY ("message_id") REFERENCES "public"."sys_message" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
-ALTER TABLE "public"."sys_message_user" ADD CONSTRAINT "sys_message_user_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
-ALTER TABLE "public"."announcements" ADD CONSTRAINT "announcements_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "public"."users" ("id") ON DELETE SET NULL ON UPDATE NO ACTION;
-
--- workflow-service foreign keys
-ALTER TABLE "public"."workflow_nodes" ADD CONSTRAINT "workflow_nodes_workflow_id_fkey" FOREIGN KEY ("workflow_id") REFERENCES "public"."workflows" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
-ALTER TABLE "public"."workflow_edges" ADD CONSTRAINT "workflow_edges_workflow_id_fkey" FOREIGN KEY ("workflow_id") REFERENCES "public"."workflows" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
-ALTER TABLE "public"."workflow_instances" ADD CONSTRAINT "workflow_instances_workflow_id_fkey" FOREIGN KEY ("workflow_id") REFERENCES "public"."workflows" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
-ALTER TABLE "public"."task_records" ADD CONSTRAINT "task_records_instance_id_fkey" FOREIGN KEY ("instance_id") REFERENCES "public"."workflow_instances" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
-
--- clean-service foreign keys
-ALTER TABLE "public"."report_tasks" ADD CONSTRAINT "report_tasks_report_id_fkey" FOREIGN KEY ("report_id") REFERENCES "public"."reports" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+CREATE INDEX IF NOT EXISTS "idx_tow_dc_causes_type_id" ON "public"."tow_dc_causes" USING btree ("type_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
 
 -- =============================================================================
 -- Multi-Tenant Schema Migration Helpers
@@ -2810,11 +3334,11 @@ BEGIN
     IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = tbl_name) THEN
       -- Move sequences first
       EXECUTE format(
-        'DO $$ BEGIN
+        'DO $do$ BEGIN
           IF EXISTS (SELECT 1 FROM information_schema.sequences WHERE sequence_schema = ''public'' AND sequence_name = ''%s_id_seq'') THEN
             ALTER SEQUENCE public."%s_id_seq" SET SCHEMA %I;
           END IF;
-        END $$',
+        END $do$',
         tbl_name, tbl_name, target_schema
       );
 
@@ -2866,6 +3390,9 @@ BEGIN
     NEW.updated_at = NOW();
     RETURN NEW;
 END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_lpr_pass_records_updated_at ON public.lpr_pass_records;
 CREATE TRIGGER trg_lpr_pass_records_updated_at
     BEFORE UPDATE ON public.lpr_pass_records
     FOR EACH ROW
@@ -2877,6 +3404,7 @@ CREATE TRIGGER trg_lpr_pass_records_updated_at
 -- ===========================================================================
 
 CREATE SCHEMA IF NOT EXISTS socialops;
+GRANT USAGE ON SCHEMA socialops TO myai_app;
 
 -- 1. 社交账号
 CREATE TABLE IF NOT EXISTS socialops.social_accounts (
@@ -3331,8 +3859,8 @@ CREATE TABLE IF NOT EXISTS "public"."car_history_2026_8" (
     "status" bigint,
     "provide" varchar(255),
     "speed" double precision,
-    "gps" json,
-    "time" json,
+    "gps" jsonb,
+    "time" jsonb,
     "create_date" timestamp without time zone,
     "update_date" timestamp without time zone,
     "delete" boolean,
@@ -3351,7 +3879,7 @@ CREATE TABLE IF NOT EXISTS "public"."storage_history_2026_8" (
     "code" varchar(255),
     "status" bigint,
     "provide" varchar(255),
-    "gps" json,
+    "gps" jsonb,
     "create_date" timestamp without time zone,
     "update_date" timestamp without time zone,
     "delete" boolean,
@@ -3373,8 +3901,8 @@ CREATE TABLE IF NOT EXISTS "public"."order_2026_8" (
     "status" bigint,
     "provide" varchar(255),
     "speed" double precision,
-    "gps" json,
-    "time" json,
+    "gps" jsonb,
+    "time" jsonb,
     "create_date" timestamp without time zone,
     "update_date" timestamp without time zone,
     "delete" boolean,
@@ -3402,6 +3930,14 @@ COMMENT ON TABLE "public"."order_2026_8" IS '电动自行车订单表（2026年8
 -- =============================================================================
 -- Gateway 自有表（api-gateway 管理）
 -- =============================================================================
+
+CREATE SEQUENCE IF NOT EXISTS "public"."gw_login_devices_id_seq" INCREMENT 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1 CACHE 1;
+CREATE SEQUENCE IF NOT EXISTS "public"."gw_ip_whitelist_id_seq" INCREMENT 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1 CACHE 1;
+CREATE SEQUENCE IF NOT EXISTS "public"."gw_sensitive_audit_id_seq" INCREMENT 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1 CACHE 1;
+CREATE SEQUENCE IF NOT EXISTS "public"."gw_scheduled_tasks_id_seq" INCREMENT 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1 CACHE 1;
+CREATE SEQUENCE IF NOT EXISTS "public"."gw_reports_id_seq" INCREMENT 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1 CACHE 1;
+CREATE SEQUENCE IF NOT EXISTS "public"."gw_data_sources_id_seq" INCREMENT 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1 CACHE 1;
+CREATE SEQUENCE IF NOT EXISTS "public"."gw_report_templates_id_seq" INCREMENT 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1 CACHE 1;
 
 CREATE TABLE IF NOT EXISTS "public"."gw_login_devices" (
     "id" int8 NOT NULL DEFAULT nextval('gw_login_devices_id_seq'::regclass),
@@ -3514,122 +4050,10 @@ ALTER TABLE "public"."order_2026_8" OWNER TO myai_app;
 -- 创建时间: 2026-09-13
 
 -- ============================================
--- 1. 计费计划表
--- ============================================
-CREATE TABLE IF NOT EXISTS plans (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name VARCHAR(100) NOT NULL,
-    description TEXT,
-    plan_type VARCHAR(20) NOT NULL DEFAULT 'free' CHECK (plan_type IN ('free', 'standard', 'enterprise', 'custom')),
-    status VARCHAR(20) NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'active', 'archived')),
-    price_monthly DECIMAL(10, 2) NOT NULL DEFAULT 0,
-    price_yearly DECIMAL(10, 2) NOT NULL DEFAULT 0,
-    currency VARCHAR(3) NOT NULL DEFAULT 'CNY',
-    features JSONB NOT NULL DEFAULT '[]'::jsonb,
-    quotas JSONB NOT NULL DEFAULT '{}'::jsonb,
-    sort_order INTEGER NOT NULL DEFAULT 0,
-    is_public BOOLEAN NOT NULL DEFAULT true,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
-CREATE INDEX idx_plans_status ON plans(status);
-CREATE INDEX idx_plans_type ON plans(plan_type);
-CREATE INDEX idx_plans_public ON plans(is_public) WHERE is_public = true;
-
--- 插入默认套餐
-INSERT INTO plans (name, plan_type, status, price_monthly, price_yearly, features, quotas, sort_order, is_public) VALUES
-('Free', 'free', 'active', 0, 0, 
- '[{"name":"basic_chat","enabled":true},{"name":"file_sharing","enabled":true,"value":"10MB"}]'::jsonb,
- '{"max_users":5,"max_storage_gb":1,"monthly_api_calls":10000}'::jsonb, 1, true),
-
-('Standard', 'standard', 'active', 99, 999,
- '[{"name":"advanced_chat","enabled":true},{"name":"voice_video","enabled":true},{"name":"file_sharing","enabled":true,"value":"100MB"}]'::jsonb,
- '{"max_users":50,"max_storage_gb":10,"monthly_api_calls":100000}'::jsonb, 2, true),
-
-('Enterprise', 'enterprise', 'active', 499, 4999,
- '[{"name":"all_features","enabled":true},{"name":"priority_support","enabled":true},{"name":"custom_branding","enabled":true}]'::jsonb,
- '{"max_users":500,"max_storage_gb":100,"monthly_api_calls":1000000}'::jsonb, 3, true);
-
--- ============================================
--- 2. 订阅表
--- ============================================
-CREATE TABLE IF NOT EXISTS subscriptions (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    tenant_id UUID NOT NULL,
-    plan_id UUID NOT NULL REFERENCES plans(id),
-    status VARCHAR(20) NOT NULL DEFAULT 'trialing' CHECK (status IN ('active', 'cancelled', 'expired', 'trialing', 'past_due', 'unpaid')),
-    current_period_start TIMESTAMPTZ NOT NULL DEFAULT now(),
-    current_period_end TIMESTAMPTZ NOT NULL DEFAULT now() + INTERVAL '14 days',
-    cancel_at_period_end BOOLEAN NOT NULL DEFAULT false,
-    canceled_at TIMESTAMPTZ,
-    trial_end TIMESTAMPTZ,
-    quantity INTEGER NOT NULL DEFAULT 1,
-    unit_price DECIMAL(10, 2) NOT NULL DEFAULT 0,
-    currency VARCHAR(3) NOT NULL DEFAULT 'CNY',
-    next_billing_date TIMESTAMPTZ,
-    metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    CONSTRAINT fk_subscription_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE
-);
-
-CREATE INDEX idx_subscriptions_tenant ON subscriptions(tenant_id);
-CREATE INDEX idx_subscriptions_status ON subscriptions(status);
-CREATE INDEX idx_subscriptions_plan ON subscriptions(plan_id);
-CREATE INDEX idx_subscriptions_next_billing ON subscriptions(next_billing_date) WHERE next_billing_date IS NOT NULL;
-
--- ============================================
--- 3. 发票表
--- ============================================
-CREATE TABLE IF NOT EXISTS invoices (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    invoice_number VARCHAR(50) NOT NULL UNIQUE,
-    subscription_id UUID REFERENCES subscriptions(id),
-    tenant_id UUID NOT NULL,
-    status VARCHAR(20) NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'pending', 'paid', 'failed', 'void', 'refunded')),
-    subtotal DECIMAL(10, 2) NOT NULL DEFAULT 0,
-    tax_amount DECIMAL(10, 2) NOT NULL DEFAULT 0,
-    total DECIMAL(10, 2) NOT NULL DEFAULT 0,
-    currency VARCHAR(3) NOT NULL DEFAULT 'CNY',
-    period_start TIMESTAMPTZ NOT NULL,
-    period_end TIMESTAMPTZ NOT NULL,
-    issued_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    due_at TIMESTAMPTZ NOT NULL DEFAULT now() + INTERVAL '7 days',
-    paid_at TIMESTAMPTZ,
-    line_items JSONB NOT NULL DEFAULT '[]'::jsonb,
-    notes TEXT,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    CONSTRAINT fk_invoice_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE
-);
-
-CREATE INDEX idx_invoices_tenant ON invoices(tenant_id);
-CREATE INDEX idx_invoices_status ON invoices(status);
-CREATE INDEX idx_invoices_subscription ON invoices(subscription_id);
-CREATE INDEX idx_invoices_due ON invoices(due_at) WHERE status = 'pending';
-
--- ============================================
--- 4. 用量记录表
--- ============================================
-CREATE TABLE IF NOT EXISTS usage_records (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    tenant_id UUID NOT NULL,
-    metric VARCHAR(50) NOT NULL,
-    quantity DECIMAL(15, 4) NOT NULL DEFAULT 0,
-    recorded_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    CONSTRAINT fk_usage_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE
-);
-
-CREATE INDEX idx_usage_tenant_metric ON usage_records(tenant_id, metric);
-CREATE INDEX idx_usage_recorded_at ON usage_records(recorded_at);
-CREATE INDEX idx_usage_tenant_period ON usage_records(tenant_id, metric, recorded_at);
-
--- ============================================
 -- 5. 租户设置表
 -- ============================================
 CREATE TABLE IF NOT EXISTS tenant_settings (
-    tenant_id UUID PRIMARY KEY REFERENCES tenants(id) ON DELETE CASCADE,
+    tenant_id BIGINT PRIMARY KEY REFERENCES tenants(id) ON DELETE CASCADE,
     theme JSONB NOT NULL DEFAULT '{}'::jsonb,
     settings JSONB NOT NULL DEFAULT '{}'::jsonb,
     features JSONB NOT NULL DEFAULT '{}'::jsonb,
@@ -3640,8 +4064,8 @@ CREATE TABLE IF NOT EXISTS tenant_settings (
 -- 6. 租户生命周期事件表
 -- ============================================
 CREATE TABLE IF NOT EXISTS tenant_lifecycle_events (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    tenant_id UUID NOT NULL,
+    id BIGSERIAL PRIMARY KEY,
+    tenant_id BIGINT NOT NULL,
     event_type VARCHAR(50) NOT NULL,
     from_state VARCHAR(30),
     to_state VARCHAR(30),
@@ -3651,16 +4075,16 @@ CREATE TABLE IF NOT EXISTS tenant_lifecycle_events (
     CONSTRAINT fk_lifecycle_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE
 );
 
-CREATE INDEX idx_lifecycle_tenant ON tenant_lifecycle_events(tenant_id);
-CREATE INDEX idx_lifecycle_type ON tenant_lifecycle_events(event_type);
-CREATE INDEX idx_lifecycle_created ON tenant_lifecycle_events(created_at);
+CREATE INDEX IF NOT EXISTS idx_lifecycle_tenant ON tenant_lifecycle_events(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_lifecycle_type ON tenant_lifecycle_events(event_type);
+CREATE INDEX IF NOT EXISTS idx_lifecycle_created ON tenant_lifecycle_events(created_at);
 
 -- ============================================
 -- 7. 租户迁移记录表
 -- ============================================
 CREATE TABLE IF NOT EXISTS tenant_migrations (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    tenant_id UUID NOT NULL,
+    id BIGSERIAL PRIMARY KEY,
+    tenant_id BIGINT NOT NULL,
     version VARCHAR(50) NOT NULL,
     name VARCHAR(200) NOT NULL,
     applied_at TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -3670,21 +4094,22 @@ CREATE TABLE IF NOT EXISTS tenant_migrations (
     CONSTRAINT fk_migration_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE
 );
 
-CREATE INDEX idx_migrations_tenant ON tenant_migrations(tenant_id);
-CREATE INDEX idx_migrations_version ON tenant_migrations(tenant_id, version);
+CREATE INDEX IF NOT EXISTS idx_migrations_tenant ON tenant_migrations(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_migrations_version ON tenant_migrations(tenant_id, version);
 
 -- ============================================
 -- 8. 更新 tenants 表（添加新字段）
 -- ============================================
 ALTER TABLE tenants ADD COLUMN IF NOT EXISTS lifecycle_state VARCHAR(30) NOT NULL DEFAULT 'provisioning';
-ALTER TABLE tenants ADD COLUMN IF NOT EXISTS plan_id UUID REFERENCES plans(id);
-ALTER TABLE tenants ADD COLUMN IF NOT EXISTS subscription_id UUID;
+ALTER TABLE tenants ADD COLUMN IF NOT EXISTS plan_id VARCHAR(64);
+ALTER TABLE tenants ADD COLUMN IF NOT EXISTS subscription_id BIGINT;
 ALTER TABLE tenants ADD COLUMN IF NOT EXISTS grace_period_end TIMESTAMPTZ;
 ALTER TABLE tenants ADD COLUMN IF NOT EXISTS provisioned_at TIMESTAMPTZ;
 ALTER TABLE tenants ADD COLUMN IF NOT EXISTS last_active_at TIMESTAMPTZ;
 
-CREATE INDEX idx_tenants_lifecycle ON tenants(lifecycle_state);
-CREATE INDEX idx_tenants_plan ON tenants(plan_id);
+CREATE INDEX IF NOT EXISTS idx_tenants_lifecycle ON tenants(lifecycle_state);
+CREATE INDEX IF NOT EXISTS idx_tenants_plan ON tenants(plan_id);
+
 -- =============================================================================
 -- Multi-tenancy Migration: Add missing tenant_id columns and constraints
 -- =============================================================================
@@ -3726,16 +4151,16 @@ ALTER TABLE IF EXISTS public.sys_login_logs ADD COLUMN IF NOT EXISTS tenant_id b
 ALTER TABLE IF EXISTS public.sys_sensitive_audits ADD COLUMN IF NOT EXISTS tenant_id bigint;
 
 -- Workflow tables
-ALTER TABLE IF EXISTS public.workflows ADD COLUMN IF NOT EXISTS tenant_id varchar(64);
-ALTER TABLE IF EXISTS public.workflow_instances ADD COLUMN IF NOT EXISTS tenant_id varchar(64);
-ALTER TABLE IF EXISTS public.task_records ADD COLUMN IF NOT EXISTS tenant_id varchar(64);
+ALTER TABLE IF EXISTS public.workflows ADD COLUMN IF NOT EXISTS tenant_id bigint;
+ALTER TABLE IF EXISTS public.workflow_instances ADD COLUMN IF NOT EXISTS tenant_id bigint;
+ALTER TABLE IF EXISTS public.task_records ADD COLUMN IF NOT EXISTS tenant_id bigint;
 
 -- Tow service
 ALTER TABLE IF EXISTS public.tow_car ADD COLUMN IF NOT EXISTS tenant_id bigint;
 
 -- Clean service
-ALTER TABLE IF EXISTS public.reports ADD COLUMN IF NOT EXISTS tenant_id varchar(64);
-ALTER TABLE IF EXISTS public.report_tasks ADD COLUMN IF NOT EXISTS tenant_id varchar(64);
+ALTER TABLE IF EXISTS public.reports ADD COLUMN IF NOT EXISTS tenant_id bigint;
+ALTER TABLE IF EXISTS public.report_tasks ADD COLUMN IF NOT EXISTS tenant_id bigint;
 
 -- =============================================================================
 -- Step 3: Add foreign key constraints to tenants table
@@ -3907,14 +4332,14 @@ COMMENT ON INDEX "public"."idx_tenant_users_status" IS '租户用户状态索引
 -- Admin dashboards query feedbacks by status; users query by their own user_id.
 
 CREATE INDEX IF NOT EXISTS "idx_sys_feedback_user_status" ON "public"."sys_feedback" USING btree ("user_id" "pg_catalog"."int8_ops" ASC NULLS LAST, "status" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-COMMENT ON INDEX "public"."idx_sys_feedback_user_status' IS '系统反馈用户+状态复合索引 - 支持查询用户反馈及状态筛选';
+COMMENT ON INDEX "public"."idx_sys_feedback_user_status" IS '系统反馈用户+状态复合索引 - 支持查询用户反馈及状态筛选';
 
 -- =============================================================================
 -- 8. SCHEDULE_TASKS TABLE - Index for tenant task listings
 -- =============================================================================
 -- Scheduled tasks are queried by tenant with status filtering.
 
-CREATE INDEX IF NOT EXISTS "idx_schedule_tasks_tenant_status" ON "public"."schedule_tasks" USING btree ("tenant_id" "pg_catalog"."int8_ops" ASC NULLS LAST, "status" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_schedule_tasks_tenant_status" ON "public"."schedule_tasks" USING btree ("tenant_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST, "status" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
 COMMENT ON INDEX "public"."idx_schedule_tasks_tenant_status" IS '定时任务租户+状态复合索引 - 支持按租户和状态查询定时任务';
 
 -- =============================================================================
@@ -3931,14 +4356,14 @@ COMMENT ON INDEX "public"."idx_dictionary_items_type_id" IS '字典项类型索�
 -- Task records are queried by instance_id to get all tasks in a workflow instance.
 
 CREATE INDEX IF NOT EXISTS "idx_task_records_instance_id" ON "public"."task_records" USING btree ("instance_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
-COMMENT ON INDEX "public"."idx_task_records_instance_id' IS '任务记录实例索引 - 支持按工作流实例查询任务记录';
+COMMENT ON INDEX "public"."idx_task_records_instance_id" IS '任务记录实例索引 - 支持按工作流实例查询任务记录';
 
 -- =============================================================================
 -- 11. TASK_EXECUTIONS TABLE - Index for task execution lookups
 -- =============================================================================
 -- Task executions are queried by task_id to get execution history.
 
-CREATE INDEX IF NOT EXISTS "idx_task_executions_task_id" ON "public"."task_executions" USING btree ("task_id" "pg_catalog"."int8_ops" ASC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_task_executions_task_id" ON "public"."task_executions" USING btree ("task_id" COLLATE "pg_catalog"."default" "pg_catalog"."text_ops" ASC NULLS LAST);
 COMMENT ON INDEX "public"."idx_task_executions_task_id" IS '任务执行索引 - 支持按任务查询执行记录';
 
 -- =============================================================================
@@ -4003,7 +4428,7 @@ COMMENT ON INDEX "public"."idx_workflow_instances_status_started" IS '工作流�
 -- Article listings filter by category and status.
 
 CREATE INDEX IF NOT EXISTS "idx_cms_article_category_status" ON "public"."cms_article" USING btree ("category_id" "pg_catalog"."int8_ops" ASC NULLS LAST, "status" "pg_catalog"."int4_ops" ASC NULLS LAST);
-COMMENT ON INDEX "public"."idx_cms_article_category_status' IS '文章分类+状态复合索引 - 支持按分类和状态筛选文章';
+COMMENT ON INDEX "public"."idx_cms_article_category_status" IS '文章分类+状态复合索引 - 支持按分类和状态筛选文章';
 
 -- =============================================================================
 -- 20. SESSIONS TABLE - Composite index for cleanup queries
@@ -4011,7 +4436,7 @@ COMMENT ON INDEX "public"."idx_cms_article_category_status' IS '文章分类+状
 -- Session cleanup jobs query by user_id and expires_at.
 
 CREATE INDEX IF NOT EXISTS "idx_sessions_user_expires" ON "public"."sessions" USING btree ("user_id" "pg_catalog"."int8_ops" ASC NULLS LAST, "expires_at" "pg_catalog"."timestamp_ops" ASC NULLS LAST);
-COMMENT ON INDEX "public"."idx_sessions_user_expires' IS '会话用户+过期时间复合索引 - 支持会话清理和过期查询';
+COMMENT ON INDEX "public"."idx_sessions_user_expires" IS '会话用户+过期时间复合索引 - 支持会话清理和过期查询';
 
 -- =============================================================================
 -- END OF FILE
@@ -4189,6 +4614,125 @@ VALUES
      '{"max_users": 50, "max_projects": 20, "support": "email"}'::jsonb),
     ('enterprise', 'Enterprise', '企业版本，提供完整功能和专属支持', 49900, 'CNY', 'month', 1, 30, TRUE, 
      '{"max_users": null, "max_projects": null, "support": "dedicated"}'::jsonb)
+ON CONFLICT (id) DO NOTHING;
+
+
+-- LPR 车牌识别记录 (lpr-service)
+INSERT INTO "public"."lpr_pass_records" ("id", "plate_no", "plate_color", "plate_type", "vehicle_type", "device_id", "device_name", "park_code", "lane_code", "direction", "pass_time", "image_url", "confidence", "status", "related_order_id", "remark", "created_at", "updated_at") VALUES
+(1, '粤B12345', 'blue', 'small', 'car', 'DEV-001', '东门入口摄像机', 'PK-001', 'L1', 'entry', '2026-08-12 08:05:00', '/images/lpr/demo1.jpg', 0.97, 'processed', 'ORDER-001', '演示数据-入场', '2026-08-12 08:05:00', '2026-08-12 08:06:00')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO "public"."lpr_pass_records" ("id", "plate_no", "plate_color", "plate_type", "vehicle_type", "device_id", "device_name", "park_code", "lane_code", "direction", "pass_time", "image_url", "confidence", "status", "related_order_id", "remark", "created_at", "updated_at") VALUES
+(2, '粤B67890', 'green', 'new_energy', 'car', 'DEV-002', '西门出口摄像机', 'PK-001', 'L2', 'exit', '2026-08-12 09:10:00', '/images/lpr/demo2.jpg', 0.95, 'processed', 'ORDER-002', '演示数据-出场', '2026-08-12 09:10:00', '2026-08-12 09:11:00')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO "public"."lpr_pass_records" ("id", "plate_no", "plate_color", "plate_type", "vehicle_type", "device_id", "device_name", "park_code", "lane_code", "direction", "pass_time", "image_url", "confidence", "status", "related_order_id", "remark", "created_at", "updated_at") VALUES
+(3, '粤C24680', 'blue', 'large', 'truck', 'DEV-003', '北门入口摄像机', 'PK-002', 'L1', 'entry', '2026-08-12 07:55:00', '/images/lpr/demo3.jpg', 0.88, 'pending', '', '演示数据-待处理', '2026-08-12 07:55:00', '2026-08-12 07:55:00')
+ON CONFLICT (id) DO NOTHING;
+
+-- SocialOps 社交账号 (social-ops-service, socialops schema)
+INSERT INTO socialops.social_accounts ("id", "user_id", "platform", "account_name", "account_id", "avatar_url", "is_active", "config_json", "created_at", "updated_at") VALUES
+('a1b2c3d4-0000-0000-0000-000000000001', NULL, 'wechat', '深圳交警发布', 'wx-official-001', NULL, true, '{"category":"官方账号","description":"演示用官方公众号"}'::jsonb, '2026-08-01 09:00:00+08', '2026-08-12 09:00:00+08')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO socialops.social_accounts ("id", "user_id", "platform", "account_name", "account_id", "avatar_url", "is_active", "config_json", "created_at", "updated_at") VALUES
+('a1b2c3d4-0000-0000-0000-000000000002', NULL, 'weibo', '深圳拖车服务', 'wb-001', NULL, true, '{"category":"业务账号","description":"演示用微博业务号"}'::jsonb, '2026-08-02 10:00:00+08', '2026-08-12 09:05:00+08')
+ON CONFLICT (id) DO NOTHING;
+
+-- =============================================================================
+-- 演示数据 (2026-08-12) - 第二批: 租户/审计/调度模块
+-- =============================================================================
+
+-- 租户 (tenant-service, 第二批新增表)
+INSERT INTO "public"."tenants" ("id", "name", "code", "domain", "description", "max_users", "max_storage", "status", "expires_at", "created_at", "updated_at") VALUES
+(1, '深圳总公司', 'sz-hq', 'sz-hq.example.com', '演示用深圳总部租户', 500, 107374182400, 1, NULL, '2026-08-01 09:00:00+08', '2026-08-01 09:00:00+08')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO "public"."tenants" ("id", "name", "code", "domain", "description", "max_users", "max_storage", "status", "expires_at", "created_at", "updated_at") VALUES
+(2, '广州分公司', 'gz-branch', 'gz-branch.example.com', '演示用广州分公司租户', 200, 53687091200, 1, '2027-12-31 23:59:59+08', '2026-08-02 10:00:00+08', '2026-08-02 10:00:00+08')
+ON CONFLICT (id) DO NOTHING;
+
+-- 租户用户关联 (tenant-service)
+INSERT INTO "public"."tenant_users" ("id", "tenant_id", "user_id", "role", "department", "position", "status", "joined_at", "created_at") VALUES
+(1, 1, 1, 'admin', '技术部', '系统管理员', 1, '2026-08-01 09:00:00+08', '2026-08-01 09:00:00+08')
+ON CONFLICT (id) DO NOTHING;
+
+-- 报表任务 (report-service, report_id 引用 reports seed)
+INSERT INTO "public"."report_tasks" ("id", "report_id", "status", "result", "error_message", "started_at", "completed_at") VALUES
+('rt-0001', 'rp-tow-stats', 'completed', '{"rows": 12, "generated_at": "2026-08-12T08:00:00+08:00"}'::jsonb, NULL, '2026-08-12 08:00:00+08', '2026-08-12 08:01:00+08')
+ON CONFLICT (id) DO NOTHING;
+
+-- 调度任务 (schedule-task)
+INSERT INTO "public"."schedule_tasks" ("id", "name", "description", "task_type", "cron_expression", "interval_seconds", "start_time", "end_time", "task_handler", "task_params", "status", "execute_strategy", "max_retries", "retry_count", "timeout_seconds", "last_run_time", "next_run_time", "created_by", "tenant_id", "created_at", "updated_at") VALUES
+('st-0001', '每日报表生成', '每天凌晨生成拖车统计报表', 'cron', '0 1 * * *', NULL, '2026-08-01 00:00:00+08', NULL, 'report_generator', '{"report_id": "rp-tow-stats"}'::jsonb, 'running', 'immediate', 3, 0, 3600, '2026-08-12 01:00:00+08', '2026-08-13 01:00:00+08', 'admin', '1', '2026-08-01 00:00:00+08', '2026-08-12 01:00:00+08')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO "public"."schedule_tasks" ("id", "name", "description", "task_type", "cron_expression", "interval_seconds", "start_time", "end_time", "task_handler", "task_params", "status", "execute_strategy", "max_retries", "retry_count", "timeout_seconds", "last_run_time", "next_run_time", "created_by", "tenant_id", "created_at", "updated_at") VALUES
+('st-0002', 'LPR 数据清理', '每小时清理过期 LPR 记录', 'interval', NULL, 3600, '2026-08-01 00:00:00+08', NULL, 'lpr_cleaner', '{"retention_days": 90}'::jsonb, 'paused', 'immediate', 2, 0, 1800, '2026-08-11 12:00:00+08', NULL, 'admin', '1', '2026-08-01 00:00:00+08', '2026-08-11 12:00:00+08')
+ON CONFLICT (id) DO NOTHING;
+
+-- 任务执行记录 (schedule-task)
+INSERT INTO "public"."task_executions" ("id", "task_id", "status", "start_time", "end_time", "result", "error_message", "retry_count", "created_at") VALUES
+('te-0001', 'st-0001', 'completed', '2026-08-12 01:00:00+08', '2026-08-12 01:01:30+08', '报表生成成功, 共 12 行', NULL, 0, '2026-08-12 01:00:00+08')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO "public"."task_executions" ("id", "task_id", "status", "start_time", "end_time", "result", "error_message", "retry_count", "created_at") VALUES
+('te-0002', 'st-0002', 'failed', '2026-08-11 12:00:00+08', '2026-08-11 12:00:30+08', NULL, '数据库连接超时', 1, '2026-08-11 12:00:00+08')
+ON CONFLICT (id) DO NOTHING;
+
+-- 数据源 (report-service)
+INSERT INTO "public"."data_sources" ("id", "name", "ds_type", "config", "created_at", "updated_at") VALUES
+('ds-0001', '生产 PostgreSQL', 'postgresql', '{"host": "pg-cluster-postgresql-0", "port": 5432, "database": "myai"}'::jsonb, '2026-08-01 09:00:00+08', '2026-08-01 09:00:00+08')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO "public"."data_sources" ("id", "name", "ds_type", "config", "created_at", "updated_at") VALUES
+('ds-0002', '报表缓存 Redis', 'redis', '{"host": "redis-replication-redis-0", "port": 6379, "db": 0}'::jsonb, '2026-08-02 10:00:00+08', '2026-08-02 10:00:00+08')
+ON CONFLICT (id) DO NOTHING;
+
+-- 操作日志 (audit-service)
+INSERT INTO "public"."sys_operation_logs" ("id", "user_id", "username", "module", "business_type", "method", "request_method", "request_url", "request_params", "request_body", "response_data", "status", "error_msg", "execution_time", "ip_address", "created_at") VALUES
+(1, 1, 'admin', '角色管理', 'update', 'update_role', 'PUT', '/api/admin/roles/2', '{"name": "系统管理员"}', '{"description": "系统管理权限"}', '{"code": 200}', 1, NULL, 45, '192.0.2.8', '2026-08-12 09:30:00+08')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO "public"."sys_operation_logs" ("id", "user_id", "username", "module", "business_type", "request_method", "request_url", "request_params", "request_body", "response_data", "status", "error_msg", "execution_time", "ip_address", "created_at") VALUES
+(2, 1, 'admin', '用户管理', 'delete', 'DELETE', '/api/admin/users/99', NULL, NULL, '{"code": 404, "msg": "用户不存在"}', 0, '用户不存在', 12, '192.0.2.8', '2026-08-12 09:45:00+08')
+ON CONFLICT (id) DO NOTHING;
+
+-- 登录日志 (auth-service)
+INSERT INTO "public"."sys_login_logs" ("id", "user_id", "username", "ip_address", "user_agent", "login_location", "login_status", "fail_reason", "login_type", "created_at") VALUES
+(1, 1, 'admin', '192.0.2.8', 'Mozilla/5.0 (Windows NT 10.0
+ON CONFLICT DO NOTHING; Win64; x64) AppleWebKit/537.36', '深圳市', 1, NULL, 'password', '2026-08-12 09:00:00+08')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO "public"."sys_login_logs" ("id", "user_id", "username", "ip_address", "user_agent", "login_location", "login_status", "fail_reason", "login_type", "created_at") VALUES
+(2, NULL, 'unknown', '203.0.113.7', 'curl/8.0', NULL, 0, '密码错误', 'password', '2026-08-12 08:55:00+08')
+ON CONFLICT (id) DO NOTHING;
+
+-- 敏感操作审计 (audit-service)
+INSERT INTO "public"."sys_sensitive_audits" ("id", "user_id", "username", "operation_type", "operation_desc", "request_data", "ip_address", "confirm_status", "confirm_time", "confirmed_by", "created_at") VALUES
+(1, 1, 'admin', 'delete_role', '删除角色: 测试角色', '{"role_id": 99}', '192.0.2.8', 1, '2026-08-12 09:50:00+08', 1, '2026-08-12 09:49:00+08')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO "public"."sys_sensitive_audits" ("id", "user_id", "username", "operation_type", "operation_desc", "request_data", "ip_address", "confirm_status", "confirm_time", "confirmed_by", "created_at") VALUES
+(2, 1, 'admin', 'reset_password', '重置用户密码: user99', '{"user_id": 99}', '192.0.2.8', 0, NULL, NULL, '2026-08-12 10:00:00+08')
+ON CONFLICT (id) DO NOTHING;
+
+-- 审计日志 (audit-service, 第二批新增表)
+-- audit_logs.id 为 GENERATED ALWAYS AS IDENTITY, 需 OVERRIDING SYSTEM VALUE 显式插入
+INSERT INTO "public"."audit_logs" ("id", "tenant_id", "user_id", "username", "action", "resource_type", "resource_id", "details", "ip_address", "created_at") OVERRIDING SYSTEM VALUE VALUES
+(1, 1, 1, 'admin', 'ROLE_UPDATE', 'role', 2, '更新角色: 系统管理员', '192.0.2.8', '2026-08-12 09:30:00+08')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO "public"."audit_logs" ("id", "tenant_id", "user_id", "username", "action", "resource_type", "resource_id", "details", "ip_address", "created_at") OVERRIDING SYSTEM VALUE VALUES
+(2, 1, NULL, 'system', 'API_KEY_CREATE', 'api_key', NULL, '创建 API 密钥', '192.0.2.9', '2026-08-12 10:30:00+08')
+ON CONFLICT (id) DO NOTHING;
+
+-- API 用量日志 (api-gateway, 第二批新增表)
+-- api_usage_logs.id 为 GENERATED ALWAYS AS IDENTITY, 需 OVERRIDING SYSTEM VALUE 显式插入
+INSERT INTO "public"."api_usage_logs" ("id", "tenant_id", "created_at") OVERRIDING SYSTEM VALUE VALUES
+(1, 1, '2026-08-12 08:00:00+08'),
+(2, 1, '2026-08-12 09:00:00+08'),
+(3, 1, '2026-08-12 10:00:00+08')
 ON CONFLICT (id) DO NOTHING;
 
 -- =============================================================================

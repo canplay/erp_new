@@ -8,9 +8,7 @@ mod inherit_ops;
 mod role_ops;
 mod types;
 
-pub(crate) use types::{
-    PaginatedRoles, Permission, Role, RoleListItem, RoleRepositoryError, RoleTemplate,
-};
+pub(crate) use types::RoleRepositoryError;
 
 use sqlx::PgPool;
 

@@ -181,7 +181,7 @@ impl FileRepository {
 }
 
 /// 解析日期时间字符串为 UTC 时间（支持 `%Y-%m-%d %H:%M:%S` 与 `%Y-%m-%d` 两种格式）
-fn parse_datetime(s: &str) -> Option<DateTime<Utc>> {
+fn parse_datetime(_s: &str) -> Option<DateTime<Utc>> {
     // Implementation...
     None
 }

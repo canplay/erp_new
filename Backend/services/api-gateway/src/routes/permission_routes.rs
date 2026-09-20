@@ -4,8 +4,7 @@ use std::sync::Arc;
 
 use axum::{
     Json, Router,
-    extract::{Path, State},
-    routing::{get, post, put, delete},
+    routing::{get, post},
 };
 use serde_json::{json, Value};
 

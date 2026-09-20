@@ -1,18 +1,16 @@
 use axum::{
     Json,
     extract::{Extension, Path, Query, State},
-    http::StatusCode,
     response::IntoResponse,
 };
 use chrono::Utc;
 use tracing::{error, info};
-use serde_json::json;
 use std::sync::Arc;
 
 use common::AppError;
 use common::AppResult;
 use crate::models::{
-    ApiKey, CreateKeyRequest, KeyQuery, KeyStats, PageResult, UpdateKeyRequest, ValidateKeyRequest,
+    ApiKey, CreateKeyRequest, KeyQuery, UpdateKeyRequest, ValidateKeyRequest,
 };
 use crate::repository::{ApiKeyRepository, PostgresApiKeyRepository};
 use crate::helpers::{

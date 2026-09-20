@@ -35,10 +35,8 @@ pub async fn order(
             } else {
                 user_role
             };
-            let status = req["status" ].as_i64().unwrap_or(-1);
-            let time_start = req["time" ]["start" ].as_str().unwrap_or("" );
-            let time_end = req["time" ]["end" ].as_str().unwrap_or("" );
-            let order = req["order" ].as_str().unwrap_or("" );
+            let status = req["status"].as_i64().unwrap_or(-1);
+            let order = req["order"].as_str().unwrap_or("");
             let paystatus = req["paystatus" ].as_i64().unwrap_or(-1);
             let paytype = req["paytype" ].as_i64().unwrap_or(-1);
             let paytime = req["paytime" ].as_str().unwrap_or("" );

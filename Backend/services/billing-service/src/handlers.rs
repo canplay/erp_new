@@ -1,10 +1,10 @@
 //! 计费服务 HTTP 处理器
 
 use axum::{
-    Json, Router,
+    Json,
     extract::{Path, Query, State},
     http::StatusCode,
-    response::{IntoResponse, Response},
+    response::IntoResponse,
 };
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
@@ -12,13 +12,9 @@ use sqlx::PgPool;
 use std::sync::Arc;
 use uuid::Uuid;
 
-use billing_core::{
-    BillingPlan, BillingPlanType, Invoice, InvoiceLineItem, InvoiceStatus,
-    PlanFeature, Subscription, SubscriptionStatus, UsageRecord, UsageType,
-};
+use billing_core::BillingPlanType;
 use common::{ApiResponse, AppError, AppResult};
 
-use crate::models::{SubscriptionStateMachine, QuotaCheckResult, UsageSummary};
 
 /// 应用状态
 #[derive(Clone)]
@@ -189,7 +185,7 @@ pub async fn transition_subscription(
     State(state): State<Arc<BillingAppState>>,
     Json(request): Json<SubscriptionTransitionRequest>,
 ) -> AppResult<impl IntoResponse> {
-    let mut subscription: SubscriptionRow = sqlx::query_as::<_, SubscriptionRow>(
+    let subscription: SubscriptionRow = sqlx::query_as::<_, SubscriptionRow>(
         r#"
         SELECT id, tenant_id, plan_id, status, current_period_start, current_period_end,
                cancel_at_period_end, canceled_at, trial_end, quantity, unit_price, currency,

@@ -135,83 +135,83 @@ pub(crate) async fn batch_update_system_configs(s: &UserServiceImpl, request: Re
     Ok(Response::new(BatchUpdateSystemConfigsResponse { success: true }))
 }
 
-pub(crate) async fn get_role_permission_config(s: &UserServiceImpl, _request: Request<GetRolePermissionConfigRequest>) -> Result<Response<GetRolePermissionConfigResponse>, Status> {
+pub(crate) async fn get_role_permission_config(_s: &UserServiceImpl, _request: Request<GetRolePermissionConfigRequest>) -> Result<Response<GetRolePermissionConfigResponse>, Status> {
     Ok(Response::new(GetRolePermissionConfigResponse { data_permissions: vec![], field_permissions: vec![] }))
 }
 
-pub(crate) async fn update_role_permission_config(s: &UserServiceImpl, _request: Request<UpdateRolePermissionConfigRequest>) -> Result<Response<UpdateRolePermissionConfigResponse>, Status> {
+pub(crate) async fn update_role_permission_config(_s: &UserServiceImpl, _request: Request<UpdateRolePermissionConfigRequest>) -> Result<Response<UpdateRolePermissionConfigResponse>, Status> {
     Ok(Response::new(UpdateRolePermissionConfigResponse { success: true }))
 }
 
-pub(crate) async fn get_role_data_permissions(s: &UserServiceImpl, _request: Request<GetRoleDataPermissionsRequest>) -> Result<Response<GetRoleDataPermissionsResponse>, Status> {
+pub(crate) async fn get_role_data_permissions(_s: &UserServiceImpl, _request: Request<GetRoleDataPermissionsRequest>) -> Result<Response<GetRoleDataPermissionsResponse>, Status> {
     Ok(Response::new(GetRoleDataPermissionsResponse { data_permissions: vec![] }))
 }
 
-pub(crate) async fn set_role_data_permissions(s: &UserServiceImpl, _request: Request<SetRoleDataPermissionsRequest>) -> Result<Response<SetRoleDataPermissionsResponse>, Status> {
+pub(crate) async fn set_role_data_permissions(_s: &UserServiceImpl, _request: Request<SetRoleDataPermissionsRequest>) -> Result<Response<SetRoleDataPermissionsResponse>, Status> {
     Ok(Response::new(SetRoleDataPermissionsResponse { success: true }))
 }
 
-pub(crate) async fn get_role_field_permissions(s: &UserServiceImpl, _request: Request<GetRoleFieldPermissionsRequest>) -> Result<Response<GetRoleFieldPermissionsResponse>, Status> {
+pub(crate) async fn get_role_field_permissions(_s: &UserServiceImpl, _request: Request<GetRoleFieldPermissionsRequest>) -> Result<Response<GetRoleFieldPermissionsResponse>, Status> {
     Ok(Response::new(GetRoleFieldPermissionsResponse { field_permissions: vec![] }))
 }
 
-pub(crate) async fn set_role_field_permissions(s: &UserServiceImpl, _request: Request<SetRoleFieldPermissionsRequest>) -> Result<Response<SetRoleFieldPermissionsResponse>, Status> {
+pub(crate) async fn set_role_field_permissions(_s: &UserServiceImpl, _request: Request<SetRoleFieldPermissionsRequest>) -> Result<Response<SetRoleFieldPermissionsResponse>, Status> {
     Ok(Response::new(SetRoleFieldPermissionsResponse { success: true }))
 }
 
-pub(crate) async fn get_role_inherit_chain(s: &UserServiceImpl, _request: Request<GetRoleInheritChainRequest>) -> Result<Response<GetRoleInheritChainResponse>, Status> {
+pub(crate) async fn get_role_inherit_chain(_s: &UserServiceImpl, _request: Request<GetRoleInheritChainRequest>) -> Result<Response<GetRoleInheritChainResponse>, Status> {
     Ok(Response::new(GetRoleInheritChainResponse { info: None }))
 }
 
-pub(crate) async fn set_role_inherit(s: &UserServiceImpl, _request: Request<SetRoleInheritRequest>) -> Result<Response<SetRoleInheritResponse>, Status> {
+pub(crate) async fn set_role_inherit(_s: &UserServiceImpl, _request: Request<SetRoleInheritRequest>) -> Result<Response<SetRoleInheritResponse>, Status> {
     Ok(Response::new(SetRoleInheritResponse { success: true }))
 }
 
-pub(crate) async fn remove_role_inherit(s: &UserServiceImpl, _request: Request<RemoveRoleInheritRequest>) -> Result<Response<RemoveRoleInheritResponse>, Status> {
+pub(crate) async fn remove_role_inherit(_s: &UserServiceImpl, _request: Request<RemoveRoleInheritRequest>) -> Result<Response<RemoveRoleInheritResponse>, Status> {
     Ok(Response::new(RemoveRoleInheritResponse { success: true }))
 }
 
-pub(crate) async fn get_accessible_departments(s: &UserServiceImpl, _request: Request<GetAccessibleDepartmentsRequest>) -> Result<Response<GetAccessibleDepartmentsResponse>, Status> {
+pub(crate) async fn get_accessible_departments(_s: &UserServiceImpl, _request: Request<GetAccessibleDepartmentsRequest>) -> Result<Response<GetAccessibleDepartmentsResponse>, Status> {
     Ok(Response::new(GetAccessibleDepartmentsResponse { departments: vec![], total: 0 }))
 }
 
-pub(crate) async fn get_accessible_tenants(s: &UserServiceImpl, _request: Request<GetAccessibleTenantsRequest>) -> Result<Response<GetAccessibleTenantsResponse>, Status> {
+pub(crate) async fn get_accessible_tenants(_s: &UserServiceImpl, _request: Request<GetAccessibleTenantsRequest>) -> Result<Response<GetAccessibleTenantsResponse>, Status> {
     Ok(Response::new(GetAccessibleTenantsResponse { tenants: vec![], total: 0 }))
 }
 
-pub(crate) async fn list_permission_definitions(s: &UserServiceImpl, _request: Request<ListPermissionDefinitionsRequest>) -> Result<Response<ListPermissionDefinitionsResponse>, Status> {
+pub(crate) async fn list_permission_definitions(_s: &UserServiceImpl, _request: Request<ListPermissionDefinitionsRequest>) -> Result<Response<ListPermissionDefinitionsResponse>, Status> {
     Ok(Response::new(ListPermissionDefinitionsResponse { permissions: vec![], total: 0 }))
 }
 
-pub(crate) async fn create_permission_definition(s: &UserServiceImpl, _request: Request<CreatePermissionDefinitionRequest>) -> Result<Response<CreatePermissionDefinitionResponse>, Status> {
+pub(crate) async fn create_permission_definition(_s: &UserServiceImpl, _request: Request<CreatePermissionDefinitionRequest>) -> Result<Response<CreatePermissionDefinitionResponse>, Status> {
     Ok(Response::new(CreatePermissionDefinitionResponse { permission: None }))
 }
 
-pub(crate) async fn update_permission_definition(s: &UserServiceImpl, _request: Request<UpdatePermissionDefinitionRequest>) -> Result<Response<UpdatePermissionDefinitionResponse>, Status> {
+pub(crate) async fn update_permission_definition(_s: &UserServiceImpl, _request: Request<UpdatePermissionDefinitionRequest>) -> Result<Response<UpdatePermissionDefinitionResponse>, Status> {
     Ok(Response::new(UpdatePermissionDefinitionResponse { success: true }))
 }
 
-pub(crate) async fn delete_permission_definition(s: &UserServiceImpl, _request: Request<DeletePermissionDefinitionRequest>) -> Result<Response<DeletePermissionDefinitionResponse>, Status> {
+pub(crate) async fn delete_permission_definition(_s: &UserServiceImpl, _request: Request<DeletePermissionDefinitionRequest>) -> Result<Response<DeletePermissionDefinitionResponse>, Status> {
     Ok(Response::new(DeletePermissionDefinitionResponse { success: true }))
 }
 
-pub(crate) async fn batch_create_permission_definitions(s: &UserServiceImpl, _request: Request<BatchCreatePermissionDefinitionsRequest>) -> Result<Response<BatchCreatePermissionDefinitionsResponse>, Status> {
+pub(crate) async fn batch_create_permission_definitions(_s: &UserServiceImpl, _request: Request<BatchCreatePermissionDefinitionsRequest>) -> Result<Response<BatchCreatePermissionDefinitionsResponse>, Status> {
     Ok(Response::new(BatchCreatePermissionDefinitionsResponse { count: 0 }))
 }
 
-pub(crate) async fn batch_assign_permissions(s: &UserServiceImpl, _request: Request<BatchAssignPermissionsRequest>) -> Result<Response<BatchAssignPermissionsResponse>, Status> {
+pub(crate) async fn batch_assign_permissions(_s: &UserServiceImpl, _request: Request<BatchAssignPermissionsRequest>) -> Result<Response<BatchAssignPermissionsResponse>, Status> {
     Ok(Response::new(BatchAssignPermissionsResponse { success: true, affected: 0 }))
 }
 
-pub(crate) async fn copy_role_permissions(s: &UserServiceImpl, _request: Request<CopyRolePermissionsRequest>) -> Result<Response<CopyRolePermissionsResponse>, Status> {
+pub(crate) async fn copy_role_permissions(_s: &UserServiceImpl, _request: Request<CopyRolePermissionsRequest>) -> Result<Response<CopyRolePermissionsResponse>, Status> {
     Ok(Response::new(CopyRolePermissionsResponse { success: true }))
 }
 
-pub(crate) async fn validate_data_permission(s: &UserServiceImpl, _request: Request<ValidateDataPermissionRequest>) -> Result<Response<ValidateDataPermissionResponse>, Status> {
+pub(crate) async fn validate_data_permission(_s: &UserServiceImpl, _request: Request<ValidateDataPermissionRequest>) -> Result<Response<ValidateDataPermissionResponse>, Status> {
     Ok(Response::new(ValidateDataPermissionResponse { allowed: true }))
 }
 
-pub(crate) async fn check_sensitive_permission(s: &UserServiceImpl, _request: Request<CheckSensitivePermissionRequest>) -> Result<Response<CheckSensitivePermissionResponse>, Status> {
+pub(crate) async fn check_sensitive_permission(_s: &UserServiceImpl, _request: Request<CheckSensitivePermissionRequest>) -> Result<Response<CheckSensitivePermissionResponse>, Status> {
     Ok(Response::new(CheckSensitivePermissionResponse { sensitive: false }))
 }
 

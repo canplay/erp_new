@@ -2,8 +2,6 @@
 
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
-use serde_json;
-use sqlx::{PgPool, Row};
 use thiserror::Error;
 
 /// 角色仓储错误类型

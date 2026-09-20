@@ -315,28 +315,6 @@ impl GmCrypto {
         Ok(result)
     }
 
-    /// 使用随机 IV 加密字符串 (便捷方法)
-    #[allow(dead_code)]
-    pub fn sm4_cbc_encrypt_string(&self, data: &str) -> Result<(String, String), CryptoError> {
-        let iv = Self::generate_iv();
-        let ciphertext = self.sm4_cbc_encrypt(data.as_bytes(), &iv)?;
-        Ok((ciphertext, hex::encode(iv)))
-    }
-
-    /// 解密 CBC 模式加密的字符串 (便捷方法)
-    #[allow(dead_code)]
-    pub fn sm4_cbc_decrypt_string(
-        &self,
-        ciphertext: &str,
-        iv_hex: &str,
-    ) -> Result<String, CryptoError> {
-        let iv_bytes = hex::decode(iv_hex)
-            .map_err(|e| CryptoError::KeyFormatError(format!("IV格式错误: {e}" )))?;
-        let decrypted = self.sm4_cbc_decrypt(ciphertext, &iv_bytes)?;
-        String::from_utf8(decrypted)
-            .map_err(|e| CryptoError::KeyFormatError(format!("解密后数据格式错误: {e}" )))
-    }
-
     // ==================== SM4 ECB 模式 ====================
 
     /// SM4加密 (ECB模式)

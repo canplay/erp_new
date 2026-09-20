@@ -2,7 +2,7 @@
 //!
 //! 实现任务超时检测、超时处理策略、超时告警
 
-use chrono::{DateTime, Duration, Utc};
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, VecDeque};
 use std::sync::Arc;

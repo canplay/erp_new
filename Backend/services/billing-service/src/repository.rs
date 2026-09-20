@@ -4,7 +4,6 @@ use rust_decimal::Decimal;
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use common::AppError;
 
 /// 计费仓储
 #[derive(Clone)]
@@ -266,7 +265,7 @@ impl BillingRepository {
     ) -> Result<(Vec<InvoiceRow>, i64), sqlx::Error> {
         let offset = (page - 1) * page_size;
 
-        let status_filter = status.map(|s| format!("AND status = '{}'", s)).unwrap_or_default();
+        let _status_filter = status.map(|s| format!("AND status = '{}'", s)).unwrap_or_default();
 
         let invoices = sqlx::query_as::<_, InvoiceRow>(
             r#"

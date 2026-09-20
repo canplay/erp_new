@@ -4,7 +4,7 @@ use std::sync::Arc;
 use axum::{
     Router,
     extract::{Path, Query, State},
-    routing::{get, post, put, delete},
+    routing::{get, post, put},
     Json,
 };
 use serde_json::{json, Value};
@@ -13,7 +13,6 @@ use crate::AppState;
 use crate::routes::helpers::*;
 use crate::repository::ScheduledTaskEntry as RepoScheduledTaskEntry;
 
-use crate::routes::helpers::*;
 
 fn now_str() -> String {
     chrono::Utc::now().format("%Y-%m-%dT%H:%M:%SZ").to_string()

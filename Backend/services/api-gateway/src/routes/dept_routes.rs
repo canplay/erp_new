@@ -4,16 +4,14 @@ use std::sync::Arc;
 use axum::{
     Router,
     extract::{Path, Query, State},
-    routing::{get, post, put, delete},
+    routing::{get, put},
     Json,
 };
-use serde::Deserialize;
 use serde_json::{json, Value};
 
 use crate::AppState;
 use crate::routes::helpers::*;
 
-use crate::routes::helpers::*;
 
 async fn get_user_client(state: &Arc<AppState>) -> Result<crate::grpc_clients::UserGrpcClient, Json<Value>> {
     state.grpc_clients.read().await.user_client().await

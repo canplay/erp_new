@@ -58,7 +58,7 @@ impl From<StorageError> for common::AppError {
             StorageError::UploadFailed(msg) => Self::FileUploadFailed(msg),
             StorageError::DownloadFailed(msg) => Self::FileStorageError(msg),
             StorageError::DeleteFailed(msg) => Self::FileDeleteFailed(msg),
-            StorageError::NotFound(msg) => Self::FileNotFound,
+            StorageError::NotFound(_msg) => Self::FileNotFound,
             StorageError::ConfigError(msg) => Self::Config(msg),
             StorageError::IoError(e) => Self::Internal(e.to_string()),
         }

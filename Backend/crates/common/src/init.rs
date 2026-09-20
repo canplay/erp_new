@@ -111,34 +111,6 @@ pub fn init_tracing(service_name: &str) {
     // 不再尝试初始化 log-core 文件日志，避免冲突和磁盘膨胀
 }
 
-/// 初始化日志系统（含可选 OpenTelemetry 层）
-///
-/// 将 `service_name` 传递给 log-core 的 LogConfig，确保 JSON 日志中包含正确的服务名。
-#[allow(dead_code)]
-fn init_logging_with_otel(
-    otel_layer: Option<Box<dyn tracing_subscriber::layer::Layer<tracing_subscriber::Registry> + Send + Sync + 'static>>,
-    service_name: &str,
-) -> anyhow::Result<()> {
-    let env = detect_env();
-
-    if let Some(layer) = otel_layer {
-        log_core::init_with_layers(log_core::LogConfig {
-            env: env.to_string(),
-            service_name: service_name.to_string(),
-            ..Default::default()
-        }, layer)?;
-    } else {
-        log_core::init_with_config(log_core::LogConfig {
-            env: env.to_string(),
-            service_name: service_name.to_string(),
-            ..Default::default()
-        })?;
-    }
-
-    tracing::info!("日志系统已初始化: log-core (环境: {env}, 服务: {service_name})" );
-    Ok(())
-}
-
 /// 启动服务
 pub async fn run_server(
     app: Router,

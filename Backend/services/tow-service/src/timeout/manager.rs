@@ -2,7 +2,7 @@
 use std::collections::{HashMap, VecDeque};
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use chrono::{DateTime, Duration, Utc};
+use chrono::{Duration, Utc};
 use super::types::*;
 use super::results::{CheckResult, HandleResult};
 

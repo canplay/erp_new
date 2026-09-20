@@ -3,7 +3,7 @@
 use std::sync::Arc;
 use axum::{
     Router,
-    extract::{Path, Query, State},
+    extract::{Query, State},
     routing::{get, post},
     Json,
 };
@@ -15,7 +15,6 @@ use crate::repository::ReportEntry as RepoReportEntry;
 use crate::repository::DataSourceEntry as RepoDataSourceEntry;
 use crate::repository::ReportTemplateEntry as RepoReportTemplateEntry;
 
-use crate::routes::helpers::*;
 use super::scheduled_task_routes::{create_scheduled_task, update_scheduled_task, delete_scheduled_task, trigger_scheduled_task};
 
 // ==================== 导出任务 ====================

@@ -1,9 +1,8 @@
 use chrono::{DateTime, Duration, Utc};
 use hmac::{Hmac, Mac};
 use sha2::Sha256;
-use uuid::Uuid;
 
-use crate::engine::executor::{EngineError, EngineResult, WorkflowEngine};
+use crate::engine::executor::{EngineResult, WorkflowEngine};
 use crate::engine::state::WorkflowMeta;
 use common::AppError;
 

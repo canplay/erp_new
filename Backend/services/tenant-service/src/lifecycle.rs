@@ -5,18 +5,13 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
-use std::sync::Arc;
-use tokio::sync::RwLock;
-use tracing::{info, warn, error};
+use tracing::{info, warn};
 
-use common::AppError;
 
 use tenant_core::{
     context::TenantContext,
-    lifecycle::{LifecycleManager, LifecycleState, LifecycleTransition},
-    provisioning::{ProvisioningConfig, ProvisioningRequest, ProvisioningResult, ProvisioningState},
-    quota::QuotaSet,
-    settings::TenantSettings,
+    lifecycle::{LifecycleManager, LifecycleState},
+    provisioning::ProvisioningConfig,
     TenantId, TenantResult, TenantError,
 };
 
@@ -48,7 +43,7 @@ impl TenantLifecycleService {
         &self,
         name: &str,
         code: &str,
-        admin_email: &str,
+        _admin_email: &str,
     ) -> TenantResult<TenantContext> {
         let tenant_id = TenantId::new(
             sqlx::query_scalar::<_, i64>(
@@ -72,11 +67,11 @@ impl TenantLifecycleService {
         .await
         .map_err(|e| TenantError::DatabaseError(e.to_string()))?;
 
-        // 创建默认订阅（试用）
+        // 创建默认订阅（试用）— v2 计费表（subscription_plans / subscriptions）
         sqlx::query(
-            "INSERT INTO subscriptions (tenant_id, plan_id, status, current_period_start, current_period_end, trial_end)
-             SELECT $1, p.id, 'trialing', now(), now() + interval '14 days', now() + interval '14 days'
-             FROM plans p WHERE p.plan_type = 'free' AND p.is_public = true LIMIT 1"
+            "INSERT INTO subscriptions (tenant_id, plan_id, status, current_period_start, current_period_end, trial_start, trial_end)
+             SELECT $1, p.id, 'trialing', now(), now() + interval '14 days', now(), now() + interval '14 days'
+             FROM subscription_plans p WHERE p.id = 'free' AND p.active = true LIMIT 1"
         )
         .bind(tenant_id.value())
         .execute(&self.pool)

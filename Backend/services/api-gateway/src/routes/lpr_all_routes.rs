@@ -3,7 +3,7 @@
 //! 合并自 lpr_routes.rs + lpr_query_routes.rs
 
 use std::sync::Arc;
-use axum::{Router, extract::{State, Path, Query}, routing::{get, post}, Json};
+use axum::{Router, extract::{State, Query}, routing::{get, post}, Json};
 use serde::Deserialize;
 use common::AppError;
 use serde_json::{json, Value};

@@ -3,7 +3,6 @@
 use std::net::SocketAddr;
 use grpc_proto::user::user_service_server::UserServiceServer;
 use std::sync::Arc;
-use tonic::Status;
 
 use crate::repository::{AnnouncementRepository, DepartmentRepository, RoleRepository, UserRepository};
 

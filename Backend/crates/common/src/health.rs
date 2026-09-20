@@ -25,7 +25,7 @@
 //! - `/health/database` - 数据库连接健康检查（需传入连接池）
 //! - `/health/redis` - Redis 连接健康检查（需传入连接状态）
 
-use axum::{Json, Router, extract::State, response::IntoResponse, routing::get};
+use axum::{Json, Router, extract::State, routing::get};
 use serde::Serialize;
 use std::sync::Arc;
 use std::time::Instant;
@@ -218,19 +218,6 @@ pub fn health_routes_with_db_and_redis(
         .with_state(db_state)
         .route("/health/redis" , get(redis_health_handler))
         .with_state(redis_state)
-}
-
-/// 健康检查处理器
-#[allow(dead_code)]
-async fn health_handler() -> impl IntoResponse {
-    let status = HealthStatus {
-        status: "healthy".to_string(),
-        service: std::env::var("SERVICE_NAME" ).unwrap_or_else(|_| "unknown".to_string()),
-        version: std::env::var("SERVICE_VERSION" )
-            .unwrap_or_else(|_| env!("CARGO_PKG_VERSION" ).to_string()),
-        timestamp: chrono::Utc::now().to_rfc3339(),
-    };
-    (axum::http::StatusCode::OK, Json(status)).into_response()
 }
 
 /// 存活探针检查

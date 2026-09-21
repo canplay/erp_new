@@ -36,6 +36,7 @@ grpc-proto.workspace = true
 # Decimal for money
 rust_decimal.workspace = true
 rust_decimal_macros = "1.35"
+cache-core.workspace = true
 
 [dev-dependencies]
 tokio-test = "0.4"

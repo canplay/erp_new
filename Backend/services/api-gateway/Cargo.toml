@@ -60,6 +60,7 @@ sqlx = { workspace = true, features = ["runtime-tokio", "postgres", "tls-rustls"
 # OpenAPI / Swagger UI
 utoipa = { workspace = true }
 utoipa-swagger-ui = { workspace = true }
+cache-core.workspace = true
 
 [dev-dependencies]
 http-body-util = "0.1"

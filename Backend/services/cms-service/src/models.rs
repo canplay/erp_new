@@ -1,12 +1,12 @@
 //! CMS 数据模型
 
 use chrono::{DateTime, Utc};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 // ============ 分类模型 ============
 
 /// 文章分类
-#[derive(Debug, Clone, sqlx::FromRow)]
+#[derive(Debug, Clone, sqlx::FromRow, Serialize, Deserialize)]
 pub struct CmsCategory {
     pub id: i64,
     pub parent_id: Option<i64>,
@@ -25,7 +25,7 @@ pub struct CmsCategory {
 }
 
 /// 分类树节点
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CategoryTreeNode {
     pub id: i64,
     pub parent_id: Option<i64>,
@@ -84,7 +84,7 @@ pub enum ContentType {
 }
 
 /// CMS 文章
-#[derive(Debug, Clone, sqlx::FromRow)]
+#[derive(Debug, Clone, sqlx::FromRow, Serialize, Deserialize)]
 pub struct CmsArticle {
     pub id: i64,
     pub category_id: i64,

@@ -1,0 +1,39 @@
+[package]
+name = "search-core"
+version.workspace = true
+edition.workspace = true
+description = "搜索核心库 - 提供 Meilisearch 集成"
+
+[lib]
+name = "search_core"
+path = "src/lib.rs"
+
+[features]
+default = ["meilisearch-http"]
+meilisearch-http = ["dep:reqwest"]
+
+[dependencies]
+tracing = "0.1"
+
+# 异步运行时
+tokio.workspace = true
+
+# HTTP 客户端
+reqwest = { workspace = true, optional = true }
+
+# Serialization
+serde.workspace = true
+serde_json.workspace = true
+
+# URL encoding
+urlencoding = "2"
+
+# 错误处理
+thiserror.workspace = true
+anyhow.workspace = true
+
+# 日志
+log.workspace = true
+
+[dev-dependencies]
+tokio-test = "0.4"

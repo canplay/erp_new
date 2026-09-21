@@ -56,6 +56,7 @@ reqwest.workspace = true
 hmac = "0.12"
 sha2 = "0.10"
 hex = { workspace = true }
+cache-core.workspace = true
 
 [build-dependencies]
 tonic-build.workspace = true

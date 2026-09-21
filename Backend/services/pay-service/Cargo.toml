@@ -60,6 +60,7 @@ rust_decimal = { workspace = true }
 
 # Redis (optional)
 redis = { workspace = true, optional = true }
+cache-core.workspace = true
 
 [[bin]]
 name = "pay-service"

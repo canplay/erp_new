@@ -55,6 +55,7 @@ md5 = "0.8"
 
 # URL编码
 urlencoding = "2"
+cache-core.workspace = true
 
 [[bin]]
 name = "hik-service"

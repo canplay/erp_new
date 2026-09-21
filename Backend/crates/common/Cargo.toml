@@ -58,6 +58,8 @@ prometheus = { version = "0.13", optional = true }
 hashlink = "0.9"
 indexmap = "2.0"
 redis = { workspace = true }
+cache-core = { path = "../cache-core" }
+search-core = { path = "../search-core" }
 futures = "0.3"
 
 # OpenTelemetry (optional)

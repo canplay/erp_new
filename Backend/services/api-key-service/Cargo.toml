@@ -48,6 +48,7 @@ auth-core.workspace = true
 
 # 哈希 (API key 存储)
 sha2.workspace = true
+cache-core.workspace = true
 
 [dev-dependencies]
 tokio-test = "0.4"

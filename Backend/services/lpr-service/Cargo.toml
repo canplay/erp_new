@@ -32,6 +32,7 @@ futures-util = { workspace = true }
 
 # 数据库
 sqlx = { workspace = true }
+cache-core.workspace = true
 
 [[bin]]
 name = "lpr-service"

@@ -25,6 +25,9 @@ use crate::services::llm_service::LlmService;
 use crate::services::rewrite_service::RewriteService as RewriteSvc;
 use crate::account::{CreateAccountRequest, UpdateAccountRequest, SocialAccount};
 
+use cache_core::MultiLevelCache;
+use search_core::SearchClient;
+
 // ===== From impls =====
 
 impl From<SocialAccount> for Account {
@@ -53,6 +56,8 @@ pub struct AppState {
     pub publish_svc: PublishSvc,
     pub llm_svc: LlmService,
     pub rewrite_svc: RewriteSvc,
+    pub cache: MultiLevelCache,
+    pub search: SearchClient,
 }
 
 impl AppState {
@@ -65,11 +70,19 @@ impl AppState {
         publish_svc: PublishSvc,
         llm_svc: LlmService,
         rewrite_svc: RewriteSvc,
+        cache: MultiLevelCache,
+        search: SearchClient,
     ) -> Self {
         Self {
             db,
-            account_svc, crawl_svc, content_svc,
-            publish_svc, llm_svc, rewrite_svc,
+            account_svc,
+            crawl_svc,
+            content_svc,
+            publish_svc,
+            llm_svc,
+            rewrite_svc,
+            cache,
+            search,
         }
     }
 }

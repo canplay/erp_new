@@ -42,6 +42,7 @@ tonic.workspace = true
 common.workspace = true
 auth-core.workspace = true
 grpc-proto.workspace = true
+cache-core.workspace = true
 
 [build-dependencies]
 tonic-build.workspace = true

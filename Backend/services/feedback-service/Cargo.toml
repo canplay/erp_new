@@ -37,6 +37,7 @@ common.workspace = true
 # gRPC
 tonic.workspace = true
 grpc-proto.workspace = true
+cache-core.workspace = true
 
 [lib]
 name = "feedback_service"

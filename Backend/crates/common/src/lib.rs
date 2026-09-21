@@ -5,6 +5,7 @@
 pub mod app_state; // 应用状态管理
 pub mod auth;
 pub mod bootstrap;
+pub mod cache;
 pub mod config;
 pub mod constants;
 pub mod errors;

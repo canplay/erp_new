@@ -29,6 +29,7 @@ md5 = "0.7.0"
 tonic = { workspace = true }
 grpc-proto = { workspace = true }
 prost = { workspace = true }
+cache-core.workspace = true
 
 [[bin]]
 name = "ctp-service"

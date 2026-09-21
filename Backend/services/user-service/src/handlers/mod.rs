@@ -6,6 +6,9 @@ use std::sync::Arc;
 
 use crate::repository::{AnnouncementRepository, DepartmentRepository, RoleRepository, UserRepository};
 
+use cache_core::MultiLevelCache;
+use search_core::SearchClient;
+
 mod announcement_handlers;
 mod department_handlers;
 mod role_handlers;
@@ -18,16 +21,24 @@ pub struct AppState {
     pub(crate) role_repository: RoleRepository,
     pub(crate) department_repository: DepartmentRepository,
     pub(crate) announcement_repository: AnnouncementRepository,
+    pub(crate) cache: MultiLevelCache,
+    pub(crate) search: SearchClient,
 }
 
 impl AppState {
     #[must_use]
-    pub fn new(pool: sqlx::PgPool) -> Self {
+    pub fn new(
+        pool: sqlx::PgPool,
+        cache: MultiLevelCache,
+        search: SearchClient,
+    ) -> Self {
         Self {
             user_repository: UserRepository::new(pool.clone()),
             role_repository: RoleRepository::new(pool.clone()),
             department_repository: DepartmentRepository::new(pool.clone()),
             announcement_repository: AnnouncementRepository::new(pool),
+            cache,
+            search,
         }
     }
 }

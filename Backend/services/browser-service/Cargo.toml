@@ -39,6 +39,7 @@ drission = { version = "0.3", features = ["cdp"] }
 urlencoding = "2"
 sha2.workspace = true
 hex.workspace = true
+cache-core.workspace = true
 
 [build-dependencies]
 tonic-build.workspace = true

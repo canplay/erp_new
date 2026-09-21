@@ -30,6 +30,7 @@ bytes = { workspace = true }
 tonic = { workspace = true }
 grpc-proto = { workspace = true }
 prost = { workspace = true }
+cache-core.workspace = true
 
 [[bin]]
 name = "xlt-service"

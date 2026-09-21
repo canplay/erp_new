@@ -6,6 +6,7 @@ pub mod database;
 pub mod redis;
 pub mod jwt;
 pub mod service;
+pub mod meilisearch;
 
 pub use database::{
     DatabaseConfig, PoolConfig, ServiceDatabaseConfig,
@@ -14,6 +15,7 @@ pub use database::{
 pub use redis::RedisConfig;
 pub use jwt::JwtConfig;
 pub use service::ServiceDiscoveryConfig;
+pub use meilisearch::MeilisearchConfig;
 
 use config::{Config, ConfigError, Environment, File};
 use serde::Deserialize;
@@ -52,6 +54,7 @@ pub struct AppConfig {
     pub database: DatabaseConfig,
     pub redis: RedisConfig,
     pub jwt: JwtConfig,
+    pub meilisearch: MeilisearchConfig,
 }
 
 impl AppConfig {

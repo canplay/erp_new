@@ -30,6 +30,8 @@ chrono.workspace = true
 axum.workspace = true
 argon2.workspace = true
 csv.workspace = true
+cache-core.workspace = true
+search-core.workspace = true
 
 [build-dependencies]
 prost-build.workspace = true

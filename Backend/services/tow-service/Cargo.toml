@@ -33,3 +33,5 @@ grpc-proto.workspace = true
 prost.workspace = true
 futures-util.workspace = true
 
+
+cache-core.workspace = true

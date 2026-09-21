@@ -11,11 +11,45 @@ use crate::repository::{TenantDetail, TenantListItem, TenantRepository, TenantUs
 use crate::lifecycle::{TenantLifecycleService, TenantState};
 use grpc_proto::tenant::tenant_service_server::TenantServiceServer;
 
+use cache_core::MultiLevelCache;
+use search_core::SearchClient;
+
 /// Tenant 应用状态
 #[derive(Clone)]
 pub struct TenantAppState {
     pub repository: TenantRepository,
     pub lifecycle: TenantLifecycleService,
+    pub cache: MultiLevelCache,
+    pub search: SearchClient,
+}
+
+impl TenantAppState {
+    /// 创建新的应用状态
+    #[must_use]
+    pub fn new(
+        repository: TenantRepository,
+        lifecycle: TenantLifecycleService,
+        cache: MultiLevelCache,
+        search: SearchClient,
+    ) -> Self {
+        Self {
+            repository,
+            lifecycle,
+            cache,
+            search,
+        }
+    }
+
+    /// 使用生命周期服务创建新的应用状态（兼容旧代码）
+    #[must_use]
+    pub fn new_with_lifecycle(repository: TenantRepository, pool: sqlx::PgPool) -> Self {
+        Self {
+            repository,
+            lifecycle: TenantLifecycleService::new(pool),
+            cache: MultiLevelCache::l1_only(1000),
+            search: SearchClient::new("http://meilisearch:7700", None).unwrap(),
+        }
+    }
 }
 
 /// 租户信息 gRPC 响应结构

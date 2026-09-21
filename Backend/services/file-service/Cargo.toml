@@ -32,6 +32,8 @@ bytes.workspace = true
 # gRPC
 tonic.workspace = true
 grpc-proto.workspace = true
+cache-core.workspace = true
+search-core.workspace = true
 
 [dev-dependencies]
 tokio-test = "0.4"

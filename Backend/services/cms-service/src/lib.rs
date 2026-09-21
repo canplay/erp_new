@@ -15,18 +15,29 @@ pub use repository::article_repository::ArticleRepositoryError;
 pub use repository::category_repository::CategoryRepositoryError;
 pub use user_service::{CmsWithUserInfo, UserInfo, UserServiceClient};
 
+use cache_core::MultiLevelCache;
+use search_core::SearchClient;
+
 /// CMS 应用状态
 #[derive(Clone)]
 pub struct CmsAppState {
     pub repository: CmsRepository,
+    pub cache: MultiLevelCache,
+    pub search: SearchClient,
 }
 
 impl CmsAppState {
     /// 创建新的应用状态
     #[must_use]
-    pub fn new(pool: sqlx::PgPool) -> Self {
+    pub fn new(
+        pool: sqlx::PgPool,
+        cache: MultiLevelCache,
+        search: SearchClient,
+    ) -> Self {
         Self {
             repository: CmsRepository::new(pool),
+            cache,
+            search,
         }
     }
 }

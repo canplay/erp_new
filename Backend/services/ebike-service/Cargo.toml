@@ -38,3 +38,5 @@ uuid = { workspace = true, features = ["v4"] }
 thiserror = { workspace = true }
 anyhow = { workspace = true }
 log = { workspace = true }
+
+cache-core.workspace = true

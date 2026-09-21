@@ -7,12 +7,17 @@
 # 依赖服务（本编排包含全部外部依赖）：
 #   - postgres (数据库)
 #   - redis (缓存)
-#   - meilisearch (全文搜索，可选)
-#   - paddlex-ocr (OCR 服务，可选)
+#   - meilisearch (全文搜索)
 #
 # 网络访问（podman WSL 模式）：
 #   - Windows localhost 端口转发不稳定，浏览器须用 WSL IP 访问
 #   - 取 WSL IP: podman machine ssh -- ip -4 addr show eth0
+#
+# 镜像验证（使用本地镜像前请确认）：
+#   podman image exists postgres:18.6-alpine
+#   podman image exists redis:8.8.2-alpine
+#   podman image exists meilisearch:latest
+#   # 如本地缺失镜像，需提前拉取：podman pull <镜像名>
 
 x-common-env: &api-common
   DATABASE_URL: postgres://postgres:postgres@postgres:5432/erp_new?sslmode=prefer
@@ -24,11 +29,11 @@ x-common-env: &api-common
   JWT_REFRESH_EXPIRATION: "86400"
   MEILISEARCH_URL: http://meilisearch:7700
   MEILISEARCH_API_KEY: ""
-  MEILISEARCH_INDEX_NAME: erp_new
+  MEILISEARCH_INDEX_PREFIX: erp_new
 
 services:
   postgres:
-    image: postgres:16-alpine
+    image: postgres:18.6-alpine
     environment:
       POSTGRES_DB: erp_new
       POSTGRES_USER: postgres
@@ -43,9 +48,10 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks: [erp_new-net]
 
   redis:
-    image: docker.io/library/redis:7-alpine
+    image: redis:8.8.2-alpine
     container_name: erp_new-redis
     ports:
       - "6379:6379"
@@ -57,7 +63,7 @@ services:
     networks: [erp_new-net]
 
   meilisearch:
-    image: docker.io/getmeili/meilisearch:v1.11
+    image: meilisearch:latest
     container_name: erp_new-meili
     environment:
       MEILI_ENV: development
@@ -65,7 +71,7 @@ services:
     ports:
       - "7700:7700"
     volumes:
-      - erp_new-meili-data:/meili_data
+      - meili_data:/meili_data
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:7700/health"]
       interval: 10s
@@ -73,25 +79,9 @@ services:
       retries: 5
     networks: [erp_new-net]
 
-  paddlex-ocr:
-    image: registry.cn-shanghai.aliyuncs.com/publix/paddlex:ocr-3.0.0
-    container_name: erp_new-ocr
-    environment:
-      PADDLEX_CONFIG: /app/config.yaml
-    ports:
-      - "8901:8080"
-    volumes:
-      - ./Backend/config/paddlex.yaml:/app/config.yaml:ro
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    networks: [erp_new-net]
-
 volumes:
   postgres_data:
-  erp_new-meili-data:
+  meili_data:
 
 networks:
   erp_new-net:

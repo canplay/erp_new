@@ -33,3 +33,7 @@ tenant-core.workspace = true
 tonic.workspace = true
 grpc-proto.workspace = true
 
+
+cache-core.workspace = true
+
+search-core.workspace = true

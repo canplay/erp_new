@@ -11,6 +11,9 @@ use tonic::{Request, Status};
 use crate::models::SysFile;
 use crate::repository::FileRepository;
 
+use cache_core::MultiLevelCache;
+use search_core::SearchClient;
+
 /// 从 gRPC 请求中提取租户 ID
 /// 优先从 metadata 中获取 x-tenant-id
 pub fn extract_tenant_id<T>(request: &Request<T>) -> i64 {
@@ -28,6 +31,8 @@ pub fn extract_tenant_id<T>(request: &Request<T>) -> i64 {
 #[derive(Clone)]
 pub struct FileAppState {
     pub repository: FileRepository,
+    pub cache: MultiLevelCache,
+    pub search: SearchClient,
 }
 
 /// 文件信息 gRPC 响应结构
@@ -160,8 +165,16 @@ pub async fn get_default_category() -> Result<String, Status> {
 impl FileAppState {
     /// 创建新的应用状态
     #[must_use]
-    pub const fn new(repository: FileRepository) -> Self {
-        Self { repository }
+    pub const fn new(
+        repository: FileRepository,
+        cache: MultiLevelCache,
+        search: SearchClient,
+    ) -> Self {
+        Self {
+            repository,
+            cache,
+            search,
+        }
     }
 
     /// 获取仓储引用

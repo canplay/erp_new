@@ -2,30 +2,6 @@
 use super::*;
 use super::tenant_handlers::*;
 
-// ============== 导出服务实现 ==============
-
-impl TenantAppState {
-    /// 创建新的应用状态
-    #[must_use]
-    pub fn new(repository: TenantRepository, pool: sqlx::PgPool) -> Self {
-        Self {
-            repository,
-            lifecycle: TenantLifecycleService::new(pool),
-        }
-    }
-
-    /// 创建新的应用状态（含生命周期管理器）
-    pub fn new_with_lifecycle(repository: TenantRepository, pool: sqlx::PgPool) -> Self {
-        Self::new(repository, pool)
-    }
-
-    /// 获取仓储引用
-    #[must_use]
-    pub const fn repository(&self) -> &TenantRepository {
-        &self.repository
-    }
-}
-
 /// Tenant gRPC 服务实现
 #[derive(Clone)]
 pub struct TenantGrpcService {

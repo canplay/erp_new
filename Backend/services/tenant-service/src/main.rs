@@ -8,10 +8,13 @@
 //! | HTTP | 8087 | 健康检查端点
 //!
 
+use common::cache::create_multi_level_cache;
+use common::config::{MeilisearchConfig, RedisConfig};
 use common::health::health_routes;
 use common::service_bootstrap::{ServiceBootstrap, ServiceConfig};
+use search_core::SearchClient;
 use std::sync::Arc;
-use tenant_service::{{TenantAppState, TenantRepository, grpc_handlers::TenantGrpcService}};
+use tenant_service::{TenantAppState, TenantRepository, grpc_handlers::TenantGrpcService};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 fn init_tracing() {
@@ -23,20 +26,29 @@ fn init_tracing() {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-        init_tracing();
-// 使用 ServiceBootstrap 统一启动器
-    let config = ServiceConfig::from_env("tenant-service" , 8087, 9095);
+    init_tracing();
+    // 使用 ServiceBootstrap 统一启动器
+    let config = ServiceConfig::from_env("tenant-service", 8087, 9095);
 
     let bootstrap = ServiceBootstrap::new(config);
 
     // 创建数据库连接池
-    let database_url = std::env::var("DATABASE_URL" )
-        .unwrap_or_else(|_| "postgres://postgres:${DATABASE_PASSWORD}@localhost:5432/myai".to_string());
+    let database_url = std::env::var("DATABASE_URL")
+        .unwrap_or_else(|_| "postgres://postgres:${DATABASE_PASSWORD}@localhost:5432/erp_new".to_string());
     let pool = sqlx::PgPool::connect(&database_url).await?;
+
+    // 初始化 Redis 缓存
+    let redis_config = RedisConfig::default();
+    let cache = create_multi_level_cache(&redis_config, 1000, 3600).await?;
+
+    // 初始化 Meilisearch 搜索客户端
+    let meili_config = MeilisearchConfig::default();
+    let search = SearchClient::new(&meili_config.url, meili_config.api_key.as_deref())?;
 
     // 创建 gRPC 服务
     let repository = TenantRepository::new(pool.clone());
-    let state = Arc::new(TenantAppState::new_with_lifecycle(repository, pool.clone()));
+    let lifecycle = tenant_service::lifecycle::TenantLifecycleService::new(pool.clone());
+    let state = Arc::new(TenantAppState::new(repository, lifecycle, cache, search));
     let grpc_service = TenantGrpcService::new(state);
     let http_router = health_routes();
 

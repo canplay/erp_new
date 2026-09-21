@@ -68,6 +68,7 @@ dependencies = [
  "anyhow",
  "auth-core",
  "axum",
+ "cache-core",
  "chrono",
  "circuit-breaker-core",
  "common",
@@ -101,6 +102,7 @@ dependencies = [
  "anyhow",
  "auth-core",
  "axum",
+ "cache-core",
  "chrono",
  "common",
  "config",
@@ -211,6 +213,7 @@ name = "audit-service"
 version = "0.2.0"
 dependencies = [
  "axum",
+ "cache-core",
  "chrono",
  "common",
  "grpc-proto",
@@ -249,6 +252,7 @@ version = "0.2.0"
 dependencies = [
  "auth-core",
  "axum",
+ "cache-core",
  "common",
  "futures-util",
  "grpc-proto",
@@ -454,6 +458,7 @@ dependencies = [
  "axum",
  "base64 0.22.1",
  "billing-core",
+ "cache-core",
  "chrono",
  "common",
  "futures-util",
@@ -552,6 +557,7 @@ dependencies = [
  "anyhow",
  "async-trait",
  "axum",
+ "cache-core",
  "chrono",
  "common",
  "drission",
@@ -713,6 +719,7 @@ version = "0.2.0"
 dependencies = [
  "anyhow",
  "axum",
+ "cache-core",
  "chrono",
  "common",
  "futures-util",
@@ -751,6 +758,7 @@ dependencies = [
  "anyhow",
  "auth-core",
  "axum",
+ "cache-core",
  "chrono",
  "common",
  "grpc-proto",
@@ -758,6 +766,7 @@ dependencies = [
  "prost",
  "prost-build",
  "reqwest",
+ "search-core",
  "serde",
  "serde_json",
  "sqlx",
@@ -803,6 +812,7 @@ dependencies = [
  "async-trait",
  "axum",
  "bcrypt",
+ "cache-core",
  "chrono",
  "config",
  "dotenvy",
@@ -825,6 +835,7 @@ dependencies = [
  "redis",
  "regex",
  "reqwest",
+ "search-core",
  "serde",
  "serde_json",
  "sqlx",
@@ -1168,6 +1179,7 @@ version = "0.2.0"
 dependencies = [
  "anyhow",
  "axum",
+ "cache-core",
  "chrono",
  "common",
  "grpc-proto",
@@ -1511,6 +1523,7 @@ dependencies = [
  "anyhow",
  "auth-core",
  "axum",
+ "cache-core",
  "chrono",
  "common",
  "grpc-proto",
@@ -1725,6 +1738,7 @@ dependencies = [
  "anyhow",
  "auth-core",
  "axum",
+ "cache-core",
  "chrono",
  "common",
  "grpc-proto",
@@ -1778,6 +1792,7 @@ dependencies = [
  "async-trait",
  "axum",
  "bytes",
+ "cache-core",
  "chrono",
  "common",
  "futures-util",
@@ -1785,6 +1800,7 @@ dependencies = [
  "log",
  "mime",
  "multer",
+ "search-core",
  "serde",
  "serde_json",
  "sqlx",
@@ -2201,6 +2217,7 @@ version = "0.2.0"
 dependencies = [
  "anyhow",
  "axum",
+ "cache-core",
  "chrono",
  "common",
  "grpc-proto",
@@ -2853,6 +2870,7 @@ version = "0.2.0"
 dependencies = [
  "anyhow",
  "axum",
+ "cache-core",
  "chrono",
  "common",
  "futures-util",
@@ -2968,6 +2986,7 @@ dependencies = [
  "async-trait",
  "auth-core",
  "axum",
+ "cache-core",
  "chrono",
  "common",
  "futures-util",
@@ -3364,6 +3383,7 @@ version = "0.2.0"
 dependencies = [
  "anyhow",
  "axum",
+ "cache-core",
  "chrono",
  "common",
  "grpc-proto",
@@ -4472,6 +4492,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "search-core"
+version = "0.2.0"
+dependencies = [
+ "anyhow",
+ "log",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+ "tokio",
+ "tokio-test",
+ "tracing",
+ "urlencoding",
+]
+
+[[package]]
 name = "sec1"
 version = "0.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4870,6 +4906,7 @@ dependencies = [
  "prost",
  "redis",
  "reqwest",
+ "search-core",
  "serde",
  "serde_json",
  "sha2 0.11.0",
@@ -5332,11 +5369,13 @@ dependencies = [
  "argon2",
  "axum",
  "base64 0.22.1",
+ "cache-core",
  "chrono",
  "common",
  "futures-util",
  "grpc-proto",
  "log",
+ "search-core",
  "serde",
  "serde_json",
  "sqlx",
@@ -5726,6 +5765,7 @@ name = "tow-service"
 version = "0.2.0"
 dependencies = [
  "axum",
+ "cache-core",
  "chrono",
  "common",
  "futures-util",
@@ -6058,6 +6098,7 @@ version = "0.2.0"
 dependencies = [
  "argon2",
  "axum",
+ "cache-core",
  "chrono",
  "common",
  "csv",
@@ -6065,6 +6106,7 @@ dependencies = [
  "log",
  "prost",
  "prost-build",
+ "search-core",
  "serde",
  "serde_json",
  "sqlx",
@@ -6823,6 +6865,7 @@ dependencies = [
  "anyhow",
  "auth-core",
  "axum",
+ "cache-core",
  "chrono",
  "common",
  "cron",
@@ -6860,6 +6903,7 @@ dependencies = [
  "anyhow",
  "axum",
  "bytes",
+ "cache-core",
  "chrono",
  "common",
  "futures-util",

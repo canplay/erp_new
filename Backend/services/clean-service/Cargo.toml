@@ -39,6 +39,7 @@ chrono = { workspace = true }
 
 # UUID 生成
 uuid = { workspace = true }
+cache-core.workspace = true
 
 [lib]
 name = "clean_service"

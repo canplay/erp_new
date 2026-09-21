@@ -320,7 +320,12 @@ pub async fn list_api_keys(
 
     // 解析用户 ID
     let user_id = user_id.and_then(|s| s.parse().ok());
-    let tenant_id: i64 = tenant_id.and_then(|s| s.parse().ok()).unwrap_or(0);
+    let tenant_id: i64 = tenant_id
+        .and_then(|s| s.parse().ok())
+        .ok_or_else(|| Status::invalid_argument("tenant_id is required"))?;
+    if tenant_id <= 0 {
+        return Err(Status::invalid_argument("tenant_id must be > 0"));
+    }
     let page = i64::from(page.max(1));
     let page_size = i64::from(page_size.clamp(1, 100));
 
@@ -462,7 +467,12 @@ pub async fn get_key_statistics(
         Some(id) => id,
         None => return Ok(KeyStatsInfo::default()),
     };
-    let tenant_id: i64 = tenant_id.and_then(|s| s.parse().ok()).unwrap_or(0);
+    let tenant_id: i64 = tenant_id
+        .and_then(|s| s.parse().ok())
+        .ok_or_else(|| Status::invalid_argument("tenant_id is required"))?;
+    if tenant_id <= 0 {
+        return Err(Status::invalid_argument("tenant_id must be > 0"));
+    }
 
     // 从数据库获取列表来统计
     match state.repository.list_by_user(user_id, tenant_id, 1, 1000).await {

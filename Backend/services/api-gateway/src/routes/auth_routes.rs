@@ -123,16 +123,9 @@ async fn register_handler(
     let username = body.get("username" ).and_then(|v| v.as_str()).unwrap_or("" ).to_string();
     let password = body.get("password" ).and_then(|v| v.as_str()).unwrap_or("" ).to_string();
 
-    // 密码强度验证：至少8位，包含字母和数字
-    if password.len() < 8
-        || !password.chars().any(|c| c.is_ascii_alphabetic())
-        || !password.chars().any(|c| c.is_ascii_digit())
-    {
-        return json_error_response_fmt(
-            StatusCode::BAD_REQUEST,
-            "密码必须至少8位且包含字母和数字" ,
-            &"密码必须至少8位且包含字母和数字".to_string(),
-        );
+    // 密码强度验证（统一入口: common::validation::validate_password）
+    if let Err(e) = common::validation::validate_password(&password) {
+        return json_error_response_fmt(StatusCode::BAD_REQUEST, e, &e.to_string());
     }
 
     let mut client = match state.grpc_clients.read().await.auth_client().await {
@@ -245,12 +238,9 @@ async fn change_password_handler(
         .or_else(|| body.get("new_password" ))
         .and_then(|v| v.as_str()).unwrap_or("" ).to_string();
 
-    // 审计修复 (B4): 新密码强度校验(与注册策略一致: ≥8位, 含字母+数字)
-    if new_password.len() < 8
-        || !new_password.chars().any(|c| c.is_ascii_alphabetic())
-        || !new_password.chars().any(|c| c.is_ascii_digit())
-    {
-        return (StatusCode::BAD_REQUEST, json_error("新密码必须不少于 8 位且同时包含字母和数字" ));
+    // 审计修复 (B4): 新密码强度校验（统一入口: common::validation::validate_password）
+    if let Err(e) = common::validation::validate_password(&new_password) {
+        return (StatusCode::BAD_REQUEST, json_error(e));
     }
 
     // 先用旧密码验证

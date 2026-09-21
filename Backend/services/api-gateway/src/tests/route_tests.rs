@@ -1019,8 +1019,10 @@ mod route_tests {
         #[tokio::test]
         async fn test_valid_password_accepted() {
             use common::validation::validate_password;
-            assert!(validate_password("12345678" ).is_ok());
-            assert!(validate_password("strongpassword" ).is_ok());
+            // 升级为强校验后: 纯数字/纯字母不再通过
+            assert!(validate_password("12345678" ).is_err());
+            assert!(validate_password("strongpassword" ).is_err());
+            assert!(validate_password("Password123" ).is_ok());
         }
     }
 

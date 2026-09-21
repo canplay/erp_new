@@ -212,29 +212,10 @@ impl AuthService for AuthServiceImpl {
 ///
 /// 规则: 长度 ≥ 8; 必须同时包含字母与数字; 拒绝常见弱口令
 fn validate_password_strength(password: &str) -> Result<(), tonic::Status> {
-    if password.len() < 8 {
-        return Err(tonic::Status::invalid_argument(
-            "密码长度不能少于 8 位" ,
-        ));
-    }
-    let has_letter = password.chars().any(|c| c.is_ascii_alphabetic());
-    let has_digit = password.chars().any(|c| c.is_ascii_digit());
-    if !has_letter || !has_digit {
-        return Err(tonic::Status::invalid_argument(
-            "密码必须同时包含字母和数字" ,
-        ));
-    }
-    const WEAK: &[&str] = &[
-        "12345678" , "123456789" , "password" , "admin123" , "12345678a" , "a12345678" ,
-    ];
-    let lower = password.to_lowercase();
-    if WEAK.contains(&lower.as_str()) {
-        return Err(tonic::Status::invalid_argument(
-            "密码过于简单, 请更换" ,
-        ));
-    }
-    Ok(())
+    common::validation::validate_password(password)
+        .map_err(|e| tonic::Status::invalid_argument(e))
 }
+
 
 impl common::service_bootstrap::GrpcServiceBuilder for AuthServiceImpl {
     fn build_grpc_server(&self, grpc_addr: &str) -> Result<tokio::task::JoinHandle<()>, Box<dyn std::error::Error + Send + Sync>> {

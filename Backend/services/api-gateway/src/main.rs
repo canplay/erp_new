@@ -75,6 +75,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             tracing::error!(msg);
             msg
         })?;
+    // 安全加固: JWT 密钥长度必须 ≥ 32 字符（HS256 安全基线）
+    if jwt_secret.len() < 32 {
+        let msg = "JWT_SECRET 长度必须至少 32 字符（当前不足，存在暴力破解风险）";
+        tracing::error!(msg);
+        return Err(msg.into());
+    }
     let jwt_issuer = std::env::var("JWT_ISSUER" ).unwrap_or_else(|_| "myai".to_string());
     let jwt_audience = std::env::var("JWT_AUDIENCE" ).unwrap_or_else(|_| "myai-users".to_string());
     let auth_state = AuthState::new(jwt_secret, jwt_issuer, jwt_audience);

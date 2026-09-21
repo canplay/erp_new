@@ -33,6 +33,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 从环境变量获取 JWT 配置
     let jwt_secret = std::env::var("JWT_SECRET" )
         .expect("JWT_SECRET must be set - configure it in production environment" );
+    // 安全加固: JWT 密钥长度必须 ≥ 32 字符（HS256 安全基线）
+    assert!(
+        jwt_secret.len() >= 32,
+        "JWT_SECRET 长度必须至少 32 字符（当前不足，存在暴力破解风险）"
+    );
     let jwt_issuer = std::env::var("JWT_ISSUER" ).unwrap_or_else(|_| "myai".to_string());
     let jwt_audience = std::env::var("JWT_AUDIENCE" ).unwrap_or_else(|_| "myai-users".to_string());
     let access_token_ttl = std::env::var("JWT_ACCESS_TOKEN_TTL" )

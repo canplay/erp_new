@@ -90,13 +90,6 @@ pub fn validate_username(username: &str) -> Result<(), &'static str> {
 ///
 /// # 返回
 /// 验证成功返回空字符串，失败返回错误消息
-pub const fn validate_password(password: &str) -> Result<(), &'static str> {
-    if password.len() < 8 {
-        return Err("密码长度至少 8 个字符" );
-    }
-    Ok(())
-}
-
 /// 验证邮箱格式
 ///
 /// # 参数
@@ -237,7 +230,36 @@ pub fn validate_string_length(
         return Err(format!("{field_name} 长度不能少于 {min_len} 个字符" ));
     }
     if len > max_len {
-        return Err(format!("{field_name} 长度不能超过 {max_len} 个字符" ));
+        return Err(format!("{field_name} 长度不能超过 {max_len} 个字符"));
+    }
+    Ok(())
+}
+
+/// 密码强度校验（统一入口，安全审计 B4）
+///
+/// 规则: 长度 ≥ 8; 必须同时包含字母与数字; 拒绝常见弱口令
+///
+/// # 参数
+/// * `password` - 明文密码
+///
+/// # 返回
+/// 校验通过返回 Ok(())，失败返回错误信息
+#[must_use]
+pub fn validate_password(password: &str) -> Result<(), &'static str> {
+    if password.len() < 8 {
+        return Err("密码长度不能少于 8 位");
+    }
+    let has_letter = password.chars().any(|c| c.is_ascii_alphabetic());
+    let has_digit = password.chars().any(|c| c.is_ascii_digit());
+    if !has_letter || !has_digit {
+        return Err("密码必须同时包含字母和数字");
+    }
+    const WEAK: &[&str] = &[
+        "12345678", "123456789", "password", "admin123", "12345678a", "a12345678",
+    ];
+    let lower = password.to_lowercase();
+    if WEAK.contains(&lower.as_str()) {
+        return Err("密码过于简单, 请更换");
     }
     Ok(())
 }
@@ -252,6 +274,16 @@ mod tests {
         let hash = hash_password(password).unwrap();
         assert!(verify_password(password, &hash));
         assert!(!verify_password("wrong_password" , &hash));
+    }
+
+    #[test]
+    fn test_validate_password() {
+        assert!(validate_password("123").is_err());
+        assert!(validate_password("").is_err());
+        assert!(validate_password("12345678").is_err()); // 纯数字
+        assert!(validate_password("strongpassword").is_err()); // 纯字母
+        assert!(validate_password("admin123").is_err()); // 弱口令
+        assert!(validate_password("Password123").is_ok());
     }
 
     #[test]

@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT bucket, COUNT(*) AS count FROM (\n                SELECT\n                    CASE\n                        WHEN response_time < 100 THEN '< 100ms'\n                        WHEN response_time >= 100 AND response_time < 300 THEN '100-300ms'\n                        WHEN response_time >= 300 AND response_time < 500 THEN '300-500ms'\n                        WHEN response_time >= 500 AND response_time < 1000 THEN '500ms-1s'\n                        WHEN response_time >= 1000 AND response_time < 2000 THEN '1-2s'\n                        WHEN response_time >= 2000 THEN '> 2s'\n                    END AS bucket\n                FROM sys_api_call_logs\n            ) t\n            GROUP BY bucket\n            ORDER BY\n                CASE bucket\n                    WHEN '< 100ms' THEN 1\n                    WHEN '100-300ms' THEN 2\n                    WHEN '300-500ms' THEN 3\n                    WHEN '500ms-1s' THEN 4\n                    WHEN '1-2s' THEN 5\n                    WHEN '> 2s' THEN 6\n                END\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "bucket",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "count",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      null,
+      null
+    ]
+  },
+  "hash": "7c6dc34e0b1856edf7d8fd7b0ef341c03872c2512d4693c544cda959eb9ff9df"
+}

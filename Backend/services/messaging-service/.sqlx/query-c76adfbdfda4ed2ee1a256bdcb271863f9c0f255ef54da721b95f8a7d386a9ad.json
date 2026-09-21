@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO message_templates (name, template_type, title_template, content_template, is_active, created_at, updated_at)\n           VALUES ($1, $2, $3, $4, $5, NOW(), NOW())\n           RETURNING id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Varchar",
+        "Varchar",
+        "Text",
+        "Bool"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "c76adfbdfda4ed2ee1a256bdcb271863f9c0f255ef54da721b95f8a7d386a9ad"
+}

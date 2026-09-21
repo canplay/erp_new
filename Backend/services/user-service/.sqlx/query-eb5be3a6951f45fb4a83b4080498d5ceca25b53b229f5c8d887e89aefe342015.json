@@ -1,0 +1,84 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT d.id, d.name, d.code, d.parent_id,\n                      COALESCE(d.level, 0) AS \"level!\" ,\n                      COALESCE(d.sort_order, 0) AS \"sort_order!\" ,\n                      d.leader_id,\n                      COALESCE(d.status, 1) AS \"status!\" ,\n                      COALESCE(d.created_at, NOW()) AS \"created_at!\" ,\n                      u.nickname as leader_name,\n                      COUNT(ud.id) AS \"user_count!\"\n               FROM departments d\n               LEFT JOIN users u ON d.leader_id = u.id\n               LEFT JOIN user_departments ud ON d.id = ud.department_id\n               WHERE ($1::text IS NULL OR d.name ILIKE '%' || $1 || '%' OR d.code ILIKE '%' || $1 || '%')\n               GROUP BY d.id, d.name, d.code, d.parent_id, d.level, d.sort_order,\n                        d.leader_id, d.status, d.created_at, u.nickname\n               ORDER BY d.sort_order, d.created_at DESC\n               LIMIT $2 OFFSET $3",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "code",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "parent_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 4,
+        "name": "level!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 5,
+        "name": "sort_order!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 6,
+        "name": "leader_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 7,
+        "name": "status!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 8,
+        "name": "created_at!",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 9,
+        "name": "leader_name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 10,
+        "name": "user_count!",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      true,
+      null,
+      null,
+      true,
+      null,
+      null,
+      true,
+      null
+    ]
+  },
+  "hash": "eb5be3a6951f45fb4a83b4080498d5ceca25b53b229f5c8d887e89aefe342015"
+}

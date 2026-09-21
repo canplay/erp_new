@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO dictionary_items (type_id, label, value, sort, status, is_default, remark)\n               VALUES ($1, $2, $3, $4, $5, $6, $7)\n               RETURNING id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Varchar",
+        "Varchar",
+        "Int4",
+        "Int4",
+        "Bool",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "682b3bf02ba7a695dfdfd3d12bdf86c380f0b91aba9668747414be4e08bb6f76"
+}

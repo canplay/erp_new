@@ -1,0 +1,92 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE users\n               SET nickname = COALESCE($1, nickname),\n                   gender = COALESCE($2, gender),\n                   address = COALESCE($3, address),\n                   avatar = COALESCE($4, avatar),\n                   updated_at = NOW()\n               WHERE id = $5\n               RETURNING id, username, nickname, avatar, phone, email, gender, address,\n                         COALESCE(role, 'user') AS \"role!\" ,\n                         COALESCE(status, 1) AS \"status!\" ,\n                         COALESCE(created_at, NOW()) AS \"created_at!\" ,\n                         COALESCE(updated_at, NOW()) AS \"updated_at!\" ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "username",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "nickname",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "avatar",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "phone",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 5,
+        "name": "email",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 6,
+        "name": "gender",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 7,
+        "name": "address",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 8,
+        "name": "role!",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 9,
+        "name": "status!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 10,
+        "name": "created_at!",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 11,
+        "name": "updated_at!",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Int4",
+        "Varchar",
+        "Varchar",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      null,
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "99bcfb01c888238fa1d96bf2a5bdcfedd42a258e9bdae7eabda1ca65935737ff"
+}

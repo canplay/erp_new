@@ -239,18 +239,16 @@ impl MessageService for MessagingGrpcServer {
 
         let message_id = message_row.id;
 
-        // 为每个目标用户创建消息关系记录
-        for user_id in &target_ids {
-            sqlx::query!(
-                r#"INSERT INTO sys_message_user (message_id, user_id, is_read, is_deleted, is_archived, created_at)
-                   VALUES ($1, $2, 0, 0, 0, NOW())"#,
-                message_id,
-                user_id,
-            )
-            .execute(&mut *tx)
-            .await
-            .map_err(|e| Status::internal(format!("Database error: {e}" )))?;
-        }
+        // N+1 修复（任务 4.6）: UNNEST 批量 INSERT 替代循环逐条 INSERT
+        sqlx::query(
+            r#"INSERT INTO sys_message_user (message_id, user_id, is_read, is_deleted, is_archived, created_at)
+               SELECT $1, u, 0, 0, 0, NOW() FROM UNNEST($2::bigint[]) AS u"#,
+        )
+        .bind(message_id)
+        .bind(&target_ids)
+        .execute(&mut *tx)
+        .await
+        .map_err(|e| Status::internal(format!("Database error: {e}")))?;
 
         tx.commit()
             .await

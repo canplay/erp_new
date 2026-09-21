@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT COUNT(*) FROM announcements\n            WHERE ($1::boolean IS NULL OR (is_active = $1 AND (start_time IS NULL OR start_time <= NOW())\n                AND (end_time IS NULL OR end_time >= NOW())))\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "count",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Bool"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "141f211a4853752cab1be0e8f911e2fe56d85c8d4becc142b62b5d58d154bad6"
+}

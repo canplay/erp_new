@@ -1,0 +1,88 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, name, code, description,\n                      COALESCE(role_type, 'user') AS \"role_type!\" ,\n                      parent_id,\n                      COALESCE(level, 0) AS \"level!\" ,\n                      COALESCE(sort_order, 0) AS \"sort_order!\" ,\n                      COALESCE(status, 1) AS \"status!\" ,\n                      COALESCE(is_default, false) AS \"is_default!\" ,\n                      COALESCE(created_at, NOW()) AS \"created_at!\" ,\n                      COALESCE(updated_at, NOW()) AS \"updated_at!\"\n               FROM roles WHERE code = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "code",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "role_type!",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 5,
+        "name": "parent_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 6,
+        "name": "level!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 7,
+        "name": "sort_order!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 8,
+        "name": "status!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 9,
+        "name": "is_default!",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 10,
+        "name": "created_at!",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 11,
+        "name": "updated_at!",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      null,
+      true,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "3c31c77377739977062ca9a75a08dd0bed2a4e8196f1eeef9490a03351197a7b"
+}

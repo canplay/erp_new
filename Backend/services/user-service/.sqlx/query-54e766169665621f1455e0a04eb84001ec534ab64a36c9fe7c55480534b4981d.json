@@ -1,0 +1,76 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, type_id, label, value,\n                      COALESCE(sort, 0) AS \"sort!\" ,\n                      COALESCE(status, 1) AS \"status!\" ,\n                      COALESCE(is_default, false) AS \"is_default!\" ,\n                      remark,\n                      COALESCE(created_at, NOW()) AS \"created_at!\" ,\n                      COALESCE(updated_at, NOW()) AS \"updated_at!\"\n               FROM dictionary_items WHERE id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "type_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 2,
+        "name": "label",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "value",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "sort!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 5,
+        "name": "status!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 6,
+        "name": "is_default!",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 7,
+        "name": "remark",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 8,
+        "name": "created_at!",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 9,
+        "name": "updated_at!",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      null,
+      null,
+      null,
+      true,
+      null,
+      null
+    ]
+  },
+  "hash": "54e766169665621f1455e0a04eb84001ec534ab64a36c9fe7c55480534b4981d"
+}

@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            UPDATE cms_article\n            SET status = 0, updated_at = NOW()\n            WHERE id = $1 AND status = 2\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "c132ad6b5993ab9ba9c58385a52d03f7ef8d3f660d7c9253531843330f22603c"
+}

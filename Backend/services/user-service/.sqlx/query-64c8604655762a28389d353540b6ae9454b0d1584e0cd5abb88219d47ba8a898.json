@@ -1,0 +1,70 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT pi.id, pi.parent_role_id, pi.child_role_id,\n                      pi.inherit_data_permissions, pi.inherit_field_permissions,\n                      pi.override_child_permissions, pi.priority,\n                      r.name as parent_role_name, r.code as parent_role_code\n               FROM permission_inheritances pi\n               JOIN roles r ON r.id::text = pi.parent_role_id\n               WHERE pi.child_role_id = $1::text\n               ORDER BY pi.priority DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 1,
+        "name": "parent_role_id",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "child_role_id",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "inherit_data_permissions",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 4,
+        "name": "inherit_field_permissions",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 5,
+        "name": "override_child_permissions",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 6,
+        "name": "priority",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 7,
+        "name": "parent_role_name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 8,
+        "name": "parent_role_code",
+        "type_info": "Varchar"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "64c8604655762a28389d353540b6ae9454b0d1584e0cd5abb88219d47ba8a898"
+}

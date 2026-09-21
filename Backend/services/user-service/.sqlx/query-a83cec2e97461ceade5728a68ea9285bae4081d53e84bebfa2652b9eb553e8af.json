@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE system_configs SET config_value = $1, updated_at = NOW() WHERE config_key = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "a83cec2e97461ceade5728a68ea9285bae4081d53e84bebfa2652b9eb553e8af"
+}

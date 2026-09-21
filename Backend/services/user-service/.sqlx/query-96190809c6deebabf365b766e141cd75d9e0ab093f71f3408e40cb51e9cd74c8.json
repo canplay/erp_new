@@ -1,0 +1,76 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT p.id, p.name, p.code,\n                      COALESCE(p.permission_type, '') AS \"permission_type!\" ,\n                      p.parent_id,\n                      COALESCE(p.path, '') AS \"path!\" ,\n                      COALESCE(p.method, '') AS \"method!\" ,\n                      COALESCE(p.icon, '') AS \"icon!\" ,\n                      COALESCE(p.sort_order, 0) AS \"sort_order!\" ,\n                      COALESCE(p.status, 1) AS \"status!\"\n               FROM permissions p\n               INNER JOIN role_permissions rp ON p.id = rp.permission_id\n               WHERE rp.role_id = $1\n               ORDER BY p.sort_order",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "code",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "permission_type!",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "parent_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 5,
+        "name": "path!",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 6,
+        "name": "method!",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 7,
+        "name": "icon!",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 8,
+        "name": "sort_order!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 9,
+        "name": "status!",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      null,
+      true,
+      null,
+      null,
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "96190809c6deebabf365b766e141cd75d9e0ab093f71f3408e40cb51e9cd74c8"
+}

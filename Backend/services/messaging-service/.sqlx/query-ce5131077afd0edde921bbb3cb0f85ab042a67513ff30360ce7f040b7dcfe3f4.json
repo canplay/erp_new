@@ -1,0 +1,89 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT m.id, m.type AS msg_type, m.title, m.content, m.sender_id, m.sender_name,\n                   m.priority::int AS \"priority!\" , m.attachment_urls, m.target_type, m.target_ids,\n                   m.expire_time, COALESCE(m.created_at, NOW()) AS \"created_at!\"\n            FROM sys_message m\n            JOIN sys_message_user mu ON m.id = mu.message_id\n            WHERE m.id = $1 AND mu.user_id = $2 AND mu.is_deleted = 0\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "msg_type",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "title",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "content",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "sender_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 5,
+        "name": "sender_name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 6,
+        "name": "priority!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 7,
+        "name": "attachment_urls",
+        "type_info": "Jsonb"
+      },
+      {
+        "ordinal": 8,
+        "name": "target_type",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 9,
+        "name": "target_ids",
+        "type_info": "Jsonb"
+      },
+      {
+        "ordinal": 10,
+        "name": "expire_time",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 11,
+        "name": "created_at!",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      null,
+      true,
+      false,
+      true,
+      true,
+      null
+    ]
+  },
+  "hash": "ce5131077afd0edde921bbb3cb0f85ab042a67513ff30360ce7f040b7dcfe3f4"
+}

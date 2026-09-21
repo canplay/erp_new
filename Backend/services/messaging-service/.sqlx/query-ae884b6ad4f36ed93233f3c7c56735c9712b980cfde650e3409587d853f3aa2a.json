@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE sys_message_user SET is_read = 1, read_time = NOW() WHERE message_id = ANY($1) AND user_id = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8Array",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "ae884b6ad4f36ed93233f3c7c56735c9712b980cfde650e3409587d853f3aa2a"
+}

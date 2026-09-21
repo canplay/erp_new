@@ -1,0 +1,70 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, role_id, resource_type, data_scope, filter_expression,\n                      allowed_department_ids, allowed_user_ids, priority, enabled\n               FROM role_data_permissions\n               WHERE role_id = $1\n               ORDER BY priority DESC, id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 1,
+        "name": "role_id",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "resource_type",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "data_scope",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "filter_expression",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "allowed_department_ids",
+        "type_info": "Jsonb"
+      },
+      {
+        "ordinal": 6,
+        "name": "allowed_user_ids",
+        "type_info": "Jsonb"
+      },
+      {
+        "ordinal": 7,
+        "name": "priority",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 8,
+        "name": "enabled",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "865caa63c43d73eef5f7280a2bb490bf391b16d5abd4f079954d00600e4e0f45"
+}

@@ -1,0 +1,94 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT a.id, a.title, a.content,\n                      COALESCE(a.announcement_type, '') AS \"announcement_type!\" ,\n                      COALESCE(a.priority, 0) AS \"priority!\" ,\n                      COALESCE(a.is_pinned, false) AS \"is_pinned!\" ,\n                      COALESCE(a.is_active, false) AS \"is_active!\" ,\n                      a.start_time, a.end_time,\n                      a.created_by,\n                      COALESCE(a.created_at, NOW()) AS \"created_at!\" ,\n                      COALESCE(a.updated_at, NOW()) AS \"updated_at!\" ,\n                      u.nickname as created_by_name\n               FROM announcements a\n               LEFT JOIN users u ON a.created_by = u.id\n               WHERE a.id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "title",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "content",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "announcement_type!",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "priority!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 5,
+        "name": "is_pinned!",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 6,
+        "name": "is_active!",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 7,
+        "name": "start_time",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 8,
+        "name": "end_time",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 9,
+        "name": "created_by",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 10,
+        "name": "created_at!",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 11,
+        "name": "updated_at!",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 12,
+        "name": "created_by_name",
+        "type_info": "Varchar"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      null,
+      null,
+      null,
+      null,
+      true,
+      true,
+      true,
+      null,
+      null,
+      true
+    ]
+  },
+  "hash": "86816c144a64fbf10de157a26bab5a51a83cc6cc5d26d390459efed46fc67ed2"
+}

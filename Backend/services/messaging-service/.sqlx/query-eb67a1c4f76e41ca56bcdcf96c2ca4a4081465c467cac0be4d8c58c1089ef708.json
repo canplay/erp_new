@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT COUNT(*) FROM sys_message_user WHERE user_id = $1 AND is_read = 0 AND is_deleted = 0",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "count",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "eb67a1c4f76e41ca56bcdcf96c2ca4a4081465c467cac0be4d8c58c1089ef708"
+}

@@ -1,0 +1,82 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, category, config_key, config_value,\n                      COALESCE(value_type, '') AS \"value_type!\" ,\n                      COALESCE(label, '') AS \"label!\" ,\n                      description,\n                      COALESCE(sort_order, 0) AS \"sort_order!\" ,\n                      COALESCE(status, 1) AS \"status!\" ,\n                      COALESCE(created_at, NOW()) AS \"created_at!\" ,\n                      COALESCE(updated_at, NOW()) AS \"updated_at!\"\n               FROM system_configs\n               WHERE ($1::text IS NULL OR category = $1)\n                 AND status = 1\n               ORDER BY category, sort_order",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "category",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "config_key",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "config_value",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "value_type!",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 5,
+        "name": "label!",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 6,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 7,
+        "name": "sort_order!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 8,
+        "name": "status!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 9,
+        "name": "created_at!",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 10,
+        "name": "updated_at!",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      null,
+      null,
+      true,
+      null,
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "765a03475873fdbd71c60b647a3196470d117006af912ac79368440129850fb0"
+}

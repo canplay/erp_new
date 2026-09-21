@@ -1,0 +1,82 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT id, name, code, domain, description,\n                   COALESCE(max_users, 0) AS \"max_users!\" ,\n                   COALESCE(max_storage, 0) AS \"max_storage!\" ,\n                   COALESCE(status, 0) AS \"status!\" ,\n                   expires_at,\n                   COALESCE(created_at, NOW()) AS \"created_at!\" ,\n                   COALESCE(updated_at, NOW()) AS \"updated_at!\"\n            FROM tenants\n            WHERE code = $1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "code",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "domain",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "max_users!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 6,
+        "name": "max_storage!",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 7,
+        "name": "status!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 8,
+        "name": "expires_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 9,
+        "name": "created_at!",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 10,
+        "name": "updated_at!",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      true,
+      null,
+      null,
+      null,
+      true,
+      null,
+      null
+    ]
+  },
+  "hash": "456d1c108cf9266ef3f0c23639d05ef31761e9bb1d1e7987a28e1aa8c7d96ffa"
+}

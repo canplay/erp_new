@@ -1,0 +1,102 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                SELECT id, parent_id, name, slug, description, icon, sort_order,\n                       seo_title, seo_keywords, seo_description,\n                       status::int4 AS \"status!\" , (allow_attachment <> 0) AS \"allow_attachment!\" ,\n                       COALESCE(created_at, NOW()) AS \"created_at!\" ,\n                       COALESCE(updated_at, NOW()) AS \"updated_at!\"\n                FROM cms_category\n                WHERE (name ILIKE $1 OR slug ILIKE $1) AND status = 1\n                ORDER BY sort_order ASC, id ASC\n                LIMIT $2 OFFSET $3\n                ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "parent_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 2,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "slug",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "description",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 5,
+        "name": "icon",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 6,
+        "name": "sort_order",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 7,
+        "name": "seo_title",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 8,
+        "name": "seo_keywords",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 9,
+        "name": "seo_description",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 10,
+        "name": "status!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 11,
+        "name": "allow_attachment!",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 12,
+        "name": "created_at!",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 13,
+        "name": "updated_at!",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      true,
+      true,
+      null,
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "72a038f72da985375f6a98724c2d30edb4083cdefa52159f5f879265356a74f4"
+}

@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            INSERT INTO cms_category (parent_id, name, slug, description, status, allow_attachment)\n            VALUES (COALESCE($1::bigint, 0), $2, $3, $4, 1, 0)\n            RETURNING id\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Varchar",
+        "Varchar",
+        "Varchar"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "54d10e5dc5ada6e64d35b60ec35d21e1a323e05a3fc366e8d93334d836c58cda"
+}

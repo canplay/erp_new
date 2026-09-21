@@ -1,0 +1,73 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT m.id, m.title, m.content, m.sender_id, mu.user_id AS receiver_id,\n               m.type AS message_type, (mu.is_read <> 0) AS \"is_read!\" ,\n               COALESCE(m.created_at, NOW()) AS \"created_at!\" , mu.read_time AS read_at\n               FROM sys_message m\n               JOIN sys_message_user mu ON m.id = mu.message_id\n               WHERE mu.user_id = $1 AND mu.is_deleted = 0 AND ($2::text IS NULL OR m.type = $2)\n               ORDER BY m.created_at DESC\n               LIMIT $3 OFFSET $4",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "title",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "content",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "sender_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 4,
+        "name": "receiver_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 5,
+        "name": "message_type",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 6,
+        "name": "is_read!",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 7,
+        "name": "created_at!",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 8,
+        "name": "read_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Text",
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      null,
+      null,
+      true
+    ]
+  },
+  "hash": "bfa05b907fd299eaafcea83edf426a566cf7ce9d9c7944b4b9e23d43a3bf6997"
+}

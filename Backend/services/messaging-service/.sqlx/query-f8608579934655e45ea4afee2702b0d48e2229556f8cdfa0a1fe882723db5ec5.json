@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE sys_message_user SET is_deleted = 1 WHERE message_id = $1 AND user_id = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "f8608579934655e45ea4afee2702b0d48e2229556f8cdfa0a1fe882723db5ec5"
+}

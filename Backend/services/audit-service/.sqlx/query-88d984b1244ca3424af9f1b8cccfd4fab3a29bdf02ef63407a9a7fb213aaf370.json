@@ -1,0 +1,52 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT\n                COUNT(*) AS total_count,\n                COUNT(*) FILTER (WHERE login_status = 1) AS success_count,\n                COUNT(*) FILTER (WHERE login_status = 2) AS fail_count,\n                COUNT(*) FILTER (WHERE created_at >= $1) AS today_count,\n                COUNT(*) FILTER (WHERE login_status = 1 AND created_at >= $1) AS today_success,\n                COUNT(*) FILTER (WHERE login_status = 2 AND created_at >= $1) AS today_fail\n            FROM sys_login_logs\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "total_count",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "success_count",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 2,
+        "name": "fail_count",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 3,
+        "name": "today_count",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 4,
+        "name": "today_success",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 5,
+        "name": "today_fail",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "88d984b1244ca3424af9f1b8cccfd4fab3a29bdf02ef63407a9a7fb213aaf370"
+}

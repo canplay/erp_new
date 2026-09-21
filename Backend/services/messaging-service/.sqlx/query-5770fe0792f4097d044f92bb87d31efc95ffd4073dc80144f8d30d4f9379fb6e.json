@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            UPDATE announcements SET \n                title = $2, content = $3, announcement_type = $4, priority = $5,\n                is_pinned = $6, is_active = $7, start_time = $8, end_time = $9,\n                updated_at = NOW()\n            WHERE id = $1\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Varchar",
+        "Text",
+        "Varchar",
+        "Int4",
+        "Bool",
+        "Bool",
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "5770fe0792f4097d044f92bb87d31efc95ffd4073dc80144f8d30d4f9379fb6e"
+}

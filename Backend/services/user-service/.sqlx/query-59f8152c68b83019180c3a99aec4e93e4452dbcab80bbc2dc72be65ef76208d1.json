@@ -1,0 +1,64 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, code, name, description,\n                      COALESCE(sort, 0) AS \"sort!\" ,\n                      COALESCE(status, 1) AS \"status!\" ,\n                      COALESCE(created_at, NOW()) AS \"created_at!\" ,\n                      COALESCE(updated_at, NOW()) AS \"updated_at!\"\n               FROM dictionary_types WHERE id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "code",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "sort!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 5,
+        "name": "status!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 6,
+        "name": "created_at!",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 7,
+        "name": "updated_at!",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      null,
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "59f8152c68b83019180c3a99aec4e93e4452dbcab80bbc2dc72be65ef76208d1"
+}

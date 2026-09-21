@@ -1,0 +1,52 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, role_id, resource_type, field_name, permission, mask_pattern\n               FROM role_field_permissions\n               WHERE role_id = $1\n               ORDER BY id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 1,
+        "name": "role_id",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "resource_type",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "field_name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "permission",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 5,
+        "name": "mask_pattern",
+        "type_info": "Varchar"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "ab504de57b0f4f9039560b4c0757f72691978d9a0a230368528127426a282240"
+}

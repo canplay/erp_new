@@ -1,0 +1,66 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, name, template_type, title_template, content_template,\n           COALESCE(is_active, false) AS \"is_active!\" ,\n           COALESCE(created_at, NOW()) AS \"created_at!\" ,\n           COALESCE(updated_at, NOW()) AS \"updated_at!\"\n           FROM message_templates\n           WHERE ($1::text IS NULL OR template_type = $1)\n           ORDER BY created_at DESC\n           LIMIT $2 OFFSET $3",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "template_type",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "title_template",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "content_template",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "is_active!",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 6,
+        "name": "created_at!",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 7,
+        "name": "updated_at!",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "8501b93ecdafafcf888cf731b28dc1d01e51236edd90d24281723b2f60dbc768"
+}

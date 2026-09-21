@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO sys_message_user (message_id, user_id, is_read, is_deleted, is_archived, created_at)\n                  SELECT $1, unnest($2::bigint[]), 0, 0, 0, NOW()",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8Array"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "09818d6f81e8ec49bb6e5f4f87a2b29172cc8ffe3cd096e023e9c5c44f0f2261"
+}

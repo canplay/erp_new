@@ -421,20 +421,18 @@ impl DepartmentRepository {
 
     /// 获取部门树
     pub(crate) async fn get_tree(&self) -> Result<Vec<DepartmentTreeNode>, DepartmentRepositoryError> {
+        // N+1 修复（任务 4.4）: 一次拉取所有部门，内存中构建树（O(1) 查询 + O(n) 内存操作）
         let rows = sqlx::query!(
-            r##"SELECT d.id, d.name, d.code, d.parent_id,
-                      COALESCE(d.level, 0) AS "level!" ,
-                      COALESCE(d.sort_order, 0) AS "sort_order!" ,
-                      d.leader_id,
-                      u.nickname as leader_name,
-                      COUNT(ud.id) AS "user_count!"
-               FROM departments d
-               LEFT JOIN users u ON d.leader_id = u.id
-               LEFT JOIN user_departments ud ON d.id = ud.department_id
-               WHERE d.status = 1
-               GROUP BY d.id, d.name, d.code, d.parent_id, d.level, d.sort_order,
-                        d.leader_id, u.nickname
-               ORDER BY d.level, d.sort_order"##,
+            r#"SELECT id, name, code, parent_id,
+                      COALESCE(level, 0) AS "level!",
+                      COALESCE(sort_order, 0) AS "sort_order!",
+                      leader_id,
+                      (SELECT leader_id FROM departments d2 WHERE d2.id = departments.id LIMIT 1) AS leader_id2,
+                      (SELECT nickname FROM users u WHERE u.id = departments.leader_id) AS leader_name,
+                      (SELECT COUNT(*) FROM user_departments ud WHERE ud.department_id = departments.id) AS "user_count!"
+               FROM departments
+               WHERE status = 1
+               ORDER BY COALESCE(level, 0), sort_order"#,
         )
         .fetch_all(&self.pool)
         .await?;
@@ -455,56 +453,30 @@ impl DepartmentRepository {
             })
             .collect();
 
-        let mut node_map: std::collections::HashMap<i64, usize> = std::collections::HashMap::new();
-        for (idx, node) in all_nodes.iter().enumerate() {
-            node_map.insert(node.id, idx);
+        // 内存中构建树（O(n) 无数据库调用）— 按 parent_id 分组
+        let mut children_map: std::collections::HashMap<Option<i64>, Vec<DepartmentTreeNode>> =
+            std::collections::HashMap::new();
+        for node in all_nodes {
+            children_map.entry(node.parent_id).or_default().push(node);
         }
 
-        // 收集根节点
-        let root_ids: Vec<i64> = all_nodes
-            .iter()
-            .filter(|n| n.parent_id.is_none())
-            .map(|n| n.id)
-            .collect();
-
-        // 构建树
-        self.build_tree_recursive(&root_ids, &node_map, &all_nodes)
-            .await
-    }
-
-    /// 递归构建部门树
-    async fn build_tree_recursive(
-        &self,
-        parent_ids: &[i64],
-        node_map: &std::collections::HashMap<i64, usize>,
-        all_nodes: &[DepartmentTreeNode],
-    ) -> Result<Vec<DepartmentTreeNode>, DepartmentRepositoryError> {
-        let mut result = Vec::new();
-
-        for parent_id in parent_ids {
-            if let Some(&idx) = node_map.get(parent_id) {
-                let mut node = all_nodes[idx].clone();
-
-                let child_rows = sqlx::query!(
-                    "SELECT id FROM departments WHERE parent_id = $1 AND status = 1 ORDER BY sort_order" ,
-                    parent_id
-                )
-                .fetch_all(&self.pool)
-                .await?;
-
-                let child_ids: Vec<i64> = child_rows.into_iter().map(|row| row.id).collect();
-
-                if !child_ids.is_empty() {
-                    node.children =
-                        Box::pin(self.build_tree_recursive(&child_ids, node_map, all_nodes))
-                            .await?;
+        // 递归组装
+        fn attach_children(
+            nodes: &mut Vec<DepartmentTreeNode>,
+            children_map: &std::collections::HashMap<Option<i64>, Vec<DepartmentTreeNode>>,
+        ) {
+            for node in nodes.iter_mut() {
+                if let Some(children) = children_map.get(&Some(node.id)) {
+                    let mut children = children.clone();
+                    attach_children(&mut children, children_map);
+                    node.children = children;
                 }
-
-                result.push(node);
             }
         }
 
-        Ok(result)
+        let mut roots = children_map.remove(&None).unwrap_or_default();
+        attach_children(&mut roots, &children_map);
+        Ok(roots)
     }
 
     /// 获取部门下的用户列表

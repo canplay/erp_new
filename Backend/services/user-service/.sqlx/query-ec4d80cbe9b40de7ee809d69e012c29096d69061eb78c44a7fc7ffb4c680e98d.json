@@ -1,0 +1,74 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, name, code, parent_id,\n                      COALESCE(level, 0) AS \"level!\",\n                      COALESCE(sort_order, 0) AS \"sort_order!\",\n                      leader_id,\n                      (SELECT leader_id FROM departments d2 WHERE d2.id = departments.id LIMIT 1) AS leader_id2,\n                      (SELECT nickname FROM users u WHERE u.id = departments.leader_id) AS leader_name,\n                      (SELECT COUNT(*) FROM user_departments ud WHERE ud.department_id = departments.id) AS \"user_count!\"\n               FROM departments\n               WHERE status = 1\n               ORDER BY COALESCE(level, 0), sort_order",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "code",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "parent_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 4,
+        "name": "level!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 5,
+        "name": "sort_order!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 6,
+        "name": "leader_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 7,
+        "name": "leader_id2",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 8,
+        "name": "leader_name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 9,
+        "name": "user_count!",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      true,
+      null,
+      null,
+      true,
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "ec4d80cbe9b40de7ee809d69e012c29096d69061eb78c44a7fc7ffb4c680e98d"
+}

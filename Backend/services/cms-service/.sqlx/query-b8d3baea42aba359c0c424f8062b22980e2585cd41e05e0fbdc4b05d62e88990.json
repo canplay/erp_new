@@ -1,0 +1,44 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT\n                COUNT(*) AS \"total_articles!\" ,\n                COALESCE(SUM(view_count), 0)::bigint AS \"total_views!\" ,\n                COALESCE(SUM(like_count), 0)::bigint AS \"total_likes!\" ,\n                COUNT(*) FILTER (WHERE published_at::date = CURRENT_DATE) AS \"published_today!\" ,\n                COUNT(*) FILTER (WHERE status = 1) AS \"pending_review!\"\n            FROM cms_article\n",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "total_articles!",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "total_views!",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 2,
+        "name": "total_likes!",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 3,
+        "name": "published_today!",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 4,
+        "name": "pending_review!",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      null,
+      null,
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "b8d3baea42aba359c0c424f8062b22980e2585cd41e05e0fbdc4b05d62e88990"
+}

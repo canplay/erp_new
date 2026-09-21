@@ -307,36 +307,22 @@ impl UserRepository {
         }
 
         let mut tx = self.pool.begin().await?;
-        let mut success_count = 0;
-        let mut fail_count = 0;
 
-        for user_id in user_ids {
-            match sqlx::query!(
-                "UPDATE users SET status = $1, updated_at = NOW() WHERE id = $2" ,
-                status,
-                user_id,
-            )
-            .execute(&mut *tx)
-            .await
-            {
-                Ok(result) => {
-                    if result.rows_affected() > 0 {
-                        success_count += 1;
-                    } else {
-                        fail_count += 1;
-                    }
-                }
-                Err(_e) => {
-                    fail_count += 1;
-                }
-            }
-        }
+        // N+1 修复（任务 4.1）: 单条 UPDATE ... WHERE id = ANY($1) 替代循环逐条 UPDATE
+        let result = sqlx::query(
+            "UPDATE users SET status = $1, updated_at = NOW() WHERE id = ANY($2)",
+        )
+        .bind(status)
+        .bind(user_ids)
+        .execute(&mut *tx)
+        .await?;
 
         tx.commit().await?;
 
+        let success_count = result.rows_affected() as usize;
         Ok(BatchOperationResult {
             success_count,
-            fail_count
+            fail_count: user_ids.len().saturating_sub(success_count),
         })
     }
 
@@ -354,36 +340,22 @@ impl UserRepository {
         }
 
         let mut tx = self.pool.begin().await?;
-        let mut success_count = 0;
-        let mut fail_count = 0;
 
-        for user_id in user_ids {
-            match sqlx::query!(
-                "UPDATE users SET role = $1, updated_at = NOW() WHERE id = $2" ,
-                role,
-                user_id,
-            )
-            .execute(&mut *tx)
-            .await
-            {
-                Ok(result) => {
-                    if result.rows_affected() > 0 {
-                        success_count += 1;
-                    } else {
-                        fail_count += 1;
-                    }
-                }
-                Err(_e) => {
-                    fail_count += 1;
-                }
-            }
-        }
+        // N+1 修复: 单条 UPDATE ... WHERE id = ANY($1) 替代循环逐条 UPDATE
+        let result = sqlx::query(
+            "UPDATE users SET role = $1, updated_at = NOW() WHERE id = ANY($2)",
+        )
+        .bind(role)
+        .bind(user_ids)
+        .execute(&mut *tx)
+        .await?;
 
         tx.commit().await?;
 
+        let success_count = result.rows_affected() as usize;
         Ok(BatchOperationResult {
             success_count,
-            fail_count
+            fail_count: user_ids.len().saturating_sub(success_count),
         })
     }
 
@@ -400,35 +372,19 @@ impl UserRepository {
         }
 
         let mut tx = self.pool.begin().await?;
-        let mut success_count = 0;
-        let mut fail_count = 0;
 
-        for user_id in user_ids {
-            match sqlx::query!(
-                "DELETE FROM users WHERE id = $1" ,
-                user_id,
-            )
+        // N+1 修复: 单条 DELETE ... WHERE id = ANY($1) 替代循环逐条 DELETE
+        let result = sqlx::query("DELETE FROM users WHERE id = ANY($1)")
+            .bind(user_ids)
             .execute(&mut *tx)
-            .await
-            {
-                Ok(result) => {
-                    if result.rows_affected() > 0 {
-                        success_count += 1;
-                    } else {
-                        fail_count += 1;
-                    }
-                }
-                Err(_e) => {
-                    fail_count += 1;
-                }
-            }
-        }
+            .await?;
 
         tx.commit().await?;
 
+        let success_count = result.rows_affected() as usize;
         Ok(BatchOperationResult {
             success_count,
-            fail_count
+            fail_count: user_ids.len().saturating_sub(success_count),
         })
     }
 

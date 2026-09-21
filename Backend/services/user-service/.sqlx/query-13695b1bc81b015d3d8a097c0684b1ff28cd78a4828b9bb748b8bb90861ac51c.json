@@ -1,0 +1,88 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, username, nickname, avatar, phone, email, gender, address,\n                       COALESCE(role, 'user') AS \"role!\" ,\n                       COALESCE(status, 1) AS \"status!\" ,\n                       COALESCE(created_at, NOW()) AS \"created_at!\" ,\n                       COALESCE(updated_at, NOW()) AS \"updated_at!\"\n                FROM users WHERE id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "username",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "nickname",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "avatar",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "phone",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 5,
+        "name": "email",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 6,
+        "name": "gender",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 7,
+        "name": "address",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 8,
+        "name": "role!",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 9,
+        "name": "status!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 10,
+        "name": "created_at!",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 11,
+        "name": "updated_at!",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      null,
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "13695b1bc81b015d3d8a097c0684b1ff28cd78a4828b9bb748b8bb90861ac51c"
+}

@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT COUNT(*) FROM sys_message m\n               JOIN sys_message_user mu ON m.id = mu.message_id\n               WHERE mu.user_id = $1 AND mu.is_read = 0 AND mu.is_deleted = 0\n                 AND ($2::text IS NULL OR m.type = $2)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "count",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "182cd82cc8c60cf8d87185e212ad86bbded2133b9a1298b7938c808c53545c20"
+}

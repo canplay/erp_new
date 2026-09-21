@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM dictionary_items WHERE type_id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "c3bf9e1409596eda5fd2d154aa6578901fc96de0bfcc64ff91b8b2b0edd1e678"
+}

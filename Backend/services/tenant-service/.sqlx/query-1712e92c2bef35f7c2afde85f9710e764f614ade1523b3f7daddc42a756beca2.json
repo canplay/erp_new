@@ -1,0 +1,60 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                SELECT t.id, t.name, t.code,\n                       COALESCE(t.status, 0) AS \"status!\" ,\n                       COALESCE(t.max_users, 0)::bigint AS \"max_users!\" ,\n                       COALESCE(t.created_at, NOW()) AS \"created_at!\" ,\n                       COALESCE(COUNT(tu.user_id), 0)::bigint AS \"current_users!\"\n                FROM tenants t\n                LEFT JOIN tenant_users tu ON t.id = tu.tenant_id\n                WHERE t.name ILIKE $1 OR t.code ILIKE $1\n                GROUP BY t.id, t.name, t.code, t.status, t.max_users, t.created_at\n                ORDER BY t.created_at DESC\n                LIMIT $2 OFFSET $3\n                ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "code",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "status!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 4,
+        "name": "max_users!",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 5,
+        "name": "created_at!",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 6,
+        "name": "current_users!",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      null,
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "1712e92c2bef35f7c2afde85f9710e764f614ade1523b3f7daddc42a756beca2"
+}

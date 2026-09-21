@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT COUNT(*) as count\n               FROM dictionary_items di\n               JOIN dictionary_types dt ON di.type_id = dt.id\n               WHERE ($1::bigint IS NULL OR di.type_id = $1)\n                 AND ($2::text IS NULL OR dt.code = $2)\n                 AND ($3::text IS NULL OR di.label ILIKE '%' || $3 || '%' OR di.value ILIKE '%' || $3 || '%')\n                 AND ($4::integer IS NULL OR di.status = $4)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "count",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Text",
+        "Text",
+        "Int4"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "41b61bf8efd2f235ef1c152573e2f41e1af50f8c3f49fade91fe2ec51387c15b"
+}

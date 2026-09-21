@@ -1,0 +1,175 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                            SELECT id, category_id, title, slug, summary, content, content_type,\n                                   cover_image, author_id, tags, view_count, like_count, comment_count,\n                                   share_count, is_featured, is_top, status, reject_reason, published_at,\n                                   source, source_url, seo_title, seo_keywords, seo_description,\n                                   created_at, updated_at\n                            FROM cms_article\n                            WHERE category_id = $1 AND (title ILIKE $2 OR content ILIKE $2)\n                            ORDER BY is_top DESC, id DESC\n                            LIMIT $3 OFFSET $4\n                            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "category_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 2,
+        "name": "title",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "slug",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "summary",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 5,
+        "name": "content",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 6,
+        "name": "content_type",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 7,
+        "name": "cover_image",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 8,
+        "name": "author_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 9,
+        "name": "tags",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 10,
+        "name": "view_count",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 11,
+        "name": "like_count",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 12,
+        "name": "comment_count",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 13,
+        "name": "share_count",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 14,
+        "name": "is_featured",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 15,
+        "name": "is_top",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 16,
+        "name": "status",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 17,
+        "name": "reject_reason",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 18,
+        "name": "published_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 19,
+        "name": "source",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 20,
+        "name": "source_url",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 21,
+        "name": "seo_title",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 22,
+        "name": "seo_keywords",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 23,
+        "name": "seo_description",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 24,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 25,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Text",
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      true,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "168083757a58ef58e81b1ea58e9d04230c2998173eafa2bd2a096f76de824f8c"
+}

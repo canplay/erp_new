@@ -1,0 +1,18 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            UPDATE cms_article\n            SET title = COALESCE($2, title),\n                content = COALESCE($3, content),\n                is_featured = COALESCE($4, is_featured),\n                is_top = COALESCE($5, is_top),\n                updated_at = NOW()\n            WHERE id = $1\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Varchar",
+        "Text",
+        "Bool",
+        "Bool"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "b27a03c236a515fbd69771ecab1b10f8107821ff6c8c5f14e2ef0b00534eb339"
+}

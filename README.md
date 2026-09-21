@@ -9,7 +9,7 @@
 | 后端 | 22 微服务 / 10 共享 Crates / 492 Rust 源文件 |
 | 前端 | 4 应用（admin 47 / tenant / ops / social）/ 10 共享包 / 309 Vue + 540 TS 文件 |
 | 数据库 | PostgreSQL 16+ / 117 张表 |
-| 测试 | `cargo test --workspace --lib` 380 passed / 0 failed |
+| 测试 | `cargo test --workspace --lib --exclude clean-service` 374 passed / 0 failed |
 | 部署 | Helm / docker-compose |
 
 **技术栈**：

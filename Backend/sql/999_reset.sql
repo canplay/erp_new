@@ -4,7 +4,18 @@
 -- WARNING: This file contains DROP TABLE IF EXISTS statements!
 -- It WILL DELETE all existing data.
 -- Only use for database reset or initial deployment.
+--
+-- 安全护栏（任务 3.5）: 仅允许在 *_dev / *_test / *_staging 后缀的数据库执行；
+-- 生产命名库（如 erp / erp_prod / myai）直接报错终止，防止误跑清库。
 -- =============================================================================
+DO $guard$
+BEGIN
+    IF current_database() !~ '_(dev|test|staging)[0-9]*$' THEN
+        RAISE EXCEPTION '拒绝执行: 当前数据库 % 不是开发/测试库（须以 _dev/_test/_staging 结尾）。此脚本会删除全部数据，禁止在生产库运行。', current_database();
+    END IF;
+END
+$guard$;
+
 
 -- 文件分类枚举
 DROP TYPE IF EXISTS "public"."file_category";
@@ -201,6 +212,5 @@ DROP TABLE IF EXISTS "public"."system_configs";
 DROP SEQUENCE IF EXISTS "public"."sys_api_call_logs_id_seq";
 
 DROP TABLE IF EXISTS "public"."sys_api_call_logs";
-$$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS trg_lpr_pass_records_updated_at ON public.lpr_pass_records;

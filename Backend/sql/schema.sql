@@ -4746,3 +4746,17 @@ BEGIN
         GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO myai_app;
     END IF;
 END $$;
+
+-- ===========================================================================
+-- Schema 版本跟踪（任务 3.4）
+-- 记录已执行的 schema 版本，防止重复/回退执行；幂等重跑时仅追加新版本
+-- ===========================================================================
+CREATE TABLE IF NOT EXISTS _schema_versions (
+    version     varchar(32) PRIMARY KEY,
+    description varchar(255) NOT NULL,
+    applied_at  timestamptz NOT NULL DEFAULT now()
+);
+
+INSERT INTO _schema_versions (version, description)
+VALUES ('v0.9.1', 'schema.sql 全量修复: 幂等化+类型统一(BIGINT tenant_id)+v1计费表删除+约束重排')
+ON CONFLICT (version) DO NOTHING;

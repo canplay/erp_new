@@ -16,7 +16,6 @@ pub mod init;
 pub mod metrics; // Prometheus metrics
 #[cfg(feature = "metrics-exporter")]
 pub mod metrics_exporter; // Prometheus metrics exporter
-pub mod migrations;
 pub mod middleware;
 #[cfg(feature = "telemetry")]
 pub mod otel; // OpenTelemetry tracing

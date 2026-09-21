@@ -41,8 +41,10 @@ struct ContentRow {
 #[derive(FromRow)]
 struct LlmProviderRow {
     api_endpoint: String,
+    #[allow(dead_code)] // 保留列映射供未来 LLM 调用实现使用
     api_key_enc: String,
     model_name: Option<String>,
+    #[allow(dead_code)] // 保留列映射供未来 LLM 调用实现使用
     default_params: Option<String>,
 }
 

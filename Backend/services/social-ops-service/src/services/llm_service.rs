@@ -14,6 +14,7 @@ struct LlmProviderRow {
     id: Uuid,
     provider_name: String,
     api_endpoint: String,
+    #[allow(dead_code)] // 保留列映射供未来 LLM 调用实现使用
     api_key_enc: String,
     model_name: String,
     is_active: bool,

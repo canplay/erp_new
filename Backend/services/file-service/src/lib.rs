@@ -9,7 +9,6 @@ pub mod helpers;
 pub mod models;
 pub mod repository;
 pub mod storage;
-pub mod version; // 文件版本管理模块
 
 pub use common::AppError;
 pub use common::AppResult;
@@ -23,7 +22,3 @@ pub use storage::{
 };
 
 // 导出版本管理类型
-pub use version::{
-    CompareConfig, DiffChange, DiffType, FileVersion, RollbackRequest, RollbackResult,
-    VersionConfig, VersionDiff, VersionHistoryQuery, VersionManager, VersionState, VersionStats,
-};

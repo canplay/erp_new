@@ -3,7 +3,6 @@
 //! 每个服务结构体包装对应的 Service 层，实现 proto 中定义的 gRPC trait。
 
 use std::sync::Arc;
-use sqlx::Row;
 use sqlx::FromRow;
 use tonic::{Request, Response, Status};
 use uuid::Uuid;

@@ -10,8 +10,7 @@ use tracing::{info, warn};
 
 use tenant_core::{
     context::TenantContext,
-    lifecycle::{LifecycleManager, LifecycleState},
-    provisioning::ProvisioningConfig,
+    lifecycle::LifecycleState,
     TenantId, TenantResult, TenantError,
 };
 
@@ -19,18 +18,12 @@ use tenant_core::{
 #[derive(Clone)]
 pub struct TenantLifecycleService {
     pool: PgPool,
-    lifecycle_manager: LifecycleManager,
-    provisioning_config: ProvisioningConfig,
 }
 
 impl TenantLifecycleService {
     /// 创建新的租户生命周期服务
     pub fn new(pool: PgPool) -> Self {
-        Self {
-            pool,
-            lifecycle_manager: LifecycleManager::default(),
-            provisioning_config: ProvisioningConfig::default(),
-        }
+        Self { pool }
     }
 
     /// 获取数据库连接池引用

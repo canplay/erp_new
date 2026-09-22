@@ -6,10 +6,10 @@
 
 | 维度 | 数据 |
 |---|---|
-| 后端 | 22 微服务 / 10 共享 Crates / 492 Rust 源文件 |
-| 前端 | 4 应用（admin 47 / tenant / ops / social）/ 10 共享包 / 309 Vue + 540 TS 文件 |
+| 后端 | 22 微服务 / 10 共享 Crates / 766 Rust 源文件 |
+| 前端 | 4 应用（admin 42 / tenant 6 / ops 4 / social 8）/ 10 共享包 / 309 Vue + 540 TS 文件 |
 | 数据库 | PostgreSQL 16+ / 117 张表 |
-| 测试 | `cargo test --workspace --lib --exclude clean-service` 374 passed / 0 failed |
+| 测试 | `cargo test --workspace --lib` 540 passed / 0 failed |
 | 部署 | Helm / docker-compose |
 
 **技术栈**：
@@ -20,6 +20,7 @@
 | 前端框架 | Vue 3.5 + Quasar 2 + Pinia + Vite |
 | 数据库 | PostgreSQL（117 表） |
 | 缓存 | Redis |
+| 搜索 | Meilisearch |
 | 认证 | JWT Bearer |
 | 部署 | Helm / docker-compose |
 | 工程化 | pnpm workspaces + Turborepo |
@@ -49,24 +50,27 @@ flowchart TB
             USER["user-service"]
             BILL["billing-service"]
             PAY["pay-service"]
-            ...[""]
+            OTHER["... 18 个服务"]
         end
         subgraph CRATES["共享 Crates（10个）"]
             COMMON["common · 公共工具"]
             AUTHCORE["auth-core · 认证核心"]
             TENANTCORE["tenant-core · 租户核心"]
-            ...[""]
+            OTHERCRATE["... 7 个 crate"]
         end
     end
 
     subgraph INFRA["基础设施"]
         PG[("PostgreSQL 16+<br/>117 表")]
         RD[("Redis 7+<br/>缓存/会话")]
+        MEILI[("Meilisearch<br/>全文搜索")]
     end
 
     FE --> SHARED
     SHARED --> BACKEND
-    BACKEND --> INFRA
+    BACKEND --> PG
+    BACKEND --> RD
+    BACKEND --> MEILI
 ```
 
 ## 3. 快速开始

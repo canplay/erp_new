@@ -574,6 +574,9 @@ configMap:
     connectTimeout: "30"
     idleTimeout: "300"
     maxLifetime: "1800"
+  meilisearch:
+    MEILISEARCH_URL: "http://meilisearch:7700"
+    MEILISEARCH_INDEX_PREFIX: "erp_new"
 
 # -----------------------------------------------------------------------------
 # Secret（敏感配置 — 占位符，生产环境通过外部注入）
@@ -584,6 +587,8 @@ secret:
     DATABASE_URL: "postgresql://postgres:postgres@erp-new-postgres:5432/erp_new"
   redis:
     REDIS_URL: "redis://erp-new-redis:6379/0"
+  meilisearch:
+    MEILI_MASTER_KEY: "CHANGE-ME"
   jwt:
     JWT_SECRET: "CHANGE-ME-MIN-32-CHARS-REPLACE-IN-PRODUCTION"
     JWT_ISSUER: "erp-new"
@@ -622,7 +627,7 @@ secret:
 infrastructure:
   postgres:
     enabled: true
-    image: postgres:16-alpine
+    image: postgres:18.6-alpine
     containerName: erp-new-postgres
     ports:
       - 5432
@@ -642,7 +647,7 @@ infrastructure:
         memory: 2Gi
   redis:
     enabled: true
-    image: redis:7-alpine
+    image: redis:8.8.2-alpine
     containerName: erp-new-redis
     ports:
       - 6379
@@ -715,3 +720,13 @@ logging:
   format: json
   maxSize: 100
   maxFiles: 7
+
+# -----------------------------------------------------------------------------
+# Meilisearch 全文搜索
+# -----------------------------------------------------------------------------
+infrastructure:
+  meilisearch:
+    enabled: true
+    env:
+      MEILI_ENV: development
+      MEILI_EXPERIMENTAL_REPLICATION: "false"

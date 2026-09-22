@@ -32,3 +32,7 @@ data:
   DB_POOL_CONNECT_TIMEOUT: {{ .Values.configMap.databasePool.connectTimeout | quote }}
   DB_POOL_IDLE_TIMEOUT: {{ .Values.configMap.databasePool.idleTimeout | quote }}
   DB_POOL_MAX_LIFETIME: {{ .Values.configMap.databasePool.maxLifetime | quote }}
+  
+  # Meilisearch 配置（非敏感部分）
+  MEILISEARCH_URL: {{ .Values.configMap.meilisearch.MEILISEARCH_URL | quote }}
+  MEILISEARCH_INDEX_PREFIX: {{ .Values.configMap.meilisearch.MEILISEARCH_INDEX_PREFIX | quote }}
